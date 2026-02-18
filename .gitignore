@@ -422,6 +422,8 @@ FodyWeavers.xsd
 
 .dev/*
 appsettings.json
+appsettings.*.json
+!appsettings.example.json
 CLAUDE.md
 *.db
 *.db-*
