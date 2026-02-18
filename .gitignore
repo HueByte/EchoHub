@@ -410,9 +410,18 @@ FodyWeavers.xsd
 # Built Visual Studio Code Extensions
 *.vsix
 
+# Dev folder
+.dev/
+
 # Windows Installer files from build outputs
 *.cab
 *.msi
 *.msix
 *.msm
 *.msp
+
+.dev/*
+appsettings.json
+CLAUDE.md
+*.db
+*.db-*

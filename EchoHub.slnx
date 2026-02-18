@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/EchoHub.Api/EchoHub.Api.csproj" />
+    <Project Path="src/EchoHub.Client/EchoHub.Client.csproj" />
+    <Project Path="src/EchoHub.Core/EchoHub.Core.csproj" />
+    <Project Path="src/EchoHub.Server/EchoHub.Server.csproj" />
+    <Project Path="src/EchoHub.Web/EchoHub.Web.csproj" />
+  </Folder>
+</Solution>
