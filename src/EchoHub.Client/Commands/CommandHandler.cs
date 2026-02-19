@@ -129,8 +129,8 @@ public class CommandHandler
                 await OnSendFile(target);
             var fileName = Path.GetFileName(uri.LocalPath);
             if (string.IsNullOrWhiteSpace(fileName))
-                fileName = "download";
-            return new CommandResult(true, $"Downloading & uploading: {fileName}...");
+                fileName = "image";
+            return new CommandResult(true, $"Sending: {fileName}...");
         }
 
         if (!File.Exists(target))

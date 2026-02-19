@@ -22,6 +22,7 @@ public class ChannelsController(
     EchoHubDbContext db,
     FileStorageService fileStorage,
     ImageToAsciiService asciiService,
+    IHttpClientFactory httpClientFactory,
     IHubContext<ChatHub, IEchoHubClient> hubContext) : ControllerBase
 {
     [HttpGet]
@@ -211,6 +212,123 @@ public class ChannelsController(
             messageType,
             attachmentUrl,
             file.FileName,
+            message.SentAt);
+
+        await hubContext.Clients.Group(channelName).ReceiveMessage(messageDto);
+
+        return Ok(messageDto);
+    }
+
+    [HttpPost("{channel}/send-url")]
+    [EnableRateLimiting("upload")]
+    public async Task<IActionResult> SendUrl(string channel, [FromBody] SendUrlRequest request)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var usernameClaim = User.FindFirstValue("username");
+        if (userIdClaim is null || usernameClaim is null)
+            return Unauthorized(new ErrorResponse("Authentication required."));
+
+        var userId = Guid.Parse(userIdClaim);
+        var channelName = channel.ToLowerInvariant().Trim();
+
+        if (!ValidationConstants.ChannelNameRegex().IsMatch(channelName))
+            return BadRequest(new ErrorResponse("Invalid channel name format."));
+
+        var dbChannel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
+        if (dbChannel is null)
+            return NotFound(new ErrorResponse($"Channel '{channelName}' does not exist."));
+
+        if (string.IsNullOrWhiteSpace(request.Url))
+            return BadRequest(new ErrorResponse("URL is required."));
+
+        if (!Uri.TryCreate(request.Url, UriKind.Absolute, out var uri)
+            || (uri.Scheme != "http" && uri.Scheme != "https"))
+            return BadRequest(new ErrorResponse("Invalid URL. Only http and https are supported."));
+
+        // Download image from URL
+        byte[] imageBytes;
+        string fileName;
+        try
+        {
+            using var client = httpClientFactory.CreateClient("ImageDownload");
+            using var response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+
+            var contentLength = response.Content.Headers.ContentLength;
+            if (contentLength > HubConstants.MaxFileSizeBytes)
+                return BadRequest(new ErrorResponse($"File size exceeds maximum of {HubConstants.MaxFileSizeBytes / (1024 * 1024)} MB."));
+
+            imageBytes = await response.Content.ReadAsByteArrayAsync();
+
+            if (imageBytes.Length > HubConstants.MaxFileSizeBytes)
+                return BadRequest(new ErrorResponse($"File size exceeds maximum of {HubConstants.MaxFileSizeBytes / (1024 * 1024)} MB."));
+
+            fileName = Path.GetFileName(uri.LocalPath);
+            if (string.IsNullOrWhiteSpace(fileName) || !fileName.Contains('.'))
+            {
+                var contentType = response.Content.Headers.ContentType?.MediaType ?? "";
+                var ext = contentType switch
+                {
+                    "image/png" => ".png",
+                    "image/jpeg" or "image/jpg" => ".jpg",
+                    "image/gif" => ".gif",
+                    "image/webp" => ".webp",
+                    _ => ".bin"
+                };
+                fileName = $"download{ext}";
+            }
+        }
+        catch (TaskCanceledException)
+        {
+            return BadRequest(new ErrorResponse("Download timed out. The URL may be unreachable."));
+        }
+        catch (HttpRequestException ex)
+        {
+            return BadRequest(new ErrorResponse($"Failed to download from URL: {ex.Message}"));
+        }
+
+        // Validate it's actually an image
+        using var memoryStream = new MemoryStream(imageBytes);
+        if (!FileValidationHelper.IsValidImage(memoryStream))
+            return BadRequest(new ErrorResponse("The URL does not point to a valid image. Supported formats: JPEG, PNG, GIF, WebP."));
+
+        // Save file and convert to ASCII
+        var (fileId, filePath) = await fileStorage.SaveFileAsync(memoryStream, fileName);
+
+        string content;
+        using (var imageStream = System.IO.File.OpenRead(filePath))
+        {
+            content = asciiService.ConvertToAscii(imageStream);
+        }
+
+        var attachmentUrl = $"/api/files/{fileId}";
+        var sender = await db.Users.FindAsync(userId);
+
+        var message = new Message
+        {
+            Id = Guid.NewGuid(),
+            Content = content,
+            Type = MessageType.Image,
+            AttachmentUrl = attachmentUrl,
+            AttachmentFileName = fileName,
+            SentAt = DateTimeOffset.UtcNow,
+            ChannelId = dbChannel.Id,
+            SenderUserId = userId,
+            SenderUsername = usernameClaim,
+        };
+
+        db.Messages.Add(message);
+        await db.SaveChangesAsync();
+
+        var messageDto = new MessageDto(
+            message.Id,
+            message.Content,
+            message.SenderUsername,
+            sender?.NicknameColor,
+            channelName,
+            MessageType.Image,
+            attachmentUrl,
+            fileName,
             message.SentAt);
 
         await hubContext.Clients.Group(channelName).ReceiveMessage(messageDto);

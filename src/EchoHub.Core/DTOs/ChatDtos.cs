@@ -33,3 +33,5 @@ public record SendMessageRequest(string ChannelName, string Content);
 public record CreateChannelRequest(string Name, string? Topic = null);
 
 public record UpdateTopicRequest(string? Topic);
+
+public record SendUrlRequest(string Url);

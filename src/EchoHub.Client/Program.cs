@@ -143,35 +143,12 @@ public static class Program
                 if (Uri.TryCreate(target, UriKind.Absolute, out var uri)
                     && (uri.Scheme == "http" || uri.Scheme == "https"))
                 {
-                    // Download from URL then upload
-                    Log.Information("Downloading file from {Url}", target);
-                    using var httpClient = new HttpClient();
-                    using var response = await httpClient.GetAsync(uri);
-                    response.EnsureSuccessStatusCode();
-
-                    var fileName = Path.GetFileName(uri.LocalPath);
-                    if (string.IsNullOrWhiteSpace(fileName) || !fileName.Contains('.'))
-                    {
-                        // Try to infer extension from Content-Type
-                        var contentType = response.Content.Headers.ContentType?.MediaType ?? "";
-                        var ext = contentType switch
-                        {
-                            "image/png" => ".png",
-                            "image/jpeg" => ".jpg",
-                            "image/gif" => ".gif",
-                            "image/webp" => ".webp",
-                            _ => ""
-                        };
-                        fileName = $"download{ext}";
-                    }
-
-                    await using var stream = await response.Content.ReadAsStreamAsync();
-                    await _apiClient.UploadFileAsync(channel, stream, fileName);
-                    Log.Information("URL file uploaded: {FileName}", fileName);
+                    // Send URL to server — server handles downloading and conversion
+                    await _apiClient.SendUrlAsync(channel, target);
                 }
                 else
                 {
-                    // Local file
+                    // Local file — upload to server
                     await using var stream = File.OpenRead(target);
                     var fileName = Path.GetFileName(target);
                     await _apiClient.UploadFileAsync(channel, stream, fileName);
@@ -179,9 +156,9 @@ public static class Program
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "File upload failed for {Target}", target);
+                Log.Error(ex, "File send failed for {Target}", target);
                 _app.Invoke(() =>
-                    _mainWindow!.ShowError($"File upload failed: {ex.Message}"));
+                    _mainWindow!.ShowError($"Send failed: {ex.Message}"));
             }
         };
 
