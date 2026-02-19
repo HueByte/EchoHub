@@ -11,6 +11,7 @@ public class EchoHubDbContext : DbContext
     public DbSet<Channel> Channels => Set<Channel>();
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<ChannelMembership> ChannelMemberships => Set<ChannelMembership>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -58,6 +59,23 @@ public class EchoHubDbContext : DbContext
             entity.Property(m => m.SenderUsername).IsRequired().HasMaxLength(50);
             entity.Property(m => m.AttachmentUrl).HasMaxLength(500);
             entity.Property(m => m.AttachmentFileName).HasMaxLength(255);
+        });
+
+        modelBuilder.Entity<ChannelMembership>(entity =>
+        {
+            entity.HasKey(cm => new { cm.UserId, cm.ChannelId });
+            entity.HasIndex(cm => cm.UserId);
+            entity.HasIndex(cm => cm.ChannelId);
+
+            entity.HasOne<Channel>()
+                  .WithMany()
+                  .HasForeignKey(cm => cm.ChannelId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne<User>()
+                  .WithMany()
+                  .HasForeignKey(cm => cm.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<RefreshToken>(entity =>

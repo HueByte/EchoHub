@@ -712,12 +712,10 @@ public sealed class AppOrchestrator : IDisposable
             _joinedChannels.Add(channel.Name);
             var history = await _connection!.JoinChannelAsync(channel.Name);
 
-            // Refresh the channel list and ensure private channels show up
-            var channels = await _apiClient.GetChannelsAsync();
             InvokeUI(() =>
             {
-                _mainWindow.SetChannels(channels);
                 _mainWindow.EnsureChannelInList(channel.Name);
+                _mainWindow.SetChannelTopic(channel.Name, channel.Topic);
                 _mainWindow.SwitchToChannel(channel.Name);
                 if (history.Count > 0)
                     _mainWindow.LoadHistory(channel.Name, history);
@@ -756,10 +754,9 @@ public sealed class AppOrchestrator : IDisposable
             await _apiClient!.DeleteChannelAsync(channel);
             _joinedChannels.Remove(channel);
 
-            var channels = await _apiClient.GetChannelsAsync();
             InvokeUI(() =>
             {
-                _mainWindow.SetChannels(channels);
+                _mainWindow.RemoveChannel(channel);
                 _mainWindow.SwitchToChannel(HubConstants.DefaultChannel);
                 _mainWindow.AddSystemMessage(HubConstants.DefaultChannel, $"Channel #{channel} has been deleted.");
             });
@@ -841,6 +838,16 @@ public sealed class AppOrchestrator : IDisposable
             {
                 _mainWindow.ClearChannelMessages(channelName);
                 _mainWindow.AddSystemMessage(channelName, "Channel history has been cleared by a moderator.");
+            });
+        };
+
+        connection.OnChannelUpdated += channel =>
+        {
+            InvokeUI(() =>
+            {
+                if (channel.IsPublic)
+                    _mainWindow.EnsureChannelInList(channel.Name);
+                _mainWindow.SetChannelTopic(channel.Name, channel.Topic);
             });
         };
 

@@ -597,6 +597,16 @@ public sealed class MainWindow : Runnable
     }
 
     /// <summary>
+    /// Remove a channel from the left panel list.
+    /// </summary>
+    public void RemoveChannel(string channelName)
+    {
+        _channelNames.Remove(channelName);
+        _channelTopics.Remove(channelName);
+        RefreshChannelList();
+    }
+
+    /// <summary>
     /// Update the topic for a specific channel.
     /// </summary>
     public void SetChannelTopic(string channelName, string? topic)

@@ -40,10 +40,17 @@ public class ChannelsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetChannels([FromQuery] int offset = 0, [FromQuery] int limit = 50)
     {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim is null)
+            return Unauthorized(new ErrorResponse("Authentication required."));
+
+        var userId = Guid.Parse(userIdClaim);
         offset = Math.Max(0, offset);
         limit = Math.Clamp(limit, 1, 100);
 
-        var query = _db.Channels.Where(c => c.IsPublic);
+        // Public channels + private channels the user has joined
+        var query = _db.Channels.Where(c =>
+            c.IsPublic || _db.ChannelMemberships.Any(m => m.ChannelId == c.Id && m.UserId == userId));
         var total = await query.CountAsync();
 
         var channels = await query
@@ -90,6 +97,14 @@ public class ChannelsController : ControllerBase
         };
 
         _db.Channels.Add(channel);
+
+        // Creator automatically becomes a member
+        _db.ChannelMemberships.Add(new ChannelMembership
+        {
+            UserId = Guid.Parse(userIdClaim),
+            ChannelId = channel.Id,
+        });
+
         await _db.SaveChangesAsync();
 
         var dto = new ChannelDto(channel.Id, channel.Name, channel.Topic, channel.IsPublic, 0, channel.CreatedAt);

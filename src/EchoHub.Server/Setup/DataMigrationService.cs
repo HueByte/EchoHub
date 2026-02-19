@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using EchoHub.Core.Constants;
 using EchoHub.Server.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,7 +14,22 @@ public static partial class DataMigrationService
         var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>()
             .CreateLogger("EchoHub.Server.Setup.DataMigration");
 
+        await EnsureDefaultChannelsPublicAsync(db, logger);
         await MigrateAnsiMessagesAsync(db, logger);
+    }
+
+    /// <summary>
+    /// Ensure the #general channel (and any pre-existing channels from before the IsPublic column) are public.
+    /// </summary>
+    private static async Task EnsureDefaultChannelsPublicAsync(EchoHubDbContext db, ILogger logger)
+    {
+        var general = await db.Channels.FirstOrDefaultAsync(c => c.Name == HubConstants.DefaultChannel);
+        if (general is not null && !general.IsPublic)
+        {
+            general.IsPublic = true;
+            await db.SaveChangesAsync();
+            logger.LogInformation("Marked #{Channel} as public.", HubConstants.DefaultChannel);
+        }
     }
 
     private static async Task MigrateAnsiMessagesAsync(EchoHubDbContext db, ILogger logger)

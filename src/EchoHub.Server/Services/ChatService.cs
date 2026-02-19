@@ -98,6 +98,19 @@ public class ChatService : IChatService
         if (channel is null)
             return ([], $"Channel '{channelName}' does not exist. Create it first via the channel list.");
 
+        // Persist membership so the channel shows in the user's channel list
+        var hasMembership = await db.ChannelMemberships
+            .AnyAsync(m => m.UserId == userId && m.ChannelId == channel.Id);
+        if (!hasMembership)
+        {
+            db.ChannelMemberships.Add(new ChannelMembership
+            {
+                UserId = userId,
+                ChannelId = channel.Id,
+            });
+            await db.SaveChangesAsync();
+        }
+
         var isNewJoin = _presenceTracker.JoinChannel(username, channelName);
 
         if (isNewJoin)

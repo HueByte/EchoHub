@@ -15,7 +15,7 @@ namespace EchoHub.Server.Data.Migrations
                 table: "Channels",
                 type: "INTEGER",
                 nullable: false,
-                defaultValue: false);
+                defaultValue: true);
         }
 
         /// <inheritdoc />
