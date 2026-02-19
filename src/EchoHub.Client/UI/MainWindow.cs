@@ -872,12 +872,13 @@ public sealed class MainWindow : Runnable
             default:
                 var contentLines = message.Content.Split('\n');
                 var firstLine = contentLines[0].TrimEnd('\r');
-                lines.Add(BuildChatLine(time, senderName, senderColor, $" {firstLine}"));
+                lines.Add(BuildChatLineWithMentions(time, senderName, senderColor, $" {firstLine}"));
                 // Continuation lines indented to align with first line's content
                 var indent = new string(' ', $"[{time}] {senderName} ".Length);
                 for (int i = 1; i < contentLines.Length; i++)
                 {
-                    lines.Add(new ChatLine($"{indent}{contentLines[i].TrimEnd('\r')}"));
+                    var contText = $"{indent}{contentLines[i].TrimEnd('\r')}";
+                    lines.Add(new ChatLine(ChatColors.SplitMentions(contText)));
                 }
                 break;
         }
@@ -911,6 +912,20 @@ public sealed class MainWindow : Runnable
             new(senderName, senderColor),
             new(suffix, null)
         };
+        return new ChatLine(segments);
+    }
+
+    /// <summary>
+    /// Build a chat line with @mention highlighting in the suffix text.
+    /// </summary>
+    private static ChatLine BuildChatLineWithMentions(string time, string senderName, Attribute? senderColor, string suffix)
+    {
+        var segments = new List<ChatSegment>
+        {
+            new($"[{time}] ", ChatColors.TimestampAttr),
+            new(senderName, senderColor),
+        };
+        segments.AddRange(ChatColors.SplitMentions(suffix));
         return new ChatLine(segments);
     }
 }
