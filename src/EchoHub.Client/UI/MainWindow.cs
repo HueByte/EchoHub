@@ -34,7 +34,7 @@ public sealed class MainWindow : Runnable
     private const int UsersPanelWidth = 22;
     private static readonly Key F2Key = Key.F2;
 
-    private static readonly string AppVersion =
+    internal static readonly string AppVersion =
         typeof(MainWindow).Assembly.GetName().Version?.ToString(3) ?? "?";
 
     // Cached Key constants — compare via .KeyCode to avoid Key.Equals (which also checks Handled)
@@ -479,19 +479,33 @@ public sealed class MainWindow : Runnable
     /// </summary>
     public void AddSystemMessage(string channelName, string text)
     {
-        var time = DateTimeOffset.Now.ToString("HH:mm");
-        var segments = new List<ChatSegment>
-        {
-            new($"[{time}] ", ChatColors.TimestampAttr),
-            new($"** {text}", ChatColors.SystemAttr)
-        };
-
         if (!_channelMessages.TryGetValue(channelName, out var messages))
         {
             messages = [];
             _channelMessages[channelName] = messages;
         }
-        messages.Add(new ChatLine(segments));
+
+        var time = DateTimeOffset.Now.ToString("HH:mm");
+        var textLines = text.Split('\n');
+
+        // First line gets timestamp prefix
+        messages.Add(new ChatLine(
+        [
+            new($"[{time}] ", ChatColors.TimestampAttr),
+            new($"** {textLines[0].TrimEnd('\r')}", ChatColors.SystemAttr)
+        ]));
+
+        // Continuation lines are indented to align
+        var indent = new string(' ', $"[{time}] ** ".Length);
+        for (int i = 1; i < textLines.Length; i++)
+        {
+            var line = textLines[i].TrimEnd('\r');
+            if (string.IsNullOrWhiteSpace(line)) continue;
+            messages.Add(new ChatLine(
+            [
+                new($"{indent}{line}", ChatColors.SystemAttr)
+            ]));
+        }
 
         if (channelName == _currentChannel)
         {

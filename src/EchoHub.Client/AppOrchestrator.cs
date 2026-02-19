@@ -414,6 +414,18 @@ public sealed class AppOrchestrator : IDisposable
 
             FetchAndUpdateOnlineUsers();
             SaveServerToConfig(result);
+
+            // Check for newer version in the background
+            _ = Task.Run(async () =>
+            {
+                var newVersion = await UpdateChecker.CheckForUpdateAsync();
+                if (newVersion is not null)
+                {
+                    InvokeUI(() => _mainWindow.AddSystemMessage(
+                        HubConstants.DefaultChannel,
+                        $"A new version of EchoHub is available: v{newVersion} (current: v{MainWindow.AppVersion}). Visit https://github.com/HueByte/EchoHub/releases"));
+                }
+            });
         }, "Connection failed", "Connect");
     }
 
