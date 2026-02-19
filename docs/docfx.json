@@ -41,19 +41,19 @@
       {
         "src": "_api_meta/core",
         "dest": "api/core",
-        "files": ["*.yml", ".manifest"],
+        "files": ["*.yml"],
         "exclude": ["toc.yml"]
       },
       {
         "src": "_api_meta/server",
         "dest": "api/server",
-        "files": ["*.yml", ".manifest"],
+        "files": ["*.yml"],
         "exclude": ["toc.yml"]
       },
       {
         "src": "_api_meta/client",
         "dest": "api/client",
-        "files": ["*.yml", ".manifest"],
+        "files": ["*.yml"],
         "exclude": ["toc.yml"]
       }
     ],
