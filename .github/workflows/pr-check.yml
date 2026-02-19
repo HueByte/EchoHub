@@ -11,16 +11,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run markdownlint-cli2
-        uses: DavidAnson/markdownlint-cli2-action@v19
-        with:
-          globs: |
-            **/*.md
-            !.dev/**
-            !docs/api/**
-            !**/node_modules/**
-            !**/bin/**
-            !**/obj/**
+      - name: Run markdownlint
+        run: bash scripts/lint-markdown.sh
 
   test:
     name: Build & Test

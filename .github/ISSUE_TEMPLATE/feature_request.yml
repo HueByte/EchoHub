@@ -1,0 +1,51 @@
+name: Feature request
+description: Suggest an idea or improvement
+title: "feat: "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement.
+
+        EchoHub tries to stay lightweight: terminal-first, self-hosted, and no upsells.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Client (TUI)
+        - Server (API/SignalR)
+        - Auth/security
+        - Files/uploads
+        - Docs
+        - Build/CI
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      placeholder: "It’s hard to..., because ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      placeholder: "Add/Change ..., so that ..."
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any other approaches you’ve thought about.
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Mockups, examples, links, etc.
