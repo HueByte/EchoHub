@@ -28,14 +28,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Check for src/ changes
         id: changes
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          git fetch origin ${{ github.base_ref }} --depth=1
-          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- 'src/' | wc -l)
+          git fetch origin "$BASE_REF" --depth=1
+          CHANGED=$(git diff --name-only "origin/$BASE_REF"...HEAD -- 'src/' | wc -l)
           if [ "$CHANGED" -gt 0 ]; then
             echo "src_changed=true" >> "$GITHUB_OUTPUT"
           else
@@ -47,6 +47,14 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
+
+      - name: Cache NuGet packages
+        if: steps.changes.outputs.src_changed == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('src/**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
 
       - name: Restore dependencies
         if: steps.changes.outputs.src_changed == 'true'

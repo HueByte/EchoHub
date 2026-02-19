@@ -17,6 +17,9 @@
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <EmbeddedResource Include="appsettings.json">
+      <LogicalName>EchoHub.Client.appsettings.json</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
   <PropertyGroup>

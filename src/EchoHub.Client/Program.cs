@@ -5,9 +5,22 @@ using Microsoft.Extensions.Configuration;
 using Serilog;
 using Terminal.Gui.App;
 
+var appSettingsPath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
+if (!File.Exists(appSettingsPath))
+{
+    using var stream = typeof(AppOrchestrator).Assembly
+        .GetManifestResourceStream("EchoHub.Client.appsettings.json");
+
+    if (stream is not null)
+    {
+        using var file = File.Create(appSettingsPath);
+        stream.CopyTo(file);
+    }
+}
+
 var configuration = new ConfigurationBuilder()
     .SetBasePath(AppContext.BaseDirectory)
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
     .Build();
 
 Log.Logger = new LoggerConfiguration()
