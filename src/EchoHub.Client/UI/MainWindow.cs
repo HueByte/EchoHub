@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using EchoHub.Client.Themes;
 using EchoHub.Core.DTOs;
@@ -30,6 +29,7 @@ public sealed class MainWindow : Runnable
     // Online users panel
     private readonly FrameView _usersFrame;
     private readonly ListView _usersList;
+    private readonly UserListSource _usersListSource;
     private bool _usersPanelVisible = true;
     private const int UsersPanelWidth = 22;
     private static readonly Key F2Key = Key.F2;
@@ -215,7 +215,8 @@ public sealed class MainWindow : Runnable
             Width = Dim.Fill(),
             Height = Dim.Fill()
         };
-        _usersList.SetSource(new ObservableCollection<string>());
+        _usersListSource = new UserListSource();
+        _usersList.Source = _usersListSource;
         _usersFrame.Add(_usersList);
         Add(_usersFrame);
 
@@ -679,7 +680,8 @@ public sealed class MainWindow : Runnable
         _chatFrame.Title = "Chat";
         _topicLabel.Visible = false;
         _chatFrame.Y = 1;
-        _usersList.SetSource(new ObservableCollection<string>());
+        _usersListSource.Update([]);
+        _usersList.Source = _usersListSource;
         _usersFrame.Title = "Users";
         RefreshMessages();
     }
@@ -805,10 +807,13 @@ public sealed class MainWindow : Runnable
                 ServerRole.Mod => "\u2740",   // ❀
                 _ => ""
             };
-            return $"{statusIcon} {roleTag}{name}";
+            var text = $"{statusIcon} {roleTag}{name}";
+            var nameColor = ColorHelper.ParseHexColor(u.NicknameColor);
+            return (text, nameColor);
         }).ToList();
 
-        _usersList.SetSource(new ObservableCollection<string>(displayItems));
+        _usersListSource.Update(displayItems);
+        _usersList.Source = _usersListSource;
         _usersFrame.Title = $"Users ({users.Count})";
     }
 

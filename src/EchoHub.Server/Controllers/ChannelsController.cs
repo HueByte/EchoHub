@@ -154,7 +154,7 @@ public class ChannelsController : ControllerBase
 
     [HttpPost("{channel}/upload")]
     [EnableRateLimiting("upload")]
-    public async Task<IActionResult> Upload(string channel)
+    public async Task<IActionResult> Upload(string channel, [FromQuery] string? size = null)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var usernameClaim = User.FindFirstValue("username");
@@ -190,8 +190,9 @@ public class ChannelsController : ControllerBase
 
         if (isImage)
         {
+            var (w, h) = ImageToAsciiService.GetDimensions(size);
             using var imageStream = System.IO.File.OpenRead(filePath);
-            content = _asciiService.ConvertToAscii(imageStream);
+            content = _asciiService.ConvertToAscii(imageStream, w, h);
         }
         else
         {
@@ -235,7 +236,7 @@ public class ChannelsController : ControllerBase
 
     [HttpPost("{channel}/send-url")]
     [EnableRateLimiting("upload")]
-    public async Task<IActionResult> SendUrl(string channel, [FromBody] SendUrlRequest request)
+    public async Task<IActionResult> SendUrl(string channel, [FromBody] SendUrlRequest request, [FromQuery] string? size = null)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var usernameClaim = User.FindFirstValue("username");
@@ -310,9 +311,10 @@ public class ChannelsController : ControllerBase
         var (fileId, filePath) = await _fileStorage.SaveFileAsync(memoryStream, fileName);
 
         string content;
+        var (w, h) = ImageToAsciiService.GetDimensions(size);
         using (var imageStream = System.IO.File.OpenRead(filePath))
         {
-            content = _asciiService.ConvertToAscii(imageStream);
+            content = _asciiService.ConvertToAscii(imageStream, w, h);
         }
 
         var attachmentUrl = $"/api/files/{fileId}";

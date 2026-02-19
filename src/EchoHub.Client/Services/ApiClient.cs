@@ -160,7 +160,7 @@ public sealed class ApiClient : IDisposable
         return result?.AvatarAscii;
     }
 
-    public async Task<MessageDto?> UploadFileAsync(string channelName, Stream fileStream, string fileName)
+    public async Task<MessageDto?> UploadFileAsync(string channelName, Stream fileStream, string fileName, string? size = null)
     {
         EnsureAuthenticated();
         using var content = new MultipartFormDataContent();
@@ -168,18 +168,20 @@ public sealed class ApiClient : IDisposable
         streamContent.Headers.ContentType = new MediaTypeHeaderValue(GetContentType(fileName));
         content.Add(streamContent, "file", fileName);
 
+        var sizeQuery = size is not null ? $"?size={size}" : "";
         var response = await AuthenticatedRequestAsync(() =>
-            _http.PostAsync($"/api/channels/{Uri.EscapeDataString(channelName)}/upload", content));
+            _http.PostAsync($"/api/channels/{Uri.EscapeDataString(channelName)}/upload{sizeQuery}", content));
         await EnsureSuccessAsync(response);
         return await response.Content.ReadFromJsonAsync<MessageDto>();
     }
 
-    public async Task<MessageDto?> SendUrlAsync(string channelName, string url)
+    public async Task<MessageDto?> SendUrlAsync(string channelName, string url, string? size = null)
     {
         EnsureAuthenticated();
         var request = new SendUrlRequest(url);
+        var sizeQuery = size is not null ? $"?size={size}" : "";
         var response = await AuthenticatedRequestAsync(() =>
-            _http.PostAsJsonAsync($"/api/channels/{Uri.EscapeDataString(channelName)}/send-url", request));
+            _http.PostAsJsonAsync($"/api/channels/{Uri.EscapeDataString(channelName)}/send-url{sizeQuery}", request));
         await EnsureSuccessAsync(response);
         return await response.Content.ReadFromJsonAsync<MessageDto>();
     }

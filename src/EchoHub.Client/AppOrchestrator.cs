@@ -117,7 +117,7 @@ public sealed class AppOrchestrator : IDisposable
             return Task.CompletedTask;
         };
 
-        _commandHandler.OnSendFile += async (target) =>
+        _commandHandler.OnSendFile += async (target, size) =>
         {
             if (!IsAuthenticated || !IsConnected) return;
 
@@ -129,13 +129,13 @@ public sealed class AppOrchestrator : IDisposable
                 if (Uri.TryCreate(target, UriKind.Absolute, out var uri)
                     && (uri.Scheme == "http" || uri.Scheme == "https"))
                 {
-                    await _apiClient!.SendUrlAsync(channel, target);
+                    await _apiClient!.SendUrlAsync(channel, target, size);
                 }
                 else
                 {
                     await using var stream = File.OpenRead(target);
                     var fileName = Path.GetFileName(target);
-                    await _apiClient!.UploadFileAsync(channel, stream, fileName);
+                    await _apiClient!.UploadFileAsync(channel, stream, fileName, size);
                 }
             }
             catch (Exception ex)

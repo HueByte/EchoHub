@@ -9,6 +9,17 @@ namespace EchoHub.Server.Services;
 public class ImageToAsciiService
 {
     /// <summary>
+    /// Returns (width, height) dimensions for the given size code.
+    /// s = small (40x40), m = medium/default (80x80), l = large (120x120).
+    /// </summary>
+    public static (int Width, int Height) GetDimensions(string? size) => size?.ToLowerInvariant() switch
+    {
+        "s" => (40, 40),
+        "l" => (120, 120),
+        _ => (HubConstants.AsciiArtWidth, HubConstants.AsciiArtHeightHalfBlock),
+    };
+
+    /// <summary>
     /// Converts an image to ASCII art using half-block characters (▀▄█) with
     /// 24-bit ANSI foreground and background colors for 2x vertical resolution.
     /// Each character cell represents two vertical pixels.

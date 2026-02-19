@@ -214,7 +214,8 @@ public class ChatListSource : IListDataSource
         listView.Move(Math.Max(col - viewportX, 0), row);
 
         var chatLine = _lines[item];
-        var normalAttr = listView.GetAttributeForRole(selected ? VisualRole.Focus : VisualRole.Normal);
+        // Always use Normal — chat messages should not show focus/selection highlight
+        var normalAttr = listView.GetAttributeForRole(VisualRole.Normal);
         var mentionBg = chatLine.IsMention ? ChatColors.MentionHighlightAttr.Background : (Color?)null;
 
         int charPos = 0;
@@ -358,6 +359,85 @@ public class ChannelListSource : IListDataSource
         // Fill rest
         var fillAttr = selected ? focusAttr : listView.GetAttributeForRole(VisualRole.Normal);
         listView.SetAttribute(fillAttr);
+        while (drawnChars < width)
+        {
+            listView.AddRune(new Rune(' '));
+            drawnChars++;
+        }
+    }
+
+    public void Dispose() { }
+}
+
+/// <summary>
+/// Custom list data source for the online users panel with per-user nickname colors.
+/// </summary>
+public class UserListSource : IListDataSource
+{
+    private readonly List<(string Text, Attribute? NameColor)> _users = [];
+
+    public event NotifyCollectionChangedEventHandler? CollectionChanged;
+    public int Count => _users.Count;
+    public int MaxItemLength { get; private set; }
+    public bool SuspendCollectionChangedEvent { get; set; }
+
+    public void Update(List<(string Text, Attribute? NameColor)> users)
+    {
+        _users.Clear();
+        _users.AddRange(users);
+        MaxItemLength = users.Count > 0 ? users.Max(u => u.Text.Length) : 0;
+        if (!SuspendCollectionChangedEvent)
+            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+    }
+
+    public bool IsMarked(int item) => false;
+    public void SetMark(int item, bool value) { }
+    public IList ToList() => _users.Select(u => u.Text).ToList();
+
+    public void Render(ListView listView, bool selected, int item, int col, int row, int width, int viewportX = 0)
+    {
+        listView.Move(Math.Max(col - viewportX, 0), row);
+
+        var (text, nameColor) = _users[item];
+        var normalAttr = listView.GetAttributeForRole(selected ? VisualRole.Focus : VisualRole.Normal);
+
+        // Find where the name starts (after status icon + space + optional role badge)
+        // Format: "● ★Username" or "● Username"
+        int nameStart = 0;
+        int i = 0;
+        // Skip status icon
+        while (i < text.Length && !char.IsLetterOrDigit(text[i]) && text[i] != '_') i++;
+        nameStart = i;
+
+        int drawnChars = 0;
+
+        // Draw prefix (status icon + role badge) in normal color
+        var prefixAttr = normalAttr;
+        for (int c = 0; c < nameStart && c < text.Length; c++)
+        {
+            if (drawnChars < width)
+            {
+                listView.SetAttribute(prefixAttr);
+                listView.AddRune(new Rune(text[c]));
+                drawnChars++;
+            }
+        }
+
+        // Draw name in nickname color
+        var userAttr = nameColor ?? normalAttr;
+        if (selected) userAttr = normalAttr; // use focus attr when selected
+        for (int c = nameStart; c < text.Length; c++)
+        {
+            if (drawnChars < width)
+            {
+                listView.SetAttribute(userAttr);
+                listView.AddRune(new Rune(text[c]));
+                drawnChars++;
+            }
+        }
+
+        // Fill rest
+        listView.SetAttribute(normalAttr);
         while (drawnChars < width)
         {
             listView.AddRune(new Rune(' '));

@@ -10,7 +10,7 @@ public class CommandHandler
     public event Func<string, Task>? OnSetNick;
     public event Func<string, Task>? OnSetColor;
     public event Func<string, Task>? OnSetTheme;
-    public event Func<string, Task>? OnSendFile;
+    public event Func<string, string?, Task>? OnSendFile;
     public event Func<string?, Task>? OnOpenProfile;
     public event Func<Task>? OnOpenServers;
     public event Func<string, Task>? OnJoinChannel;
@@ -134,15 +134,31 @@ public class CommandHandler
     private async Task<CommandResult> HandleSend(string args)
     {
         if (string.IsNullOrWhiteSpace(args))
-            return new CommandResult(true, "Usage: /send <filepath or URL>", IsError: true);
+            return new CommandResult(true, "Usage: /send <filepath or URL> [-s|-m|-l]", IsError: true);
 
-        var target = args.Trim().Trim('"');
+        // Parse optional size flag (-s, -m, -l)
+        string? size = null;
+        var parts = args.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var targetParts = new List<string>();
+
+        foreach (var part in parts)
+        {
+            if (part is "-s" or "-m" or "-l")
+                size = part[1..]; // "s", "m", or "l"
+            else
+                targetParts.Add(part);
+        }
+
+        var target = string.Join(' ', targetParts).Trim('"');
+
+        if (string.IsNullOrWhiteSpace(target))
+            return new CommandResult(true, "Usage: /send <filepath or URL> [-s|-m|-l]", IsError: true);
 
         if (Uri.TryCreate(target, UriKind.Absolute, out var uri)
             && (uri.Scheme == "http" || uri.Scheme == "https"))
         {
             if (OnSendFile is not null)
-                await OnSendFile(target);
+                await OnSendFile(target, size);
             var fileName = Path.GetFileName(uri.LocalPath);
             if (string.IsNullOrWhiteSpace(fileName))
                 fileName = "image";
@@ -153,7 +169,7 @@ public class CommandHandler
             return new CommandResult(true, $"File not found: {target}", IsError: true);
 
         if (OnSendFile is not null)
-            await OnSendFile(target);
+            await OnSendFile(target, size);
         return new CommandResult(true, $"Uploading: {Path.GetFileName(target)}...");
     }
 
@@ -326,7 +342,7 @@ public class CommandHandler
               /nick <name>                         - Set display name
               /color <#hex>                        - Set nickname color
               /theme <name>                        - Switch theme
-              /send <filepath or URL>               - Send a file or image
+              /send <filepath or URL> [-s|-m|-l]      - Send a file or image (size: small/medium/large)
               /avatar <URL or filepath>             - Set your avatar
               /profile [username]                   - View a profile
               /servers                             - Open saved servers
