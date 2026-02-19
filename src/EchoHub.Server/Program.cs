@@ -202,8 +202,28 @@ while (true)
             }
         }, heartbeatCts.Token);
 
-        // ── Enumerate hosted services (DI resolution) ────────────────────
-        Console.Error.WriteLine("[DIAG] Resolving IHostedService instances from DI...");
+        // ── Resolve singletons one-by-one to find which one hangs ────────
+        Console.Error.WriteLine("[DIAG] Resolving PresenceTracker...");
+        _ = app.Services.GetRequiredService<PresenceTracker>();
+        Console.Error.WriteLine("[DIAG] PresenceTracker OK.");
+
+        Console.Error.WriteLine("[DIAG] Resolving JwtTokenService...");
+        _ = app.Services.GetRequiredService<JwtTokenService>();
+        Console.Error.WriteLine("[DIAG] JwtTokenService OK.");
+
+        Console.Error.WriteLine("[DIAG] Resolving FileStorageService...");
+        _ = app.Services.GetRequiredService<FileStorageService>();
+        Console.Error.WriteLine("[DIAG] FileStorageService OK.");
+
+        Console.Error.WriteLine("[DIAG] Resolving IChatBroadcaster...");
+        _ = app.Services.GetServices<IChatBroadcaster>().ToList();
+        Console.Error.WriteLine("[DIAG] IChatBroadcaster OK.");
+
+        Console.Error.WriteLine("[DIAG] Resolving IChatService...");
+        _ = app.Services.GetRequiredService<IChatService>();
+        Console.Error.WriteLine("[DIAG] IChatService OK.");
+
+        Console.Error.WriteLine("[DIAG] Resolving IHostedService instances...");
         var hostedServices = app.Services.GetServices<IHostedService>().ToList();
         Console.Error.WriteLine($"[DIAG] Found {hostedServices.Count} hosted services:");
         foreach (var svc in hostedServices)
