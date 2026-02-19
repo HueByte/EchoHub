@@ -37,6 +37,11 @@ public sealed class IrcGatewayService : BackgroundService
             .Where(c => c.IsAuthenticated && c.JoinedChannels.Contains(channelName));
     }
 
+    public IEnumerable<IrcClientConnection> GetAllConnections()
+    {
+        return _connections.Values.Where(c => c.IsAuthenticated);
+    }
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Task.Yield();

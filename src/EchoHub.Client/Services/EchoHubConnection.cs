@@ -14,6 +14,10 @@ public sealed class EchoHubConnection : IAsyncDisposable
     public event Action<string, string>? OnUserLeft;
     public event Action<ChannelDto>? OnChannelUpdated;
     public event Action<UserPresenceDto>? OnUserStatusChanged;
+    public event Action<string, string, string?>? OnUserKicked;
+    public event Action<string, string?>? OnUserBanned;
+    public event Action<string, Guid>? OnMessageDeleted;
+    public event Action<string>? OnChannelNuked;
     public event Action<string>? OnError;
     public event Action<string>? OnConnectionStateChanged;
     public event Action? OnReconnected;
@@ -79,6 +83,26 @@ public sealed class EchoHubConnection : IAsyncDisposable
         _connection.On<UserPresenceDto>(nameof(Core.Contracts.IEchoHubClient.UserStatusChanged), presence =>
         {
             OnUserStatusChanged?.Invoke(presence);
+        });
+
+        _connection.On<string, string, string?>(nameof(Core.Contracts.IEchoHubClient.UserKicked), (channelName, username, reason) =>
+        {
+            OnUserKicked?.Invoke(channelName, username, reason);
+        });
+
+        _connection.On<string, string?>(nameof(Core.Contracts.IEchoHubClient.UserBanned), (username, reason) =>
+        {
+            OnUserBanned?.Invoke(username, reason);
+        });
+
+        _connection.On<string, Guid>(nameof(Core.Contracts.IEchoHubClient.MessageDeleted), (channelName, messageId) =>
+        {
+            OnMessageDeleted?.Invoke(channelName, messageId);
+        });
+
+        _connection.On<string>(nameof(Core.Contracts.IEchoHubClient.ChannelNuked), channelName =>
+        {
+            OnChannelNuked?.Invoke(channelName);
         });
 
         _connection.On<string>(nameof(Core.Contracts.IEchoHubClient.Error), message =>

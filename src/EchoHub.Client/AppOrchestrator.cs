@@ -76,6 +76,7 @@ public sealed class AppOrchestrator : IDisposable
         _mainWindow.OnThemeSelected += HandleThemeSelected;
         _mainWindow.OnSavedServersRequested += HandleSavedServersRequested;
         _mainWindow.OnCreateChannelRequested += HandleCreateChannelRequested;
+        _mainWindow.OnDeleteChannelRequested += HandleDeleteChannelRequested;
     }
 
     // ── Command Handler Wiring ─────────────────────────────────────────────
@@ -292,6 +293,56 @@ public sealed class AppOrchestrator : IDisposable
             }
         };
 
+        _commandHandler.OnKickUser += async (username, reason) =>
+        {
+            if (!IsAuthenticated) return;
+            await _apiClient!.KickUserAsync(username, reason);
+        };
+
+        _commandHandler.OnBanUser += async (username, reason) =>
+        {
+            if (!IsAuthenticated) return;
+            await _apiClient!.BanUserAsync(username, reason);
+        };
+
+        _commandHandler.OnUnbanUser += async (username) =>
+        {
+            if (!IsAuthenticated) return;
+            await _apiClient!.UnbanUserAsync(username);
+        };
+
+        _commandHandler.OnMuteUser += async (username, duration) =>
+        {
+            if (!IsAuthenticated) return;
+            await _apiClient!.MuteUserAsync(username, duration);
+        };
+
+        _commandHandler.OnUnmuteUser += async (username) =>
+        {
+            if (!IsAuthenticated) return;
+            await _apiClient!.UnmuteUserAsync(username);
+        };
+
+        _commandHandler.OnAssignRole += async (username, roleStr) =>
+        {
+            if (!IsAuthenticated) return;
+            var role = roleStr switch
+            {
+                "admin" => ServerRole.Admin,
+                "mod" => ServerRole.Mod,
+                _ => ServerRole.Member,
+            };
+            await _apiClient!.AssignRoleAsync(username, role);
+        };
+
+        _commandHandler.OnNukeChannel += async () =>
+        {
+            if (!IsAuthenticated) return;
+            var channel = _mainWindow.CurrentChannel;
+            if (string.IsNullOrEmpty(channel)) return;
+            await _apiClient!.NukeChannelAsync(channel);
+        };
+
         _commandHandler.OnQuit += () =>
         {
             InvokeUI(() => _app.RequestStop());
@@ -361,6 +412,7 @@ public sealed class AppOrchestrator : IDisposable
                 // History might not be available
             }
 
+            FetchAndUpdateOnlineUsers();
             SaveServerToConfig(result);
         }, "Connection failed", "Connect");
     }
@@ -440,6 +492,8 @@ public sealed class AppOrchestrator : IDisposable
             {
                 // History might not be available
             }
+
+            FetchAndUpdateOnlineUsers();
         }, "Failed to join channel");
     }
 
@@ -524,6 +578,45 @@ public sealed class AppOrchestrator : IDisposable
                     _mainWindow.SetCurrentUser(editResult.DisplayName);
                     _mainWindow.UpdateStatusBar("Connected");
                 });
+            }
+
+            // Upload avatar if specified
+            if (editResult.AvatarPath is not null)
+            {
+                try
+                {
+                    Stream stream;
+                    string fileName;
+
+                    if (Uri.TryCreate(editResult.AvatarPath, UriKind.Absolute, out var uri)
+                        && (uri.Scheme == "http" || uri.Scheme == "https"))
+                    {
+                        using var http = new HttpClient();
+                        var bytes = await http.GetByteArrayAsync(uri);
+                        stream = new MemoryStream(bytes);
+                        fileName = Path.GetFileName(uri.LocalPath);
+                        if (string.IsNullOrWhiteSpace(fileName) || !fileName.Contains('.'))
+                            fileName = "avatar.png";
+                    }
+                    else
+                    {
+                        stream = File.OpenRead(editResult.AvatarPath);
+                        fileName = Path.GetFileName(editResult.AvatarPath);
+                    }
+
+                    await using (stream)
+                    {
+                        await _apiClient!.UploadAvatarAsync(stream, fileName);
+                        var channel = _mainWindow.CurrentChannel;
+                        if (!string.IsNullOrEmpty(channel))
+                            InvokeUI(() => _mainWindow.AddSystemMessage(channel, "Avatar updated."));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Avatar upload failed for {Target}", editResult.AvatarPath);
+                    InvokeUI(() => _mainWindow.ShowError($"Avatar upload failed: {ex.Message}"));
+                }
             }
 
             _config.DefaultPreset = new AccountPreset
@@ -617,6 +710,47 @@ public sealed class AppOrchestrator : IDisposable
         }, "Failed to create channel");
     }
 
+    private void HandleDeleteChannelRequested()
+    {
+        if (!IsAuthenticated || !IsConnected)
+        {
+            _mainWindow.ShowError("Not connected to a server.");
+            return;
+        }
+
+        var channel = _mainWindow.CurrentChannel;
+        if (string.IsNullOrEmpty(channel))
+        {
+            _mainWindow.ShowError("No channel selected.");
+            return;
+        }
+
+        if (channel == HubConstants.DefaultChannel)
+        {
+            _mainWindow.ShowError($"The #{HubConstants.DefaultChannel} channel cannot be deleted.");
+            return;
+        }
+
+        var confirm = MessageBox.Query(_app, "Delete Channel",
+            $"Are you sure you want to delete #{channel}?\nThis will remove all messages permanently.", "Delete", "Cancel");
+
+        if (confirm != 0) return;
+
+        RunAsync(async () =>
+        {
+            await _apiClient!.DeleteChannelAsync(channel);
+            _joinedChannels.Remove(channel);
+
+            var channels = await _apiClient.GetChannelsAsync();
+            InvokeUI(() =>
+            {
+                _mainWindow.SetChannels(channels);
+                _mainWindow.SwitchToChannel(HubConstants.DefaultChannel);
+                _mainWindow.AddSystemMessage(HubConstants.DefaultChannel, $"Channel #{channel} has been deleted.");
+            });
+        }, "Failed to delete channel");
+    }
+
     // ── Connection Event Wiring ────────────────────────────────────────────
 
     private void WireConnectionEvents(EchoHubConnection connection)
@@ -625,10 +759,18 @@ public sealed class AppOrchestrator : IDisposable
             InvokeUI(() => _mainWindow.AddMessage(message));
 
         connection.OnUserJoined += (channelName, username) =>
+        {
             InvokeUI(() => _mainWindow.AddSystemMessage(channelName, $"{username} joined the channel"));
+            if (channelName == _mainWindow.CurrentChannel)
+                FetchAndUpdateOnlineUsers();
+        };
 
         connection.OnUserLeft += (channelName, username) =>
+        {
             InvokeUI(() => _mainWindow.AddSystemMessage(channelName, $"{username} left the channel"));
+            if (channelName == _mainWindow.CurrentChannel)
+                FetchAndUpdateOnlineUsers();
+        };
 
         connection.OnUserStatusChanged += presence =>
         {
@@ -641,6 +783,49 @@ public sealed class AppOrchestrator : IDisposable
 
                 foreach (var channelName in _mainWindow.GetChannelNames())
                     _mainWindow.AddStatusMessage(channelName, displayName, statusText);
+            });
+            FetchAndUpdateOnlineUsers();
+        };
+
+        connection.OnUserKicked += (channelName, username, reason) =>
+        {
+            var reasonText = reason is not null ? $" ({reason})" : "";
+            InvokeUI(() =>
+            {
+                _mainWindow.AddSystemMessage(channelName, $"{username} was kicked{reasonText}");
+                if (username.Equals(_currentUsername, StringComparison.OrdinalIgnoreCase))
+                {
+                    _mainWindow.AddSystemMessage(channelName, "You were kicked from this channel.");
+                }
+            });
+        };
+
+        connection.OnUserBanned += (username, reason) =>
+        {
+            InvokeUI(() =>
+            {
+                if (username.Equals(_currentUsername, StringComparison.OrdinalIgnoreCase))
+                {
+                    _mainWindow.ShowError("You have been banned from this server.");
+                    HandleDisconnect();
+                }
+            });
+        };
+
+        connection.OnMessageDeleted += (channelName, messageId) =>
+        {
+            InvokeUI(() =>
+            {
+                _mainWindow.RemoveMessage(channelName, messageId);
+            });
+        };
+
+        connection.OnChannelNuked += channelName =>
+        {
+            InvokeUI(() =>
+            {
+                _mainWindow.ClearChannelMessages(channelName);
+                _mainWindow.AddSystemMessage(channelName, "Channel history has been cleared by a moderator.");
             });
         };
 
@@ -672,6 +857,25 @@ public sealed class AppOrchestrator : IDisposable
     }
 
     // ── Private Helpers ────────────────────────────────────────────────────
+
+    private void FetchAndUpdateOnlineUsers()
+    {
+        var channel = _mainWindow.CurrentChannel;
+        if (string.IsNullOrEmpty(channel) || !IsConnected) return;
+
+        Task.Run(async () =>
+        {
+            try
+            {
+                var users = await _connection!.GetOnlineUsersAsync(channel);
+                InvokeUI(() => _mainWindow.UpdateOnlineUsers(users));
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "Failed to fetch online users for {Channel}", channel);
+            }
+        });
+    }
 
     private void SaveServerToConfig(ConnectDialogResult result)
     {

@@ -34,6 +34,7 @@ public class EchoHubDbContext : DbContext
             entity.Property(u => u.NicknameColor).HasMaxLength(7);
             entity.Property(u => u.AvatarAscii).HasMaxLength(10000);
             entity.Property(u => u.StatusMessage).HasMaxLength(100);
+            entity.Property(u => u.Role).HasConversion<int>();
         });
 
         modelBuilder.Entity<Channel>(entity =>

@@ -54,6 +54,18 @@ public class SignalRBroadcaster : IChatBroadcaster
         return HubContext.Clients.Clients(connections).UserStatusChanged(presence);
     }
 
+    public Task SendUserKickedAsync(string channelName, string username, string? reason)
+        => HubContext.Clients.Group(channelName).UserKicked(channelName, username, reason);
+
+    public Task SendUserBannedAsync(string username, string? reason)
+        => HubContext.Clients.All.UserBanned(username, reason);
+
+    public Task SendMessageDeletedAsync(string channelName, Guid messageId)
+        => HubContext.Clients.Group(channelName).MessageDeleted(channelName, messageId);
+
+    public Task SendChannelNukedAsync(string channelName)
+        => HubContext.Clients.Group(channelName).ChannelNuked(channelName);
+
     public Task SendErrorAsync(string connectionId, string message)
     {
         if (connectionId.StartsWith("irc-"))

@@ -72,7 +72,8 @@ public class ChatService : IChatService
                     user.DisplayName,
                     user.NicknameColor,
                     UserStatus.Invisible,
-                    user.StatusMessage);
+                    user.StatusMessage,
+                    user.Role);
 
                 await BroadcastToAllAsync(b => b.SendUserStatusChangedAsync(channelsBeforeDisconnect, presence));
             }
@@ -139,6 +140,21 @@ public class ChatService : IChatService
 
         var sender = await db.Users.FindAsync(userId);
 
+        // Check mute status
+        if (sender is not null && sender.IsMuted)
+        {
+            if (sender.MutedUntil.HasValue && sender.MutedUntil.Value <= DateTimeOffset.UtcNow)
+            {
+                sender.IsMuted = false;
+                sender.MutedUntil = null;
+                await db.SaveChangesAsync();
+            }
+            else
+            {
+                return "You are muted and cannot send messages.";
+            }
+        }
+
         var message = new Message
         {
             Id = Guid.NewGuid(),
@@ -203,7 +219,8 @@ public class ChatService : IChatService
             user.DisplayName,
             user.NicknameColor,
             status,
-            statusMessage);
+            statusMessage,
+            user.Role);
 
         var channels = _presenceTracker.GetChannelsForUser(username);
         await BroadcastToAllAsync(b => b.SendUserStatusChangedAsync(channels, presence));
@@ -226,7 +243,8 @@ public class ChatService : IChatService
                 u.DisplayName,
                 u.NicknameColor,
                 u.Status,
-                u.StatusMessage))
+                u.StatusMessage,
+                u.Role))
             .ToListAsync();
     }
 
@@ -264,7 +282,7 @@ public class ChatService : IChatService
         return new UserProfileDto(
             user.Id, user.Username, user.DisplayName, user.Bio,
             user.NicknameColor, user.AvatarAscii, user.Status,
-            user.StatusMessage, user.CreatedAt, user.LastSeenAt);
+            user.StatusMessage, user.Role, user.CreatedAt, user.LastSeenAt);
     }
 
     public async Task<(string? Topic, bool Exists)> GetChannelTopicAsync(string channelName)

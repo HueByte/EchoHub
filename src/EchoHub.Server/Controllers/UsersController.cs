@@ -120,6 +120,7 @@ public class UsersController : ControllerBase
         user.AvatarAscii,
         user.Status,
         user.StatusMessage,
+        user.Role,
         user.CreatedAt,
         user.LastSeenAt);
 }

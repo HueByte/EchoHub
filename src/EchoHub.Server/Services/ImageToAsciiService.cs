@@ -8,47 +8,72 @@ namespace EchoHub.Server.Services;
 
 public class ImageToAsciiService
 {
-    private static readonly char[] AsciiChars = " .:-=+*#%@".ToCharArray();
-
-    public string ConvertToAscii(Stream imageStream, int width = HubConstants.AsciiArtWidth, int height = HubConstants.AsciiArtHeight)
+    /// <summary>
+    /// Converts an image to ASCII art using half-block characters (▀▄█) with
+    /// 24-bit ANSI foreground and background colors for 2x vertical resolution.
+    /// Each character cell represents two vertical pixels.
+    /// </summary>
+    public string ConvertToAscii(Stream imageStream, int width = HubConstants.AsciiArtWidth, int height = HubConstants.AsciiArtHeightHalfBlock)
     {
         using var image = Image.Load<Rgba32>(imageStream);
+
+        // Ensure height is even for pair processing
+        if (height % 2 != 0) height++;
 
         image.Mutate(x => x.Resize(width, height));
 
         var sb = new StringBuilder();
 
-        byte lastR = 0, lastG = 0, lastB = 0;
-        bool hasLastColor = false;
-
-        for (int y = 0; y < image.Height; y++)
+        for (int y = 0; y < image.Height; y += 2)
         {
+            byte lastFgR = 0, lastFgG = 0, lastFgB = 0;
+            byte lastBgR = 0, lastBgG = 0, lastBgB = 0;
+            bool hasLastColor = false;
+
             for (int x = 0; x < image.Width; x++)
             {
-                var pixel = image[x, y];
-                var brightness = 0.299 * pixel.R + 0.587 * pixel.G + 0.114 * pixel.B;
+                var topPixel = image[x, y];
+                var bottomPixel = (y + 1 < image.Height) ? image[x, y + 1] : topPixel;
 
-                // Map brightness (0-255) to ASCII char index
-                var index = (int)((brightness / 255.0) * (AsciiChars.Length - 1));
+                byte fgR, fgG, fgB, bgR, bgG, bgB;
+                char blockChar;
 
-                // Emit ANSI 24-bit color only when it changes
-                if (!hasLastColor || pixel.R != lastR || pixel.G != lastG || pixel.B != lastB)
+                if (topPixel.R == bottomPixel.R && topPixel.G == bottomPixel.G && topPixel.B == bottomPixel.B)
                 {
-                    sb.Append($"\x1b[38;2;{pixel.R};{pixel.G};{pixel.B}m");
-                    lastR = pixel.R;
-                    lastG = pixel.G;
-                    lastB = pixel.B;
-                    hasLastColor = true;
+                    // Both pixels same color — full block
+                    fgR = topPixel.R; fgG = topPixel.G; fgB = topPixel.B;
+                    bgR = topPixel.R; bgG = topPixel.G; bgB = topPixel.B;
+                    blockChar = '\u2588'; // █
+                }
+                else
+                {
+                    // Top pixel = foreground, bottom pixel = background, upper half block
+                    fgR = topPixel.R; fgG = topPixel.G; fgB = topPixel.B;
+                    bgR = bottomPixel.R; bgG = bottomPixel.G; bgB = bottomPixel.B;
+                    blockChar = '\u2580'; // ▀
                 }
 
-                sb.Append(AsciiChars[index]);
+                // Emit color codes only when they change
+                bool fgChanged = !hasLastColor || fgR != lastFgR || fgG != lastFgG || fgB != lastFgB;
+                bool bgChanged = !hasLastColor || bgR != lastBgR || bgG != lastBgG || bgB != lastBgB;
+
+                if (fgChanged)
+                    sb.Append($"\x1b[38;2;{fgR};{fgG};{fgB}m");
+                if (bgChanged)
+                    sb.Append($"\x1b[48;2;{bgR};{bgG};{bgB}m");
+
+                sb.Append(blockChar);
+
+                lastFgR = fgR; lastFgG = fgG; lastFgB = fgB;
+                lastBgR = bgR; lastBgG = bgG; lastBgB = bgB;
+                hasLastColor = true;
             }
 
             // Reset color at end of line
             sb.Append("\x1b[0m");
             hasLastColor = false;
 
-            if (y < image.Height - 1)
+            if (y + 2 < image.Height)
             {
                 sb.AppendLine();
             }

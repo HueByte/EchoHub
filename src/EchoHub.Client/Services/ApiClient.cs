@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using EchoHub.Core.DTOs;
+using EchoHub.Core.Models;
 
 namespace EchoHub.Client.Services;
 
@@ -208,6 +209,72 @@ public sealed class ApiClient : IDisposable
         EnsureAuthenticated();
         var response = await AuthenticatedRequestAsync(() =>
             _http.DeleteAsync($"/api/channels/{Uri.EscapeDataString(channelName)}"));
+        await EnsureSuccessAsync(response);
+    }
+
+    // ── Moderation ────────────────────────────────────────────────────────
+
+    public async Task AssignRoleAsync(string username, ServerRole role)
+    {
+        EnsureAuthenticated();
+        var response = await AuthenticatedRequestAsync(() =>
+            _http.PostAsJsonAsync("/api/moderation/role", new AssignRoleRequest(username, role)));
+        await EnsureSuccessAsync(response);
+    }
+
+    public async Task KickUserAsync(string username, string? reason = null)
+    {
+        EnsureAuthenticated();
+        var response = await AuthenticatedRequestAsync(() =>
+            _http.PostAsJsonAsync($"/api/moderation/kick/{Uri.EscapeDataString(username)}", new KickRequest(reason)));
+        await EnsureSuccessAsync(response);
+    }
+
+    public async Task BanUserAsync(string username, string? reason = null)
+    {
+        EnsureAuthenticated();
+        var response = await AuthenticatedRequestAsync(() =>
+            _http.PostAsJsonAsync($"/api/moderation/ban/{Uri.EscapeDataString(username)}", new BanRequest(reason)));
+        await EnsureSuccessAsync(response);
+    }
+
+    public async Task UnbanUserAsync(string username)
+    {
+        EnsureAuthenticated();
+        var response = await AuthenticatedRequestAsync(() =>
+            _http.PostAsJsonAsync($"/api/moderation/unban/{Uri.EscapeDataString(username)}", new {}));
+        await EnsureSuccessAsync(response);
+    }
+
+    public async Task MuteUserAsync(string username, int? durationMinutes = null, string? reason = null)
+    {
+        EnsureAuthenticated();
+        var response = await AuthenticatedRequestAsync(() =>
+            _http.PostAsJsonAsync($"/api/moderation/mute/{Uri.EscapeDataString(username)}", new MuteRequest(reason, durationMinutes)));
+        await EnsureSuccessAsync(response);
+    }
+
+    public async Task UnmuteUserAsync(string username)
+    {
+        EnsureAuthenticated();
+        var response = await AuthenticatedRequestAsync(() =>
+            _http.PostAsJsonAsync($"/api/moderation/unmute/{Uri.EscapeDataString(username)}", new {}));
+        await EnsureSuccessAsync(response);
+    }
+
+    public async Task DeleteMessageAsync(Guid messageId)
+    {
+        EnsureAuthenticated();
+        var response = await AuthenticatedRequestAsync(() =>
+            _http.DeleteAsync($"/api/moderation/messages/{messageId}"));
+        await EnsureSuccessAsync(response);
+    }
+
+    public async Task NukeChannelAsync(string channelName)
+    {
+        EnsureAuthenticated();
+        var response = await AuthenticatedRequestAsync(() =>
+            _http.DeleteAsync($"/api/moderation/channels/{Uri.EscapeDataString(channelName)}/nuke"));
         await EnsureSuccessAsync(response);
     }
 

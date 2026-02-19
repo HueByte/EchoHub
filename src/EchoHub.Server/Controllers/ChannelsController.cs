@@ -141,8 +141,10 @@ public class ChannelsController : ControllerBase
         if (dbChannel is null)
             return NotFound(new ErrorResponse($"Channel '{channelName}' does not exist."));
 
-        if (dbChannel.CreatedByUserId != Guid.Parse(userIdClaim))
-            return StatusCode(403, new ErrorResponse("Only the channel creator can delete the channel."));
+        var userId = Guid.Parse(userIdClaim);
+        var caller = await _db.Users.FindAsync(userId);
+        if (dbChannel.CreatedByUserId != userId && (caller is null || caller.Role < ServerRole.Admin))
+            return StatusCode(403, new ErrorResponse("Only the channel creator or an admin can delete the channel."));
 
         _db.Channels.Remove(dbChannel);
         await _db.SaveChangesAsync();
