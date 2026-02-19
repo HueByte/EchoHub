@@ -202,6 +202,15 @@ while (true)
             }
         }, heartbeatCts.Token);
 
+        // ── Enumerate hosted services (DI resolution) ────────────────────
+        Console.Error.WriteLine("[DIAG] Resolving IHostedService instances from DI...");
+        var hostedServices = app.Services.GetServices<IHostedService>().ToList();
+        Console.Error.WriteLine($"[DIAG] Found {hostedServices.Count} hosted services:");
+        foreach (var svc in hostedServices)
+            Console.Error.WriteLine($"[DIAG]   - {svc.GetType().FullName}");
+        Console.Error.Flush();
+
+        // ── Start with per-service timing ─────────────────────────────────
         Console.Error.WriteLine("[DIAG] Calling app.StartAsync()...");
         await app.StartAsync();
         Console.Error.WriteLine("[DIAG] app.StartAsync() completed — server is running.");
