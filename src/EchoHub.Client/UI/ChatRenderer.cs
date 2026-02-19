@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Specialized;
-using System.Text;
 using System.Text.RegularExpressions;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.Text;
@@ -27,20 +26,14 @@ public partial class ChatLine
     public ChatLine(string plainText)
     {
         Segments = [new ChatSegment(plainText, null)];
-        TextLength = DisplayWidth(plainText);
+        TextLength = plainText.GetColumns();
     }
 
     public ChatLine(List<ChatSegment> segments)
     {
         Segments = segments;
-        TextLength = segments.Sum(s => DisplayWidth(s.Text));
+        TextLength = segments.Sum(s => s.Text.GetColumns());
     }
-
-    /// <summary>
-    /// Compute the display column width of a string, accounting for wide characters (emoji, CJK).
-    /// </summary>
-    private static int DisplayWidth(string text) =>
-        text.EnumerateRunes().Sum(r => Math.Max(r.GetColumns(), 1));
 
     public override string ToString() => string.Concat(Segments.Select(s => s.Text));
 
@@ -60,20 +53,18 @@ public partial class ChatLine
         foreach (var segment in Segments)
         {
             var text = segment.Text;
-            int chunkStart = 0; // char index where current chunk starts
+            int chunkStart = 0;
             int charPos = 0;
 
-            foreach (var rune in text.EnumerateRunes())
+            foreach (var grapheme in GraphemeHelper.GetGraphemes(text))
             {
-                var runeCols = Math.Max(rune.GetColumns(), 1);
+                var graphemeCols = Math.Max(grapheme.GetColumns(), 1);
 
-                if (col + runeCols > width)
+                if (col + graphemeCols > width)
                 {
-                    // Flush accumulated text from this segment chunk
                     if (charPos > chunkStart)
                         currentSegments.Add(new ChatSegment(text[chunkStart..charPos], segment.Color));
 
-                    // Emit current line and start a new one
                     results.Add(new ChatLine(currentSegments));
                     currentSegments = [];
 
@@ -90,11 +81,10 @@ public partial class ChatLine
                     chunkStart = charPos;
                 }
 
-                col += runeCols;
-                charPos += rune.Utf16SequenceLength;
+                col += graphemeCols;
+                charPos += grapheme.Length;
             }
 
-            // Flush remaining chunk of this segment
             if (chunkStart < text.Length)
                 currentSegments.Add(new ChatSegment(text[chunkStart..], segment.Color));
         }
@@ -143,7 +133,6 @@ public partial class ChatLine
 
             if (match.Groups[1].Success)
             {
-                // Reset {X}
                 currentFg = null;
                 currentBg = null;
             }
@@ -172,13 +161,12 @@ public partial class ChatLine
         return segments.Count > 0 ? new ChatLine(segments) : new ChatLine("");
     }
 
-    // {X} (reset), {F:RRGGBB} (foreground), {B:RRGGBB} (background)
     [GeneratedRegex(@"\{(?:(X)|(?:(F|B):([0-9A-Fa-f]{6})))\}")]
     private static partial Regex ColorTagRegex();
 }
 
 /// <summary>
-/// Custom list data source for chat messages with per-character coloring.
+/// Custom list data source for chat messages with per-segment coloring.
 /// </summary>
 public class ChatListSource : IListDataSource
 {
@@ -232,7 +220,6 @@ public class ChatListSource : IListDataSource
         listView.Move(Math.Max(col - viewportX, 0), row);
 
         var chatLine = _lines[item];
-        // Always use Normal — chat messages should not show focus/selection highlight
         var normalAttr = listView.GetAttributeForRole(VisualRole.Normal);
         var mentionBg = chatLine.IsMention ? ChatColors.MentionHighlightAttr.Background : (Color?)null;
 
@@ -242,32 +229,26 @@ public class ChatListSource : IListDataSource
         foreach (var segment in chatLine.Segments)
         {
             var attr = segment.Color ?? normalAttr;
-            // Override background for mention-highlighted lines
             if (mentionBg.HasValue)
                 attr = new Attribute(attr.Foreground, mentionBg.Value);
             listView.SetAttribute(attr);
 
-            foreach (var rune in segment.Text.EnumerateRunes())
+            foreach (var grapheme in GraphemeHelper.GetGraphemes(segment.Text))
             {
-                var cols = rune.GetColumns();
-                if (cols < 1) cols = 1;
+                var cols = Math.Max(grapheme.GetColumns(), 1);
                 if (charPos >= viewportX && drawnChars + cols <= width)
                 {
-                    listView.AddRune(rune);
+                    listView.AddStr(grapheme);
                     drawnChars += cols;
                 }
                 charPos += cols;
             }
         }
 
-        // Fill remaining width with spaces
         var fillAttr = mentionBg.HasValue ? new Attribute(normalAttr.Foreground, mentionBg.Value) : normalAttr;
         listView.SetAttribute(fillAttr);
-        while (drawnChars < width)
-        {
-            listView.AddRune(new Rune(' '));
-            drawnChars++;
-        }
+        for (int i = drawnChars; i < width; i++)
+            listView.AddStr(" ");
     }
 
     private void UpdateMaxLength(ChatLine line)
@@ -338,56 +319,30 @@ public class ChannelListSource : IListDataSource
 
         int drawnChars = 0;
 
-        // Use focus attr if this row is selected
         if (selected)
         {
             listView.SetAttribute(focusAttr);
-            foreach (var rune in (prefix + channelText + badge).EnumerateRunes())
-            {
-                var cols = Math.Max(rune.GetColumns(), 1);
-                if (drawnChars + cols <= width) { listView.AddRune(rune); drawnChars += cols; }
-            }
+            drawnChars = RenderHelpers.WriteText(listView, prefix + channelText + badge, drawnChars, width);
         }
         else
         {
-            // Prefix
-            var prefixAttr = isActive ? ActiveAttr : NormalAttr;
-            listView.SetAttribute(prefixAttr);
-            foreach (var rune in prefix.EnumerateRunes())
-            {
-                var cols = Math.Max(rune.GetColumns(), 1);
-                if (drawnChars + cols <= width) { listView.AddRune(rune); drawnChars += cols; }
-            }
+            listView.SetAttribute(isActive ? ActiveAttr : NormalAttr);
+            drawnChars = RenderHelpers.WriteText(listView, prefix, drawnChars, width);
 
-            // Channel name
-            var nameAttr = isActive ? ActiveAttr : hasUnread ? UnreadAttr : NormalAttr;
-            listView.SetAttribute(nameAttr);
-            foreach (var rune in channelText.EnumerateRunes())
-            {
-                var cols = Math.Max(rune.GetColumns(), 1);
-                if (drawnChars + cols <= width) { listView.AddRune(rune); drawnChars += cols; }
-            }
+            listView.SetAttribute(isActive ? ActiveAttr : hasUnread ? UnreadAttr : NormalAttr);
+            drawnChars = RenderHelpers.WriteText(listView, channelText, drawnChars, width);
 
-            // Unread badge
             if (hasUnread)
             {
                 listView.SetAttribute(BadgeAttr);
-                foreach (var rune in badge.EnumerateRunes())
-                {
-                    var cols = Math.Max(rune.GetColumns(), 1);
-                    if (drawnChars + cols <= width) { listView.AddRune(rune); drawnChars += cols; }
-                }
+                drawnChars = RenderHelpers.WriteText(listView, badge, drawnChars, width);
             }
         }
 
-        // Fill rest
         var fillAttr = selected ? focusAttr : listView.GetAttributeForRole(VisualRole.Normal);
         listView.SetAttribute(fillAttr);
-        while (drawnChars < width)
-        {
-            listView.AddRune(new Rune(' '));
-            drawnChars++;
-        }
+        for (int i = drawnChars; i < width; i++)
+            listView.AddStr(" ");
     }
 
     public void Dispose() { }
@@ -409,7 +364,7 @@ public class UserListSource : IListDataSource
     {
         _users.Clear();
         _users.AddRange(users);
-        MaxItemLength = users.Count > 0 ? users.Max(u => u.Text.Length) : 0;
+        MaxItemLength = users.Count > 0 ? users.Max(u => u.Text.GetColumns()) : 0;
         if (!SuspendCollectionChangedEvent)
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
     }
@@ -425,54 +380,70 @@ public class UserListSource : IListDataSource
         var (text, nameColor) = _users[item];
         var normalAttr = listView.GetAttributeForRole(selected ? VisualRole.Focus : VisualRole.Normal);
 
-        // Convert to runes for safe surrogate handling
-        var runes = text.EnumerateRunes().ToArray();
-
         // Find where the name starts (after status icon + space + optional role badge)
         // Format: "● ★Username" or "● Username"
+        var graphemes = GraphemeHelper.GetGraphemes(text).ToList();
         int nameStart = 0;
-        while (nameStart < runes.Length && !Rune.IsLetterOrDigit(runes[nameStart]) && runes[nameStart].Value != '_')
+        while (nameStart < graphemes.Count)
+        {
+            var g = graphemes[nameStart];
+            if (g.Length > 0 && (char.IsLetterOrDigit(g[0]) || g[0] == '_'))
+                break;
             nameStart++;
+        }
 
         int drawnChars = 0;
 
         // Draw prefix (status icon + role badge) in normal color
-        var prefixAttr = normalAttr;
-        for (int c = 0; c < nameStart && c < runes.Length; c++)
+        listView.SetAttribute(normalAttr);
+        for (int i = 0; i < nameStart; i++)
         {
-            var cols = Math.Max(runes[c].GetColumns(), 1);
-            if (drawnChars + cols <= width)
-            {
-                listView.SetAttribute(prefixAttr);
-                listView.AddRune(runes[c]);
-                drawnChars += cols;
-            }
+            var cols = Math.Max(graphemes[i].GetColumns(), 1);
+            if (drawnChars + cols > width) break;
+            listView.AddStr(graphemes[i]);
+            drawnChars += cols;
         }
 
         // Draw name in nickname color
-        var userAttr = nameColor ?? normalAttr;
-        if (selected) userAttr = normalAttr; // use focus attr when selected
-        for (int c = nameStart; c < runes.Length; c++)
+        var userAttr = selected ? normalAttr : nameColor ?? normalAttr;
+        listView.SetAttribute(userAttr);
+        for (int i = nameStart; i < graphemes.Count; i++)
         {
-            var cols = Math.Max(runes[c].GetColumns(), 1);
-            if (drawnChars + cols <= width)
-            {
-                listView.SetAttribute(userAttr);
-                listView.AddRune(runes[c]);
-                drawnChars += cols;
-            }
+            var cols = Math.Max(graphemes[i].GetColumns(), 1);
+            if (drawnChars + cols > width) break;
+            listView.AddStr(graphemes[i]);
+            drawnChars += cols;
         }
 
         // Fill rest
         listView.SetAttribute(normalAttr);
-        while (drawnChars < width)
-        {
-            listView.AddRune(new Rune(' '));
-            drawnChars++;
-        }
+        for (int i = drawnChars; i < width; i++)
+            listView.AddStr(" ");
     }
 
     public void Dispose() { }
+}
+
+/// <summary>
+/// Shared rendering helpers for IListDataSource implementations.
+/// </summary>
+static class RenderHelpers
+{
+    /// <summary>
+    /// Write text grapheme-by-grapheme to a ListView, respecting a width limit.
+    /// Returns the updated drawn-columns count.
+    /// </summary>
+    public static int WriteText(ListView lv, string text, int drawn, int maxWidth)
+    {
+        foreach (var grapheme in GraphemeHelper.GetGraphemes(text))
+        {
+            var cols = Math.Max(grapheme.GetColumns(), 1);
+            if (drawn + cols > maxWidth) break;
+            lv.AddStr(grapheme);
+            drawn += cols;
+        }
+        return drawn;
+    }
 }
 
 /// <summary>
@@ -509,7 +480,6 @@ public static partial class ChatColors
         return segments;
     }
 
-    // Matches @username (letters, digits, underscores, hyphens — same as channel name chars)
     [GeneratedRegex(@"@[\w-]+")]
     private static partial Regex MentionRegex();
 }
