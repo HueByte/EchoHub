@@ -202,6 +202,10 @@ while (true)
             }
         }, heartbeatCts.Token);
 
+        // ── Config diagnostics ─────────────────────────────────────────────
+        Console.Error.WriteLine($"[DIAG] Irc:Enabled = {app.Configuration.GetValue<bool>("Irc:Enabled")}");
+        Console.Error.WriteLine($"[DIAG] Environment = {app.Environment.EnvironmentName}");
+
         // ── Resolve singletons one-by-one to find which one hangs ────────
         Console.Error.WriteLine("[DIAG] Resolving PresenceTracker...");
         _ = app.Services.GetRequiredService<PresenceTracker>();
