@@ -557,7 +557,7 @@
   "changelog/index.html": {
     "href": "changelog/index.html",
     "title": "Changelog | EchoHub Documentation",
-    "summary": "Changelog Release history for EchoHub. Releases v0.2.0 - IRC Gateway v0.1.1 - Directory Connection Self-Healing v0.1.0 - Initial Release"
+    "summary": "Changelog Release history for EchoHub. Releases v0.2.1 - Shutdown & CI Fixes v0.2.0 - IRC Gateway v0.1.1 - Directory Connection Self-Healing v0.1.0 - Initial Release"
   },
   "changelog/v0.1.0.html": {
     "href": "changelog/v0.1.0.html",
@@ -573,6 +573,11 @@
     "href": "changelog/v0.2.0.html",
     "title": "v0.2.0 - IRC Gateway | EchoHub Documentation",
     "summary": "v0.2.0 - IRC Gateway Features IRC protocol gateway -- native IRC clients (irssi, WeeChat, HexChat, etc.) can connect to EchoHub servers Cross-protocol messaging -- messages flow bidirectionally between IRC and TUI clients in real time SASL PLAIN authentication -- IRC clients can authenticate via SASL or traditional PASS/NICK/USER Full IRC command support -- JOIN, PART, PRIVMSG, QUIT, NAMES, TOPIC, WHO, WHOIS, AWAY, LIST, MODE, MOTD TLS support -- optional encrypted IRC connections on port 6697 Image-to-IRC formatting -- images appear as ASCII art line-by-line with download URLs Message splitting -- long messages automatically split at word boundaries (~400 byte chunks) Configurable MOTD -- server message of the day for IRC clients Architecture Changes Extracted shared business logic from ChatHub into protocol-agnostic IChatService Introduced IChatBroadcaster pattern for multi-protocol event fan-out ChatHub refactored to thin adapter delegating to IChatService ChannelsController updated to use IChatService for broadcasts New EchoHub.Server.Irc project for clean separation of concerns IChatService and IChatBroadcaster interfaces live in EchoHub.Core/Contracts"
+  },
+  "changelog/v0.2.1.html": {
+    "href": "changelog/v0.2.1.html",
+    "title": "v0.2.1 - Shutdown & CI Fixes | EchoHub Documentation",
+    "summary": "v0.2.1 - Shutdown & CI Fixes Fixes Fixed server hanging on Ctrl+C when the directory server is unreachable — StopAsync now cancels background services before disposing connections Fixed IRC gateway shutdown blocking indefinitely on unresponsive clients — send operations are now bounded to 2 seconds Fixed CI release workflow not having full git history for building release notes (fetch-depth: 0) Fixed workflow_dispatch trigger breaking change detection when github.event.before is empty Improvements GitHub releases now include a commit list and version diff link instead of generic auto-generated notes GitHub releases link to the full changelog on the docs site"
   },
   "index.html": {
     "href": "index.html",
