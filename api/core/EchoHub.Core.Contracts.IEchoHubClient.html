@@ -121,6 +121,42 @@ Interface IEchoHubClient  <a class="header-action link-secondary" title="View so
 </h2>
 
 
+  <a id="EchoHub_Core_Contracts_IEchoHubClient_ChannelNuked_" data-uid="EchoHub.Core.Contracts.IEchoHubClient.ChannelNuked*"></a>
+
+  <h3 id="EchoHub_Core_Contracts_IEchoHubClient_ChannelNuked_System_String_" data-uid="EchoHub.Core.Contracts.IEchoHubClient.ChannelNuked(System.String)">
+  ChannelNuked(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/Contracts/IEchoHubClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task ChannelNuked(string channelName)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
   <a id="EchoHub_Core_Contracts_IEchoHubClient_ChannelUpdated_" data-uid="EchoHub.Core.Contracts.IEchoHubClient.ChannelUpdated*"></a>
 
   <h3 id="EchoHub_Core_Contracts_IEchoHubClient_ChannelUpdated_EchoHub_Core_DTOs_ChannelDto_" data-uid="EchoHub.Core.Contracts.IEchoHubClient.ChannelUpdated(EchoHub.Core.DTOs.ChannelDto)">
@@ -193,6 +229,80 @@ Interface IEchoHubClient  <a class="header-action link-secondary" title="View so
 
 
 
+  <a id="EchoHub_Core_Contracts_IEchoHubClient_ForceDisconnect_" data-uid="EchoHub.Core.Contracts.IEchoHubClient.ForceDisconnect*"></a>
+
+  <h3 id="EchoHub_Core_Contracts_IEchoHubClient_ForceDisconnect_System_String_" data-uid="EchoHub.Core.Contracts.IEchoHubClient.ForceDisconnect(System.String)">
+  ForceDisconnect(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/Contracts/IEchoHubClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task ForceDisconnect(string reason)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>reason</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Core_Contracts_IEchoHubClient_MessageDeleted_" data-uid="EchoHub.Core.Contracts.IEchoHubClient.MessageDeleted*"></a>
+
+  <h3 id="EchoHub_Core_Contracts_IEchoHubClient_MessageDeleted_System_String_System_Guid_" data-uid="EchoHub.Core.Contracts.IEchoHubClient.MessageDeleted(System.String,System.Guid)">
+  MessageDeleted(string, Guid)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/Contracts/IEchoHubClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task MessageDeleted(string channelName, Guid messageId)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>messageId</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.guid">Guid</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
   <a id="EchoHub_Core_Contracts_IEchoHubClient_ReceiveMessage_" data-uid="EchoHub.Core.Contracts.IEchoHubClient.ReceiveMessage*"></a>
 
   <h3 id="EchoHub_Core_Contracts_IEchoHubClient_ReceiveMessage_EchoHub_Core_DTOs_MessageDto_" data-uid="EchoHub.Core.Contracts.IEchoHubClient.ReceiveMessage(EchoHub.Core.DTOs.MessageDto)">
@@ -210,6 +320,44 @@ Interface IEchoHubClient  <a class="header-action link-secondary" title="View so
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>message</code> <a class="xref" href="EchoHub.Core.DTOs.MessageDto.html">MessageDto</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Core_Contracts_IEchoHubClient_UserBanned_" data-uid="EchoHub.Core.Contracts.IEchoHubClient.UserBanned*"></a>
+
+  <h3 id="EchoHub_Core_Contracts_IEchoHubClient_UserBanned_System_String_System_String_" data-uid="EchoHub.Core.Contracts.IEchoHubClient.UserBanned(System.String,System.String)">
+  UserBanned(string, string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/Contracts/IEchoHubClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task UserBanned(string username, string? reason)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>username</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>reason</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 
@@ -248,6 +396,46 @@ Interface IEchoHubClient  <a class="header-action link-secondary" title="View so
     <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>username</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Core_Contracts_IEchoHubClient_UserKicked_" data-uid="EchoHub.Core.Contracts.IEchoHubClient.UserKicked*"></a>
+
+  <h3 id="EchoHub_Core_Contracts_IEchoHubClient_UserKicked_System_String_System_String_System_String_" data-uid="EchoHub.Core.Contracts.IEchoHubClient.UserKicked(System.String,System.String,System.String)">
+  UserKicked(string, string, string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/Contracts/IEchoHubClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task UserKicked(string channelName, string username, string? reason)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>username</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>reason</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 

@@ -182,8 +182,8 @@ Class ChannelDto  <a class="header-action link-secondary" title="View source" hr
 
   <a id="EchoHub_Core_DTOs_ChannelDto__ctor_" data-uid="EchoHub.Core.DTOs.ChannelDto.#ctor*"></a>
 
-  <h3 id="EchoHub_Core_DTOs_ChannelDto__ctor_System_Guid_System_String_System_String_System_Int32_System_DateTimeOffset_" data-uid="EchoHub.Core.DTOs.ChannelDto.#ctor(System.Guid,System.String,System.String,System.Int32,System.DateTimeOffset)">
-  ChannelDto(Guid, string, string?, int, DateTimeOffset)
+  <h3 id="EchoHub_Core_DTOs_ChannelDto__ctor_System_Guid_System_String_System_String_System_Boolean_System_Int32_System_DateTimeOffset_" data-uid="EchoHub.Core.DTOs.ChannelDto.#ctor(System.Guid,System.String,System.String,System.Boolean,System.Int32,System.DateTimeOffset)">
+  ChannelDto(Guid, string, string?, bool, int, DateTimeOffset)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -191,7 +191,7 @@ Class ChannelDto  <a class="header-action link-secondary" title="View source" hr
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public ChannelDto(Guid Id, string Name, string? Topic, int MessageCount, DateTimeOffset CreatedAt)</code></pre>
+    <pre><code class="lang-csharp hljs">public ChannelDto(Guid Id, string Name, string? Topic, bool IsPublic, int MessageCount, DateTimeOffset CreatedAt)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -201,6 +201,8 @@ Class ChannelDto  <a class="header-action link-secondary" title="View source" hr
     <dt><code>Name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>Topic</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>IsPublic</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
     <dd></dd>
     <dt><code>MessageCount</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
     <dd></dd>
@@ -316,6 +318,37 @@ Class ChannelDto  <a class="header-action link-secondary" title="View source" hr
 
 
 
+  <a id="EchoHub_Core_DTOs_ChannelDto_IsPublic_" data-uid="EchoHub.Core.DTOs.ChannelDto.IsPublic*"></a>
+
+  <h3 id="EchoHub_Core_DTOs_ChannelDto_IsPublic" data-uid="EchoHub.Core.DTOs.ChannelDto.IsPublic">
+  IsPublic
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsPublic { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="EchoHub_Core_DTOs_ChannelDto_MessageCount_" data-uid="EchoHub.Core.DTOs.ChannelDto.MessageCount*"></a>
 
   <h3 id="EchoHub_Core_DTOs_ChannelDto_MessageCount" data-uid="EchoHub.Core.DTOs.ChannelDto.MessageCount">
@@ -415,8 +448,8 @@ Class ChannelDto  <a class="header-action link-secondary" title="View source" hr
 
   <a id="EchoHub_Core_DTOs_ChannelDto_Deconstruct_" data-uid="EchoHub.Core.DTOs.ChannelDto.Deconstruct*"></a>
 
-  <h3 id="EchoHub_Core_DTOs_ChannelDto_Deconstruct_System_Guid__System_String__System_String__System_Int32__System_DateTimeOffset__" data-uid="EchoHub.Core.DTOs.ChannelDto.Deconstruct(System.Guid@,System.String@,System.String@,System.Int32@,System.DateTimeOffset@)">
-  Deconstruct(out Guid, out string, out string?, out int, out DateTimeOffset)
+  <h3 id="EchoHub_Core_DTOs_ChannelDto_Deconstruct_System_Guid__System_String__System_String__System_Boolean__System_Int32__System_DateTimeOffset__" data-uid="EchoHub.Core.DTOs.ChannelDto.Deconstruct(System.Guid@,System.String@,System.String@,System.Boolean@,System.Int32@,System.DateTimeOffset@)">
+  Deconstruct(out Guid, out string, out string?, out bool, out int, out DateTimeOffset)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -424,7 +457,7 @@ Class ChannelDto  <a class="header-action link-secondary" title="View source" hr
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public void Deconstruct(out Guid Id, out string Name, out string? Topic, out int MessageCount, out DateTimeOffset CreatedAt)</code></pre>
+    <pre><code class="lang-csharp hljs">public void Deconstruct(out Guid Id, out string Name, out string? Topic, out bool IsPublic, out int MessageCount, out DateTimeOffset CreatedAt)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -434,6 +467,8 @@ Class ChannelDto  <a class="header-action link-secondary" title="View source" hr
     <dt><code>Name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>Topic</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>IsPublic</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
     <dd></dd>
     <dt><code>MessageCount</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
     <dd></dd>

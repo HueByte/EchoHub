@@ -152,6 +152,44 @@ Class IrcMessageFormatter  <a class="header-action link-secondary" title="View s
 </h2>
 
 
+  <a id="EchoHub_Server_Irc_IrcMessageFormatter_ColorTagsToAnsi_" data-uid="EchoHub.Server.Irc.IrcMessageFormatter.ColorTagsToAnsi*"></a>
+
+  <h3 id="EchoHub_Server_Irc_IrcMessageFormatter_ColorTagsToAnsi_System_String_" data-uid="EchoHub.Server.Irc.IrcMessageFormatter.ColorTagsToAnsi(System.String)">
+  ColorTagsToAnsi(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server.Irc/IrcMessageFormatter.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Convert printable color tags ({F:RRGGBB}, {B:RRGGBB}, {X}) to ANSI escape codes for IRC clients.
+Also passes through content that already uses ANSI codes unchanged.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static string ColorTagsToAnsi(string text)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
   <a id="EchoHub_Server_Irc_IrcMessageFormatter_FormatMessage_" data-uid="EchoHub.Server.Irc.IrcMessageFormatter.FormatMessage*"></a>
 
   <h3 id="EchoHub_Server_Irc_IrcMessageFormatter_FormatMessage_EchoHub_Core_DTOs_MessageDto_" data-uid="EchoHub.Server.Irc.IrcMessageFormatter.FormatMessage(EchoHub.Core.DTOs.MessageDto)">

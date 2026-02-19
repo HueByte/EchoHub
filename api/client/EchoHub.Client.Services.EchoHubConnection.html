@@ -331,7 +331,7 @@ Class EchoHubConnection  <a class="header-action link-secondary" title="View sou
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Task&lt;List&lt;MessageDto&gt;&gt; GetHistoryAsync(string channelName, int count = 50)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;List&lt;MessageDto&gt;&gt; GetHistoryAsync(string channelName, int count = 100)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -547,6 +547,36 @@ Class EchoHubConnection  <a class="header-action link-secondary" title="View sou
 
 
 
+  <h3 id="EchoHub_Client_Services_EchoHubConnection_OnChannelNuked" data-uid="EchoHub.Client.Services.EchoHubConnection.OnChannelNuked">
+  OnChannelNuked
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/EchoHubConnection.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action&lt;string&gt;? OnChannelNuked</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-1">Action</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <h3 id="EchoHub_Client_Services_EchoHubConnection_OnChannelUpdated" data-uid="EchoHub.Client.Services.EchoHubConnection.OnChannelUpdated">
   OnChannelUpdated
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/EchoHubConnection.cs"><i class="bi bi-code-slash"></i></a>
@@ -637,6 +667,66 @@ Class EchoHubConnection  <a class="header-action link-secondary" title="View sou
 
 
 
+  <h3 id="EchoHub_Client_Services_EchoHubConnection_OnForceDisconnect" data-uid="EchoHub.Client.Services.EchoHubConnection.OnForceDisconnect">
+  OnForceDisconnect
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/EchoHubConnection.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action&lt;string&gt;? OnForceDisconnect</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-1">Action</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h3 id="EchoHub_Client_Services_EchoHubConnection_OnMessageDeleted" data-uid="EchoHub.Client.Services.EchoHubConnection.OnMessageDeleted">
+  OnMessageDeleted
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/EchoHubConnection.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action&lt;string, Guid&gt;? OnMessageDeleted</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-2">Action</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.guid">Guid</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <h3 id="EchoHub_Client_Services_EchoHubConnection_OnMessageReceived" data-uid="EchoHub.Client.Services.EchoHubConnection.OnMessageReceived">
   OnMessageReceived
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/EchoHubConnection.cs"><i class="bi bi-code-slash"></i></a>
@@ -697,6 +787,36 @@ Class EchoHubConnection  <a class="header-action link-secondary" title="View sou
 
 
 
+  <h3 id="EchoHub_Client_Services_EchoHubConnection_OnUserBanned" data-uid="EchoHub.Client.Services.EchoHubConnection.OnUserBanned">
+  OnUserBanned
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/EchoHubConnection.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action&lt;string, string?&gt;? OnUserBanned</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-2">Action</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <h3 id="EchoHub_Client_Services_EchoHubConnection_OnUserJoined" data-uid="EchoHub.Client.Services.EchoHubConnection.OnUserJoined">
   OnUserJoined
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/EchoHubConnection.cs"><i class="bi bi-code-slash"></i></a>
@@ -717,6 +837,36 @@ Class EchoHubConnection  <a class="header-action link-secondary" title="View sou
   <h4 class="section">Event Type</h4>
   <dl class="parameters">
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-2">Action</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h3 id="EchoHub_Client_Services_EchoHubConnection_OnUserKicked" data-uid="EchoHub.Client.Services.EchoHubConnection.OnUserKicked">
+  OnUserKicked
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/EchoHubConnection.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action&lt;string, string, string?&gt;? OnUserKicked</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-3">Action</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
     <dd></dd>
   </dl>
 

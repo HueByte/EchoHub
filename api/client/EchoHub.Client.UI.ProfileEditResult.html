@@ -183,8 +183,8 @@ Class ProfileEditResult  <a class="header-action link-secondary" title="View sou
 
   <a id="EchoHub_Client_UI_ProfileEditResult__ctor_" data-uid="EchoHub.Client.UI.ProfileEditResult.#ctor*"></a>
 
-  <h3 id="EchoHub_Client_UI_ProfileEditResult__ctor_System_String_System_String_System_String_" data-uid="EchoHub.Client.UI.ProfileEditResult.#ctor(System.String,System.String,System.String)">
-  ProfileEditResult(string?, string?, string?)
+  <h3 id="EchoHub_Client_UI_ProfileEditResult__ctor_System_String_System_String_System_String_System_String_System_Nullable_System_Boolean__System_Nullable_System_Byte__" data-uid="EchoHub.Client.UI.ProfileEditResult.#ctor(System.String,System.String,System.String,System.String,System.Nullable{System.Boolean},System.Nullable{System.Byte})">
+  ProfileEditResult(string?, string?, string?, string?, bool?, byte?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ProfileEditDialog.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -193,7 +193,7 @@ Class ProfileEditResult  <a class="header-action link-secondary" title="View sou
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public ProfileEditResult(string? DisplayName, string? Bio, string? NicknameColor)</code></pre>
+    <pre><code class="lang-csharp hljs">public ProfileEditResult(string? DisplayName, string? Bio, string? NicknameColor, string? AvatarPath, bool? NotificationSoundEnabled, byte? NotificationVolume)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -203,6 +203,12 @@ Class ProfileEditResult  <a class="header-action link-secondary" title="View sou
     <dt><code>Bio</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>NicknameColor</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>AvatarPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>NotificationSoundEnabled</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a>?</dt>
+    <dd></dd>
+    <dt><code>NotificationVolume</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>?</dt>
     <dd></dd>
   </dl>
 
@@ -219,6 +225,37 @@ Class ProfileEditResult  <a class="header-action link-secondary" title="View sou
 
   <h2 class="section" id="properties">Properties
 </h2>
+
+
+  <a id="EchoHub_Client_UI_ProfileEditResult_AvatarPath_" data-uid="EchoHub.Client.UI.ProfileEditResult.AvatarPath*"></a>
+
+  <h3 id="EchoHub_Client_UI_ProfileEditResult_AvatarPath" data-uid="EchoHub.Client.UI.ProfileEditResult.AvatarPath">
+  AvatarPath
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ProfileEditDialog.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? AvatarPath { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
 
 
   <a id="EchoHub_Client_UI_ProfileEditResult_Bio_" data-uid="EchoHub.Client.UI.ProfileEditResult.Bio*"></a>
@@ -345,14 +382,10 @@ Class ProfileEditResult  <a class="header-action link-secondary" title="View sou
 
 
 
-  <h2 class="section" id="methods">Methods
-</h2>
+  <a id="EchoHub_Client_UI_ProfileEditResult_NotificationSoundEnabled_" data-uid="EchoHub.Client.UI.ProfileEditResult.NotificationSoundEnabled*"></a>
 
-
-  <a id="EchoHub_Client_UI_ProfileEditResult_Deconstruct_" data-uid="EchoHub.Client.UI.ProfileEditResult.Deconstruct*"></a>
-
-  <h3 id="EchoHub_Client_UI_ProfileEditResult_Deconstruct_System_String__System_String__System_String__" data-uid="EchoHub.Client.UI.ProfileEditResult.Deconstruct(System.String@,System.String@,System.String@)">
-  Deconstruct(out string?, out string?, out string?)
+  <h3 id="EchoHub_Client_UI_ProfileEditResult_NotificationSoundEnabled" data-uid="EchoHub.Client.UI.ProfileEditResult.NotificationSoundEnabled">
+  NotificationSoundEnabled
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ProfileEditDialog.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -360,7 +393,73 @@ Class ProfileEditResult  <a class="header-action link-secondary" title="View sou
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public void Deconstruct(out string? DisplayName, out string? Bio, out string? NicknameColor)</code></pre>
+    <pre><code class="lang-csharp hljs">public bool? NotificationSoundEnabled { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_ProfileEditResult_NotificationVolume_" data-uid="EchoHub.Client.UI.ProfileEditResult.NotificationVolume*"></a>
+
+  <h3 id="EchoHub_Client_UI_ProfileEditResult_NotificationVolume" data-uid="EchoHub.Client.UI.ProfileEditResult.NotificationVolume">
+  NotificationVolume
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ProfileEditDialog.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public byte? NotificationVolume { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="EchoHub_Client_UI_ProfileEditResult_Deconstruct_" data-uid="EchoHub.Client.UI.ProfileEditResult.Deconstruct*"></a>
+
+  <h3 id="EchoHub_Client_UI_ProfileEditResult_Deconstruct_System_String__System_String__System_String__System_String__System_Nullable_System_Boolean___System_Nullable_System_Byte___" data-uid="EchoHub.Client.UI.ProfileEditResult.Deconstruct(System.String@,System.String@,System.String@,System.String@,System.Nullable{System.Boolean}@,System.Nullable{System.Byte}@)">
+  Deconstruct(out string?, out string?, out string?, out string?, out bool?, out byte?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ProfileEditDialog.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Deconstruct(out string? DisplayName, out string? Bio, out string? NicknameColor, out string? AvatarPath, out bool? NotificationSoundEnabled, out byte? NotificationVolume)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -370,6 +469,12 @@ Class ProfileEditResult  <a class="header-action link-secondary" title="View sou
     <dt><code>Bio</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>NicknameColor</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>AvatarPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>NotificationSoundEnabled</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a>?</dt>
+    <dd></dd>
+    <dt><code>NotificationVolume</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>?</dt>
     <dd></dd>
   </dl>
 

@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class BanRequest | EchoHub Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class BanRequest | EchoHub Documentation ">
+      
+      
+      <link rel="icon" href="../../images/hue_icon.svg">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/new/master/apiSpec/new?filename=EchoHub_Core_DTOs_BanRequest.md&amp;value=---%0Auid%3A%20EchoHub.Core.DTOs.BanRequest%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/hue_icon.svg" alt="EchoHub">
+            EchoHub
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="EchoHub.Core.DTOs.BanRequest">
+
+
+
+  <h1 id="EchoHub_Core_DTOs_BanRequest" data-uid="EchoHub.Core.DTOs.BanRequest" class="text-break">
+Class BanRequest  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ModerationDtos.cs"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="EchoHub.html">EchoHub</a>.<a class="xref" href="EchoHub.Core.html">Core</a>.<a class="xref" href="EchoHub.Core.DTOs.html">DTOs</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>EchoHub.Core.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"></div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public record BanRequest : IEquatable&lt;BanRequest&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">BanRequest</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="EchoHub.Core.DTOs.BanRequest.html">BanRequest</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="EchoHub_Core_DTOs_BanRequest__ctor_" data-uid="EchoHub.Core.DTOs.BanRequest.#ctor*"></a>
+
+  <h3 id="EchoHub_Core_DTOs_BanRequest__ctor_EchoHub_Core_DTOs_BanRequest_" data-uid="EchoHub.Core.DTOs.BanRequest.#ctor(EchoHub.Core.DTOs.BanRequest)">
+  BanRequest(BanRequest)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ModerationDtos.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected BanRequest(BanRequest original)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>original</code> <a class="xref" href="EchoHub.Core.DTOs.BanRequest.html">BanRequest</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Core_DTOs_BanRequest__ctor_" data-uid="EchoHub.Core.DTOs.BanRequest.#ctor*"></a>
+
+  <h3 id="EchoHub_Core_DTOs_BanRequest__ctor_System_String_" data-uid="EchoHub.Core.DTOs.BanRequest.#ctor(System.String)">
+  BanRequest(string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ModerationDtos.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public BanRequest(string? Reason = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>Reason</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="EchoHub_Core_DTOs_BanRequest_EqualityContract_" data-uid="EchoHub.Core.DTOs.BanRequest.EqualityContract*"></a>
+
+  <h3 id="EchoHub_Core_DTOs_BanRequest_EqualityContract" data-uid="EchoHub.Core.DTOs.BanRequest.EqualityContract">
+  EqualityContract
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ModerationDtos.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual Type EqualityContract { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.type">Type</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Core_DTOs_BanRequest_Reason_" data-uid="EchoHub.Core.DTOs.BanRequest.Reason*"></a>
+
+  <h3 id="EchoHub_Core_DTOs_BanRequest_Reason" data-uid="EchoHub.Core.DTOs.BanRequest.Reason">
+  Reason
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ModerationDtos.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Reason { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="EchoHub_Core_DTOs_BanRequest_Deconstruct_" data-uid="EchoHub.Core.DTOs.BanRequest.Deconstruct*"></a>
+
+  <h3 id="EchoHub_Core_DTOs_BanRequest_Deconstruct_System_String__" data-uid="EchoHub.Core.DTOs.BanRequest.Deconstruct(System.String@)">
+  Deconstruct(out string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ModerationDtos.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Deconstruct(out string? Reason)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>Reason</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Core_DTOs_BanRequest_Equals_" data-uid="EchoHub.Core.DTOs.BanRequest.Equals*"></a>
+
+  <h3 id="EchoHub_Core_DTOs_BanRequest_Equals_EchoHub_Core_DTOs_BanRequest_" data-uid="EchoHub.Core.DTOs.BanRequest.Equals(EchoHub.Core.DTOs.BanRequest)">
+  Equals(BanRequest?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ModerationDtos.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public virtual bool Equals(BanRequest? other)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>other</code> <a class="xref" href="EchoHub.Core.DTOs.BanRequest.html">BanRequest</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Core_DTOs_BanRequest_Equals_" data-uid="EchoHub.Core.DTOs.BanRequest.Equals*"></a>
+
+  <h3 id="EchoHub_Core_DTOs_BanRequest_Equals_System_Object_" data-uid="EchoHub.Core.DTOs.BanRequest.Equals(System.Object)">
+  Equals(object?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ModerationDtos.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override bool Equals(object? obj)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>obj</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Core_DTOs_BanRequest_GetHashCode_" data-uid="EchoHub.Core.DTOs.BanRequest.GetHashCode*"></a>
+
+  <h3 id="EchoHub_Core_DTOs_BanRequest_GetHashCode" data-uid="EchoHub.Core.DTOs.BanRequest.GetHashCode">
+  GetHashCode()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ModerationDtos.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override int GetHashCode()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Core_DTOs_BanRequest_PrintMembers_" data-uid="EchoHub.Core.DTOs.BanRequest.PrintMembers*"></a>
+
+  <h3 id="EchoHub_Core_DTOs_BanRequest_PrintMembers_System_Text_StringBuilder_" data-uid="EchoHub.Core.DTOs.BanRequest.PrintMembers(System.Text.StringBuilder)">
+  PrintMembers(StringBuilder)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ModerationDtos.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual bool PrintMembers(StringBuilder builder)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>builder</code> <span class="xref">StringBuilder</span></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Core_DTOs_BanRequest_ToString_" data-uid="EchoHub.Core.DTOs.BanRequest.ToString*"></a>
+
+  <h3 id="EchoHub_Core_DTOs_BanRequest_ToString" data-uid="EchoHub.Core.DTOs.BanRequest.ToString">
+  ToString()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ModerationDtos.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string ToString()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="operators">Operators
+</h2>
+
+
+  <a id="EchoHub_Core_DTOs_BanRequest_op_Equality_" data-uid="EchoHub.Core.DTOs.BanRequest.op_Equality*"></a>
+
+  <h3 id="EchoHub_Core_DTOs_BanRequest_op_Equality_EchoHub_Core_DTOs_BanRequest_EchoHub_Core_DTOs_BanRequest_" data-uid="EchoHub.Core.DTOs.BanRequest.op_Equality(EchoHub.Core.DTOs.BanRequest,EchoHub.Core.DTOs.BanRequest)">
+  operator ==(BanRequest?, BanRequest?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ModerationDtos.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool operator ==(BanRequest? left, BanRequest? right)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>left</code> <a class="xref" href="EchoHub.Core.DTOs.BanRequest.html">BanRequest</a></dt>
+    <dd></dd>
+    <dt><code>right</code> <a class="xref" href="EchoHub.Core.DTOs.BanRequest.html">BanRequest</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Core_DTOs_BanRequest_op_Inequality_" data-uid="EchoHub.Core.DTOs.BanRequest.op_Inequality*"></a>
+
+  <h3 id="EchoHub_Core_DTOs_BanRequest_op_Inequality_EchoHub_Core_DTOs_BanRequest_EchoHub_Core_DTOs_BanRequest_" data-uid="EchoHub.Core.DTOs.BanRequest.op_Inequality(EchoHub.Core.DTOs.BanRequest,EchoHub.Core.DTOs.BanRequest)">
+  operator !=(BanRequest?, BanRequest?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ModerationDtos.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool operator !=(BanRequest? left, BanRequest? right)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>left</code> <a class="xref" href="EchoHub.Core.DTOs.BanRequest.html">BanRequest</a></dt>
+    <dd></dd>
+    <dt><code>right</code> <a class="xref" href="EchoHub.Core.DTOs.BanRequest.html">BanRequest</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ModerationDtos.cs" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a><span class='footer-sep'>&middot;</span><span class='footer-credit'>Built with <a href='https://dotnet.github.io/docfx'>DocFX</a></span></div></div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

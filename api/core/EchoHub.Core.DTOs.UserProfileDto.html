@@ -182,8 +182,8 @@ Class UserProfileDto  <a class="header-action link-secondary" title="View source
 
   <a id="EchoHub_Core_DTOs_UserProfileDto__ctor_" data-uid="EchoHub.Core.DTOs.UserProfileDto.#ctor*"></a>
 
-  <h3 id="EchoHub_Core_DTOs_UserProfileDto__ctor_System_Guid_System_String_System_String_System_String_System_String_System_String_EchoHub_Core_Models_UserStatus_System_String_System_DateTimeOffset_System_DateTimeOffset_" data-uid="EchoHub.Core.DTOs.UserProfileDto.#ctor(System.Guid,System.String,System.String,System.String,System.String,System.String,EchoHub.Core.Models.UserStatus,System.String,System.DateTimeOffset,System.DateTimeOffset)">
-  UserProfileDto(Guid, string, string?, string?, string?, string?, UserStatus, string?, DateTimeOffset, DateTimeOffset)
+  <h3 id="EchoHub_Core_DTOs_UserProfileDto__ctor_System_Guid_System_String_System_String_System_String_System_String_System_String_EchoHub_Core_Models_UserStatus_System_String_EchoHub_Core_Models_ServerRole_System_DateTimeOffset_System_DateTimeOffset_" data-uid="EchoHub.Core.DTOs.UserProfileDto.#ctor(System.Guid,System.String,System.String,System.String,System.String,System.String,EchoHub.Core.Models.UserStatus,System.String,EchoHub.Core.Models.ServerRole,System.DateTimeOffset,System.DateTimeOffset)">
+  UserProfileDto(Guid, string, string?, string?, string?, string?, UserStatus, string?, ServerRole, DateTimeOffset, DateTimeOffset)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ProfileDtos.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -191,7 +191,7 @@ Class UserProfileDto  <a class="header-action link-secondary" title="View source
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public UserProfileDto(Guid Id, string Username, string? DisplayName, string? Bio, string? NicknameColor, string? AvatarAscii, UserStatus Status, string? StatusMessage, DateTimeOffset CreatedAt, DateTimeOffset LastSeenAt)</code></pre>
+    <pre><code class="lang-csharp hljs">public UserProfileDto(Guid Id, string Username, string? DisplayName, string? Bio, string? NicknameColor, string? AvatarAscii, UserStatus Status, string? StatusMessage, ServerRole Role, DateTimeOffset CreatedAt, DateTimeOffset LastSeenAt)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -211,6 +211,8 @@ Class UserProfileDto  <a class="header-action link-secondary" title="View source
     <dt><code>Status</code> <a class="xref" href="EchoHub.Core.Models.UserStatus.html">UserStatus</a></dt>
     <dd></dd>
     <dt><code>StatusMessage</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>Role</code> <a class="xref" href="EchoHub.Core.Models.ServerRole.html">ServerRole</a></dt>
     <dd></dd>
     <dt><code>CreatedAt</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.datetimeoffset">DateTimeOffset</a></dt>
     <dd></dd>
@@ -481,6 +483,37 @@ Class UserProfileDto  <a class="header-action link-secondary" title="View source
 
 
 
+  <a id="EchoHub_Core_DTOs_UserProfileDto_Role_" data-uid="EchoHub.Core.DTOs.UserProfileDto.Role*"></a>
+
+  <h3 id="EchoHub_Core_DTOs_UserProfileDto_Role" data-uid="EchoHub.Core.DTOs.UserProfileDto.Role">
+  Role
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ProfileDtos.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ServerRole Role { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="EchoHub.Core.Models.ServerRole.html">ServerRole</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="EchoHub_Core_DTOs_UserProfileDto_Status_" data-uid="EchoHub.Core.DTOs.UserProfileDto.Status*"></a>
 
   <h3 id="EchoHub_Core_DTOs_UserProfileDto_Status" data-uid="EchoHub.Core.DTOs.UserProfileDto.Status">
@@ -580,8 +613,8 @@ Class UserProfileDto  <a class="header-action link-secondary" title="View source
 
   <a id="EchoHub_Core_DTOs_UserProfileDto_Deconstruct_" data-uid="EchoHub.Core.DTOs.UserProfileDto.Deconstruct*"></a>
 
-  <h3 id="EchoHub_Core_DTOs_UserProfileDto_Deconstruct_System_Guid__System_String__System_String__System_String__System_String__System_String__EchoHub_Core_Models_UserStatus__System_String__System_DateTimeOffset__System_DateTimeOffset__" data-uid="EchoHub.Core.DTOs.UserProfileDto.Deconstruct(System.Guid@,System.String@,System.String@,System.String@,System.String@,System.String@,EchoHub.Core.Models.UserStatus@,System.String@,System.DateTimeOffset@,System.DateTimeOffset@)">
-  Deconstruct(out Guid, out string, out string?, out string?, out string?, out string?, out UserStatus, out string?, out DateTimeOffset, out DateTimeOffset)
+  <h3 id="EchoHub_Core_DTOs_UserProfileDto_Deconstruct_System_Guid__System_String__System_String__System_String__System_String__System_String__EchoHub_Core_Models_UserStatus__System_String__EchoHub_Core_Models_ServerRole__System_DateTimeOffset__System_DateTimeOffset__" data-uid="EchoHub.Core.DTOs.UserProfileDto.Deconstruct(System.Guid@,System.String@,System.String@,System.String@,System.String@,System.String@,EchoHub.Core.Models.UserStatus@,System.String@,EchoHub.Core.Models.ServerRole@,System.DateTimeOffset@,System.DateTimeOffset@)">
+  Deconstruct(out Guid, out string, out string?, out string?, out string?, out string?, out UserStatus, out string?, out ServerRole, out DateTimeOffset, out DateTimeOffset)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ProfileDtos.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -589,7 +622,7 @@ Class UserProfileDto  <a class="header-action link-secondary" title="View source
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public void Deconstruct(out Guid Id, out string Username, out string? DisplayName, out string? Bio, out string? NicknameColor, out string? AvatarAscii, out UserStatus Status, out string? StatusMessage, out DateTimeOffset CreatedAt, out DateTimeOffset LastSeenAt)</code></pre>
+    <pre><code class="lang-csharp hljs">public void Deconstruct(out Guid Id, out string Username, out string? DisplayName, out string? Bio, out string? NicknameColor, out string? AvatarAscii, out UserStatus Status, out string? StatusMessage, out ServerRole Role, out DateTimeOffset CreatedAt, out DateTimeOffset LastSeenAt)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -609,6 +642,8 @@ Class UserProfileDto  <a class="header-action link-secondary" title="View source
     <dt><code>Status</code> <a class="xref" href="EchoHub.Core.Models.UserStatus.html">UserStatus</a></dt>
     <dd></dd>
     <dt><code>StatusMessage</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>Role</code> <a class="xref" href="EchoHub.Core.Models.ServerRole.html">ServerRole</a></dt>
     <dd></dd>
     <dt><code>CreatedAt</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.datetimeoffset">DateTimeOffset</a></dt>
     <dd></dd>

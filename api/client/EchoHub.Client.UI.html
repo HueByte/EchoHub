@@ -95,6 +95,12 @@
 Classes
 </h3>
     <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Client.UI.ChannelListSource.html">ChannelListSource</a></dt>
+      <dd><p>Custom list data source for colored channel list rendering.
+Active channel gets a &gt; indicator, unread channels are bright with a count badge.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Client.UI.ChatColors.html">ChatColors</a></dt>
       <dd><p>Shared color attributes for chat rendering (timestamps, system messages).</p>
 </dd>
@@ -106,7 +112,7 @@ Classes
     </dl>
     <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Client.UI.ChatListSource.html">ChatListSource</a></dt>
-      <dd><p>Custom list data source for chat messages with per-character coloring.</p>
+      <dd><p>Custom list data source for chat messages with per-segment coloring.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -139,6 +145,13 @@ Includes a saved servers selector when saved servers are available.</p>
       <dd></dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Client.UI.EmojiHelper.html">EmojiHelper</a></dt>
+      <dd><p>Converts emoji grapheme clusters to text shortcodes for safe TUI rendering.
+Terminal width calculations for emoji are unreliable across different terminals,
+so we replace them with fixed-width ASCII shortcodes for display only.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Client.UI.MainWindow.html">MainWindow</a></dt>
       <dd><p>Main Terminal.Gui window for the EchoHub chat client.</p>
 </dd>
@@ -167,6 +180,11 @@ Shows Edit Profile / Set Status buttons when viewing own profile.</p>
     <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Client.UI.StatusDialogResult.html">StatusDialogResult</a></dt>
       <dd><p>Result returned from the status dialog.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Client.UI.UserListSource.html">UserListSource</a></dt>
+      <dd><p>Custom list data source for the online users panel with per-user nickname colors.</p>
 </dd>
     </dl>
     <h3 id="enums">

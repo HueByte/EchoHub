@@ -189,11 +189,16 @@ Class ImageToAsciiService  <a class="header-action link-secondary" title="View s
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/ImageToAsciiService.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 summary"><p>Converts an image to ASCII art using half-block characters (▀▄█) with
+printable color tags for 2x vertical resolution.
+Each character cell represents two vertical pixels.
+Format: {F:RRGGBB} foreground, {B:RRGGBB} background, {X} reset.
+Uses only printable ASCII — no terminal escape bytes.</p>
+</div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public string ConvertToAscii(Stream imageStream, int width = 80, int height = 40)</code></pre>
+    <pre><code class="lang-csharp hljs">public string ConvertToAscii(Stream imageStream, int width = 80, int height = 80)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -209,6 +214,44 @@ Class ImageToAsciiService  <a class="header-action link-secondary" title="View s
   <h4 class="section">Returns</h4>
   <dl class="parameters">
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Server_Services_ImageToAsciiService_GetDimensions_" data-uid="EchoHub.Server.Services.ImageToAsciiService.GetDimensions*"></a>
+
+  <h3 id="EchoHub_Server_Services_ImageToAsciiService_GetDimensions_System_String_" data-uid="EchoHub.Server.Services.ImageToAsciiService.GetDimensions(System.String)">
+  GetDimensions(string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/ImageToAsciiService.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns (width, height) dimensions for the given size code.
+s = small (40x40), m = medium/default (80x80), l = large (120x120).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static (int Width, int Height) GetDimensions(string? size)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>size</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt>(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.int32,system.int32-.width">Width</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.int32,system.int32-.height">Height</a>)</dt>
     <dd></dd>
   </dl>
 

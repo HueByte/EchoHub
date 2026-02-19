@@ -182,8 +182,8 @@ Class ProfileEditDialog  <a class="header-action link-secondary" title="View sou
 
   <a id="EchoHub_Client_UI_ProfileEditDialog_Show_" data-uid="EchoHub.Client.UI.ProfileEditDialog.Show*"></a>
 
-  <h3 id="EchoHub_Client_UI_ProfileEditDialog_Show_Terminal_Gui_App_IApplication_System_String_System_String_System_String_" data-uid="EchoHub.Client.UI.ProfileEditDialog.Show(Terminal.Gui.App.IApplication,System.String,System.String,System.String)">
-  Show(IApplication, string?, string?, string?)
+  <h3 id="EchoHub_Client_UI_ProfileEditDialog_Show_Terminal_Gui_App_IApplication_System_String_System_String_System_String_System_Boolean_System_Byte_" data-uid="EchoHub.Client.UI.ProfileEditDialog.Show(Terminal.Gui.App.IApplication,System.String,System.String,System.String,System.Boolean,System.Byte)">
+  Show(IApplication, string?, string?, string?, bool, byte)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ProfileEditDialog.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -192,7 +192,7 @@ Class ProfileEditDialog  <a class="header-action link-secondary" title="View sou
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static ProfileEditResult? Show(IApplication app, string? currentDisplayName, string? currentBio, string? currentColor)</code></pre>
+    <pre><code class="lang-csharp hljs">public static ProfileEditResult? Show(IApplication app, string? currentDisplayName, string? currentBio, string? currentColor, bool notificationSoundEnabled = false, byte notificationVolume = 30)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -204,6 +204,10 @@ Class ProfileEditDialog  <a class="header-action link-secondary" title="View sou
     <dt><code>currentBio</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>currentColor</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>notificationSoundEnabled</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+    <dt><code>notificationVolume</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
     <dd></dd>
   </dl>
 

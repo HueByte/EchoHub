@@ -216,6 +216,68 @@ Class ChatLine  <a class="header-action link-secondary" title="View source" href
 </h2>
 
 
+  <a id="EchoHub_Client_UI_ChatLine_IsMention_" data-uid="EchoHub.Client.UI.ChatLine.IsMention*"></a>
+
+  <h3 id="EchoHub_Client_UI_ChatLine_IsMention" data-uid="EchoHub.Client.UI.ChatLine.IsMention">
+  IsMention
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ChatRenderer.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsMention { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_ChatLine_MessageId_" data-uid="EchoHub.Client.UI.ChatLine.MessageId*"></a>
+
+  <h3 id="EchoHub_Client_UI_ChatLine_MessageId" data-uid="EchoHub.Client.UI.ChatLine.MessageId">
+  MessageId
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ChatRenderer.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Guid? MessageId { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.guid">Guid</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="EchoHub_Client_UI_ChatLine_Segments_" data-uid="EchoHub.Client.UI.ChatLine.Segments*"></a>
 
   <h3 id="EchoHub_Client_UI_ChatLine_Segments" data-uid="EchoHub.Client.UI.ChatLine.Segments">
@@ -282,25 +344,25 @@ Class ChatLine  <a class="header-action link-secondary" title="View source" href
 </h2>
 
 
-  <a id="EchoHub_Client_UI_ChatLine_FromAnsi_" data-uid="EchoHub.Client.UI.ChatLine.FromAnsi*"></a>
+  <a id="EchoHub_Client_UI_ChatLine_FromColoredText_" data-uid="EchoHub.Client.UI.ChatLine.FromColoredText*"></a>
 
-  <h3 id="EchoHub_Client_UI_ChatLine_FromAnsi_System_String_System_Nullable_Terminal_Gui_Drawing_Attribute__" data-uid="EchoHub.Client.UI.ChatLine.FromAnsi(System.String,System.Nullable{Terminal.Gui.Drawing.Attribute})">
-  FromAnsi(string, Attribute?)
+  <h3 id="EchoHub_Client_UI_ChatLine_FromColoredText_System_String_System_Nullable_Terminal_Gui_Drawing_Attribute__" data-uid="EchoHub.Client.UI.ChatLine.FromColoredText(System.String,System.Nullable{Terminal.Gui.Drawing.Attribute})">
+  FromColoredText(string, Attribute?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ChatRenderer.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Parse a string containing ANSI 24-bit color escape codes into colored segments.
-Format: \x1b[38;2;R;G;Bm (foreground color), \x1b[0m (reset)</p>
+  <div class="markdown level1 summary"><p>Parse a string containing printable color tags into colored segments.
+Format: {F:RRGGBB} (foreground), {B:RRGGBB} (background), {X} (reset).</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static ChatLine FromAnsi(string ansiText, Attribute? defaultAttr = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public static ChatLine FromColoredText(string text, Attribute? defaultAttr = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
-    <dt><code>ansiText</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>defaultAttr</code> <span class="xref">Attribute</span>?</dt>
     <dd></dd>
@@ -309,6 +371,80 @@ Format: \x1b[38;2;R;G;Bm (foreground color), \x1b[0m (reset)</p>
   <h4 class="section">Returns</h4>
   <dl class="parameters">
     <dt><a class="xref" href="EchoHub.Client.UI.ChatLine.html">ChatLine</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_ChatLine_HasColorTags_" data-uid="EchoHub.Client.UI.ChatLine.HasColorTags*"></a>
+
+  <h3 id="EchoHub_Client_UI_ChatLine_HasColorTags_System_String_" data-uid="EchoHub.Client.UI.ChatLine.HasColorTags(System.String)">
+  HasColorTags(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ChatRenderer.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns true if a line contains printable color tags.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool HasColorTags(string text)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_ChatLine_StripColorTags_" data-uid="EchoHub.Client.UI.ChatLine.StripColorTags*"></a>
+
+  <h3 id="EchoHub_Client_UI_ChatLine_StripColorTags_System_String_" data-uid="EchoHub.Client.UI.ChatLine.StripColorTags(System.String)">
+  StripColorTags(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ChatRenderer.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Remove all color tags from text, returning only the visible characters.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static string StripColorTags(string text)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 

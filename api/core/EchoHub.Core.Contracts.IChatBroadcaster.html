@@ -120,6 +120,80 @@ Interface IChatBroadcaster  <a class="header-action link-secondary" title="View 
 </h2>
 
 
+  <a id="EchoHub_Core_Contracts_IChatBroadcaster_ForceDisconnectUserAsync_" data-uid="EchoHub.Core.Contracts.IChatBroadcaster.ForceDisconnectUserAsync*"></a>
+
+  <h3 id="EchoHub_Core_Contracts_IChatBroadcaster_ForceDisconnectUserAsync_System_Collections_Generic_List_System_String__System_String_" data-uid="EchoHub.Core.Contracts.IChatBroadcaster.ForceDisconnectUserAsync(System.Collections.Generic.List{System.String},System.String)">
+  ForceDisconnectUserAsync(List&lt;string&gt;, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/Contracts/IChatBroadcaster.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task ForceDisconnectUserAsync(List&lt;string&gt; connectionIds, string reason)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>connectionIds</code> <span class="xref">List</span>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+    <dt><code>reason</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Core_Contracts_IChatBroadcaster_SendChannelNukedAsync_" data-uid="EchoHub.Core.Contracts.IChatBroadcaster.SendChannelNukedAsync*"></a>
+
+  <h3 id="EchoHub_Core_Contracts_IChatBroadcaster_SendChannelNukedAsync_System_String_" data-uid="EchoHub.Core.Contracts.IChatBroadcaster.SendChannelNukedAsync(System.String)">
+  SendChannelNukedAsync(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/Contracts/IChatBroadcaster.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task SendChannelNukedAsync(string channelName)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
   <a id="EchoHub_Core_Contracts_IChatBroadcaster_SendChannelUpdatedAsync_" data-uid="EchoHub.Core.Contracts.IChatBroadcaster.SendChannelUpdatedAsync*"></a>
 
   <h3 id="EchoHub_Core_Contracts_IChatBroadcaster_SendChannelUpdatedAsync_EchoHub_Core_DTOs_ChannelDto_System_String_" data-uid="EchoHub.Core.Contracts.IChatBroadcaster.SendChannelUpdatedAsync(EchoHub.Core.DTOs.ChannelDto,System.String)">
@@ -196,6 +270,44 @@ Interface IChatBroadcaster  <a class="header-action link-secondary" title="View 
 
 
 
+  <a id="EchoHub_Core_Contracts_IChatBroadcaster_SendMessageDeletedAsync_" data-uid="EchoHub.Core.Contracts.IChatBroadcaster.SendMessageDeletedAsync*"></a>
+
+  <h3 id="EchoHub_Core_Contracts_IChatBroadcaster_SendMessageDeletedAsync_System_String_System_Guid_" data-uid="EchoHub.Core.Contracts.IChatBroadcaster.SendMessageDeletedAsync(System.String,System.Guid)">
+  SendMessageDeletedAsync(string, Guid)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/Contracts/IChatBroadcaster.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task SendMessageDeletedAsync(string channelName, Guid messageId)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>messageId</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.guid">Guid</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
   <a id="EchoHub_Core_Contracts_IChatBroadcaster_SendMessageToChannelAsync_" data-uid="EchoHub.Core.Contracts.IChatBroadcaster.SendMessageToChannelAsync*"></a>
 
   <h3 id="EchoHub_Core_Contracts_IChatBroadcaster_SendMessageToChannelAsync_System_String_EchoHub_Core_DTOs_MessageDto_" data-uid="EchoHub.Core.Contracts.IChatBroadcaster.SendMessageToChannelAsync(System.String,EchoHub.Core.DTOs.MessageDto)">
@@ -215,6 +327,44 @@ Interface IChatBroadcaster  <a class="header-action link-secondary" title="View 
     <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>message</code> <a class="xref" href="EchoHub.Core.DTOs.MessageDto.html">MessageDto</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Core_Contracts_IChatBroadcaster_SendUserBannedAsync_" data-uid="EchoHub.Core.Contracts.IChatBroadcaster.SendUserBannedAsync*"></a>
+
+  <h3 id="EchoHub_Core_Contracts_IChatBroadcaster_SendUserBannedAsync_System_String_System_String_" data-uid="EchoHub.Core.Contracts.IChatBroadcaster.SendUserBannedAsync(System.String,System.String)">
+  SendUserBannedAsync(string, string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/Contracts/IChatBroadcaster.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task SendUserBannedAsync(string username, string? reason)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>username</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>reason</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 
@@ -255,6 +405,46 @@ Interface IChatBroadcaster  <a class="header-action link-secondary" title="View 
     <dt><code>username</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>excludeConnectionId</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Core_Contracts_IChatBroadcaster_SendUserKickedAsync_" data-uid="EchoHub.Core.Contracts.IChatBroadcaster.SendUserKickedAsync*"></a>
+
+  <h3 id="EchoHub_Core_Contracts_IChatBroadcaster_SendUserKickedAsync_System_String_System_String_System_String_" data-uid="EchoHub.Core.Contracts.IChatBroadcaster.SendUserKickedAsync(System.String,System.String,System.String)">
+  SendUserKickedAsync(string, string, string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/Contracts/IChatBroadcaster.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task SendUserKickedAsync(string channelName, string username, string? reason)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>username</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>reason</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 

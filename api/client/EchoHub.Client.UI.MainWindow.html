@@ -1027,6 +1027,70 @@ Call after theme changes to refresh colors.</p>
 
 
 
+  <a id="EchoHub_Client_UI_MainWindow_ClearChannelMessages_" data-uid="EchoHub.Client.UI.MainWindow.ClearChannelMessages*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_ClearChannelMessages_System_String_" data-uid="EchoHub.Client.UI.MainWindow.ClearChannelMessages(System.String)">
+  ClearChannelMessages(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Clear all messages from a specific channel.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearChannelMessages(string channelName)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_MainWindow_EnsureChannelInList_" data-uid="EchoHub.Client.UI.MainWindow.EnsureChannelInList*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_EnsureChannelInList_System_String_" data-uid="EchoHub.Client.UI.MainWindow.EnsureChannelInList(System.String)">
+  EnsureChannelInList(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Ensure a channel exists in the left panel list (used for private channels joined via /join).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void EnsureChannelInList(string channelName)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
   <a id="EchoHub_Client_UI_MainWindow_FocusInput_" data-uid="EchoHub.Client.UI.MainWindow.FocusInput*"></a>
 
   <h3 id="EchoHub_Client_UI_MainWindow_FocusInput" data-uid="EchoHub.Client.UI.MainWindow.FocusInput">
@@ -1135,6 +1199,72 @@ Call after theme changes to refresh colors.</p>
     <pre><code class="lang-csharp hljs">public void RefreshMenuBar()</code></pre>
   </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_MainWindow_RemoveChannel_" data-uid="EchoHub.Client.UI.MainWindow.RemoveChannel*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_RemoveChannel_System_String_" data-uid="EchoHub.Client.UI.MainWindow.RemoveChannel(System.String)">
+  RemoveChannel(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Remove a channel from the left panel list.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void RemoveChannel(string channelName)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_MainWindow_RemoveMessage_" data-uid="EchoHub.Client.UI.MainWindow.RemoveMessage*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_RemoveMessage_System_String_System_Guid_" data-uid="EchoHub.Client.UI.MainWindow.RemoveMessage(System.String,System.Guid)">
+  RemoveMessage(string, Guid)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Remove all lines associated with a specific message ID.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void RemoveMessage(string channelName, Guid messageId)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>messageId</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.guid">Guid</a></dt>
+    <dd></dd>
+  </dl>
 
 
 
@@ -1309,6 +1439,65 @@ Call after theme changes to refresh colors.</p>
 
 
 
+  <a id="EchoHub_Client_UI_MainWindow_ToggleUsersPanel_" data-uid="EchoHub.Client.UI.MainWindow.ToggleUsersPanel*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_ToggleUsersPanel" data-uid="EchoHub.Client.UI.MainWindow.ToggleUsersPanel">
+  ToggleUsersPanel()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Toggle the online users panel visibility (F2).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ToggleUsersPanel()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_MainWindow_UpdateOnlineUsers_" data-uid="EchoHub.Client.UI.MainWindow.UpdateOnlineUsers*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_UpdateOnlineUsers_System_Collections_Generic_List_EchoHub_Core_DTOs_UserPresenceDto__" data-uid="EchoHub.Client.UI.MainWindow.UpdateOnlineUsers(System.Collections.Generic.List{EchoHub.Core.DTOs.UserPresenceDto})">
+  UpdateOnlineUsers(List&lt;UserPresenceDto&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Update the online users list display.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void UpdateOnlineUsers(List&lt;UserPresenceDto&gt; users)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>users</code> <span class="xref">List</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ProfileDtos.cs">UserPresenceDto</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
   <a id="EchoHub_Client_UI_MainWindow_UpdateStatusBar_" data-uid="EchoHub.Client.UI.MainWindow.UpdateStatusBar*"></a>
 
   <h3 id="EchoHub_Client_UI_MainWindow_UpdateStatusBar_System_String_" data-uid="EchoHub.Client.UI.MainWindow.UpdateStatusBar(System.String)">
@@ -1419,6 +1608,37 @@ Call after theme changes to refresh colors.</p>
 
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">public event Action? OnCreateChannelRequested</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action">Action</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h3 id="EchoHub_Client_UI_MainWindow_OnDeleteChannelRequested" data-uid="EchoHub.Client.UI.MainWindow.OnDeleteChannelRequested">
+  OnDeleteChannelRequested
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when the user requests to delete the current channel.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action? OnDeleteChannelRequested</code></pre>
   </div>
 
 

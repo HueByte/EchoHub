@@ -287,10 +287,10 @@ Class ApiClient  <a class="header-action link-secondary" title="View source" hre
 </h2>
 
 
-  <a id="EchoHub_Client_Services_ApiClient_CreateChannelAsync_" data-uid="EchoHub.Client.Services.ApiClient.CreateChannelAsync*"></a>
+  <a id="EchoHub_Client_Services_ApiClient_AssignRoleAsync_" data-uid="EchoHub.Client.Services.ApiClient.AssignRoleAsync*"></a>
 
-  <h3 id="EchoHub_Client_Services_ApiClient_CreateChannelAsync_System_String_System_String_" data-uid="EchoHub.Client.Services.ApiClient.CreateChannelAsync(System.String,System.String)">
-  CreateChannelAsync(string, string?)
+  <h3 id="EchoHub_Client_Services_ApiClient_AssignRoleAsync_System_String_EchoHub_Core_Models_ServerRole_" data-uid="EchoHub.Client.Services.ApiClient.AssignRoleAsync(System.String,EchoHub.Core.Models.ServerRole)">
+  AssignRoleAsync(string, ServerRole)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ApiClient.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -298,7 +298,83 @@ Class ApiClient  <a class="header-action link-secondary" title="View source" hre
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Task&lt;ChannelDto?&gt; CreateChannelAsync(string name, string? topic = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task AssignRoleAsync(string username, ServerRole role)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>username</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>role</code> <a class="xref" href="../core/EchoHub.Core.Models.ServerRole.html">ServerRole</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_Services_ApiClient_BanUserAsync_" data-uid="EchoHub.Client.Services.ApiClient.BanUserAsync*"></a>
+
+  <h3 id="EchoHub_Client_Services_ApiClient_BanUserAsync_System_String_System_String_" data-uid="EchoHub.Client.Services.ApiClient.BanUserAsync(System.String,System.String)">
+  BanUserAsync(string, string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ApiClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task BanUserAsync(string username, string? reason = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>username</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>reason</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_Services_ApiClient_CreateChannelAsync_" data-uid="EchoHub.Client.Services.ApiClient.CreateChannelAsync*"></a>
+
+  <h3 id="EchoHub_Client_Services_ApiClient_CreateChannelAsync_System_String_System_String_System_Boolean_" data-uid="EchoHub.Client.Services.ApiClient.CreateChannelAsync(System.String,System.String,System.Boolean)">
+  CreateChannelAsync(string, string?, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ApiClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;ChannelDto?&gt; CreateChannelAsync(string name, string? topic = null, bool isPublic = true)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -306,6 +382,8 @@ Class ApiClient  <a class="header-action link-secondary" title="View source" hre
     <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>topic</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>isPublic</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
     <dd></dd>
   </dl>
 
@@ -342,6 +420,42 @@ Class ApiClient  <a class="header-action link-secondary" title="View source" hre
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_Services_ApiClient_DeleteMessageAsync_" data-uid="EchoHub.Client.Services.ApiClient.DeleteMessageAsync*"></a>
+
+  <h3 id="EchoHub_Client_Services_ApiClient_DeleteMessageAsync_System_Guid_" data-uid="EchoHub.Client.Services.ApiClient.DeleteMessageAsync(System.Guid)">
+  DeleteMessageAsync(Guid)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ApiClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task DeleteMessageAsync(Guid messageId)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>messageId</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.guid">Guid</a></dt>
     <dd></dd>
   </dl>
 
@@ -518,6 +632,44 @@ Used by EchoHubConnection for SignalR token provider.</p>
 
 
 
+  <a id="EchoHub_Client_Services_ApiClient_KickUserAsync_" data-uid="EchoHub.Client.Services.ApiClient.KickUserAsync*"></a>
+
+  <h3 id="EchoHub_Client_Services_ApiClient_KickUserAsync_System_String_System_String_" data-uid="EchoHub.Client.Services.ApiClient.KickUserAsync(System.String,System.String)">
+  KickUserAsync(string, string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ApiClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task KickUserAsync(string username, string? reason = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>username</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>reason</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
   <a id="EchoHub_Client_Services_ApiClient_LoginAsync_" data-uid="EchoHub.Client.Services.ApiClient.LoginAsync*"></a>
 
   <h3 id="EchoHub_Client_Services_ApiClient_LoginAsync_System_String_System_String_" data-uid="EchoHub.Client.Services.ApiClient.LoginAsync(System.String,System.String)">
@@ -570,6 +722,82 @@ Used by EchoHubConnection for SignalR token provider.</p>
     <pre><code class="lang-csharp hljs">public Task LogoutAsync()</code></pre>
   </div>
 
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_Services_ApiClient_MuteUserAsync_" data-uid="EchoHub.Client.Services.ApiClient.MuteUserAsync*"></a>
+
+  <h3 id="EchoHub_Client_Services_ApiClient_MuteUserAsync_System_String_System_Nullable_System_Int32__System_String_" data-uid="EchoHub.Client.Services.ApiClient.MuteUserAsync(System.String,System.Nullable{System.Int32},System.String)">
+  MuteUserAsync(string, int?, string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ApiClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task MuteUserAsync(string username, int? durationMinutes = null, string? reason = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>username</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>durationMinutes</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+    <dt><code>reason</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_Services_ApiClient_NukeChannelAsync_" data-uid="EchoHub.Client.Services.ApiClient.NukeChannelAsync*"></a>
+
+  <h3 id="EchoHub_Client_Services_ApiClient_NukeChannelAsync_System_String_" data-uid="EchoHub.Client.Services.ApiClient.NukeChannelAsync(System.String)">
+  NukeChannelAsync(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ApiClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task NukeChannelAsync(string channelName)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
@@ -660,8 +888,8 @@ Used by EchoHubConnection for SignalR token provider.</p>
 
   <a id="EchoHub_Client_Services_ApiClient_SendUrlAsync_" data-uid="EchoHub.Client.Services.ApiClient.SendUrlAsync*"></a>
 
-  <h3 id="EchoHub_Client_Services_ApiClient_SendUrlAsync_System_String_System_String_" data-uid="EchoHub.Client.Services.ApiClient.SendUrlAsync(System.String,System.String)">
-  SendUrlAsync(string, string)
+  <h3 id="EchoHub_Client_Services_ApiClient_SendUrlAsync_System_String_System_String_System_String_" data-uid="EchoHub.Client.Services.ApiClient.SendUrlAsync(System.String,System.String,System.String)">
+  SendUrlAsync(string, string, string?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ApiClient.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -669,7 +897,7 @@ Used by EchoHubConnection for SignalR token provider.</p>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Task&lt;MessageDto?&gt; SendUrlAsync(string channelName, string url)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;MessageDto?&gt; SendUrlAsync(string channelName, string url, string? size = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -678,11 +906,85 @@ Used by EchoHubConnection for SignalR token provider.</p>
     <dd></dd>
     <dt><code>url</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
+    <dt><code>size</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
   </dl>
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
     <dt><span class="xref">Task</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs">MessageDto</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_Services_ApiClient_UnbanUserAsync_" data-uid="EchoHub.Client.Services.ApiClient.UnbanUserAsync*"></a>
+
+  <h3 id="EchoHub_Client_Services_ApiClient_UnbanUserAsync_System_String_" data-uid="EchoHub.Client.Services.ApiClient.UnbanUserAsync(System.String)">
+  UnbanUserAsync(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ApiClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task UnbanUserAsync(string username)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>username</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_Services_ApiClient_UnmuteUserAsync_" data-uid="EchoHub.Client.Services.ApiClient.UnmuteUserAsync*"></a>
+
+  <h3 id="EchoHub_Client_Services_ApiClient_UnmuteUserAsync_System_String_" data-uid="EchoHub.Client.Services.ApiClient.UnmuteUserAsync(System.String)">
+  UnmuteUserAsync(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ApiClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task UnmuteUserAsync(string username)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>username</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span></dt>
     <dd></dd>
   </dl>
 
@@ -810,8 +1112,8 @@ Used by EchoHubConnection for SignalR token provider.</p>
 
   <a id="EchoHub_Client_Services_ApiClient_UploadFileAsync_" data-uid="EchoHub.Client.Services.ApiClient.UploadFileAsync*"></a>
 
-  <h3 id="EchoHub_Client_Services_ApiClient_UploadFileAsync_System_String_System_IO_Stream_System_String_" data-uid="EchoHub.Client.Services.ApiClient.UploadFileAsync(System.String,System.IO.Stream,System.String)">
-  UploadFileAsync(string, Stream, string)
+  <h3 id="EchoHub_Client_Services_ApiClient_UploadFileAsync_System_String_System_IO_Stream_System_String_System_String_" data-uid="EchoHub.Client.Services.ApiClient.UploadFileAsync(System.String,System.IO.Stream,System.String,System.String)">
+  UploadFileAsync(string, Stream, string, string?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ApiClient.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -819,7 +1121,7 @@ Used by EchoHubConnection for SignalR token provider.</p>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Task&lt;MessageDto?&gt; UploadFileAsync(string channelName, Stream fileStream, string fileName)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;MessageDto?&gt; UploadFileAsync(string channelName, Stream fileStream, string fileName, string? size = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -829,6 +1131,8 @@ Used by EchoHubConnection for SignalR token provider.</p>
     <dt><code>fileStream</code> <span class="xref">Stream</span></dt>
     <dd></dd>
     <dt><code>fileName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>size</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 

@@ -315,8 +315,8 @@ public Task&lt;IActionResult&gt; GetChannels(int offset = 0, int limit = 50)</co
 
   <a id="EchoHub_Server_Controllers_ChannelsController_SendUrl_" data-uid="EchoHub.Server.Controllers.ChannelsController.SendUrl*"></a>
 
-  <h3 id="EchoHub_Server_Controllers_ChannelsController_SendUrl_System_String_EchoHub_Core_DTOs_SendUrlRequest_" data-uid="EchoHub.Server.Controllers.ChannelsController.SendUrl(System.String,EchoHub.Core.DTOs.SendUrlRequest)">
-  SendUrl(string, SendUrlRequest)
+  <h3 id="EchoHub_Server_Controllers_ChannelsController_SendUrl_System_String_EchoHub_Core_DTOs_SendUrlRequest_System_String_" data-uid="EchoHub.Server.Controllers.ChannelsController.SendUrl(System.String,EchoHub.Core.DTOs.SendUrlRequest,System.String)">
+  SendUrl(string, SendUrlRequest, string?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/ChannelsController.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -326,7 +326,7 @@ public Task&lt;IActionResult&gt; GetChannels(int offset = 0, int limit = 50)</co
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">[HttpPost(&quot;{channel}/send-url&quot;)]
 [EnableRateLimiting(&quot;upload&quot;)]
-public Task&lt;IActionResult&gt; SendUrl(string channel, SendUrlRequest request)</code></pre>
+public Task&lt;IActionResult&gt; SendUrl(string channel, SendUrlRequest request, string? size = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -334,6 +334,8 @@ public Task&lt;IActionResult&gt; SendUrl(string channel, SendUrlRequest request)
     <dt><code>channel</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>request</code> <a class="xref" href="../core/EchoHub.Core.DTOs.SendUrlRequest.html">SendUrlRequest</a></dt>
+    <dd></dd>
+    <dt><code>size</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 
@@ -394,8 +396,8 @@ public Task&lt;IActionResult&gt; UpdateTopic(string channel, UpdateTopicRequest 
 
   <a id="EchoHub_Server_Controllers_ChannelsController_Upload_" data-uid="EchoHub.Server.Controllers.ChannelsController.Upload*"></a>
 
-  <h3 id="EchoHub_Server_Controllers_ChannelsController_Upload_System_String_" data-uid="EchoHub.Server.Controllers.ChannelsController.Upload(System.String)">
-  Upload(string)
+  <h3 id="EchoHub_Server_Controllers_ChannelsController_Upload_System_String_System_String_" data-uid="EchoHub.Server.Controllers.ChannelsController.Upload(System.String,System.String)">
+  Upload(string, string?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/ChannelsController.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -405,12 +407,14 @@ public Task&lt;IActionResult&gt; UpdateTopic(string channel, UpdateTopicRequest 
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">[HttpPost(&quot;{channel}/upload&quot;)]
 [EnableRateLimiting(&quot;upload&quot;)]
-public Task&lt;IActionResult&gt; Upload(string channel)</code></pre>
+public Task&lt;IActionResult&gt; Upload(string channel, string? size = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>channel</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>size</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 
