@@ -1,4 +1,4 @@
-name: CI / Release
+name: Release
 
 on:
   push:
@@ -9,98 +9,28 @@ permissions:
   contents: write
 
 jobs:
-  lint-markdown:
-    name: Markdown Lint
+  release:
+    name: Create Release
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Run markdownlint
-        run: bash scripts/lint-markdown.sh
-
-  format-check:
-    name: Format Check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.0.x'
-
-      - name: Check formatting
-        run: dotnet format src/EchoHub.slnx --verify-no-changes --verbosity diagnostic
-
-  detect-changes:
-    name: Detect Changes
-    runs-on: ubuntu-latest
-    outputs:
-      src_changed: ${{ steps.check.outputs.src_changed }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Check for changes
-        id: check
+      - name: Check for src/ changes
+        id: changes
         env:
           BEFORE: ${{ github.event.before }}
         run: |
           if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
-            # workflow_dispatch or initial push — treat everything as changed
             echo "src_changed=true" >> "$GITHUB_OUTPUT"
           else
-            SRC_CHANGED=$(git diff --name-only "$BEFORE" HEAD -- 'src/' | wc -l)
-
-            [ "$SRC_CHANGED" -gt 0 ] && echo "src_changed=true" >> "$GITHUB_OUTPUT" || echo "src_changed=false" >> "$GITHUB_OUTPUT"
+            CHANGED=$(git diff --name-only "$BEFORE" HEAD -- 'src/' | wc -l)
+            [ "$CHANGED" -gt 0 ] && echo "src_changed=true" >> "$GITHUB_OUTPUT" || echo "src_changed=false" >> "$GITHUB_OUTPUT"
           fi
 
-  test:
-    name: Build & Test
-    needs: [lint-markdown, format-check, detect-changes]
-    if: needs.detect-changes.outputs.src_changed == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.0.x'
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('src/**/*.csproj') }}
-          restore-keys: nuget-${{ runner.os }}-
-
-      - name: Restore dependencies
-        run: dotnet restore src/EchoHub.slnx
-
-      - name: Build
-        run: dotnet build src/EchoHub.slnx --no-restore --configuration Release
-
-      - name: Test
-        run: dotnet test src/EchoHub.slnx --no-build --configuration Release --verbosity normal
-
-  release:
-    name: Create Release
-    needs: [lint-markdown, format-check, detect-changes, test]
-    if: needs.detect-changes.outputs.src_changed == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.0.x'
-
       - name: Read version
+        if: steps.changes.outputs.src_changed == 'true'
         id: version
         run: |
           VERSION=$(grep -oP '(?<=<Version>)[^<]+' src/Directory.Build.props)
@@ -108,6 +38,7 @@ jobs:
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Check if release exists
+        if: steps.changes.outputs.src_changed == 'true'
         id: check_release
         run: |
           if gh release view "${{ steps.version.outputs.tag }}" &>/dev/null; then
@@ -118,40 +49,46 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Setup .NET 10
+        if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
       - name: Publish Server win-x64
-        if: steps.check_release.outputs.exists == 'false'
+        if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
         run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r win-x64 --self-contained true -o publish/server-win-x64
 
       - name: Publish Server linux-x64
-        if: steps.check_release.outputs.exists == 'false'
+        if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
         run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r linux-x64 --self-contained true -o publish/server-linux-x64
 
       - name: Publish Server osx-x64
-        if: steps.check_release.outputs.exists == 'false'
+        if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
         run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r osx-x64 --self-contained true -o publish/server-osx-x64
 
       - name: Publish Server osx-arm64
-        if: steps.check_release.outputs.exists == 'false'
+        if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
         run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r osx-arm64 --self-contained true -o publish/server-osx-arm64
 
       - name: Publish Client win-x64
-        if: steps.check_release.outputs.exists == 'false'
+        if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
         run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r win-x64 --self-contained true -o publish/client-win-x64
 
       - name: Publish Client linux-x64
-        if: steps.check_release.outputs.exists == 'false'
+        if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
         run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r linux-x64 --self-contained true -o publish/client-linux-x64
 
       - name: Publish Client osx-x64
-        if: steps.check_release.outputs.exists == 'false'
+        if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
         run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r osx-x64 --self-contained true -o publish/client-osx-x64
 
       - name: Publish Client osx-arm64
-        if: steps.check_release.outputs.exists == 'false'
+        if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
         run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r osx-arm64 --self-contained true -o publish/client-osx-arm64
 
       - name: Zip artifacts
-        if: steps.check_release.outputs.exists == 'false'
+        if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
         run: |
           cd publish
           zip -r ../EchoHub-Server-win-x64.zip server-win-x64/
@@ -164,7 +101,7 @@ jobs:
           zip -r ../EchoHub-Client-osx-arm64.zip client-osx-arm64/
 
       - name: Build release notes
-        if: steps.check_release.outputs.exists == 'false'
+        if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
         id: notes
         run: |
           TAG="${{ steps.version.outputs.tag }}"
@@ -181,9 +118,9 @@ jobs:
             echo "### Commits"
             echo ""
             if [ -n "$PREV_TAG" ]; then
-              git log "${PREV_TAG}..${TAG}" --pretty=format:"- %s (%h)" --no-merges
+              git log "${PREV_TAG}..HEAD" --pretty=format:"- %s (%h)" --no-merges
             else
-              git log "${TAG}" --pretty=format:"- %s (%h)" --no-merges
+              git log HEAD --pretty=format:"- %s (%h)" --no-merges
             fi
             echo ""
             echo ""
@@ -196,7 +133,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
-        if: steps.check_release.outputs.exists == 'false'
+        if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
         run: |
           gh release create "${{ steps.version.outputs.tag }}" \
             --title "EchoHub ${{ steps.version.outputs.tag }}" \

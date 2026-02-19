@@ -1,8 +1,11 @@
-name: PR Check
+name: CI
 
 on:
+  push:
+    branches: [master, dev]
   pull_request:
-    branches: [master]
+    branches: [master, dev]
+  workflow_dispatch:
 
 jobs:
   lint-markdown:
@@ -28,25 +31,30 @@ jobs:
       - name: Check formatting
         run: dotnet format src/EchoHub.slnx --verify-no-changes --verbosity diagnostic
 
-  test:
+  build-and-test:
     name: Build & Test
-    needs: [lint-markdown, format-check]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Check for src/ changes
         id: changes
         env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
           BASE_REF: ${{ github.base_ref }}
         run: |
-          git fetch origin "$BASE_REF" --depth=1
-          CHANGED=$(git diff --name-only "origin/$BASE_REF"...HEAD -- 'src/' | wc -l)
-          if [ "$CHANGED" -gt 0 ]; then
-            echo "src_changed=true" >> "$GITHUB_OUTPUT"
+          if [ "$EVENT" = "pull_request" ]; then
+            git fetch origin "$BASE_REF" --depth=1
+            CHANGED=$(git diff --name-only "origin/$BASE_REF"...HEAD -- 'src/' | wc -l)
+          elif [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            CHANGED=1
           else
-            echo "src_changed=false" >> "$GITHUB_OUTPUT"
+            CHANGED=$(git diff --name-only "$BEFORE" HEAD -- 'src/' | wc -l)
           fi
+          [ "$CHANGED" -gt 0 ] && echo "src_changed=true" >> "$GITHUB_OUTPUT" || echo "src_changed=false" >> "$GITHUB_OUTPUT"
 
       - name: Setup .NET 10
         if: steps.changes.outputs.src_changed == 'true'
