@@ -13,9 +13,17 @@
 <p align="center">
   <a href="#what-is-this">What</a> •
   <a href="#getting-started">Setup</a> •
+  <a href="#irc-gateway">IRC</a> •
+  <a href="#deployment-with-nginx">Deploy</a> •
   <a href="#client-commands">Commands</a> •
   <a href="#configuration">Config</a> •
   <a href="#license">License</a>
+</p>
+
+<p align="center">
+  <a href="https://echohub.voidcube.cloud/">Website</a> •
+  <a href="https://echohub.voidcube.cloud/servers">Public Servers</a> •
+  <a href="https://huebyte.github.io/EchoHub/">Documentation</a>
 </p>
 
 <p align="center">
@@ -40,21 +48,25 @@ Each server is fully independent — no central authority, no account federation
 ```mermaid
 graph TD
     subgraph Server["Server"]
+        ChatSvc["ChatService"]
         Hub["SignalR ChatHub"]
+        IRC["IRC Gateway :6667"]
         Auth["JWT Auth"]
         DB["SQLite DB (EF Core)"]
         Files["File Storage"]
     end
 
-    subgraph Client["Client"]
+    subgraph Clients["Clients"]
         TUI["Terminal GUI (TUI)"]
-        Theme["Theme Engine"]
-        API["API Client (auto-refresh)"]
+        IRCClient["IRC Client (irssi, WeeChat, ...)"]
     end
 
-    API -- "WebSocket" --> Hub
-    API -- "REST" --> Auth
-    Hub --> DB
+    TUI -- "WebSocket" --> Hub
+    TUI -- "REST" --> Auth
+    IRCClient -- "TCP" --> IRC
+    Hub --> ChatSvc
+    IRC --> ChatSvc
+    ChatSvc --> DB
     Auth --> DB
     Files --> DB
 ```
@@ -65,6 +77,7 @@ graph TD
 
 - **Self-hostable** — your server, your rules, your data
 - **Real-time messaging** via SignalR WebSockets
+- **IRC gateway** — native IRC clients connect alongside TUI users, full cross-protocol messaging
 - **JWT auth** with short-lived access tokens and 30-day refresh tokens
 - **Channels** — create, set topics, delete (no 47-step permission wizard required)
 - **File & image uploads** with actual validation (magic bytes, not just trusting the extension)
@@ -122,6 +135,66 @@ Connect, register, chat. That's the whole onboarding flow.
 dotnet build src/EchoHub.slnx
 ```
 
+## IRC Gateway
+
+EchoHub includes a built-in IRC protocol gateway. Any standard IRC client can connect to the same server and chat alongside TUI users — messages flow both ways in real time.
+
+### Enable It
+
+In the server's `appsettings.json`:
+
+```json
+{
+  "Irc": {
+    "Enabled": true,
+    "Port": 6667,
+    "ServerName": "echohub",
+    "Motd": "Welcome to EchoHub IRC Gateway!"
+  }
+}
+```
+
+### Connect
+
+```bash
+# irssi
+irssi -c your-server.com -p 6667 -w <password> -n <username>
+
+# WeeChat
+/server add echohub your-server.com/6667 -password=<password> -nicks=<username>
+/connect echohub
+```
+
+IRC users must have an existing EchoHub account (no registration via IRC). Auth works via `PASS`/`NICK`/`USER` or SASL PLAIN.
+
+### What Works
+
+| Feature | How it maps to IRC |
+| ------- | ------------------ |
+| Text messages | Standard `PRIVMSG` (long messages split at ~400 byte chunks) |
+| Images | `[Image: filename]` + download URL + ASCII art line-by-line |
+| File uploads | `[File: filename] /api/files/{id}` |
+| Channels | `JOIN`, `PART`, `NAMES`, `TOPIC`, `LIST` |
+| Presence | `AWAY`, `WHO`, `WHOIS` |
+| Status | Maps to IRC away/here |
+
+### TLS
+
+If running behind **nginx** (recommended), let nginx handle TLS -- see [Deployment with nginx](#deployment-with-nginx) below.
+
+For direct TLS without a reverse proxy, the IRC gateway can terminate TLS itself:
+
+```json
+{
+  "Irc": {
+    "TlsEnabled": true,
+    "TlsPort": 6697,
+    "TlsCertPath": "/path/to/cert.pfx",
+    "TlsCertPassword": "your-password"
+  }
+}
+```
+
 ## Client Commands
 
 | Command | Description |
@@ -172,35 +245,107 @@ dotnet build src/EchoHub.slnx
 | `Jwt:Secret` | *(auto-generated)* | JWT signing key |
 | `Server:Name` | `My EchoHub Server` | Server display name |
 | `Server:Description` | `A self-hosted EchoHub chat server` | Server description |
+| `Server:PublicServer` | `false` | List on the [public directory](https://echohub.voidcube.cloud/servers) |
+| `Server:PublicHost` | *(empty)* | Public hostname for directory listing |
+| `Irc:Enabled` | `false` | Enable the IRC gateway |
+| `Irc:Port` | `6667` | IRC listen port |
+| `Irc:TlsEnabled` | `false` | Enable TLS for IRC |
+| `Irc:TlsPort` | `6697` | IRC TLS port |
+| `Irc:ServerName` | `echohub` | IRC server name in protocol messages |
+| `Irc:Motd` | `Welcome to EchoHub IRC Gateway!` | Message of the day |
 | `Cors:AllowedOrigins` | *(all origins)* | CORS whitelist |
 
-Logging uses Serilog — console + daily rolling files with 14-day retention. Configure it in the `Serilog` section of appsettings.
+Logging uses Serilog — console + daily rolling files with 14-day retention. Configure in the `Serilog` section.
+
+## Deployment with nginx
+
+Most production deployments run behind nginx. Here's a config that handles both the HTTP/WebSocket server and the IRC gateway:
+
+```nginx
+# HTTP + WebSocket (EchoHub Server API + SignalR)
+server {
+    listen 443 ssl;
+    server_name echohub.example.com;
+
+    ssl_certificate     /etc/letsencrypt/live/echohub.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/echohub.example.com/privkey.pem;
+
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Required for SignalR WebSocket
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $http_connection;
+
+        proxy_read_timeout 86400s;
+        proxy_send_timeout 86400s;
+    }
+
+    # Increase max upload size for file sharing
+    client_max_body_size 10m;
+}
+
+# HTTP → HTTPS redirect
+server {
+    listen 80;
+    server_name echohub.example.com;
+    return 301 https://$host$request_uri;
+}
+
+# IRC TLS (port 6697 → plain IRC on 6667)
+stream {
+    upstream irc_backend {
+        server 127.0.0.1:6667;
+    }
+
+    server {
+        listen 6697 ssl;
+        proxy_pass irc_backend;
+
+        ssl_certificate     /etc/letsencrypt/live/echohub.example.com/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/echohub.example.com/privkey.pem;
+    }
+}
+```
+
+With this setup, keep the EchoHub IRC gateway's `TlsEnabled` set to `false` — nginx terminates TLS. See the full example at [`examples/nginx.conf`](examples/nginx.conf).
 
 ## Project Structure
 
 ```text
 src/
-├── EchoHub.Core/          # Shared models, DTOs, contracts, validation
-│   ├── Constants/         # ValidationConstants, HubConstants
-│   ├── Contracts/         # IEchoHubClient (SignalR interface)
-│   ├── DTOs/              # Record DTOs
-│   └── Models/            # Entity models
+├── EchoHub.Core/            # Shared models, DTOs, contracts, validation
+│   ├── Constants/           # ValidationConstants, HubConstants
+│   ├── Contracts/           # IChatService, IChatBroadcaster, IEchoHubClient
+│   ├── DTOs/                # Record DTOs
+│   └── Models/              # Entity models
 │
-├── EchoHub.Server/        # ASP.NET Core server
-│   ├── Auth/              # JWT token service
-│   ├── Controllers/       # REST API endpoints
-│   ├── Data/              # EF Core DbContext + migrations
-│   ├── Hubs/              # SignalR ChatHub
-│   ├── Services/          # Presence, file storage, image processing
-│   └── Setup/             # First-run setup, DB initialization
+├── EchoHub.Server/          # ASP.NET Core server
+│   ├── Auth/                # JWT token service
+│   ├── Controllers/         # REST API endpoints
+│   ├── Data/                # EF Core DbContext + migrations
+│   ├── Hubs/                # SignalR ChatHub
+│   ├── Services/            # ChatService, presence, file storage, image processing
+│   └── Setup/               # First-run setup, DB initialization
 │
-├── EchoHub.Client/        # Terminal.Gui TUI client
-│   ├── Config/            # Client configuration
-│   ├── Services/          # API client, SignalR connection
-│   ├── Themes/            # 6 built-in themes
-│   └── UI/                # MainWindow, dialogs, chat renderer
+├── EchoHub.Server.Irc/      # IRC protocol gateway
+│   ├── IrcGatewayService    # TCP listener (BackgroundService)
+│   ├── IrcCommandHandler    # IRC command dispatch (JOIN, PRIVMSG, etc.)
+│   ├── IrcBroadcaster       # Fans chat events to IRC connections
+│   └── IrcMessageFormatter  # MessageDto → IRC PRIVMSG lines
 │
-└── EchoHub.slnx           # Solution file
+├── EchoHub.Client/          # Terminal.Gui TUI client
+│   ├── Config/              # Client configuration
+│   ├── Services/            # API client, SignalR connection
+│   ├── Themes/              # 13 built-in themes
+│   └── UI/                  # MainWindow, dialogs, chat renderer
+│
+└── EchoHub.slnx             # Solution file
 ```
 
 ## License

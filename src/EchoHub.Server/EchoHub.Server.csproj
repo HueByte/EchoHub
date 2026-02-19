@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EchoHub.Core\EchoHub.Core.csproj" />
+    <ProjectReference Include="..\EchoHub.Server.Irc\EchoHub.Server.Irc.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -30,6 +30,16 @@
       ],
       "dest": "_api_meta/client",
       "filter": "filterConfig.yml"
+    },
+    {
+      "src": [
+        {
+          "src": "../src/EchoHub.Server.Irc/bin/Release/net10.0",
+          "files": ["EchoHub.Server.Irc.dll"]
+        }
+      ],
+      "dest": "_api_meta/server-irc",
+      "filter": "filterConfig.yml"
     }
   ],
   "build": {
@@ -53,6 +63,12 @@
       {
         "src": "_api_meta/client",
         "dest": "api/client",
+        "files": ["*.yml"],
+        "exclude": ["toc.yml"]
+      },
+      {
+        "src": "_api_meta/server-irc",
+        "dest": "api/server-irc",
         "files": ["*.yml"],
         "exclude": ["toc.yml"]
       }

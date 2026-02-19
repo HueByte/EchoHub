@@ -1,5 +1,7 @@
 - name: Overview
   href: index.md
+- name: v0.2.0
+  href: v0.2.0.md
 - name: v0.1.1
   href: v0.1.1.md
 - name: v0.1.0

@@ -4,12 +4,10 @@ using EchoHub.Core.Contracts;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
 using EchoHub.Server.Data;
-using EchoHub.Server.Hubs;
 using EchoHub.Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace EchoHub.Server.Controllers;
@@ -23,7 +21,7 @@ public class ChannelsController(
     FileStorageService fileStorage,
     ImageToAsciiService asciiService,
     IHttpClientFactory httpClientFactory,
-    IHubContext<ChatHub, IEchoHubClient> hubContext) : ControllerBase
+    IChatService chatService) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetChannels([FromQuery] int offset = 0, [FromQuery] int limit = 50)
@@ -78,7 +76,7 @@ public class ChannelsController(
         await db.SaveChangesAsync();
 
         var dto = new ChannelDto(channel.Id, channel.Name, channel.Topic, 0, channel.CreatedAt);
-        await hubContext.Clients.All.ChannelUpdated(dto);
+        await chatService.BroadcastChannelUpdatedAsync(dto);
 
         return Created($"/api/channels/{channelName}", dto);
     }
@@ -107,7 +105,7 @@ public class ChannelsController(
 
         var messageCount = await db.Messages.CountAsync(m => m.ChannelId == dbChannel.Id);
         var dto = new ChannelDto(dbChannel.Id, dbChannel.Name, dbChannel.Topic, messageCount, dbChannel.CreatedAt);
-        await hubContext.Clients.Group(channelName).ChannelUpdated(dto);
+        await chatService.BroadcastChannelUpdatedAsync(dto, channelName);
 
         return Ok(dto);
     }
@@ -214,7 +212,7 @@ public class ChannelsController(
             file.FileName,
             message.SentAt);
 
-        await hubContext.Clients.Group(channelName).ReceiveMessage(messageDto);
+        await chatService.BroadcastMessageAsync(channelName, messageDto);
 
         return Ok(messageDto);
     }
@@ -331,7 +329,7 @@ public class ChannelsController(
             fileName,
             message.SentAt);
 
-        await hubContext.Clients.Group(channelName).ReceiveMessage(messageDto);
+        await chatService.BroadcastMessageAsync(channelName, messageDto);
 
         return Ok(messageDto);
     }

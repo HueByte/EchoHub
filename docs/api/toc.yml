@@ -16,3 +16,7 @@
       href: ../_api_meta/server/toc.yml
     - name: Articles
       href: server-articles/
+- name: Server.Irc
+  items:
+    - name: API Reference
+      href: ../_api_meta/server-irc/toc.yml

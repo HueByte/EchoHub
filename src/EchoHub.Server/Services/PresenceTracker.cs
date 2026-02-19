@@ -137,6 +137,11 @@ public class PresenceTracker
         }
     }
 
+    public string? GetUsernameForConnection(string connectionId)
+    {
+        return _connections.TryGetValue(connectionId, out var info) ? info.username : null;
+    }
+
     public bool IsOnline(string username)
     {
         return _userConnections.TryGetValue(username, out var connections) && connections.Count > 0;
