@@ -231,11 +231,11 @@ public class ChatListSource : IListDataSource
                 attr = new Attribute(attr.Foreground, mentionBg.Value);
             listView.SetAttribute(attr);
 
-            foreach (var ch in segment.Text)
+            foreach (var rune in segment.Text.EnumerateRunes())
             {
                 if (charPos >= viewportX && drawnChars < width)
                 {
-                    listView.AddRune(new Rune(ch));
+                    listView.AddRune(rune);
                     drawnChars++;
                 }
                 charPos++;
@@ -324,9 +324,9 @@ public class ChannelListSource : IListDataSource
         if (selected)
         {
             listView.SetAttribute(focusAttr);
-            foreach (var ch in (prefix + channelText + badge))
+            foreach (var rune in (prefix + channelText + badge).EnumerateRunes())
             {
-                if (drawnChars < width) { listView.AddRune(new Rune(ch)); drawnChars++; }
+                if (drawnChars < width) { listView.AddRune(rune); drawnChars++; }
             }
         }
         else
@@ -334,26 +334,26 @@ public class ChannelListSource : IListDataSource
             // Prefix
             var prefixAttr = isActive ? ActiveAttr : NormalAttr;
             listView.SetAttribute(prefixAttr);
-            foreach (var ch in prefix)
+            foreach (var rune in prefix.EnumerateRunes())
             {
-                if (drawnChars < width) { listView.AddRune(new Rune(ch)); drawnChars++; }
+                if (drawnChars < width) { listView.AddRune(rune); drawnChars++; }
             }
 
             // Channel name
             var nameAttr = isActive ? ActiveAttr : hasUnread ? UnreadAttr : NormalAttr;
             listView.SetAttribute(nameAttr);
-            foreach (var ch in channelText)
+            foreach (var rune in channelText.EnumerateRunes())
             {
-                if (drawnChars < width) { listView.AddRune(new Rune(ch)); drawnChars++; }
+                if (drawnChars < width) { listView.AddRune(rune); drawnChars++; }
             }
 
             // Unread badge
             if (hasUnread)
             {
                 listView.SetAttribute(BadgeAttr);
-                foreach (var ch in badge)
+                foreach (var rune in badge.EnumerateRunes())
                 {
-                    if (drawnChars < width) { listView.AddRune(new Rune(ch)); drawnChars++; }
+                    if (drawnChars < width) { listView.AddRune(rune); drawnChars++; }
                 }
             }
         }
@@ -403,24 +403,25 @@ public class UserListSource : IListDataSource
         var (text, nameColor) = _users[item];
         var normalAttr = listView.GetAttributeForRole(selected ? VisualRole.Focus : VisualRole.Normal);
 
+        // Convert to runes for safe surrogate handling
+        var runes = text.EnumerateRunes().ToArray();
+
         // Find where the name starts (after status icon + space + optional role badge)
         // Format: "● ★Username" or "● Username"
         int nameStart = 0;
-        int i = 0;
-        // Skip status icon
-        while (i < text.Length && !char.IsLetterOrDigit(text[i]) && text[i] != '_') i++;
-        nameStart = i;
+        while (nameStart < runes.Length && !Rune.IsLetterOrDigit(runes[nameStart]) && runes[nameStart].Value != '_')
+            nameStart++;
 
         int drawnChars = 0;
 
         // Draw prefix (status icon + role badge) in normal color
         var prefixAttr = normalAttr;
-        for (int c = 0; c < nameStart && c < text.Length; c++)
+        for (int c = 0; c < nameStart && c < runes.Length; c++)
         {
             if (drawnChars < width)
             {
                 listView.SetAttribute(prefixAttr);
-                listView.AddRune(new Rune(text[c]));
+                listView.AddRune(runes[c]);
                 drawnChars++;
             }
         }
@@ -428,12 +429,12 @@ public class UserListSource : IListDataSource
         // Draw name in nickname color
         var userAttr = nameColor ?? normalAttr;
         if (selected) userAttr = normalAttr; // use focus attr when selected
-        for (int c = nameStart; c < text.Length; c++)
+        for (int c = nameStart; c < runes.Length; c++)
         {
             if (drawnChars < width)
             {
                 listView.SetAttribute(userAttr);
-                listView.AddRune(new Rune(text[c]));
+                listView.AddRune(runes[c]);
                 drawnChars++;
             }
         }

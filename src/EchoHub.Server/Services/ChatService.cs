@@ -144,6 +144,9 @@ public class ChatService : IChatService
         if (content.Length > HubConstants.MaxMessageLength)
             return $"Message exceeds maximum length of {HubConstants.MaxMessageLength} characters.";
 
+        // Sanitize excessive newlines
+        content = SanitizeNewlines(content);
+
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
@@ -341,6 +344,28 @@ public class ChatService : IChatService
             return null;
 
         return (user.Id, user.Username);
+    }
+
+    /// <summary>
+    /// Collapse consecutive newlines and cap total line count to prevent newline spam.
+    /// </summary>
+    private static string SanitizeNewlines(string content)
+    {
+        // Normalize \r\n → \n
+        content = content.Replace("\r\n", "\n").Replace('\r', '\n');
+
+        // Collapse runs of >MaxConsecutiveNewlines into MaxConsecutiveNewlines
+        var maxRun = new string('\n', HubConstants.MaxConsecutiveNewlines + 1);
+        var replacement = new string('\n', HubConstants.MaxConsecutiveNewlines);
+        while (content.Contains(maxRun))
+            content = content.Replace(maxRun, replacement);
+
+        // Cap total newlines
+        var lines = content.Split('\n');
+        if (lines.Length > HubConstants.MaxMessageNewlines)
+            content = string.Join('\n', lines.Take(HubConstants.MaxMessageNewlines));
+
+        return content;
     }
 
     private static async Task<List<MessageDto>> GetChannelHistoryInternalAsync(EchoHubDbContext db, string channelName, int count)
