@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Changelog | EchoHub Documentation </title>
+      <title>v0.1.1 - Directory Connection Self-Healing | EchoHub Documentation </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Changelog | EchoHub Documentation ">
+      <meta name="title" content="v0.1.1 - Directory Connection Self-Healing | EchoHub Documentation ">
       
       
       <link rel="icon" href="../images/hue_icon.svg">
@@ -85,13 +85,13 @@
         </div>
 
         <article data-uid="">
-<h1 id="changelog">Changelog</h1>
+<h1 id="v011---directory-connection-self-healing">v0.1.1 - Directory Connection Self-Healing</h1>
 
-<p>Release history for EchoHub.</p>
-<h2 id="releases">Releases</h2>
+<h2 id="fixes">Fixes</h2>
 <ul>
-<li><a href="v0.1.1.html">v0.1.1</a> - Directory Connection Self-Healing</li>
-<li><a href="v0.1.0.html">v0.1.0</a> - Initial Release</li>
+<li>Server now reconnects to the EchoHubSpace directory indefinitely when the API goes down, using exponential backoff (2s → 30s cap)</li>
+<li>If automatic reconnect is exhausted, the connection is rebuilt from scratch automatically</li>
+<li>Initial connection attempts also use exponential backoff instead of a fixed 30s delay</li>
 </ul>
 
 </article>

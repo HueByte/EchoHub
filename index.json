@@ -482,12 +482,17 @@
   "changelog/index.html": {
     "href": "changelog/index.html",
     "title": "Changelog | EchoHub Documentation",
-    "summary": "Changelog Release history for EchoHub. Releases v0.1.0 - Initial Release"
+    "summary": "Changelog Release history for EchoHub. Releases v0.1.1 - Directory Connection Self-Healing v0.1.0 - Initial Release"
   },
   "changelog/v0.1.0.html": {
     "href": "changelog/v0.1.0.html",
     "title": "v0.1.0 - Initial Release | EchoHub Documentation",
     "summary": "v0.1.0 - Initial Release Features Real-time messaging via SignalR JWT authentication with access and refresh tokens Channel management (create, set topic, delete) File and image uploads with magic-byte validation Image-to-ASCII conversion for terminal display Presence tracking (online, away, DND, invisible) 6 built-in TUI themes Rate limiting on auth, upload, and general endpoints Self-contained binary releases for Windows, Linux, and macOS"
+  },
+  "changelog/v0.1.1.html": {
+    "href": "changelog/v0.1.1.html",
+    "title": "v0.1.1 - Directory Connection Self-Healing | EchoHub Documentation",
+    "summary": "v0.1.1 - Directory Connection Self-Healing Fixes Server now reconnects to the EchoHubSpace directory indefinitely when the API goes down, using exponential backoff (2s → 30s cap) If automatic reconnect is exhausted, the connection is rebuilt from scratch automatically Initial connection attempts also use exponential backoff instead of a fixed 30s delay"
   },
   "index.html": {
     "href": "index.html",
