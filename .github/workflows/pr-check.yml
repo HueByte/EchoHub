@@ -14,9 +14,23 @@ jobs:
       - name: Run markdownlint
         run: bash scripts/lint-markdown.sh
 
+  format-check:
+    name: Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Check formatting
+        run: dotnet format src/EchoHub.slnx --verify-no-changes --verbosity diagnostic
+
   test:
     name: Build & Test
-    needs: lint-markdown
+    needs: [lint-markdown, format-check]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
