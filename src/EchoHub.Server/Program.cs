@@ -13,140 +13,185 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 
-// ── First-run setup ──────────────────────────────────────────────────────────
+// ── First-run setup (once) ──────────────────────────────────────────────────
 FirstRunSetup.EnsureAppSettings();
 
-var builder = WebApplication.CreateBuilder(args);
+// ── Bootstrap logger (replaced by full Serilog once host starts) ────────────
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
-// ── Serilog ──────────────────────────────────────────────────────────────────
-builder.Host.UseSerilog((context, config) =>
-    config.ReadFrom.Configuration(context.Configuration));
+// ── Auto-restart loop ───────────────────────────────────────────────────────
+const int maxConsecutiveFailures = 5;
+var consecutiveFailures = 0;
 
-// ── SQLite + EF Core ──────────────────────────────────────────────────────────
-var defaultDbPath = Path.Combine(AppContext.BaseDirectory, "echohub.db");
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? $"Data Source={defaultDbPath}";
-
-builder.Services.AddDbContext<EchoHubDbContext>(options =>
-    options.UseSqlite(connectionString));
-
-// ── JWT Authentication ────────────────────────────────────────────────────────
-var jwtSecret = builder.Configuration["Jwt:Secret"]
-    ?? throw new InvalidOperationException("Jwt:Secret must be configured.");
-var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "EchoHub.Server";
-var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "EchoHub.Client";
-
-builder.Services.AddAuthentication(options =>
+while (true)
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtIssuer,
-        ValidAudience = jwtAudience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
-    };
+    var startTime = DateTimeOffset.UtcNow;
 
-    // Allow SignalR clients to send the JWT via query string
-    options.Events = new JwtBearerEvents
+    try
     {
-        OnMessageReceived = context =>
+        var builder = WebApplication.CreateBuilder(args);
+
+        // ── Serilog ──────────────────────────────────────────────────────────
+        builder.Host.UseSerilog((context, config) =>
+            config.ReadFrom.Configuration(context.Configuration));
+
+        // ── SQLite + EF Core ─────────────────────────────────────────────────
+        var defaultDbPath = Path.Combine(AppContext.BaseDirectory, "echohub.db");
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+            ?? $"Data Source={defaultDbPath}";
+
+        builder.Services.AddDbContext<EchoHubDbContext>(options =>
+            options.UseSqlite(connectionString));
+
+        // ── JWT Authentication ───────────────────────────────────────────────
+        var jwtSecret = builder.Configuration["Jwt:Secret"]
+            ?? throw new InvalidOperationException("Jwt:Secret must be configured.");
+        var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "EchoHub.Server";
+        var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "EchoHub.Client";
+
+        builder.Services.AddAuthentication(options =>
         {
-            var accessToken = context.Request.Query["access_token"];
-            var path = context.HttpContext.Request.Path;
-
-            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments(HubConstants.ChatHubPath))
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
             {
-                context.Token = accessToken;
-            }
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtIssuer,
+                ValidAudience = jwtAudience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            };
 
-            return Task.CompletedTask;
-        },
-    };
-});
+            // Allow SignalR clients to send the JWT via query string
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    var accessToken = context.Request.Query["access_token"];
+                    var path = context.HttpContext.Request.Path;
 
-builder.Services.AddAuthorization();
+                    if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments(HubConstants.ChatHubPath))
+                    {
+                        context.Token = accessToken;
+                    }
 
-// ── Controllers + SignalR ───────────────────────────────────────────────────────
-builder.Services.AddControllers();
-builder.Services.AddSignalR();
+                    return Task.CompletedTask;
+                },
+            };
+        });
 
-// ── Services ──────────────────────────────────────────────────────────────────
-builder.Services.AddSingleton<JwtTokenService>();
-builder.Services.AddSingleton<PresenceTracker>();
-builder.Services.AddSingleton<ImageToAsciiService>();
-builder.Services.AddSingleton<FileStorageService>();
-builder.Services.AddHttpClient("ImageDownload", client =>
-{
-    client.Timeout = TimeSpan.FromSeconds(15);
-    client.MaxResponseContentBufferSize = 10 * 1024 * 1024; // 10 MB
-});
+        builder.Services.AddAuthorization();
 
-// ── Rate Limiting ────────────────────────────────────────────────────────────
-builder.Services.AddRateLimiter(options =>
-{
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+        // ── Controllers + SignalR ────────────────────────────────────────────
+        builder.Services.AddControllers();
+        builder.Services.AddSignalR();
 
-    options.AddFixedWindowLimiter("auth", limiter =>
+        // ── Services ─────────────────────────────────────────────────────────
+        builder.Services.AddSingleton<JwtTokenService>();
+        builder.Services.AddSingleton<PresenceTracker>();
+        builder.Services.AddSingleton<ImageToAsciiService>();
+        builder.Services.AddSingleton<FileStorageService>();
+        builder.Services.AddHttpClient("ImageDownload", client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(15);
+            client.MaxResponseContentBufferSize = 10 * 1024 * 1024; // 10 MB
+        });
+
+        // ── Rate Limiting ────────────────────────────────────────────────────
+        builder.Services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            options.AddFixedWindowLimiter("auth", limiter =>
+            {
+                limiter.PermitLimit = 10;
+                limiter.Window = TimeSpan.FromMinutes(1);
+                limiter.QueueLimit = 0;
+            });
+
+            options.AddFixedWindowLimiter("upload", limiter =>
+            {
+                limiter.PermitLimit = 5;
+                limiter.Window = TimeSpan.FromMinutes(1);
+                limiter.QueueLimit = 0;
+            });
+
+            options.AddFixedWindowLimiter("general", limiter =>
+            {
+                limiter.PermitLimit = 100;
+                limiter.Window = TimeSpan.FromMinutes(1);
+                limiter.QueueLimit = 0;
+            });
+        });
+
+        // ── CORS ─────────────────────────────────────────────────────────────
+        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy =>
+            {
+                policy.AllowAnyHeader()
+                      .AllowAnyMethod()
+                      .AllowCredentials();
+
+                if (allowedOrigins is { Length: > 0 })
+                    policy.WithOrigins(allowedOrigins);
+                else
+                    policy.SetIsOriginAllowed(_ => true);
+            });
+        });
+
+        await using var app = builder.Build();
+
+        // ── Database initialization ──────────────────────────────────────────
+        await DatabaseSetup.InitializeAsync(app.Services);
+
+        // ── Middleware ────────────────────────────────────────────────────────
+        app.UseCors();
+        app.UseRateLimiter();
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        // ── Routing ──────────────────────────────────────────────────────────
+        app.MapControllers();
+        app.MapHub<ChatHub>(HubConstants.ChatHubPath);
+
+        await app.RunAsync();
+
+        // Graceful shutdown (Ctrl+C) — exit the loop
+        Log.Information("Server shut down gracefully");
+        break;
+    }
+    catch (Exception ex)
     {
-        limiter.PermitLimit = 10;
-        limiter.Window = TimeSpan.FromMinutes(1);
-        limiter.QueueLimit = 0;
-    });
+        var uptime = DateTimeOffset.UtcNow - startTime;
 
-    options.AddFixedWindowLimiter("upload", limiter =>
-    {
-        limiter.PermitLimit = 5;
-        limiter.Window = TimeSpan.FromMinutes(1);
-        limiter.QueueLimit = 0;
-    });
+        // If server ran for over 60 seconds, it's a runtime crash — reset failure count
+        if (uptime.TotalSeconds > 60)
+            consecutiveFailures = 0;
 
-    options.AddFixedWindowLimiter("general", limiter =>
-    {
-        limiter.PermitLimit = 100;
-        limiter.Window = TimeSpan.FromMinutes(1);
-        limiter.QueueLimit = 0;
-    });
-});
+        consecutiveFailures++;
+        Log.Fatal(ex, "Server crashed after {Uptime:g} (failure {Count}/{Max})",
+            uptime, consecutiveFailures, maxConsecutiveFailures);
 
-// ── CORS ─────────────────────────────────────────────────────────────────────
-var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+        if (consecutiveFailures >= maxConsecutiveFailures)
+        {
+            Log.Fatal("Too many consecutive failures, server will not restart");
+            break;
+        }
 
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+        var delaySeconds = Math.Min(Math.Pow(2, consecutiveFailures), 30);
+        Log.Information("Restarting server in {Delay}s...", delaySeconds);
+        await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
+    }
+}
 
-        if (allowedOrigins is { Length: > 0 })
-            policy.WithOrigins(allowedOrigins);
-        else
-            policy.SetIsOriginAllowed(_ => true);
-    });
-});
-
-var app = builder.Build();
-
-// ── Database initialization ───────────────────────────────────────────────────
-await DatabaseSetup.InitializeAsync(app.Services);
-
-// ── Middleware ─────────────────────────────────────────────────────────────────
-app.UseCors();
-app.UseRateLimiter();
-app.UseAuthentication();
-app.UseAuthorization();
-
-// ── Routing ───────────────────────────────────────────────────────────────────
-app.MapControllers();
-app.MapHub<ChatHub>(HubConstants.ChatHubPath);
-
-app.Run();
+Log.CloseAndFlush();
