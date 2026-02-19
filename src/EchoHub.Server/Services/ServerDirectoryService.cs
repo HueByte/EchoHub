@@ -177,13 +177,9 @@ public sealed class ServerDirectoryService(
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        if (_connection is not null)
-        {
-            await _connection.DisposeAsync();
-            _connection = null;
-        }
-
+        // Cancel ExecuteAsync first — it disposes the connection via await using
         await base.StopAsync(cancellationToken);
+        _connection = null;
     }
 
     /// <summary>
