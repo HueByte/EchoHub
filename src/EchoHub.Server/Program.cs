@@ -1,10 +1,12 @@
 using System.Text;
 using System.Threading.RateLimiting;
 using EchoHub.Core.Constants;
+using EchoHub.Core.Contracts;
 using EchoHub.Core.Models;
 using EchoHub.Server.Auth;
 using EchoHub.Server.Data;
 using EchoHub.Server.Hubs;
+using EchoHub.Server.Irc;
 using EchoHub.Server.Services;
 using EchoHub.Server.Setup;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -101,6 +103,14 @@ while (true)
         builder.Services.AddSingleton<ImageToAsciiService>();
         builder.Services.AddSingleton<FileStorageService>();
         builder.Services.AddHostedService<ServerDirectoryService>();
+
+        // ── Chat Service + Broadcasters ─────────────────────────────────────
+        builder.Services.AddSingleton<IChatBroadcaster, SignalRBroadcaster>();
+        builder.Services.AddSingleton<IChatService, ChatService>();
+
+        // ── IRC Gateway (optional) ──────────────────────────────────────────
+        builder.AddIrcGateway();
+
         builder.Services.AddHttpClient("ImageDownload", client =>
         {
             client.Timeout = TimeSpan.FromSeconds(15);
