@@ -33,16 +33,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Check for src/ changes
         id: check
         run: |
-          CHANGED=$(git diff --name-only HEAD~1 HEAD -- 'src/' | wc -l)
-          if [ "$CHANGED" -gt 0 ]; then
+          BEFORE=${{ github.event.before }}
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            # Initial push — treat everything as changed
             echo "src_changed=true" >> "$GITHUB_OUTPUT"
           else
-            echo "src_changed=false" >> "$GITHUB_OUTPUT"
+            CHANGED=$(git diff --name-only "$BEFORE" HEAD -- 'src/' | wc -l)
+            if [ "$CHANGED" -gt 0 ]; then
+              echo "src_changed=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "src_changed=false" >> "$GITHUB_OUTPUT"
+            fi
           fi
 
   test:
