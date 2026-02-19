@@ -544,18 +544,12 @@ public sealed class MainWindow : Runnable
     }
 
     /// <summary>
-    /// Load historical messages into a channel (prepend).
+    /// Load historical messages into a channel, replacing any existing messages.
     /// </summary>
     public void LoadHistory(string channelName, List<MessageDto> messages)
     {
-        if (!_channelMessages.TryGetValue(channelName, out var existing))
-        {
-            existing = [];
-            _channelMessages[channelName] = existing;
-        }
-
         var formatted = messages.SelectMany(FormatMessage).ToList();
-        existing.InsertRange(0, formatted);
+        _channelMessages[channelName] = formatted;
 
         if (channelName == _currentChannel)
         {

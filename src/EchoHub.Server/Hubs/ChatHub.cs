@@ -112,12 +112,14 @@ public class ChatHub(EchoHubDbContext db, ILogger<ChatHub> logger, PresenceTrack
                 return [];
             }
 
-            presenceTracker.JoinChannel(CurrentUsername, channelName);
+            var isNewJoin = presenceTracker.JoinChannel(CurrentUsername, channelName);
 
-            await Groups.AddToGroupAsync(Context.ConnectionId, channelName);
-            await Clients.OthersInGroup(channelName).UserJoined(channelName, CurrentUsername);
-
-            logger.LogInformation("{User} joined channel '{Channel}'", CurrentUsername, channelName);
+            if (isNewJoin)
+            {
+                await Groups.AddToGroupAsync(Context.ConnectionId, channelName);
+                await Clients.OthersInGroup(channelName).UserJoined(channelName, CurrentUsername);
+                logger.LogInformation("{User} joined channel '{Channel}'", CurrentUsername, channelName);
+            }
 
             var history = await GetChannelHistory(channelName, HubConstants.DefaultHistoryCount);
             return history;
@@ -293,11 +295,10 @@ public class ChatHub(EchoHubDbContext db, ILogger<ChatHub> logger, PresenceTrack
                 statusMessage);
 
             var channels = presenceTracker.GetChannelsForUser(CurrentUsername);
+            var connections = presenceTracker.GetConnectionsInChannels(channels);
 
-            foreach (var channel in channels)
-            {
-                await Clients.Group(channel).UserStatusChanged(presence);
-            }
+            if (connections.Count > 0)
+                await Clients.Clients(connections).UserStatusChanged(presence);
         }
         catch (Exception ex)
         {

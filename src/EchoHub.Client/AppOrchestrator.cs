@@ -28,6 +28,7 @@ public sealed class AppOrchestrator : IDisposable
     private UserStatus _currentStatus = UserStatus.Online;
     private string? _currentStatusMessage;
     private string _currentUsername = string.Empty;
+    private readonly HashSet<string> _joinedChannels = [];
 
     private bool IsConnected => _connection is not null && _connection.IsConnected;
     private bool IsAuthenticated => _apiClient is not null;
@@ -161,6 +162,7 @@ public sealed class AppOrchestrator : IDisposable
 
             try
             {
+                _joinedChannels.Add(channelName);
                 var history = await _connection!.JoinChannelAsync(channelName);
                 InvokeUI(() =>
                 {
@@ -185,6 +187,7 @@ public sealed class AppOrchestrator : IDisposable
             try
             {
                 await _connection!.LeaveChannelAsync(channel);
+                _joinedChannels.Remove(channel);
                 InvokeUI(() => _mainWindow.AddSystemMessage(channel, $"You left #{channel}"));
             }
             catch (Exception ex)
@@ -294,6 +297,8 @@ public sealed class AppOrchestrator : IDisposable
                 _mainWindow.UpdateStatusBar("Connected");
             });
 
+            _joinedChannels.Clear();
+            _joinedChannels.Add(HubConstants.DefaultChannel);
             await _connection.JoinChannelAsync(HubConstants.DefaultChannel);
             InvokeUI(() => _mainWindow.SwitchToChannel(HubConstants.DefaultChannel));
 
@@ -330,6 +335,7 @@ public sealed class AppOrchestrator : IDisposable
 
             _apiClient?.Dispose();
             _apiClient = null;
+            _joinedChannels.Clear();
 
             InvokeUI(() =>
             {
@@ -377,11 +383,12 @@ public sealed class AppOrchestrator : IDisposable
 
         RunAsync(async () =>
         {
-            await _connection!.JoinChannelAsync(channelName);
+            if (_joinedChannels.Add(channelName))
+                await _connection!.JoinChannelAsync(channelName);
 
             try
             {
-                var history = await _connection.GetHistoryAsync(channelName);
+                var history = await _connection!.GetHistoryAsync(channelName);
                 InvokeUI(() => _mainWindow.LoadHistory(channelName, history));
             }
             catch
@@ -530,6 +537,7 @@ public sealed class AppOrchestrator : IDisposable
             var channel = await _apiClient!.CreateChannelAsync(result.Name, result.Topic);
             if (channel is null) return;
 
+            _joinedChannels.Add(channel.Name);
             var history = await _connection!.JoinChannelAsync(channel.Name);
 
             // Refresh the channel list
@@ -579,13 +587,19 @@ public sealed class AppOrchestrator : IDisposable
 
         connection.OnReconnected += () =>
         {
-            var channels = _mainWindow.GetChannelNames();
+            // Server-side state is lost on reconnect — rejoin all channels
+            var channels = _joinedChannels.ToList();
             if (channels.Count == 0) return;
+
+            _joinedChannels.Clear();
 
             RunAsync(async () =>
             {
                 foreach (var channel in channels)
+                {
+                    _joinedChannels.Add(channel);
                     await _connection!.JoinChannelAsync(channel);
+                }
 
                 Log.Information("Rejoined {Count} channel(s) after reconnect", channels.Count);
             }, "Failed to rejoin channels after reconnect");

@@ -50,7 +50,10 @@ public class PresenceTracker
         return username;
     }
 
-    public void JoinChannel(string username, string channelName)
+    /// <summary>
+    /// Returns true if this is a new join, false if the user was already in the channel.
+    /// </summary>
+    public bool JoinChannel(string username, string channelName)
     {
         lock (_lock)
         {
@@ -60,7 +63,7 @@ public class PresenceTracker
                 _userChannels[username] = channels;
             }
 
-            channels.Add(channelName);
+            return channels.Add(channelName);
         }
     }
 
@@ -104,6 +107,34 @@ public class PresenceTracker
         }
 
         return [];
+    }
+
+    /// <summary>
+    /// Get all unique connection IDs for users who share any of the given channels.
+    /// </summary>
+    public List<string> GetConnectionsInChannels(List<string> channels)
+    {
+        lock (_lock)
+        {
+            var usernames = new HashSet<string>();
+            foreach (var channel in channels)
+            {
+                foreach (var (username, userChannels) in _userChannels)
+                {
+                    if (userChannels.Contains(channel))
+                        usernames.Add(username);
+                }
+            }
+
+            var connections = new List<string>();
+            foreach (var username in usernames)
+            {
+                if (_userConnections.TryGetValue(username, out var conns))
+                    connections.AddRange(conns);
+            }
+
+            return connections;
+        }
     }
 
     public bool IsOnline(string username)
