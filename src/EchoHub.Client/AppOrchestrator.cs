@@ -212,6 +212,8 @@ public sealed class AppOrchestrator : IDisposable
                 var history = await _connection!.JoinChannelAsync(channelName);
                 InvokeUI(() =>
                 {
+                    // Add to channel list if not already there (e.g. private channels)
+                    _mainWindow.EnsureChannelInList(channelName);
                     _mainWindow.SwitchToChannel(channelName);
                     if (history.Count > 0)
                         _mainWindow.LoadHistory(channelName, history);
@@ -704,17 +706,18 @@ public sealed class AppOrchestrator : IDisposable
 
         RunAsync(async () =>
         {
-            var channel = await _apiClient!.CreateChannelAsync(result.Name, result.Topic);
+            var channel = await _apiClient!.CreateChannelAsync(result.Name, result.Topic, result.IsPublic);
             if (channel is null) return;
 
             _joinedChannels.Add(channel.Name);
             var history = await _connection!.JoinChannelAsync(channel.Name);
 
-            // Refresh the channel list
+            // Refresh the channel list and ensure private channels show up
             var channels = await _apiClient.GetChannelsAsync();
             InvokeUI(() =>
             {
                 _mainWindow.SetChannels(channels);
+                _mainWindow.EnsureChannelInList(channel.Name);
                 _mainWindow.SwitchToChannel(channel.Name);
                 if (history.Count > 0)
                     _mainWindow.LoadHistory(channel.Name, history);

@@ -43,9 +43,10 @@ public class ChannelsController : ControllerBase
         offset = Math.Max(0, offset);
         limit = Math.Clamp(limit, 1, 100);
 
-        var total = await _db.Channels.CountAsync();
+        var query = _db.Channels.Where(c => c.IsPublic);
+        var total = await query.CountAsync();
 
-        var channels = await _db.Channels
+        var channels = await query
             .OrderBy(c => c.Name)
             .Skip(offset)
             .Take(limit)
@@ -53,6 +54,7 @@ public class ChannelsController : ControllerBase
                 c.Id,
                 c.Name,
                 c.Topic,
+                c.IsPublic,
                 c.Messages.Count,
                 c.CreatedAt))
             .ToListAsync();
@@ -83,14 +85,16 @@ public class ChannelsController : ControllerBase
             Id = Guid.NewGuid(),
             Name = channelName,
             Topic = request.Topic?.Trim(),
+            IsPublic = request.IsPublic,
             CreatedByUserId = Guid.Parse(userIdClaim),
         };
 
         _db.Channels.Add(channel);
         await _db.SaveChangesAsync();
 
-        var dto = new ChannelDto(channel.Id, channel.Name, channel.Topic, 0, channel.CreatedAt);
-        await _chatService.BroadcastChannelUpdatedAsync(dto);
+        var dto = new ChannelDto(channel.Id, channel.Name, channel.Topic, channel.IsPublic, 0, channel.CreatedAt);
+        if (channel.IsPublic)
+            await _chatService.BroadcastChannelUpdatedAsync(dto);
 
         return Created($"/api/channels/{channelName}", dto);
     }
@@ -118,7 +122,7 @@ public class ChannelsController : ControllerBase
         await _db.SaveChangesAsync();
 
         var messageCount = await _db.Messages.CountAsync(m => m.ChannelId == dbChannel.Id);
-        var dto = new ChannelDto(dbChannel.Id, dbChannel.Name, dbChannel.Topic, messageCount, dbChannel.CreatedAt);
+        var dto = new ChannelDto(dbChannel.Id, dbChannel.Name, dbChannel.Topic, dbChannel.IsPublic, messageCount, dbChannel.CreatedAt);
         await _chatService.BroadcastChannelUpdatedAsync(dto, channelName);
 
         return Ok(dto);

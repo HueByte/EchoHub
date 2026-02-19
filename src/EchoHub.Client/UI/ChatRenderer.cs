@@ -90,13 +90,23 @@ public partial class ChatLine
     }
 
     /// <summary>
-    /// Parse a string containing ANSI 24-bit color escape codes into colored segments.
-    /// Supports foreground (\x1b[38;2;R;G;Bm), background (\x1b[48;2;R;G;Bm), and reset (\x1b[0m).
+    /// Returns true if a line contains color tags (new format or legacy ANSI).
     /// </summary>
-    public static ChatLine FromAnsi(string ansiText, Attribute? defaultAttr = null)
+    public static bool HasColorTags(string text) =>
+        text.Contains("{F:") || text.Contains("{B:") || text.Contains("{X}") || text.Contains('\x1b');
+
+    /// <summary>
+    /// Parse a string containing color tags into colored segments.
+    /// Supports the new printable format ({F:RRGGBB}, {B:RRGGBB}, {X})
+    /// and legacy ANSI format (\x1b[38;2;R;G;Bm, \x1b[48;2;R;G;Bm, \x1b[0m).
+    /// </summary>
+    public static ChatLine FromColoredText(string text, Attribute? defaultAttr = null)
     {
+        // Detect which format is used and pick the right regex
+        var regex = text.Contains('\x1b') ? AnsiColorRegex() : ColorTagRegex();
+        bool isAnsi = text.Contains('\x1b');
+
         var segments = new List<ChatSegment>();
-        var regex = AnsiColorRegex();
         int lastIndex = 0;
         Color? currentFg = null;
         Color? currentBg = null;
@@ -111,52 +121,76 @@ public partial class ChatLine
             return new Attribute(fg, bg);
         }
 
-        foreach (Match match in regex.Matches(ansiText))
+        foreach (Match match in regex.Matches(text))
         {
-            // Add any text before this escape sequence
             if (match.Index > lastIndex)
             {
-                var text = ansiText[lastIndex..match.Index];
-                if (text.Length > 0)
-                    segments.Add(new ChatSegment(text, BuildAttr()));
+                var t = text[lastIndex..match.Index];
+                if (t.Length > 0)
+                    segments.Add(new ChatSegment(t, BuildAttr()));
             }
 
-            // Parse the escape sequence
-            if (match.Groups[1].Value == "0")
+            if (isAnsi)
             {
-                // Reset
-                currentFg = null;
-                currentBg = null;
+                // Legacy ANSI format
+                if (match.Groups[1].Value == "0")
+                {
+                    currentFg = null;
+                    currentBg = null;
+                }
+                else if (match.Groups[2].Success)
+                {
+                    var r = int.Parse(match.Groups[3].Value);
+                    var g = int.Parse(match.Groups[4].Value);
+                    var b = int.Parse(match.Groups[5].Value);
+                    if (match.Groups[2].Value == "38;2")
+                        currentFg = new Color(r, g, b);
+                    else
+                        currentBg = new Color(r, g, b);
+                }
             }
-            else if (match.Groups[2].Success)
+            else
             {
-                var r = int.Parse(match.Groups[3].Value);
-                var g = int.Parse(match.Groups[4].Value);
-                var b = int.Parse(match.Groups[5].Value);
-
-                if (match.Groups[2].Value == "38;2")
-                    currentFg = new Color(r, g, b);
-                else // 48;2
-                    currentBg = new Color(r, g, b);
+                // New printable tag format: {F:RRGGBB}, {B:RRGGBB}, {X}
+                if (match.Groups[6].Success)
+                {
+                    // Reset {X}
+                    currentFg = null;
+                    currentBg = null;
+                }
+                else if (match.Groups[7].Success)
+                {
+                    var hex = match.Groups[8].Value;
+                    var r = Convert.ToInt32(hex[..2], 16);
+                    var g = Convert.ToInt32(hex[2..4], 16);
+                    var b = Convert.ToInt32(hex[4..6], 16);
+                    if (match.Groups[7].Value == "F")
+                        currentFg = new Color(r, g, b);
+                    else
+                        currentBg = new Color(r, g, b);
+                }
             }
 
             lastIndex = match.Index + match.Length;
         }
 
-        // Add remaining text
-        if (lastIndex < ansiText.Length)
+        if (lastIndex < text.Length)
         {
-            var text = ansiText[lastIndex..];
-            if (text.Length > 0)
-                segments.Add(new ChatSegment(text, BuildAttr()));
+            var t = text[lastIndex..];
+            if (t.Length > 0)
+                segments.Add(new ChatSegment(t, BuildAttr()));
         }
 
         return segments.Count > 0 ? new ChatLine(segments) : new ChatLine("");
     }
 
-    // Matches: \x1b[0m (reset), \x1b[38;2;R;G;Bm (fg), or \x1b[48;2;R;G;Bm (bg)
+    // Legacy: \x1b[0m, \x1b[38;2;R;G;Bm, \x1b[48;2;R;G;Bm
     [GeneratedRegex(@"\x1b\[(?:(0)|(?:(38;2|48;2);(\d{1,3});(\d{1,3});(\d{1,3})))m")]
     private static partial Regex AnsiColorRegex();
+
+    // New: {X} (reset), {F:RRGGBB} (foreground), {B:RRGGBB} (background)
+    [GeneratedRegex(@"\{(?:(X)|(?:(F|B):([0-9A-Fa-f]{6})))\}")]
+    private static partial Regex ColorTagRegex();
 }
 
 /// <summary>

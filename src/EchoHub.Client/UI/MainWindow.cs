@@ -583,6 +583,20 @@ public sealed class MainWindow : Runnable
     }
 
     /// <summary>
+    /// Ensure a channel exists in the left panel list (used for private channels joined via /join).
+    /// </summary>
+    public void EnsureChannelInList(string channelName)
+    {
+        if (_channelNames.Contains(channelName))
+            return;
+
+        _channelNames.Add(channelName);
+        if (!_channelMessages.ContainsKey(channelName))
+            _channelMessages[channelName] = [];
+        RefreshChannelList();
+    }
+
+    /// <summary>
     /// Update the topic for a specific channel.
     /// </summary>
     public void SetChannelTopic(string channelName, string? topic)
@@ -838,10 +852,10 @@ public sealed class MainWindow : Runnable
                 {
                     foreach (var artLine in message.Content.Split('\n'))
                     {
-                        // Parse ANSI color codes from colored ASCII art
+                        // Parse color tags from colored ASCII art
                         var trimmed = artLine.TrimEnd('\r');
-                        if (trimmed.Contains('\x1b'))
-                            lines.Add(ChatLine.FromAnsi("       " + trimmed));
+                        if (ChatLine.HasColorTags(trimmed))
+                            lines.Add(ChatLine.FromColoredText("       " + trimmed));
                         else
                             lines.Add(new ChatLine($"       {trimmed}"));
                     }

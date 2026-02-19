@@ -17,6 +17,7 @@ public record ChannelDto(
     Guid Id,
     string Name,
     string? Topic,
+    bool IsPublic,
     int MessageCount,
     DateTimeOffset CreatedAt);
 
@@ -30,7 +31,7 @@ public record UserDto(
 
 public record SendMessageRequest(string ChannelName, string Content);
 
-public record CreateChannelRequest(string Name, string? Topic = null);
+public record CreateChannelRequest(string Name, string? Topic = null, bool IsPublic = true);
 
 public record UpdateTopicRequest(string? Topic);
 

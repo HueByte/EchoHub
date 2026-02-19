@@ -21,8 +21,10 @@ public class ImageToAsciiService
 
     /// <summary>
     /// Converts an image to ASCII art using half-block characters (▀▄█) with
-    /// 24-bit ANSI foreground and background colors for 2x vertical resolution.
+    /// printable color tags for 2x vertical resolution.
     /// Each character cell represents two vertical pixels.
+    /// Format: {F:RRGGBB} foreground, {B:RRGGBB} background, {X} reset.
+    /// Uses only printable ASCII — no terminal escape bytes.
     /// </summary>
     public string ConvertToAscii(Stream imageStream, int width = HubConstants.AsciiArtWidth, int height = HubConstants.AsciiArtHeightHalfBlock)
     {
@@ -51,27 +53,24 @@ public class ImageToAsciiService
 
                 if (topPixel.R == bottomPixel.R && topPixel.G == bottomPixel.G && topPixel.B == bottomPixel.B)
                 {
-                    // Both pixels same color — full block
                     fgR = topPixel.R; fgG = topPixel.G; fgB = topPixel.B;
                     bgR = topPixel.R; bgG = topPixel.G; bgB = topPixel.B;
                     blockChar = '\u2588'; // █
                 }
                 else
                 {
-                    // Top pixel = foreground, bottom pixel = background, upper half block
                     fgR = topPixel.R; fgG = topPixel.G; fgB = topPixel.B;
                     bgR = bottomPixel.R; bgG = bottomPixel.G; bgB = bottomPixel.B;
                     blockChar = '\u2580'; // ▀
                 }
 
-                // Emit color codes only when they change
                 bool fgChanged = !hasLastColor || fgR != lastFgR || fgG != lastFgG || fgB != lastFgB;
                 bool bgChanged = !hasLastColor || bgR != lastBgR || bgG != lastBgG || bgB != lastBgB;
 
                 if (fgChanged)
-                    sb.Append($"\x1b[38;2;{fgR};{fgG};{fgB}m");
+                    sb.Append($"{{F:{fgR:X2}{fgG:X2}{fgB:X2}}}");
                 if (bgChanged)
-                    sb.Append($"\x1b[48;2;{bgR};{bgG};{bgB}m");
+                    sb.Append($"{{B:{bgR:X2}{bgG:X2}{bgB:X2}}}");
 
                 sb.Append(blockChar);
 
@@ -80,8 +79,7 @@ public class ImageToAsciiService
                 hasLastColor = true;
             }
 
-            // Reset color at end of line
-            sb.Append("\x1b[0m");
+            sb.Append("{X}");
             hasLastColor = false;
 
             if (y + 2 < image.Height)

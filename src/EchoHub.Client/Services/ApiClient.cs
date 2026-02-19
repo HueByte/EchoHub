@@ -186,10 +186,10 @@ public sealed class ApiClient : IDisposable
         return await response.Content.ReadFromJsonAsync<MessageDto>();
     }
 
-    public async Task<ChannelDto?> CreateChannelAsync(string name, string? topic = null)
+    public async Task<ChannelDto?> CreateChannelAsync(string name, string? topic = null, bool isPublic = true)
     {
         EnsureAuthenticated();
-        var request = new CreateChannelRequest(name, topic);
+        var request = new CreateChannelRequest(name, topic, isPublic);
         var response = await AuthenticatedRequestAsync(() =>
             _http.PostAsJsonAsync("/api/channels", request));
         await EnsureSuccessAsync(response);
