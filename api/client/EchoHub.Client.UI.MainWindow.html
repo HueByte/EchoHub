@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class MainWindow | EchoHub Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class MainWindow | EchoHub Documentation ">
+      
+      <meta name="description" content="Main Terminal.Gui window for the EchoHub chat client.">
+      <link rel="icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../logo.svg" alt="EchoHub">
+            EchoHub
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="EchoHub.Client.UI.MainWindow">
+
+
+
+  <h1 id="EchoHub_Client_UI_MainWindow" data-uid="EchoHub.Client.UI.MainWindow" class="text-break">
+Class MainWindow  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="EchoHub.html">EchoHub</a>.<a class="xref" href="EchoHub.Client.html">Client</a>.<a class="xref" href="EchoHub.Client.UI.html">UI</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>EchoHub.Client.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Main Terminal.Gui window for the EchoHub chat client.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class MainWindow : Runnable, IDisposable, ISupportInitializeNotification, ISupportInitialize, IRunnable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">View</span></div>
+      <div><span class="xref">Runnable</span></div>
+      <div><span class="xref">MainWindow</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.componentmodel.isupportinitializenotification">ISupportInitializeNotification</a></div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.componentmodel.isupportinitialize">ISupportInitialize</a></div>
+      <div><span class="xref">IRunnable</span></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <span class="xref">Runnable.SetApp(IApplication)</span>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">Runnable.SetIsRunning(bool)</a>
+    </div>
+    <div>
+      <span class="xref">Runnable.RequestStop()</span>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">Runnable.RaiseIsRunningChanging(bool, bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">Runnable.RaiseIsRunningChangedEvent(bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">Runnable.SetIsModal(bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">Runnable.RaiseIsModalChangedEvent(bool)</a>
+    </div>
+    <div>
+      <span class="xref">Runnable.Result</span>
+    </div>
+    <div>
+      <span class="xref">Runnable.IsRunning</span>
+    </div>
+    <div>
+      <span class="xref">Runnable.IsModal</span>
+    </div>
+    <div>
+      <span class="xref">Runnable.StopRequested</span>
+    </div>
+    <div>
+      <span class="xref">Runnable.IsRunningChanging</span>
+    </div>
+    <div>
+      <span class="xref">Runnable.IsRunningChanged</span>
+    </div>
+    <div>
+      <span class="xref">Runnable.IsModalChanged</span>
+    </div>
+    <div>
+      <span class="xref">View.NewMouseEvent(Mouse)</span>
+    </div>
+    <div>
+      <span class="xref">View.RaiseMouseEvent(Mouse)</span>
+    </div>
+    <div>
+      <span class="xref">View.GetAdornmentsThickness()</span>
+    </div>
+    <div>
+      <span class="xref">View.GetSupportedCommands()</span>
+    </div>
+    <div>
+      <span class="xref">View.InvokeCommands(Command[], IInputBinding)</span>
+    </div>
+    <div>
+      <span class="xref">View.InvokeCommand(Command, IInputBinding)</span>
+    </div>
+    <div>
+      <span class="xref">View.InvokeCommand(Command, ICommandContext)</span>
+    </div>
+    <div>
+      <span class="xref">View.InvokeCommand(Command)</span>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.size">View.SetContentSize(Size?)</a>
+    </div>
+    <div>
+      <span class="xref">View.GetContentSize()</span>
+    </div>
+    <div>
+      <span class="xref">View.GetWidthRequiredForSubViews()</span>
+    </div>
+    <div>
+      <span class="xref">View.GetHeightRequiredForSubViews()</span>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">View.ContentToScreen(in Point)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">View.ScreenToContent(in Point)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">View.ViewportToScreen(in Rectangle)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">View.ViewportToScreen(in Point)</a>
+    </div>
+    <div>
+      <span class="xref">View.ViewportToScreen()</span>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">View.ScreenToViewport(in Point)</a>
+    </div>
+    <div>
+      <span class="xref">View.GetViewportOffsetFromFrame()</span>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">View.ScrollVertical(int)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">View.ScrollHorizontal(int)</a>
+    </div>
+    <div>
+      <span class="xref">View.Dispose()</span>
+    </div>
+    <div>
+      <span class="xref">View.ToString()</span>
+    </div>
+    <div>
+      <span class="xref">View.ToDebugString()</span>
+    </div>
+    <div>
+      <span class="xref">View.BeginInit()</span>
+    </div>
+    <div>
+      <span class="xref">View.EndInit()</span>
+    </div>
+    <div>
+      <span class="xref">View.OnEnabledChanged()</span>
+    </div>
+    <div>
+      <span class="xref">View.SetCursorNeedsUpdate()</span>
+    </div>
+    <div>
+      <span class="xref">View.GetCurrentAttribute()</span>
+    </div>
+    <div>
+      <span class="xref">View.GetAttributeForRole(VisualRole)</span>
+    </div>
+    <div>
+      <span class="xref">View.SetAttribute(Attribute)</span>
+    </div>
+    <div>
+      <span class="xref">View.SetAttributeForRole(VisualRole)</span>
+    </div>
+    <div>
+      <span class="xref">View.GetClip()</span>
+    </div>
+    <div>
+      <span class="xref">View.SetClip(Region)</span>
+    </div>
+    <div>
+      <span class="xref">View.SetClipToScreen()</span>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">View.ExcludeFromClip(Rectangle)</a>
+    </div>
+    <div>
+      <span class="xref">View.ExcludeFromClip(Region)</span>
+    </div>
+    <div>
+      <span class="xref">View.AddViewportToClip()</span>
+    </div>
+    <div>
+      <span class="xref">View.Draw(DrawContext)</span>
+    </div>
+    <div>
+      <span class="xref">View.DrawAdornments()</span>
+    </div>
+    <div>
+      <span class="xref">View.ClearViewport(DrawContext)</span>
+    </div>
+    <div>
+      <span class="xref">View.DrawText(DrawContext)</span>
+    </div>
+    <div>
+      <span class="xref">View.DrawSubViews(DrawContext)</span>
+    </div>
+    <div>
+      <span class="xref">View.RenderLineCanvas(DrawContext)</span>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">View.Move(int, int)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.text.rune">View.AddRune(Rune)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">View.AddRune(char)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">View.AddRune(int, int, Rune)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">View.AddStr(string)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">View.AddStr(int, int, string)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">View.DrawHotString(string, Attribute, Attribute)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">View.DrawHotString(string, bool)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">View.FillRect(Rectangle, Color?)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">View.FillRect(Rectangle, Rune)</a>
+    </div>
+    <div>
+      <span class="xref">View.GetScheme()</span>
+    </div>
+    <div>
+      <span class="xref">View.SetScheme(Scheme)</span>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">View.GetSubViews(bool, bool, bool)</a>
+    </div>
+    <div>
+      <span class="xref">View.Add(View)</span>
+    </div>
+    <div>
+      <span class="xref">View.Add(params View[])</span>
+    </div>
+    <div>
+      <span class="xref">View.Remove(View)</span>
+    </div>
+    <div>
+      <span class="xref">View.RemoveAll()</span>
+    </div>
+    <div>
+      <span class="xref">View.RemoveAll&lt;TView&gt;()</span>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">View.IsInHierarchy(View, View, bool)</a>
+    </div>
+    <div>
+      <span class="xref">View.MoveSubViewTowardsEnd(View)</span>
+    </div>
+    <div>
+      <span class="xref">View.MoveSubViewToEnd(View)</span>
+    </div>
+    <div>
+      <span class="xref">View.MoveSubViewTowardsStart(View)</span>
+    </div>
+    <div>
+      <span class="xref">View.MoveSubViewToStart(View)</span>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">View.AddKeyBindingsForHotKey(Key, Key, object)</a>
+    </div>
+    <div>
+      <span class="xref">View.AssignHotKeysToSubViews()</span>
+    </div>
+    <div>
+      <span class="xref">View.NewKeyDownEvent(Key)</span>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">View.Contains(in Point)</a>
+    </div>
+    <div>
+      <span class="xref">View.FrameToScreen()</span>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">View.ScreenToFrame(in Point)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.size">View.Layout(Size)</a>
+    </div>
+    <div>
+      <span class="xref">View.Layout()</span>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.size">View.SetRelativeLayout(Size)</a>
+    </div>
+    <div>
+      <span class="xref">View.SetNeedsLayout()</span>
+    </div>
+    <div>
+      <span class="xref">View.GetContainerSize()</span>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.point">View.GetViewsUnderLocation(in Point, ViewportSettingsFlags)</a>
+    </div>
+    <div>
+      <span class="xref">View.AdvanceFocus(NavigationDirection, TabBehavior?)</span>
+    </div>
+    <div>
+      <span class="xref">View.FocusDeepest(NavigationDirection, TabBehavior?)</span>
+    </div>
+    <div>
+      <span class="xref">View.OnCanFocusChanged()</span>
+    </div>
+    <div>
+      <span class="xref">View.ClearFocus()</span>
+    </div>
+    <div>
+      <span class="xref">View.SetFocus()</span>
+    </div>
+    <div>
+      <span class="xref">View.SetNeedsDraw()</span>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">View.SetNeedsDraw(Rectangle)</a>
+    </div>
+    <div>
+      <span class="xref">View.OnTextChanged()</span>
+    </div>
+    <div>
+      <span class="xref">View.MouseBindings</span>
+    </div>
+    <div>
+      <span class="xref">View.MouseHoldRepeat</span>
+    </div>
+    <div>
+      <span class="xref">View.MousePositionTracking</span>
+    </div>
+    <div>
+      <span class="xref">View.MouseState</span>
+    </div>
+    <div>
+      <span class="xref">View.MouseHighlightStates</span>
+    </div>
+    <div>
+      <span class="xref">View.Margin</span>
+    </div>
+    <div>
+      <span class="xref">View.ShadowStyle</span>
+    </div>
+    <div>
+      <span class="xref">View.Border</span>
+    </div>
+    <div>
+      <span class="xref">View.BorderStyle</span>
+    </div>
+    <div>
+      <span class="xref">View.Padding</span>
+    </div>
+    <div>
+      <span class="xref">View.Arrangement</span>
+    </div>
+    <div>
+      <span class="xref">View.ContentSizeTracksViewport</span>
+    </div>
+    <div>
+      <span class="xref">View.ViewportSettings</span>
+    </div>
+    <div>
+      <span class="xref">View.Viewport</span>
+    </div>
+    <div>
+      <span class="xref">View.Data</span>
+    </div>
+    <div>
+      <span class="xref">View.Id</span>
+    </div>
+    <div>
+      <span class="xref">View.App</span>
+    </div>
+    <div>
+      <span class="xref">View.IsInitialized</span>
+    </div>
+    <div>
+      <span class="xref">View.Enabled</span>
+    </div>
+    <div>
+      <span class="xref">View.Visible</span>
+    </div>
+    <div>
+      <span class="xref">View.Title</span>
+    </div>
+    <div>
+      <span class="xref">View.Cursor</span>
+    </div>
+    <div>
+      <span class="xref">View.Diagnostics</span>
+    </div>
+    <div>
+      <span class="xref">View.LineCanvas</span>
+    </div>
+    <div>
+      <span class="xref">View.SuperViewRendersLineCanvas</span>
+    </div>
+    <div>
+      <span class="xref">View.SchemeName</span>
+    </div>
+    <div>
+      <span class="xref">View.HasScheme</span>
+    </div>
+    <div>
+      <span class="xref">View.SubViews</span>
+    </div>
+    <div>
+      <span class="xref">View.SuperView</span>
+    </div>
+    <div>
+      <span class="xref">View.HotKey</span>
+    </div>
+    <div>
+      <span class="xref">View.HotKeySpecifier</span>
+    </div>
+    <div>
+      <span class="xref">View.AssignHotKeys</span>
+    </div>
+    <div>
+      <span class="xref">View.UsedHotKeys</span>
+    </div>
+    <div>
+      <span class="xref">View.KeyBindings</span>
+    </div>
+    <div>
+      <span class="xref">View.HotKeyBindings</span>
+    </div>
+    <div>
+      <span class="xref">View.Frame</span>
+    </div>
+    <div>
+      <span class="xref">View.X</span>
+    </div>
+    <div>
+      <span class="xref">View.Y</span>
+    </div>
+    <div>
+      <span class="xref">View.Height</span>
+    </div>
+    <div>
+      <span class="xref">View.Width</span>
+    </div>
+    <div>
+      <span class="xref">View.NeedsLayout</span>
+    </div>
+    <div>
+      <span class="xref">View.ValidatePosDim</span>
+    </div>
+    <div>
+      <span class="xref">View.CanFocus</span>
+    </div>
+    <div>
+      <span class="xref">View.Focused</span>
+    </div>
+    <div>
+      <span class="xref">View.IsCurrentTop</span>
+    </div>
+    <div>
+      <span class="xref">View.MostFocused</span>
+    </div>
+    <div>
+      <span class="xref">View.HasFocus</span>
+    </div>
+    <div>
+      <span class="xref">View.TabStop</span>
+    </div>
+    <div>
+      <span class="xref">View.NeedsDraw</span>
+    </div>
+    <div>
+      <span class="xref">View.HorizontalScrollBar</span>
+    </div>
+    <div>
+      <span class="xref">View.VerticalScrollBar</span>
+    </div>
+    <div>
+      <span class="xref">View.PreserveTrailingSpaces</span>
+    </div>
+    <div>
+      <span class="xref">View.Text</span>
+    </div>
+    <div>
+      <span class="xref">View.TextAlignment</span>
+    </div>
+    <div>
+      <span class="xref">View.TextDirection</span>
+    </div>
+    <div>
+      <span class="xref">View.TextFormatter</span>
+    </div>
+    <div>
+      <span class="xref">View.VerticalTextAlignment</span>
+    </div>
+    <div>
+      <span class="xref">View.MouseEnter</span>
+    </div>
+    <div>
+      <span class="xref">View.MouseLeave</span>
+    </div>
+    <div>
+      <span class="xref">View.MouseHoldRepeatChanging</span>
+    </div>
+    <div>
+      <span class="xref">View.MouseHoldRepeatChanged</span>
+    </div>
+    <div>
+      <span class="xref">View.MouseEvent</span>
+    </div>
+    <div>
+      <span class="xref">View.MouseStateChanged</span>
+    </div>
+    <div>
+      <span class="xref">View.BorderStyleChanged</span>
+    </div>
+    <div>
+      <span class="xref">View.CommandNotBound</span>
+    </div>
+    <div>
+      <span class="xref">View.Accepting</span>
+    </div>
+    <div>
+      <span class="xref">View.Accepted</span>
+    </div>
+    <div>
+      <span class="xref">View.Activating</span>
+    </div>
+    <div>
+      <span class="xref">View.HandlingHotKey</span>
+    </div>
+    <div>
+      <span class="xref">View.ContentSizeChanging</span>
+    </div>
+    <div>
+      <span class="xref">View.ContentSizeChanged</span>
+    </div>
+    <div>
+      <span class="xref">View.ViewportChanged</span>
+    </div>
+    <div>
+      <span class="xref">View.Disposing</span>
+    </div>
+    <div>
+      <span class="xref">View.Initialized</span>
+    </div>
+    <div>
+      <span class="xref">View.EnabledChanged</span>
+    </div>
+    <div>
+      <span class="xref">View.VisibleChanging</span>
+    </div>
+    <div>
+      <span class="xref">View.VisibleChanged</span>
+    </div>
+    <div>
+      <span class="xref">View.TitleChanging</span>
+    </div>
+    <div>
+      <span class="xref">View.TitleChanged</span>
+    </div>
+    <div>
+      <span class="xref">View.GettingAttributeForRole</span>
+    </div>
+    <div>
+      <span class="xref">View.ClearingViewport</span>
+    </div>
+    <div>
+      <span class="xref">View.ClearedViewport</span>
+    </div>
+    <div>
+      <span class="xref">View.DrawingText</span>
+    </div>
+    <div>
+      <span class="xref">View.DrewText</span>
+    </div>
+    <div>
+      <span class="xref">View.DrawingContent</span>
+    </div>
+    <div>
+      <span class="xref">View.DrawingSubViews</span>
+    </div>
+    <div>
+      <span class="xref">View.DrawComplete</span>
+    </div>
+    <div>
+      <span class="xref">View.SchemeNameChanging</span>
+    </div>
+    <div>
+      <span class="xref">View.SchemeNameChanged</span>
+    </div>
+    <div>
+      <span class="xref">View.GettingScheme</span>
+    </div>
+    <div>
+      <span class="xref">View.SchemeChanging</span>
+    </div>
+    <div>
+      <span class="xref">View.SchemeChanged</span>
+    </div>
+    <div>
+      <span class="xref">View.SuperViewChanging</span>
+    </div>
+    <div>
+      <span class="xref">View.SuperViewChanged</span>
+    </div>
+    <div>
+      <span class="xref">View.SubViewAdded</span>
+    </div>
+    <div>
+      <span class="xref">View.SubViewRemoved</span>
+    </div>
+    <div>
+      <span class="xref">View.Removed</span>
+    </div>
+    <div>
+      <span class="xref">View.HotKeyChanged</span>
+    </div>
+    <div>
+      <span class="xref">View.KeyDown</span>
+    </div>
+    <div>
+      <span class="xref">View.KeyDownNotHandled</span>
+    </div>
+    <div>
+      <span class="xref">View.FrameChanged</span>
+    </div>
+    <div>
+      <span class="xref">View.HeightChanging</span>
+    </div>
+    <div>
+      <span class="xref">View.HeightChanged</span>
+    </div>
+    <div>
+      <span class="xref">View.WidthChanging</span>
+    </div>
+    <div>
+      <span class="xref">View.WidthChanged</span>
+    </div>
+    <div>
+      <span class="xref">View.SubViewLayout</span>
+    </div>
+    <div>
+      <span class="xref">View.SubViewsLaidOut</span>
+    </div>
+    <div>
+      <span class="xref">View.AdvancingFocus</span>
+    </div>
+    <div>
+      <span class="xref">View.CanFocusChanged</span>
+    </div>
+    <div>
+      <span class="xref">View.FocusedChanged</span>
+    </div>
+    <div>
+      <span class="xref">View.HasFocusChanging</span>
+    </div>
+    <div>
+      <span class="xref">View.HasFocusChanged</span>
+    </div>
+    <div>
+      <span class="xref">View.TextChanged</span>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+  </dd></dl>
+
+
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="EchoHub_Client_UI_MainWindow__ctor_" data-uid="EchoHub.Client.UI.MainWindow.#ctor*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow__ctor_Terminal_Gui_App_IApplication_" data-uid="EchoHub.Client.UI.MainWindow.#ctor(Terminal.Gui.App.IApplication)">
+  MainWindow(IApplication)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MainWindow(IApplication app)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>app</code> <span class="xref">IApplication</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="EchoHub_Client_UI_MainWindow_CurrentChannel_" data-uid="EchoHub.Client.UI.MainWindow.CurrentChannel*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_CurrentChannel" data-uid="EchoHub.Client.UI.MainWindow.CurrentChannel">
+  CurrentChannel
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Get the current channel name.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string CurrentChannel { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="EchoHub_Client_UI_MainWindow_AddMessage_" data-uid="EchoHub.Client.UI.MainWindow.AddMessage*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_AddMessage_EchoHub_Core_DTOs_MessageDto_" data-uid="EchoHub.Client.UI.MainWindow.AddMessage(EchoHub.Core.DTOs.MessageDto)">
+  AddMessage(MessageDto)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Add a message to the specified channel's message list and refresh if it is the current channel.
+Tracks unread count for non-active channels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void AddMessage(MessageDto message)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>message</code> <a class="xref" href="../core/EchoHub.Core.DTOs.MessageDto.html">MessageDto</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_MainWindow_AddStatusMessage_" data-uid="EchoHub.Client.UI.MainWindow.AddStatusMessage*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_AddStatusMessage_System_String_System_String_System_String_" data-uid="EchoHub.Client.UI.MainWindow.AddStatusMessage(System.String,System.String,System.String)">
+  AddStatusMessage(string, string, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Add a status change message to a channel with colored styling.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void AddStatusMessage(string channelName, string username, string status)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>username</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>status</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_MainWindow_AddSystemMessage_" data-uid="EchoHub.Client.UI.MainWindow.AddSystemMessage*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_AddSystemMessage_System_String_System_String_" data-uid="EchoHub.Client.UI.MainWindow.AddSystemMessage(System.String,System.String)">
+  AddSystemMessage(string, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Add a system/informational message to a channel with colored styling.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void AddSystemMessage(string channelName, string text)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_MainWindow_ApplyColorSchemes_" data-uid="EchoHub.Client.UI.MainWindow.ApplyColorSchemes*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_ApplyColorSchemes" data-uid="EchoHub.Client.UI.MainWindow.ApplyColorSchemes">
+  ApplyColorSchemes()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Applies the currently registered color schemes to all views.
+Call after theme changes to refresh colors.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ApplyColorSchemes()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_MainWindow_ClearAll_" data-uid="EchoHub.Client.UI.MainWindow.ClearAll*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_ClearAll" data-uid="EchoHub.Client.UI.MainWindow.ClearAll">
+  ClearAll()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Clear all messages and channels (used on disconnect).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearAll()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_MainWindow_FocusInput_" data-uid="EchoHub.Client.UI.MainWindow.FocusInput*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_FocusInput" data-uid="EchoHub.Client.UI.MainWindow.FocusInput">
+  FocusInput()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Focus the input field for typing.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void FocusInput()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_MainWindow_GetChannelNames_" data-uid="EchoHub.Client.UI.MainWindow.GetChannelNames*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_GetChannelNames" data-uid="EchoHub.Client.UI.MainWindow.GetChannelNames">
+  GetChannelNames()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Get all channel names that have message buffers (for broadcasting status changes).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;string&gt; GetChannelNames()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_MainWindow_LoadHistory_" data-uid="EchoHub.Client.UI.MainWindow.LoadHistory*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_LoadHistory_System_String_System_Collections_Generic_List_EchoHub_Core_DTOs_MessageDto__" data-uid="EchoHub.Client.UI.MainWindow.LoadHistory(System.String,System.Collections.Generic.List{EchoHub.Core.DTOs.MessageDto})">
+  LoadHistory(string, List&lt;MessageDto&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Load historical messages into a channel, replacing any existing messages.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void LoadHistory(string channelName, List&lt;MessageDto&gt; messages)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>messages</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs">MessageDto</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_MainWindow_RefreshMenuBar_" data-uid="EchoHub.Client.UI.MainWindow.RefreshMenuBar*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_RefreshMenuBar" data-uid="EchoHub.Client.UI.MainWindow.RefreshMenuBar">
+  RefreshMenuBar()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Rebuilds and replaces the menu bar (e.g., after theme list changes).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void RefreshMenuBar()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_MainWindow_SetChannelTopic_" data-uid="EchoHub.Client.UI.MainWindow.SetChannelTopic*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_SetChannelTopic_System_String_System_String_" data-uid="EchoHub.Client.UI.MainWindow.SetChannelTopic(System.String,System.String)">
+  SetChannelTopic(string, string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Update the topic for a specific channel.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetChannelTopic(string channelName, string? topic)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>topic</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_MainWindow_SetChannels_" data-uid="EchoHub.Client.UI.MainWindow.SetChannels*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_SetChannels_System_Collections_Generic_List_EchoHub_Core_DTOs_ChannelDto__" data-uid="EchoHub.Client.UI.MainWindow.SetChannels(System.Collections.Generic.List{EchoHub.Core.DTOs.ChannelDto})">
+  SetChannels(List&lt;ChannelDto&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Set the list of available channels, storing topics, and refresh the channel list view.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetChannels(List&lt;ChannelDto&gt; channels)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channels</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs">ChannelDto</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_MainWindow_SetCurrentUser_" data-uid="EchoHub.Client.UI.MainWindow.SetCurrentUser*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_SetCurrentUser_System_String_" data-uid="EchoHub.Client.UI.MainWindow.SetCurrentUser(System.String)">
+  SetCurrentUser(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Set the current user name for display in the status bar.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetCurrentUser(string username)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>username</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_MainWindow_ShowError_" data-uid="EchoHub.Client.UI.MainWindow.ShowError*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_ShowError_System_String_" data-uid="EchoHub.Client.UI.MainWindow.ShowError(System.String)">
+  ShowError(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Show an error message to the user.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ShowError(string message)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>message</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_MainWindow_SwitchToChannel_" data-uid="EchoHub.Client.UI.MainWindow.SwitchToChannel*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_SwitchToChannel_System_String_" data-uid="EchoHub.Client.UI.MainWindow.SwitchToChannel(System.String)">
+  SwitchToChannel(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Switch the chat view to the given channel, resetting its unread count and updating the topic bar.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SwitchToChannel(string channelName)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_MainWindow_UpdateStatusBar_" data-uid="EchoHub.Client.UI.MainWindow.UpdateStatusBar*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_UpdateStatusBar_System_String_" data-uid="EchoHub.Client.UI.MainWindow.UpdateStatusBar(System.String)">
+  UpdateStatusBar(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Update the connection status displayed in the status bar.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void UpdateStatusBar(string status)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>status</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="events">Events
+</h2>
+
+
+
+  <h3 id="EchoHub_Client_UI_MainWindow_OnChannelSelected" data-uid="EchoHub.Client.UI.MainWindow.OnChannelSelected">
+  OnChannelSelected
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when the user selects a channel. Parameter is the channel name.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action&lt;string&gt;? OnChannelSelected</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-1">Action</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h3 id="EchoHub_Client_UI_MainWindow_OnConnectRequested" data-uid="EchoHub.Client.UI.MainWindow.OnConnectRequested">
+  OnConnectRequested
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when the user requests to connect via the menu.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action? OnConnectRequested</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action">Action</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h3 id="EchoHub_Client_UI_MainWindow_OnCreateChannelRequested" data-uid="EchoHub.Client.UI.MainWindow.OnCreateChannelRequested">
+  OnCreateChannelRequested
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when the user requests to create a new channel.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action? OnCreateChannelRequested</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action">Action</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h3 id="EchoHub_Client_UI_MainWindow_OnDisconnectRequested" data-uid="EchoHub.Client.UI.MainWindow.OnDisconnectRequested">
+  OnDisconnectRequested
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when the user requests to disconnect via the menu.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action? OnDisconnectRequested</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action">Action</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h3 id="EchoHub_Client_UI_MainWindow_OnMessageSubmitted" data-uid="EchoHub.Client.UI.MainWindow.OnMessageSubmitted">
+  OnMessageSubmitted
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when the user presses Enter in the input field. Parameters: channel name, message content.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action&lt;string, string&gt;? OnMessageSubmitted</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-2">Action</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h3 id="EchoHub_Client_UI_MainWindow_OnProfileRequested" data-uid="EchoHub.Client.UI.MainWindow.OnProfileRequested">
+  OnProfileRequested
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when the user requests to open their profile panel.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action? OnProfileRequested</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action">Action</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h3 id="EchoHub_Client_UI_MainWindow_OnSavedServersRequested" data-uid="EchoHub.Client.UI.MainWindow.OnSavedServersRequested">
+  OnSavedServersRequested
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when the user requests to view saved servers.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action? OnSavedServersRequested</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action">Action</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h3 id="EchoHub_Client_UI_MainWindow_OnStatusRequested" data-uid="EchoHub.Client.UI.MainWindow.OnStatusRequested">
+  OnStatusRequested
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when the user requests to set their status.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action? OnStatusRequested</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action">Action</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h3 id="EchoHub_Client_UI_MainWindow_OnThemeSelected" data-uid="EchoHub.Client.UI.MainWindow.OnThemeSelected">
+  OnThemeSelected
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when the user selects a theme from the menu. Parameter is the theme name.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action&lt;string&gt;? OnThemeSelected</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-1">Action</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

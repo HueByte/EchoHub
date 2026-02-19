@@ -1,0 +1,1397 @@
+{
+  "source_base_path": "/home/runner/work/EchoHub/EchoHub/docs",
+  "xrefmap": "xrefmap.yml",
+  "files": [
+    {
+      "type": "Resource",
+      "output": {
+        "resource": {
+          "relative_path": "index.json"
+        }
+      }
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.AppOrchestrator.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.AppOrchestrator.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.AppOrchestrator",
+      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.AppOrchestrator.yml\" sourcestartlinenumber=\"1\">Central orchestrator for the EchoHub TUI client.\nOwns session state and wires UI events to service calls.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.AsyncRunner.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.AsyncRunner.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.AsyncRunner",
+      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.AsyncRunner.yml\" sourcestartlinenumber=\"1\">Eliminates repeated Task.Run/try/catch/app.Invoke(ShowError) boilerplate.\nRuns async work on a background thread and routes exceptions to the UI.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.Commands.CommandHandler.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Commands.CommandHandler.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Commands.CommandHandler",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.Commands.CommandResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Commands.CommandResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Commands.CommandResult",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.Commands.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Commands.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Commands",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.Config.AccountPreset.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Config.AccountPreset.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Config.AccountPreset",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.Config.ClientConfig.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Config.ClientConfig.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Config.ClientConfig",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.Config.ConfigManager.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Config.ConfigManager.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Config.ConfigManager",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.Config.SavedServer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Config.SavedServer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Config.SavedServer",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.Config.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Config.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Config",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.Services.ApiClient.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Services.ApiClient.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Services.ApiClient",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.Services.EchoHubConnection.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Services.EchoHubConnection.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Services.EchoHubConnection",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.Services.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Services.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Services",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.Themes.Theme.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Themes.Theme.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Themes.Theme",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.Themes.ThemeColors.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Themes.ThemeColors.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Themes.ThemeColors",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.Themes.ThemeManager.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Themes.ThemeManager.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Themes.ThemeManager",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.Themes.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Themes.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Themes",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.UI.ChatColors.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.ChatColors.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.ChatColors",
+      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ChatColors.yml\" sourcestartlinenumber=\"1\">Shared color attributes for chat rendering (timestamps, system messages).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.UI.ChatLine.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.ChatLine.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.ChatLine",
+      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ChatLine.yml\" sourcestartlinenumber=\"1\">A single line in the chat, composed of colored segments.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.UI.ChatListSource.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.ChatListSource.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.ChatListSource",
+      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ChatListSource.yml\" sourcestartlinenumber=\"1\">Custom list data source for chat messages with per-character coloring.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.UI.ChatSegment.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.ChatSegment.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.ChatSegment",
+      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ChatSegment.yml\" sourcestartlinenumber=\"1\">A colored text segment within a chat line.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.UI.ColorHelper.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.ColorHelper.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.ColorHelper",
+      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ColorHelper.yml\" sourcestartlinenumber=\"1\">Helper to parse hex colors to Terminal.Gui Attributes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.UI.ConnectDialog.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.ConnectDialog.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.ConnectDialog",
+      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ConnectDialog.yml\" sourcestartlinenumber=\"1\">A Terminal.Gui dialog for entering server connection and authentication details.\nIncludes a saved servers selector when saved servers are available.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.UI.ConnectDialogResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.ConnectDialogResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.ConnectDialogResult",
+      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ConnectDialogResult.yml\" sourcestartlinenumber=\"1\">Result returned from the connect dialog.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.UI.CreateChannelDialog.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.CreateChannelDialog.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.CreateChannelDialog",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.UI.CreateChannelResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.CreateChannelResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.CreateChannelResult",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.UI.MainWindow.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.MainWindow.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.MainWindow",
+      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.MainWindow.yml\" sourcestartlinenumber=\"1\">Main Terminal.Gui window for the EchoHub chat client.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.UI.ProfileAction.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.ProfileAction.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.ProfileAction",
+      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ProfileAction.yml\" sourcestartlinenumber=\"1\">Action selected by the user in their own profile dialog.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.UI.ProfileEditDialog.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.ProfileEditDialog.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.ProfileEditDialog",
+      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ProfileEditDialog.yml\" sourcestartlinenumber=\"1\">A Terminal.Gui dialog for editing the user's profile (display name, bio, nickname color).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.UI.ProfileEditResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.ProfileEditResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.ProfileEditResult",
+      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ProfileEditResult.yml\" sourcestartlinenumber=\"1\">Result returned from the profile edit dialog.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.UI.ProfileViewDialog.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.ProfileViewDialog.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.ProfileViewDialog",
+      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ProfileViewDialog.yml\" sourcestartlinenumber=\"1\">Dialog for viewing a user's server profile.\nShows Edit Profile / Set Status buttons when viewing own profile.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.UI.StatusDialog.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.StatusDialog.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.StatusDialog",
+      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.StatusDialog.yml\" sourcestartlinenumber=\"1\">A Terminal.Gui dialog for setting the user's status and status message.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.UI.StatusDialogResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.StatusDialogResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.StatusDialogResult",
+      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.StatusDialogResult.yml\" sourcestartlinenumber=\"1\">Result returned from the status dialog.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.UI.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/client/EchoHub.Client.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client",
+      "Summary": null
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "api/client/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/toc.html"
+        },
+        ".json": {
+          "relative_path": "api/client/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.Constants.HubConstants.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Constants.HubConstants.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Constants.HubConstants",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.Constants.ValidationConstants.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Constants.ValidationConstants.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Constants.ValidationConstants",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.Constants.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Constants.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Constants",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.Contracts.IEchoHubClient.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Contracts.IEchoHubClient.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Contracts.IEchoHubClient",
+      "Summary": "<p sourcefile=\"api/core/EchoHub.Core.Contracts.IEchoHubClient.yml\" sourcestartlinenumber=\"1\">Methods the server can invoke on connected clients.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.Contracts.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Contracts.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Contracts",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.DTOs.AvatarUploadResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.AvatarUploadResponse.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.AvatarUploadResponse",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.DTOs.ChannelDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.ChannelDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.ChannelDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.DTOs.CreateChannelRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.CreateChannelRequest.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.CreateChannelRequest",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.DTOs.ErrorResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.ErrorResponse.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.ErrorResponse",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.DTOs.LoginRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.LoginRequest.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.LoginRequest",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.DTOs.LoginResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.LoginResponse.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.LoginResponse",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.DTOs.MessageDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.MessageDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.MessageDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.DTOs.PaginatedResponse-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.PaginatedResponse-1.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.PaginatedResponse<T>",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.DTOs.RefreshRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.RefreshRequest.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.RefreshRequest",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.DTOs.RegisterRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.RegisterRequest.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.RegisterRequest",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.DTOs.SendMessageRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.SendMessageRequest.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.SendMessageRequest",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.DTOs.SendUrlRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.SendUrlRequest.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.SendUrlRequest",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.DTOs.ServerStatusDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.ServerStatusDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.ServerStatusDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.DTOs.UpdateProfileRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.UpdateProfileRequest.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.UpdateProfileRequest",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.DTOs.UpdateStatusRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.UpdateStatusRequest.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.UpdateStatusRequest",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.DTOs.UpdateTopicRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.UpdateTopicRequest.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.UpdateTopicRequest",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.DTOs.UserDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.UserDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.UserDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.DTOs.UserPresenceDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.UserPresenceDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.UserPresenceDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.DTOs.UserProfileDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.UserProfileDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.UserProfileDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.DTOs.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.Models.Channel.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Models.Channel.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Models.Channel",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.Models.Message.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Models.Message.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Models.Message",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.Models.MessageType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Models.MessageType.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Models.MessageType",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.Models.RefreshToken.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Models.RefreshToken.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Models.RefreshToken",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.Models.User.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Models.User.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Models.User",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.Models.UserStatus.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Models.UserStatus.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Models.UserStatus",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/core/EchoHub.Core.Models.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Models.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Models",
+      "Summary": null
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "api/core/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/toc.html"
+        },
+        ".json": {
+          "relative_path": "api/core/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Auth.JwtTokenService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Auth.JwtTokenService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Auth.JwtTokenService",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Auth.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Auth.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Auth",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Controllers.AuthController.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Controllers.AuthController.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Controllers.AuthController",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Controllers.ChannelsController.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Controllers.ChannelsController.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Controllers.ChannelsController",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Controllers.FilesController.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Controllers.FilesController.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Controllers.FilesController",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Controllers.ServerController.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Controllers.ServerController.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Controllers.ServerController",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Controllers.UsersController.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Controllers.UsersController.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Controllers.UsersController",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Controllers.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Controllers.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Controllers",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Data.EchoHubDbContext.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Data.EchoHubDbContext.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Data.EchoHubDbContext",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Data.Migrations.InitialCreate.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Data.Migrations.InitialCreate.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Data.Migrations.InitialCreate",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Data.Migrations.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Data.Migrations.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Data.Migrations",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Data.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Data.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Data",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Hubs.ChatHub.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Hubs.ChatHub.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Hubs.ChatHub",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Hubs.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Hubs.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Hubs",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Services.FileStorageService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.FileStorageService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.FileStorageService",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Services.FileValidationHelper.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.FileValidationHelper.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.FileValidationHelper",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Services.ImageToAsciiService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.ImageToAsciiService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.ImageToAsciiService",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Services.PresenceTracker.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.PresenceTracker.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.PresenceTracker",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Services.ServerDirectoryService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.ServerDirectoryService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.ServerDirectoryService",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Services.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Setup.DatabaseSetup.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Setup.DatabaseSetup.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Setup.DatabaseSetup",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Setup.FirstRunSetup.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Setup.FirstRunSetup.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Setup.FirstRunSetup",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/server/EchoHub.Server.Setup.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Setup.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Setup",
+      "Summary": null
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "api/server/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/toc.html"
+        },
+        ".json": {
+          "relative_path": "api/server/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/architecture.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/architecture.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/getting-started.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/getting-started.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "articles/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "articles/toc.html"
+        },
+        ".json": {
+          "relative_path": "articles/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "changelog/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "changelog/toc.html"
+        },
+        ".json": {
+          "relative_path": "changelog/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "changelog/v0.1.0.md",
+      "output": {
+        ".html": {
+          "relative_path": "changelog/v0.1.0.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "index.md",
+      "output": {
+        ".html": {
+          "relative_path": "index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "toc.html"
+        },
+        ".json": {
+          "relative_path": "toc.json"
+        }
+      },
+      "version": ""
+    }
+  ],
+  "groups": [
+    {
+      "xrefmap": "xrefmap.yml"
+    }
+  ]
+}
