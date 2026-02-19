@@ -1,3 +1,4 @@
+using System.Text;
 using EchoHub.Core.Constants;
 using EchoHub.Core.Contracts;
 using EchoHub.Core.DTOs;
@@ -144,7 +145,8 @@ public class ChatService : IChatService
         if (content.Length > HubConstants.MaxMessageLength)
             return $"Message exceeds maximum length of {HubConstants.MaxMessageLength} characters.";
 
-        // Sanitize excessive newlines
+        // Sanitize: convert emoji to text, collapse newlines
+        content = ConvertEmoji(content);
         content = SanitizeNewlines(content);
 
         using var scope = _scopeFactory.CreateScope();
@@ -347,6 +349,84 @@ public class ChatService : IChatService
     }
 
     /// <summary>
+    /// Replace emoji with text shortcodes. TUI terminals can't render wide chars reliably.
+    /// </summary>
+    private static string ConvertEmoji(string content)
+    {
+        var sb = new StringBuilder(content.Length);
+        foreach (var rune in content.EnumerateRunes())
+        {
+            if (EmojiMap.TryGetValue(rune.Value, out var name))
+                sb.Append(name);
+            else if (rune.Value >= 0x1F000) // supplementary emoji planes
+                sb.Append($"[?]");
+            else if (rune.Value is 0x200D or 0xFE0F or 0xFE0E) // ZWJ, variation selectors
+                { } // strip silently
+            else
+                sb.Append(rune.ToString());
+        }
+        return sb.ToString();
+    }
+
+    private static readonly Dictionary<int, string> EmojiMap = new()
+    {
+        [0x1F600] = ":grinning:", [0x1F601] = ":grin:", [0x1F602] = ":joy:",
+        [0x1F603] = ":smiley:", [0x1F604] = ":smile:", [0x1F605] = ":sweat_smile:",
+        [0x1F606] = ":laughing:", [0x1F607] = ":angel:", [0x1F608] = ":imp:",
+        [0x1F609] = ":wink:", [0x1F60A] = ":blush:", [0x1F60B] = ":yum:",
+        [0x1F60C] = ":relieved:", [0x1F60D] = ":heart_eyes:", [0x1F60E] = ":sunglasses:",
+        [0x1F60F] = ":smirk:", [0x1F610] = ":neutral:", [0x1F611] = ":expressionless:",
+        [0x1F612] = ":unamused:", [0x1F613] = ":sweat:", [0x1F614] = ":pensive:",
+        [0x1F615] = ":confused:", [0x1F616] = ":confounded:", [0x1F617] = ":kiss:",
+        [0x1F618] = ":kissing_heart:", [0x1F619] = ":kissing:", [0x1F61A] = ":kissing_closed_eyes:",
+        [0x1F61B] = ":tongue:", [0x1F61C] = ":wink_tongue:", [0x1F61D] = ":squint_tongue:",
+        [0x1F61E] = ":disappointed:", [0x1F61F] = ":worried:", [0x1F620] = ":angry:",
+        [0x1F621] = ":rage:", [0x1F622] = ":cry:", [0x1F623] = ":persevere:",
+        [0x1F624] = ":triumph:", [0x1F625] = ":disappointed_relieved:", [0x1F626] = ":frowning:",
+        [0x1F627] = ":anguished:", [0x1F628] = ":fearful:", [0x1F629] = ":weary:",
+        [0x1F62A] = ":sleepy:", [0x1F62B] = ":tired:", [0x1F62C] = ":grimacing:",
+        [0x1F62D] = ":sob:", [0x1F62E] = ":open_mouth:", [0x1F62F] = ":hushed:",
+        [0x1F630] = ":cold_sweat:", [0x1F631] = ":scream:", [0x1F632] = ":astonished:",
+        [0x1F633] = ":flushed:", [0x1F634] = ":sleeping:", [0x1F635] = ":dizzy_face:",
+        [0x1F636] = ":no_mouth:", [0x1F637] = ":mask:", [0x1F638] = ":smile_cat:",
+        [0x1F642] = ":slight_smile:", [0x1F643] = ":upside_down:",
+        [0x1F644] = ":roll_eyes:", [0x1F910] = ":zipper_mouth:",
+        [0x1F911] = ":money_mouth:", [0x1F912] = ":thermometer_face:",
+        [0x1F913] = ":nerd:", [0x1F914] = ":thinking:", [0x1F915] = ":head_bandage:",
+        [0x1F920] = ":cowboy:", [0x1F921] = ":clown:", [0x1F923] = ":rofl:",
+        [0x1F924] = ":drooling:", [0x1F925] = ":lying:",
+        [0x1F970] = ":smiling_hearts:", [0x1F971] = ":yawning:",
+        [0x1F972] = ":smiling_tear:", [0x1F973] = ":party:",
+        [0x1F974] = ":woozy:", [0x1F975] = ":hot:", [0x1F976] = ":cold:",
+        [0x1F978] = ":disguised:", [0x1F979] = ":holding_back_tears:",
+        [0x1F97A] = ":pleading:", [0x1F92A] = ":zany:", [0x1F92B] = ":shushing:",
+        [0x1F92C] = ":censored:", [0x1F92D] = ":hand_over_mouth:",
+        [0x1F92E] = ":vomiting:", [0x1F92F] = ":exploding_head:",
+        // Gestures
+        [0x1F44D] = ":+1:", [0x1F44E] = ":-1:", [0x1F44F] = ":clap:",
+        [0x1F44B] = ":wave:", [0x1F44C] = ":ok_hand:", [0x1F44A] = ":punch:",
+        [0x1F4AA] = ":muscle:", [0x1F64F] = ":pray:", [0x1F91D] = ":handshake:",
+        [0x1F90C] = ":pinched_fingers:", [0x1F918] = ":metal:", [0x1F919] = ":call_me:",
+        // Hearts
+        [0x2764] = "<3", [0x1F494] = "</3", [0x1F495] = "<3<3",
+        [0x1F496] = ":sparkling_heart:", [0x1F497] = ":heartbeat:",
+        [0x1F499] = ":blue_heart:", [0x1F49A] = ":green_heart:",
+        [0x1F49B] = ":yellow_heart:", [0x1F49C] = ":purple_heart:",
+        [0x1F5A4] = ":black_heart:", [0x1F90D] = ":white_heart:",
+        // Common objects
+        [0x1F525] = ":fire:", [0x1F4A9] = ":poop:", [0x1F480] = ":skull:",
+        [0x1F4AF] = ":100:", [0x1F389] = ":tada:", [0x1F38A] = ":confetti:",
+        [0x1F3B5] = ":music:", [0x1F3B6] = ":notes:", [0x1F4A4] = ":zzz:",
+        [0x1F4A5] = ":boom:", [0x1F4A2] = ":anger:", [0x1F4AC] = ":speech:",
+        [0x1F440] = ":eyes:", [0x1F648] = ":see_no_evil:",
+        [0x1F649] = ":hear_no_evil:", [0x1F64A] = ":speak_no_evil:",
+        // Misc BMP symbols commonly used as emoji
+        [0x2728] = ":sparkles:", [0x2B50] = ":star:", [0x26A1] = ":zap:",
+        [0x2705] = ":white_check:", [0x274C] = ":x:", [0x274E] = ":x:",
+        [0x2049] = ":!?:", [0x203C] = ":!!:",
+    };
+
+    /// <summary>
     /// Collapse consecutive newlines and cap total line count to prevent newline spam.
     /// </summary>
     private static string SanitizeNewlines(string content)
@@ -354,18 +434,31 @@ public class ChatService : IChatService
         // Normalize \r\n → \n
         content = content.Replace("\r\n", "\n").Replace('\r', '\n');
 
-        // Collapse runs of >MaxConsecutiveNewlines into MaxConsecutiveNewlines
-        var maxRun = new string('\n', HubConstants.MaxConsecutiveNewlines + 1);
-        var replacement = new string('\n', HubConstants.MaxConsecutiveNewlines);
-        while (content.Contains(maxRun))
-            content = content.Replace(maxRun, replacement);
-
-        // Cap total newlines
+        // Collapse consecutive blank/whitespace-only lines into max 1 blank line
         var lines = content.Split('\n');
-        if (lines.Length > HubConstants.MaxMessageNewlines)
-            content = string.Join('\n', lines.Take(HubConstants.MaxMessageNewlines));
+        var result = new List<string>(lines.Length);
+        int consecutiveBlanks = 0;
 
-        return content;
+        foreach (var line in lines)
+        {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                consecutiveBlanks++;
+                if (consecutiveBlanks <= HubConstants.MaxConsecutiveNewlines)
+                    result.Add(line);
+            }
+            else
+            {
+                consecutiveBlanks = 0;
+                result.Add(line);
+            }
+        }
+
+        // Cap total lines
+        if (result.Count > HubConstants.MaxMessageNewlines)
+            result = result.Take(HubConstants.MaxMessageNewlines).ToList();
+
+        return string.Join('\n', result);
     }
 
     private static async Task<List<MessageDto>> GetChannelHistoryInternalAsync(EchoHubDbContext db, string channelName, int count)

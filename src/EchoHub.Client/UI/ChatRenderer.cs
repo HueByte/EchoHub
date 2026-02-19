@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Text;
 using System.Text.RegularExpressions;
 using Terminal.Gui.Drawing;
+using Terminal.Gui.Text;
 using Terminal.Gui.Views;
 using Attribute = Terminal.Gui.Drawing.Attribute;
 
@@ -26,14 +27,20 @@ public partial class ChatLine
     public ChatLine(string plainText)
     {
         Segments = [new ChatSegment(plainText, null)];
-        TextLength = plainText.Length;
+        TextLength = DisplayWidth(plainText);
     }
 
     public ChatLine(List<ChatSegment> segments)
     {
         Segments = segments;
-        TextLength = segments.Sum(s => s.Text.Length);
+        TextLength = segments.Sum(s => DisplayWidth(s.Text));
     }
+
+    /// <summary>
+    /// Compute the display column width of a string, accounting for wide characters (emoji, CJK).
+    /// </summary>
+    private static int DisplayWidth(string text) =>
+        text.EnumerateRunes().Sum(r => Math.Max(r.GetColumns(), 1));
 
     public override string ToString() => string.Concat(Segments.Select(s => s.Text));
 
@@ -52,17 +59,24 @@ public partial class ChatLine
 
         foreach (var segment in Segments)
         {
-            int segPos = 0;
-            while (segPos < segment.Text.Length)
+            var text = segment.Text;
+            int chunkStart = 0; // char index where current chunk starts
+            int charPos = 0;
+
+            foreach (var rune in text.EnumerateRunes())
             {
-                int remaining = width - col;
-                if (remaining <= 0)
+                var runeCols = Math.Max(rune.GetColumns(), 1);
+
+                if (col + runeCols > width)
                 {
+                    // Flush accumulated text from this segment chunk
+                    if (charPos > chunkStart)
+                        currentSegments.Add(new ChatSegment(text[chunkStart..charPos], segment.Color));
+
                     // Emit current line and start a new one
                     results.Add(new ChatLine(currentSegments));
                     currentSegments = [];
 
-                    // Add indent for continuation
                     if (continuationIndent > 0)
                     {
                         currentSegments.Add(new ChatSegment(new string(' ', continuationIndent), null));
@@ -73,14 +87,16 @@ public partial class ChatLine
                         col = 0;
                     }
 
-                    remaining = width - col;
+                    chunkStart = charPos;
                 }
 
-                int take = Math.Min(segment.Text.Length - segPos, remaining);
-                currentSegments.Add(new ChatSegment(segment.Text.Substring(segPos, take), segment.Color));
-                col += take;
-                segPos += take;
+                col += runeCols;
+                charPos += rune.Utf16SequenceLength;
             }
+
+            // Flush remaining chunk of this segment
+            if (chunkStart < text.Length)
+                currentSegments.Add(new ChatSegment(text[chunkStart..], segment.Color));
         }
 
         if (currentSegments.Count > 0)
@@ -233,12 +249,14 @@ public class ChatListSource : IListDataSource
 
             foreach (var rune in segment.Text.EnumerateRunes())
             {
-                if (charPos >= viewportX && drawnChars < width)
+                var cols = rune.GetColumns();
+                if (cols < 1) cols = 1;
+                if (charPos >= viewportX && drawnChars + cols <= width)
                 {
                     listView.AddRune(rune);
-                    drawnChars++;
+                    drawnChars += cols;
                 }
-                charPos++;
+                charPos += cols;
             }
         }
 
@@ -326,7 +344,8 @@ public class ChannelListSource : IListDataSource
             listView.SetAttribute(focusAttr);
             foreach (var rune in (prefix + channelText + badge).EnumerateRunes())
             {
-                if (drawnChars < width) { listView.AddRune(rune); drawnChars++; }
+                var cols = Math.Max(rune.GetColumns(), 1);
+                if (drawnChars + cols <= width) { listView.AddRune(rune); drawnChars += cols; }
             }
         }
         else
@@ -336,7 +355,8 @@ public class ChannelListSource : IListDataSource
             listView.SetAttribute(prefixAttr);
             foreach (var rune in prefix.EnumerateRunes())
             {
-                if (drawnChars < width) { listView.AddRune(rune); drawnChars++; }
+                var cols = Math.Max(rune.GetColumns(), 1);
+                if (drawnChars + cols <= width) { listView.AddRune(rune); drawnChars += cols; }
             }
 
             // Channel name
@@ -344,7 +364,8 @@ public class ChannelListSource : IListDataSource
             listView.SetAttribute(nameAttr);
             foreach (var rune in channelText.EnumerateRunes())
             {
-                if (drawnChars < width) { listView.AddRune(rune); drawnChars++; }
+                var cols = Math.Max(rune.GetColumns(), 1);
+                if (drawnChars + cols <= width) { listView.AddRune(rune); drawnChars += cols; }
             }
 
             // Unread badge
@@ -353,7 +374,8 @@ public class ChannelListSource : IListDataSource
                 listView.SetAttribute(BadgeAttr);
                 foreach (var rune in badge.EnumerateRunes())
                 {
-                    if (drawnChars < width) { listView.AddRune(rune); drawnChars++; }
+                    var cols = Math.Max(rune.GetColumns(), 1);
+                    if (drawnChars + cols <= width) { listView.AddRune(rune); drawnChars += cols; }
                 }
             }
         }
@@ -418,11 +440,12 @@ public class UserListSource : IListDataSource
         var prefixAttr = normalAttr;
         for (int c = 0; c < nameStart && c < runes.Length; c++)
         {
-            if (drawnChars < width)
+            var cols = Math.Max(runes[c].GetColumns(), 1);
+            if (drawnChars + cols <= width)
             {
                 listView.SetAttribute(prefixAttr);
                 listView.AddRune(runes[c]);
-                drawnChars++;
+                drawnChars += cols;
             }
         }
 
@@ -431,11 +454,12 @@ public class UserListSource : IListDataSource
         if (selected) userAttr = normalAttr; // use focus attr when selected
         for (int c = nameStart; c < runes.Length; c++)
         {
-            if (drawnChars < width)
+            var cols = Math.Max(runes[c].GetColumns(), 1);
+            if (drawnChars + cols <= width)
             {
                 listView.SetAttribute(userAttr);
                 listView.AddRune(runes[c]);
-                drawnChars++;
+                drawnChars += cols;
             }
         }
 
