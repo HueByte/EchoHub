@@ -7,17 +7,24 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace EchoHub.Server.Auth;
 
-public class JwtTokenService(IConfiguration configuration)
+public class JwtTokenService
 {
-    private readonly string _secret = configuration["Jwt:Secret"]
-        ?? throw new InvalidOperationException("Jwt:Secret is not configured.");
-    private readonly string _issuer = configuration["Jwt:Issuer"]
-        ?? throw new InvalidOperationException("Jwt:Issuer is not configured.");
-    private readonly string _audience = configuration["Jwt:Audience"]
-        ?? throw new InvalidOperationException("Jwt:Audience is not configured.");
+    private readonly string _secret;
+    private readonly string _issuer;
+    private readonly string _audience;
 
     private static readonly TimeSpan AccessTokenLifetime = TimeSpan.FromMinutes(15);
     public static readonly TimeSpan RefreshTokenLifetime = TimeSpan.FromDays(30);
+
+    public JwtTokenService(IConfiguration configuration)
+    {
+        _secret = configuration["Jwt:Secret"]
+            ?? throw new InvalidOperationException("Jwt:Secret is not configured.");
+        _issuer = configuration["Jwt:Issuer"]
+            ?? throw new InvalidOperationException("Jwt:Issuer is not configured.");
+        _audience = configuration["Jwt:Audience"]
+            ?? throw new InvalidOperationException("Jwt:Audience is not configured.");
+    }
 
     public (string Token, DateTimeOffset ExpiresAt) GenerateAccessToken(User user)
     {

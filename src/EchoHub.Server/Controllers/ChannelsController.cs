@@ -16,22 +16,36 @@ namespace EchoHub.Server.Controllers;
 [Route("api/channels")]
 [Authorize]
 [EnableRateLimiting("general")]
-public class ChannelsController(
-    EchoHubDbContext db,
-    FileStorageService fileStorage,
-    ImageToAsciiService asciiService,
-    IHttpClientFactory httpClientFactory,
-    IChatService chatService) : ControllerBase
+public class ChannelsController : ControllerBase
 {
+    private readonly EchoHubDbContext _db;
+    private readonly FileStorageService _fileStorage;
+    private readonly ImageToAsciiService _asciiService;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IChatService _chatService;
+
+    public ChannelsController(
+        EchoHubDbContext db,
+        FileStorageService fileStorage,
+        ImageToAsciiService asciiService,
+        IHttpClientFactory httpClientFactory,
+        IChatService chatService)
+    {
+        _db = db;
+        _fileStorage = fileStorage;
+        _asciiService = asciiService;
+        _httpClientFactory = httpClientFactory;
+        _chatService = chatService;
+    }
     [HttpGet]
     public async Task<IActionResult> GetChannels([FromQuery] int offset = 0, [FromQuery] int limit = 50)
     {
         offset = Math.Max(0, offset);
         limit = Math.Clamp(limit, 1, 100);
 
-        var total = await db.Channels.CountAsync();
+        var total = await _db.Channels.CountAsync();
 
-        var channels = await db.Channels
+        var channels = await _db.Channels
             .OrderBy(c => c.Name)
             .Skip(offset)
             .Take(limit)
@@ -57,7 +71,7 @@ public class ChannelsController(
         if (!ValidationConstants.ChannelNameRegex().IsMatch(channelName))
             return BadRequest(new ErrorResponse("Channel name must be 2-100 characters and contain only letters, digits, underscores, or hyphens."));
 
-        if (await db.Channels.AnyAsync(c => c.Name == channelName))
+        if (await _db.Channels.AnyAsync(c => c.Name == channelName))
             return Conflict(new ErrorResponse($"Channel '{channelName}' already exists."));
 
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -72,11 +86,11 @@ public class ChannelsController(
             CreatedByUserId = Guid.Parse(userIdClaim),
         };
 
-        db.Channels.Add(channel);
-        await db.SaveChangesAsync();
+        _db.Channels.Add(channel);
+        await _db.SaveChangesAsync();
 
         var dto = new ChannelDto(channel.Id, channel.Name, channel.Topic, 0, channel.CreatedAt);
-        await chatService.BroadcastChannelUpdatedAsync(dto);
+        await _chatService.BroadcastChannelUpdatedAsync(dto);
 
         return Created($"/api/channels/{channelName}", dto);
     }
@@ -89,7 +103,7 @@ public class ChannelsController(
             return Unauthorized(new ErrorResponse("Authentication required."));
 
         var channelName = channel.ToLowerInvariant().Trim();
-        var dbChannel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
+        var dbChannel = await _db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
 
         if (dbChannel is null)
             return NotFound(new ErrorResponse($"Channel '{channelName}' does not exist."));
@@ -101,11 +115,11 @@ public class ChannelsController(
             return BadRequest(new ErrorResponse($"Topic must not exceed {ValidationConstants.MaxChannelTopicLength} characters."));
 
         dbChannel.Topic = request.Topic?.Trim();
-        await db.SaveChangesAsync();
+        await _db.SaveChangesAsync();
 
-        var messageCount = await db.Messages.CountAsync(m => m.ChannelId == dbChannel.Id);
+        var messageCount = await _db.Messages.CountAsync(m => m.ChannelId == dbChannel.Id);
         var dto = new ChannelDto(dbChannel.Id, dbChannel.Name, dbChannel.Topic, messageCount, dbChannel.CreatedAt);
-        await chatService.BroadcastChannelUpdatedAsync(dto, channelName);
+        await _chatService.BroadcastChannelUpdatedAsync(dto, channelName);
 
         return Ok(dto);
     }
@@ -122,7 +136,7 @@ public class ChannelsController(
         if (channelName == HubConstants.DefaultChannel)
             return BadRequest(new ErrorResponse($"The '{HubConstants.DefaultChannel}' channel cannot be deleted."));
 
-        var dbChannel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
+        var dbChannel = await _db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
 
         if (dbChannel is null)
             return NotFound(new ErrorResponse($"Channel '{channelName}' does not exist."));
@@ -130,8 +144,8 @@ public class ChannelsController(
         if (dbChannel.CreatedByUserId != Guid.Parse(userIdClaim))
             return StatusCode(403, new ErrorResponse("Only the channel creator can delete the channel."));
 
-        db.Channels.Remove(dbChannel);
-        await db.SaveChangesAsync();
+        _db.Channels.Remove(dbChannel);
+        await _db.SaveChangesAsync();
 
         return NoContent();
     }
@@ -151,7 +165,7 @@ public class ChannelsController(
         if (!ValidationConstants.ChannelNameRegex().IsMatch(channelName))
             return BadRequest(new ErrorResponse("Invalid channel name format."));
 
-        var dbChannel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
+        var dbChannel = await _db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
         if (dbChannel is null)
             return NotFound(new ErrorResponse($"Channel '{channelName}' does not exist."));
 
@@ -167,7 +181,7 @@ public class ChannelsController(
         using var stream = file.OpenReadStream();
         var isImage = FileValidationHelper.IsValidImage(stream);
 
-        var (fileId, filePath) = await fileStorage.SaveFileAsync(stream, file.FileName);
+        var (fileId, filePath) = await _fileStorage.SaveFileAsync(stream, file.FileName);
 
         var messageType = isImage ? MessageType.Image : MessageType.File;
         string content;
@@ -175,7 +189,7 @@ public class ChannelsController(
         if (isImage)
         {
             using var imageStream = System.IO.File.OpenRead(filePath);
-            content = asciiService.ConvertToAscii(imageStream);
+            content = _asciiService.ConvertToAscii(imageStream);
         }
         else
         {
@@ -183,7 +197,7 @@ public class ChannelsController(
         }
 
         var attachmentUrl = $"/api/files/{fileId}";
-        var sender = await db.Users.FindAsync(userId);
+        var sender = await _db.Users.FindAsync(userId);
 
         var message = new Message
         {
@@ -198,8 +212,8 @@ public class ChannelsController(
             SenderUsername = usernameClaim,
         };
 
-        db.Messages.Add(message);
-        await db.SaveChangesAsync();
+        _db.Messages.Add(message);
+        await _db.SaveChangesAsync();
 
         var messageDto = new MessageDto(
             message.Id,
@@ -212,7 +226,7 @@ public class ChannelsController(
             file.FileName,
             message.SentAt);
 
-        await chatService.BroadcastMessageAsync(channelName, messageDto);
+        await _chatService.BroadcastMessageAsync(channelName, messageDto);
 
         return Ok(messageDto);
     }
@@ -232,7 +246,7 @@ public class ChannelsController(
         if (!ValidationConstants.ChannelNameRegex().IsMatch(channelName))
             return BadRequest(new ErrorResponse("Invalid channel name format."));
 
-        var dbChannel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
+        var dbChannel = await _db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
         if (dbChannel is null)
             return NotFound(new ErrorResponse($"Channel '{channelName}' does not exist."));
 
@@ -248,7 +262,7 @@ public class ChannelsController(
         string fileName;
         try
         {
-            using var client = httpClientFactory.CreateClient("ImageDownload");
+            using var client = _httpClientFactory.CreateClient("ImageDownload");
             using var response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
 
@@ -291,16 +305,16 @@ public class ChannelsController(
             return BadRequest(new ErrorResponse("The URL does not point to a valid image. Supported formats: JPEG, PNG, GIF, WebP."));
 
         // Save file and convert to ASCII
-        var (fileId, filePath) = await fileStorage.SaveFileAsync(memoryStream, fileName);
+        var (fileId, filePath) = await _fileStorage.SaveFileAsync(memoryStream, fileName);
 
         string content;
         using (var imageStream = System.IO.File.OpenRead(filePath))
         {
-            content = asciiService.ConvertToAscii(imageStream);
+            content = _asciiService.ConvertToAscii(imageStream);
         }
 
         var attachmentUrl = $"/api/files/{fileId}";
-        var sender = await db.Users.FindAsync(userId);
+        var sender = await _db.Users.FindAsync(userId);
 
         var message = new Message
         {
@@ -315,8 +329,8 @@ public class ChannelsController(
             SenderUsername = usernameClaim,
         };
 
-        db.Messages.Add(message);
-        await db.SaveChangesAsync();
+        _db.Messages.Add(message);
+        await _db.SaveChangesAsync();
 
         var messageDto = new MessageDto(
             message.Id,
@@ -329,7 +343,7 @@ public class ChannelsController(
             fileName,
             message.SentAt);
 
-        await chatService.BroadcastMessageAsync(channelName, messageDto);
+        await _chatService.BroadcastMessageAsync(channelName, messageDto);
 
         return Ok(messageDto);
     }

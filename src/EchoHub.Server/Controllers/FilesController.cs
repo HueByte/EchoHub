@@ -10,15 +10,21 @@ namespace EchoHub.Server.Controllers;
 [Route("api/files")]
 [Authorize]
 [EnableRateLimiting("general")]
-public class FilesController(FileStorageService fileStorage) : ControllerBase
+public class FilesController : ControllerBase
 {
+    private readonly FileStorageService _fileStorage;
+
+    public FilesController(FileStorageService fileStorage)
+    {
+        _fileStorage = fileStorage;
+    }
     [HttpGet("{fileId}")]
     public IActionResult GetFile(string fileId)
     {
         if (!Guid.TryParse(fileId, out _))
             return BadRequest(new ErrorResponse("Invalid file identifier."));
 
-        var filePath = fileStorage.GetFilePath(fileId);
+        var filePath = _fileStorage.GetFilePath(fileId);
 
         if (filePath is null)
             return NotFound(new ErrorResponse("File not found."));

@@ -7,17 +7,25 @@ namespace EchoHub.Server.Controllers;
 
 [ApiController]
 [Route("api/server")]
-public class ServerController(EchoHubDbContext db, IConfiguration config) : ControllerBase
+public class ServerController : ControllerBase
 {
+    private readonly EchoHubDbContext _db;
+    private readonly IConfiguration _config;
+
+    public ServerController(EchoHubDbContext db, IConfiguration config)
+    {
+        _db = db;
+        _config = config;
+    }
     [HttpGet("info")]
     public async Task<IActionResult> GetInfo()
     {
-        var userCount = await db.Users.CountAsync();
-        var channelCount = await db.Channels.CountAsync();
+        var userCount = await _db.Users.CountAsync();
+        var channelCount = await _db.Channels.CountAsync();
 
         var status = new ServerStatusDto(
-            config["Server:Name"] ?? "EchoHub Server",
-            config["Server:Description"],
+            _config["Server:Name"] ?? "EchoHub Server",
+            _config["Server:Description"],
             userCount,
             channelCount);
 

@@ -9,8 +9,17 @@ using Microsoft.AspNetCore.SignalR;
 namespace EchoHub.Server.Hubs;
 
 [Authorize]
-public class ChatHub(IChatService chatService, ILogger<ChatHub> logger) : Hub<IEchoHubClient>
+public class ChatHub : Hub<IEchoHubClient>
 {
+    private readonly IChatService _chatService;
+    private readonly ILogger<ChatHub> _logger;
+
+    public ChatHub(IChatService chatService, ILogger<ChatHub> logger)
+    {
+        _chatService = chatService;
+        _logger = logger;
+    }
+
     private Guid CurrentUserId =>
         Guid.Parse(Context.User?.FindFirstValue(ClaimTypes.NameIdentifier)
             ?? throw new HubException("User ID claim not found."));
@@ -23,12 +32,12 @@ public class ChatHub(IChatService chatService, ILogger<ChatHub> logger) : Hub<IE
     {
         try
         {
-            await chatService.UserConnectedAsync(Context.ConnectionId, CurrentUserId, CurrentUsername);
+            await _chatService.UserConnectedAsync(Context.ConnectionId, CurrentUserId, CurrentUsername);
             await base.OnConnectedAsync();
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error in OnConnectedAsync for {ConnectionId}", Context.ConnectionId);
+            _logger.LogError(ex, "Error in OnConnectedAsync for {ConnectionId}", Context.ConnectionId);
             throw;
         }
     }
@@ -37,12 +46,12 @@ public class ChatHub(IChatService chatService, ILogger<ChatHub> logger) : Hub<IE
     {
         try
         {
-            await chatService.UserDisconnectedAsync(Context.ConnectionId);
+            await _chatService.UserDisconnectedAsync(Context.ConnectionId);
             await base.OnDisconnectedAsync(exception);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error in OnDisconnectedAsync for {ConnectionId}", Context.ConnectionId);
+            _logger.LogError(ex, "Error in OnDisconnectedAsync for {ConnectionId}", Context.ConnectionId);
             throw;
         }
     }
@@ -51,7 +60,7 @@ public class ChatHub(IChatService chatService, ILogger<ChatHub> logger) : Hub<IE
     {
         try
         {
-            var (history, error) = await chatService.JoinChannelAsync(
+            var (history, error) = await _chatService.JoinChannelAsync(
                 Context.ConnectionId, CurrentUserId, CurrentUsername, channelName);
 
             if (error is not null)
@@ -65,7 +74,7 @@ public class ChatHub(IChatService chatService, ILogger<ChatHub> logger) : Hub<IE
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error joining channel '{Channel}' for {User}", channelName, CurrentUsername);
+            _logger.LogError(ex, "Error joining channel '{Channel}' for {User}", channelName, CurrentUsername);
             await Clients.Caller.Error($"Failed to join channel: {ex.Message}");
             return [];
         }
@@ -76,12 +85,12 @@ public class ChatHub(IChatService chatService, ILogger<ChatHub> logger) : Hub<IE
         try
         {
             channelName = channelName.ToLowerInvariant().Trim();
-            await chatService.LeaveChannelAsync(Context.ConnectionId, CurrentUsername, channelName);
+            await _chatService.LeaveChannelAsync(Context.ConnectionId, CurrentUsername, channelName);
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, channelName);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error leaving channel '{Channel}' for {User}", channelName, CurrentUsername);
+            _logger.LogError(ex, "Error leaving channel '{Channel}' for {User}", channelName, CurrentUsername);
             await Clients.Caller.Error($"Failed to leave channel: {ex.Message}");
         }
     }
@@ -90,13 +99,13 @@ public class ChatHub(IChatService chatService, ILogger<ChatHub> logger) : Hub<IE
     {
         try
         {
-            var error = await chatService.SendMessageAsync(CurrentUserId, CurrentUsername, channelName, content);
+            var error = await _chatService.SendMessageAsync(CurrentUserId, CurrentUsername, channelName, content);
             if (error is not null)
                 await Clients.Caller.Error(error);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error sending message in '{Channel}' for {User}", channelName, CurrentUsername);
+            _logger.LogError(ex, "Error sending message in '{Channel}' for {User}", channelName, CurrentUsername);
             await Clients.Caller.Error($"Failed to send message: {ex.Message}");
         }
     }
@@ -105,11 +114,11 @@ public class ChatHub(IChatService chatService, ILogger<ChatHub> logger) : Hub<IE
     {
         try
         {
-            return await chatService.GetChannelHistoryAsync(channelName, count);
+            return await _chatService.GetChannelHistoryAsync(channelName, count);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error fetching history for '{Channel}'", channelName);
+            _logger.LogError(ex, "Error fetching history for '{Channel}'", channelName);
             await Clients.Caller.Error($"Failed to load history: {ex.Message}");
             return [];
         }
@@ -119,13 +128,13 @@ public class ChatHub(IChatService chatService, ILogger<ChatHub> logger) : Hub<IE
     {
         try
         {
-            var error = await chatService.UpdateStatusAsync(CurrentUserId, CurrentUsername, status, statusMessage);
+            var error = await _chatService.UpdateStatusAsync(CurrentUserId, CurrentUsername, status, statusMessage);
             if (error is not null)
                 await Clients.Caller.Error(error);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error updating status for {User}", CurrentUsername);
+            _logger.LogError(ex, "Error updating status for {User}", CurrentUsername);
             await Clients.Caller.Error($"Failed to update status: {ex.Message}");
         }
     }
@@ -134,11 +143,11 @@ public class ChatHub(IChatService chatService, ILogger<ChatHub> logger) : Hub<IE
     {
         try
         {
-            return await chatService.GetOnlineUsersAsync(channelName);
+            return await _chatService.GetOnlineUsersAsync(channelName);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error listing users in '{Channel}'", channelName);
+            _logger.LogError(ex, "Error listing users in '{Channel}'", channelName);
             await Clients.Caller.Error($"Failed to list users: {ex.Message}");
             return [];
         }

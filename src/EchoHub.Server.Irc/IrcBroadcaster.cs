@@ -3,13 +3,20 @@ using EchoHub.Core.DTOs;
 
 namespace EchoHub.Server.Irc;
 
-public class IrcBroadcaster(IrcGatewayService gateway) : IChatBroadcaster
+public class IrcBroadcaster : IChatBroadcaster
 {
+    private readonly IrcGatewayService _gateway;
+
+    public IrcBroadcaster(IrcGatewayService gateway)
+    {
+        _gateway = gateway;
+    }
+
     public async Task SendMessageToChannelAsync(string channelName, MessageDto message)
     {
         var lines = IrcMessageFormatter.FormatMessage(message);
 
-        foreach (var conn in gateway.GetConnectionsInChannel(channelName))
+        foreach (var conn in _gateway.GetConnectionsInChannel(channelName))
         {
             // IRC convention: don't echo sender's own message
             if (conn.Nickname == message.SenderUsername)
@@ -22,7 +29,7 @@ public class IrcBroadcaster(IrcGatewayService gateway) : IChatBroadcaster
 
     public async Task SendUserJoinedAsync(string channelName, string username, string? excludeConnectionId = null)
     {
-        foreach (var conn in gateway.GetConnectionsInChannel(channelName))
+        foreach (var conn in _gateway.GetConnectionsInChannel(channelName))
         {
             if (conn.ConnectionId == excludeConnectionId) continue;
             await conn.SendAsync($":{username}!{username}@echohub JOIN #{channelName}");
@@ -31,7 +38,7 @@ public class IrcBroadcaster(IrcGatewayService gateway) : IChatBroadcaster
 
     public async Task SendUserLeftAsync(string channelName, string username)
     {
-        foreach (var conn in gateway.GetConnectionsInChannel(channelName))
+        foreach (var conn in _gateway.GetConnectionsInChannel(channelName))
         {
             if (conn.Nickname == username) continue;
             await conn.SendAsync($":{username}!{username}@echohub PART #{channelName}");
@@ -43,9 +50,9 @@ public class IrcBroadcaster(IrcGatewayService gateway) : IChatBroadcaster
         var target = channelName ?? channel.Name;
         if (channel.Topic is null) return;
 
-        foreach (var conn in gateway.GetConnectionsInChannel(target))
+        foreach (var conn in _gateway.GetConnectionsInChannel(target))
         {
-            await conn.SendAsync($":{gateway.Options.ServerName} TOPIC #{channel.Name} :{channel.Topic}");
+            await conn.SendAsync($":{_gateway.Options.ServerName} TOPIC #{channel.Name} :{channel.Topic}");
         }
     }
 
@@ -59,9 +66,9 @@ public class IrcBroadcaster(IrcGatewayService gateway) : IChatBroadcaster
     {
         if (!connectionId.StartsWith("irc-")) return;
 
-        if (gateway.Connections.TryGetValue(connectionId, out var conn))
+        if (_gateway.Connections.TryGetValue(connectionId, out var conn))
         {
-            await conn.SendAsync($":{gateway.Options.ServerName} NOTICE {conn.Nickname ?? "*"} :{message}");
+            await conn.SendAsync($":{_gateway.Options.ServerName} NOTICE {conn.Nickname ?? "*"} :{message}");
         }
     }
 }
