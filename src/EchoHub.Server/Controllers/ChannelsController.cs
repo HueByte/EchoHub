@@ -8,6 +8,7 @@ using EchoHub.Server.Hubs;
 using EchoHub.Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +17,7 @@ namespace EchoHub.Server.Controllers;
 [ApiController]
 [Route("api/channels")]
 [Authorize]
+[EnableRateLimiting("general")]
 public class ChannelsController(
     EchoHubDbContext db,
     FileStorageService fileStorage,
@@ -23,9 +25,17 @@ public class ChannelsController(
     IHubContext<ChatHub, IEchoHubClient> hubContext) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetChannels()
+    public async Task<IActionResult> GetChannels([FromQuery] int offset = 0, [FromQuery] int limit = 50)
     {
+        offset = Math.Max(0, offset);
+        limit = Math.Clamp(limit, 1, 100);
+
+        var total = await db.Channels.CountAsync();
+
         var channels = await db.Channels
+            .OrderBy(c => c.Name)
+            .Skip(offset)
+            .Take(limit)
             .Select(c => new ChannelDto(
                 c.Id,
                 c.Name,
@@ -34,45 +44,146 @@ public class ChannelsController(
                 c.CreatedAt))
             .ToListAsync();
 
-        return Ok(channels);
+        return Ok(new PaginatedResponse<ChannelDto>(channels, total, offset, limit));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateChannel([FromBody] CreateChannelRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name))
+            return BadRequest(new ErrorResponse("Channel name is required."));
+
+        var channelName = request.Name.ToLowerInvariant().Trim();
+
+        if (!ValidationConstants.ChannelNameRegex().IsMatch(channelName))
+            return BadRequest(new ErrorResponse("Channel name must be 2-100 characters and contain only letters, digits, underscores, or hyphens."));
+
+        if (await db.Channels.AnyAsync(c => c.Name == channelName))
+            return Conflict(new ErrorResponse($"Channel '{channelName}' already exists."));
+
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim is null)
+            return Unauthorized(new ErrorResponse("Authentication required."));
+
+        var channel = new Channel
+        {
+            Id = Guid.NewGuid(),
+            Name = channelName,
+            Topic = request.Topic?.Trim(),
+            CreatedByUserId = Guid.Parse(userIdClaim),
+        };
+
+        db.Channels.Add(channel);
+        await db.SaveChangesAsync();
+
+        var dto = new ChannelDto(channel.Id, channel.Name, channel.Topic, 0, channel.CreatedAt);
+        await hubContext.Clients.All.ChannelUpdated(dto);
+
+        return Created($"/api/channels/{channelName}", dto);
+    }
+
+    [HttpPut("{channel}/topic")]
+    public async Task<IActionResult> UpdateTopic(string channel, [FromBody] UpdateTopicRequest request)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim is null)
+            return Unauthorized(new ErrorResponse("Authentication required."));
+
+        var channelName = channel.ToLowerInvariant().Trim();
+        var dbChannel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
+
+        if (dbChannel is null)
+            return NotFound(new ErrorResponse($"Channel '{channelName}' does not exist."));
+
+        if (dbChannel.CreatedByUserId != Guid.Parse(userIdClaim))
+            return StatusCode(403, new ErrorResponse("Only the channel creator can update the topic."));
+
+        if (request.Topic is not null && request.Topic.Length > ValidationConstants.MaxChannelTopicLength)
+            return BadRequest(new ErrorResponse($"Topic must not exceed {ValidationConstants.MaxChannelTopicLength} characters."));
+
+        dbChannel.Topic = request.Topic?.Trim();
+        await db.SaveChangesAsync();
+
+        var messageCount = await db.Messages.CountAsync(m => m.ChannelId == dbChannel.Id);
+        var dto = new ChannelDto(dbChannel.Id, dbChannel.Name, dbChannel.Topic, messageCount, dbChannel.CreatedAt);
+        await hubContext.Clients.Group(channelName).ChannelUpdated(dto);
+
+        return Ok(dto);
+    }
+
+    [HttpDelete("{channel}")]
+    public async Task<IActionResult> DeleteChannel(string channel)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim is null)
+            return Unauthorized(new ErrorResponse("Authentication required."));
+
+        var channelName = channel.ToLowerInvariant().Trim();
+
+        if (channelName == HubConstants.DefaultChannel)
+            return BadRequest(new ErrorResponse($"The '{HubConstants.DefaultChannel}' channel cannot be deleted."));
+
+        var dbChannel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
+
+        if (dbChannel is null)
+            return NotFound(new ErrorResponse($"Channel '{channelName}' does not exist."));
+
+        if (dbChannel.CreatedByUserId != Guid.Parse(userIdClaim))
+            return StatusCode(403, new ErrorResponse("Only the channel creator can delete the channel."));
+
+        db.Channels.Remove(dbChannel);
+        await db.SaveChangesAsync();
+
+        return NoContent();
     }
 
     [HttpPost("{channel}/upload")]
+    [EnableRateLimiting("upload")]
     public async Task<IActionResult> Upload(string channel)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var usernameClaim = User.FindFirstValue("username");
         if (userIdClaim is null || usernameClaim is null)
-            return Unauthorized();
+            return Unauthorized(new ErrorResponse("Authentication required."));
 
         var userId = Guid.Parse(userIdClaim);
         var channelName = channel.ToLowerInvariant().Trim();
 
+        if (!ValidationConstants.ChannelNameRegex().IsMatch(channelName))
+            return BadRequest(new ErrorResponse("Invalid channel name format."));
+
         var dbChannel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
         if (dbChannel is null)
-            return NotFound(new { Error = $"Channel '{channelName}' does not exist." });
+            return NotFound(new ErrorResponse($"Channel '{channelName}' does not exist."));
 
         if (!Request.HasFormContentType || Request.Form.Files.Count == 0)
-            return BadRequest(new { Error = "No file uploaded." });
+            return BadRequest(new ErrorResponse("No file uploaded."));
 
         var file = Request.Form.Files[0];
 
         if (file.Length > HubConstants.MaxFileSizeBytes)
-            return BadRequest(new { Error = $"File size exceeds maximum of {HubConstants.MaxFileSizeBytes / (1024 * 1024)} MB." });
+            return BadRequest(new ErrorResponse($"File size exceeds maximum of {HubConstants.MaxFileSizeBytes / (1024 * 1024)} MB."));
 
+        // Detect if file is an image by checking magic bytes
         using var stream = file.OpenReadStream();
+        var isImage = FileValidationHelper.IsValidImage(stream);
+
         var (fileId, filePath) = await fileStorage.SaveFileAsync(stream, file.FileName);
 
-        var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
-        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-        var isImage = imageExtensions.Contains(extension);
-
         var messageType = isImage ? MessageType.Image : MessageType.File;
-        var content = isImage
-            ? asciiService.ConvertToAscii(System.IO.File.OpenRead(filePath))
-            : file.FileName;
-        var attachmentUrl = $"/api/files/{fileId}";
+        string content;
 
+        if (isImage)
+        {
+            using var imageStream = System.IO.File.OpenRead(filePath);
+            content = asciiService.ConvertToAscii(imageStream);
+        }
+        else
+        {
+            content = file.FileName;
+        }
+
+        var attachmentUrl = $"/api/files/{fileId}";
         var sender = await db.Users.FindAsync(userId);
 
         var message = new Message
@@ -102,7 +213,6 @@ public class ChannelsController(
             file.FileName,
             message.SentAt);
 
-        // Broadcast to all clients in the channel via SignalR
         await hubContext.Clients.Group(channelName).ReceiveMessage(messageDto);
 
         return Ok(messageDto);

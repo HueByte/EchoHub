@@ -1,19 +1,27 @@
+using EchoHub.Core.DTOs;
 using EchoHub.Server.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EchoHub.Server.Controllers;
 
 [ApiController]
 [Route("api/files")]
+[Authorize]
+[EnableRateLimiting("general")]
 public class FilesController(FileStorageService fileStorage) : ControllerBase
 {
     [HttpGet("{fileId}")]
     public IActionResult GetFile(string fileId)
     {
+        if (!Guid.TryParse(fileId, out _))
+            return BadRequest(new ErrorResponse("Invalid file identifier."));
+
         var filePath = fileStorage.GetFilePath(fileId);
 
         if (filePath is null)
-            return NotFound(new { Error = "File not found." });
+            return NotFound(new ErrorResponse("File not found."));
 
         var contentType = Path.GetExtension(filePath).ToLowerInvariant() switch
         {

@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using EchoHub.Core.Models;
 using Microsoft.IdentityModel.Tokens;
@@ -15,10 +16,14 @@ public class JwtTokenService(IConfiguration configuration)
     private readonly string _audience = configuration["Jwt:Audience"]
         ?? throw new InvalidOperationException("Jwt:Audience is not configured.");
 
-    public string GenerateToken(User user)
+    private static readonly TimeSpan AccessTokenLifetime = TimeSpan.FromMinutes(15);
+    public static readonly TimeSpan RefreshTokenLifetime = TimeSpan.FromDays(30);
+
+    public (string Token, DateTimeOffset ExpiresAt) GenerateAccessToken(User user)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var expiresAt = DateTimeOffset.UtcNow.Add(AccessTokenLifetime);
 
         Claim[] claims =
         [
@@ -32,9 +37,23 @@ public class JwtTokenService(IConfiguration configuration)
             issuer: _issuer,
             audience: _audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddDays(7),
+            expires: expiresAt.UtcDateTime,
             signingCredentials: credentials);
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        return (new JwtSecurityTokenHandler().WriteToken(token), expiresAt);
+    }
+
+    public static string GenerateRefreshToken()
+    {
+        var randomBytes = new byte[64];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomBytes);
+        return Convert.ToBase64String(randomBytes);
+    }
+
+    public static string HashToken(string token)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(token));
+        return Convert.ToBase64String(bytes);
     }
 }

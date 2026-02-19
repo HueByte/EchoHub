@@ -243,15 +243,24 @@ public static class Program
 
         _commandHandler.OnSetTopic += async (topic) =>
         {
-            // Topic setting would go through an API endpoint if available.
-            // For now, show as a system message.
-            await Task.CompletedTask;
-            _app.Invoke(() =>
+            if (_apiClient is null)
+                return;
+
+            var channel = _mainWindow!.CurrentChannel;
+            if (string.IsNullOrEmpty(channel))
+                return;
+
+            try
             {
-                var channel = _mainWindow!.CurrentChannel;
-                if (!string.IsNullOrEmpty(channel))
-                    _mainWindow.AddSystemMessage(channel, $"Topic set to: {topic}");
-            });
+                await _apiClient.UpdateChannelTopicAsync(channel, topic);
+                _app.Invoke(() =>
+                    _mainWindow!.AddSystemMessage(channel, $"Topic set to: {topic}"));
+            }
+            catch (Exception ex)
+            {
+                _app.Invoke(() =>
+                    _mainWindow!.ShowError($"Failed to set topic: {ex.Message}"));
+            }
         };
 
         _commandHandler.OnListUsers += async () =>
@@ -340,7 +349,7 @@ public static class Program
                     await _connection.DisposeAsync();
                 }
 
-                _connection = new EchoHubConnection(result.ServerUrl, _apiClient.Token!);
+                _connection = new EchoHubConnection(result.ServerUrl, _apiClient);
                 WireConnectionEvents(_connection);
 
                 await _connection.ConnectAsync();

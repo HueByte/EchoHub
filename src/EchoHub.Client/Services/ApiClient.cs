@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -8,9 +9,12 @@ namespace EchoHub.Client.Services;
 public sealed class ApiClient : IDisposable
 {
     private readonly HttpClient _http;
-    private string? _token;
+    private string? _accessToken;
+    private string? _refreshToken;
+    private DateTimeOffset _expiresAt;
 
-    public string? Token => _token;
+    public string? Token => _accessToken;
+    public string? RefreshToken => _refreshToken;
     public string BaseUrl { get; }
 
     public ApiClient(string baseUrl)
@@ -31,7 +35,7 @@ public sealed class ApiClient : IDisposable
         var result = await response.Content.ReadFromJsonAsync<LoginResponse>()
             ?? throw new InvalidOperationException("Registration returned empty response.");
 
-        SetToken(result.Token);
+        SetTokens(result);
         return result;
     }
 
@@ -44,15 +48,77 @@ public sealed class ApiClient : IDisposable
         var result = await response.Content.ReadFromJsonAsync<LoginResponse>()
             ?? throw new InvalidOperationException("Login returned empty response.");
 
-        SetToken(result.Token);
+        SetTokens(result);
         return result;
+    }
+
+    public async Task RefreshTokenAsync()
+    {
+        if (string.IsNullOrEmpty(_refreshToken))
+            throw new InvalidOperationException("No refresh token available.");
+
+        var request = new RefreshRequest(_refreshToken);
+        var response = await _http.PostAsJsonAsync("/api/auth/refresh", request);
+        await EnsureSuccessAsync(response);
+
+        var result = await response.Content.ReadFromJsonAsync<LoginResponse>()
+            ?? throw new InvalidOperationException("Token refresh returned empty response.");
+
+        SetTokens(result);
+    }
+
+    public async Task LogoutAsync()
+    {
+        if (!string.IsNullOrEmpty(_refreshToken))
+        {
+            try
+            {
+                var request = new RefreshRequest(_refreshToken);
+                await _http.PostAsJsonAsync("/api/auth/logout", request);
+            }
+            catch
+            {
+                // Best-effort logout
+            }
+        }
+
+        _accessToken = null;
+        _refreshToken = null;
+        _http.DefaultRequestHeaders.Authorization = null;
+    }
+
+    /// <summary>
+    /// Returns a valid access token, refreshing if expired.
+    /// Used by EchoHubConnection for SignalR token provider.
+    /// </summary>
+    public async Task<string?> GetValidTokenAsync()
+    {
+        if (string.IsNullOrEmpty(_accessToken))
+            return null;
+
+        // Refresh if token expires within 60 seconds
+        if (DateTimeOffset.UtcNow >= _expiresAt.AddSeconds(-60) && !string.IsNullOrEmpty(_refreshToken))
+        {
+            try
+            {
+                await RefreshTokenAsync();
+            }
+            catch
+            {
+                // Return current token and let the caller handle auth failure
+            }
+        }
+
+        return _accessToken;
     }
 
     public async Task<List<ChannelDto>> GetChannelsAsync()
     {
         EnsureAuthenticated();
-        var channels = await _http.GetFromJsonAsync<List<ChannelDto>>("/api/channels");
-        return channels ?? [];
+        var response = await AuthenticatedGetAsync("/api/channels");
+        await EnsureSuccessAsync(response);
+        var paginated = await response.Content.ReadFromJsonAsync<PaginatedResponse<ChannelDto>>();
+        return paginated?.Items ?? [];
     }
 
     public async Task<ServerStatusDto?> GetServerInfoAsync()
@@ -64,15 +130,17 @@ public sealed class ApiClient : IDisposable
     public async Task<UserProfileDto?> GetUserProfileAsync(string username)
     {
         EnsureAuthenticated();
-        var profile = await _http.GetFromJsonAsync<UserProfileDto>($"/api/users/{Uri.EscapeDataString(username)}/profile");
-        return profile;
+        var response = await AuthenticatedGetAsync($"/api/users/{Uri.EscapeDataString(username)}/profile");
+        await EnsureSuccessAsync(response);
+        return await response.Content.ReadFromJsonAsync<UserProfileDto>();
     }
 
     public async Task<UserProfileDto?> UpdateProfileAsync(UpdateProfileRequest request)
     {
         EnsureAuthenticated();
-        var response = await _http.PutAsJsonAsync("/api/users/profile", request);
-        response.EnsureSuccessStatusCode();
+        var response = await AuthenticatedRequestAsync(() =>
+            _http.PutAsJsonAsync("/api/users/profile", request));
+        await EnsureSuccessAsync(response);
         return await response.Content.ReadFromJsonAsync<UserProfileDto>();
     }
 
@@ -84,10 +152,11 @@ public sealed class ApiClient : IDisposable
         streamContent.Headers.ContentType = new MediaTypeHeaderValue(GetContentType(fileName));
         content.Add(streamContent, "file", fileName);
 
-        var response = await _http.PostAsync("/api/users/avatar", content);
-        response.EnsureSuccessStatusCode();
+        var response = await AuthenticatedRequestAsync(() =>
+            _http.PostAsync("/api/users/avatar", content));
+        await EnsureSuccessAsync(response);
         var result = await response.Content.ReadFromJsonAsync<AvatarUploadResponse>();
-        return result?.AsciiArt;
+        return result?.AvatarAscii;
     }
 
     public async Task<MessageDto?> UploadFileAsync(string channelName, Stream fileStream, string fileName)
@@ -98,15 +167,92 @@ public sealed class ApiClient : IDisposable
         streamContent.Headers.ContentType = new MediaTypeHeaderValue(GetContentType(fileName));
         content.Add(streamContent, "file", fileName);
 
-        var response = await _http.PostAsync($"/api/channels/{Uri.EscapeDataString(channelName)}/upload", content);
-        response.EnsureSuccessStatusCode();
+        var response = await AuthenticatedRequestAsync(() =>
+            _http.PostAsync($"/api/channels/{Uri.EscapeDataString(channelName)}/upload", content));
+        await EnsureSuccessAsync(response);
         return await response.Content.ReadFromJsonAsync<MessageDto>();
     }
 
-    private void SetToken(string token)
+    public async Task<ChannelDto?> CreateChannelAsync(string name, string? topic = null)
     {
-        _token = token;
-        _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        EnsureAuthenticated();
+        var request = new CreateChannelRequest(name, topic);
+        var response = await AuthenticatedRequestAsync(() =>
+            _http.PostAsJsonAsync("/api/channels", request));
+        await EnsureSuccessAsync(response);
+        return await response.Content.ReadFromJsonAsync<ChannelDto>();
+    }
+
+    public async Task<ChannelDto?> UpdateChannelTopicAsync(string channelName, string? topic)
+    {
+        EnsureAuthenticated();
+        var request = new UpdateTopicRequest(topic);
+        var response = await AuthenticatedRequestAsync(() =>
+            _http.PutAsJsonAsync($"/api/channels/{Uri.EscapeDataString(channelName)}/topic", request));
+        await EnsureSuccessAsync(response);
+        return await response.Content.ReadFromJsonAsync<ChannelDto>();
+    }
+
+    public async Task DeleteChannelAsync(string channelName)
+    {
+        EnsureAuthenticated();
+        var response = await AuthenticatedRequestAsync(() =>
+            _http.DeleteAsync($"/api/channels/{Uri.EscapeDataString(channelName)}"));
+        await EnsureSuccessAsync(response);
+    }
+
+    private void SetTokens(LoginResponse result)
+    {
+        _accessToken = result.Token;
+        _refreshToken = result.RefreshToken;
+        _expiresAt = result.ExpiresAt;
+        _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+    }
+
+    /// <summary>
+    /// Performs a GET request with automatic token refresh on 401.
+    /// </summary>
+    private async Task<HttpResponseMessage> AuthenticatedGetAsync(string url)
+    {
+        var response = await _http.GetAsync(url);
+
+        if (response.StatusCode == HttpStatusCode.Unauthorized && !string.IsNullOrEmpty(_refreshToken))
+        {
+            try
+            {
+                await RefreshTokenAsync();
+                response = await _http.GetAsync(url);
+            }
+            catch
+            {
+                // Refresh failed, return original 401
+            }
+        }
+
+        return response;
+    }
+
+    /// <summary>
+    /// Performs a request with automatic token refresh on 401.
+    /// </summary>
+    private async Task<HttpResponseMessage> AuthenticatedRequestAsync(Func<Task<HttpResponseMessage>> requestFactory)
+    {
+        var response = await requestFactory();
+
+        if (response.StatusCode == HttpStatusCode.Unauthorized && !string.IsNullOrEmpty(_refreshToken))
+        {
+            try
+            {
+                await RefreshTokenAsync();
+                response = await requestFactory();
+            }
+            catch
+            {
+                // Refresh failed, return original 401
+            }
+        }
+
+        return response;
     }
 
     private static async Task EnsureSuccessAsync(HttpResponseMessage response)
@@ -114,14 +260,12 @@ public sealed class ApiClient : IDisposable
         if (response.IsSuccessStatusCode)
             return;
 
-        // Try to extract a meaningful error message from the response body
         var errorMessage = $"{(int)response.StatusCode} {response.ReasonPhrase}";
         try
         {
             var body = await response.Content.ReadAsStringAsync();
             if (!string.IsNullOrWhiteSpace(body))
             {
-                // Try to parse {"error": "..."} format
                 using var doc = JsonDocument.Parse(body);
                 if (doc.RootElement.TryGetProperty("error", out var errorProp) ||
                     doc.RootElement.TryGetProperty("Error", out errorProp))
@@ -144,7 +288,7 @@ public sealed class ApiClient : IDisposable
 
     private void EnsureAuthenticated()
     {
-        if (string.IsNullOrEmpty(_token))
+        if (string.IsNullOrEmpty(_accessToken))
             throw new InvalidOperationException("Not authenticated. Call LoginAsync or RegisterAsync first.");
     }
 
@@ -168,5 +312,3 @@ public sealed class ApiClient : IDisposable
         _http.Dispose();
     }
 }
-
-internal record AvatarUploadResponse(string AsciiArt);

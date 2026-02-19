@@ -41,8 +41,6 @@ public class ChatHub(EchoHubDbContext db, ILogger<ChatHub> logger, PresenceTrack
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        // Capture channels before disconnecting, since UserDisconnected clears them
-        // when the last connection for a user is removed.
         var preDisconnectUsername = Context.User?.FindFirstValue("username");
         var channelsBeforeDisconnect = preDisconnectUsername is not null
             ? presenceTracker.GetChannelsForUser(preDisconnectUsername)
@@ -82,21 +80,18 @@ public class ChatHub(EchoHubDbContext db, ILogger<ChatHub> logger, PresenceTrack
     {
         channelName = channelName.ToLowerInvariant().Trim();
 
+        if (!ValidationConstants.ChannelNameRegex().IsMatch(channelName))
+        {
+            await Clients.Caller.Error("Invalid channel name. Use 2-100 characters: letters, digits, underscores, or hyphens.");
+            return [];
+        }
+
         var channel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
 
         if (channel is null)
         {
-            channel = new Channel
-            {
-                Id = Guid.NewGuid(),
-                Name = channelName,
-                CreatedByUserId = CurrentUserId,
-            };
-
-            db.Channels.Add(channel);
-            await db.SaveChangesAsync();
-
-            logger.LogInformation("Channel '{Channel}' created by {User}", channelName, CurrentUsername);
+            await Clients.Caller.Error($"Channel '{channelName}' does not exist. Create it first via the channel list.");
+            return [];
         }
 
         presenceTracker.JoinChannel(CurrentUsername, channelName);
@@ -125,6 +120,12 @@ public class ChatHub(EchoHubDbContext db, ILogger<ChatHub> logger, PresenceTrack
     public async Task SendMessage(string channelName, string content)
     {
         channelName = channelName.ToLowerInvariant().Trim();
+
+        if (!ValidationConstants.ChannelNameRegex().IsMatch(channelName))
+        {
+            await Clients.Caller.Error("Invalid channel name.");
+            return;
+        }
 
         if (string.IsNullOrWhiteSpace(content))
         {
@@ -181,13 +182,12 @@ public class ChatHub(EchoHubDbContext db, ILogger<ChatHub> logger, PresenceTrack
     public async Task<List<MessageDto>> GetChannelHistory(string channelName, int count = HubConstants.DefaultHistoryCount)
     {
         channelName = channelName.ToLowerInvariant().Trim();
+        count = Math.Clamp(count, 1, ValidationConstants.MaxHistoryCount);
 
         var channel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
 
         if (channel is null)
-        {
             return [];
-        }
 
         var messages = await db.Messages
             .Where(m => m.ChannelId == channel.Id)
@@ -214,6 +214,12 @@ public class ChatHub(EchoHubDbContext db, ILogger<ChatHub> logger, PresenceTrack
 
     public async Task UpdateStatus(UserStatus status, string? statusMessage)
     {
+        if (statusMessage is not null && statusMessage.Length > ValidationConstants.MaxStatusMessageLength)
+        {
+            await Clients.Caller.Error($"Status message must not exceed {ValidationConstants.MaxStatusMessageLength} characters.");
+            return;
+        }
+
         var user = await db.Users.FindAsync(CurrentUserId);
 
         if (user is null)
@@ -223,7 +229,7 @@ public class ChatHub(EchoHubDbContext db, ILogger<ChatHub> logger, PresenceTrack
         }
 
         user.Status = status;
-        user.StatusMessage = statusMessage;
+        user.StatusMessage = statusMessage?.Trim();
         user.LastSeenAt = DateTimeOffset.UtcNow;
         await db.SaveChangesAsync();
 

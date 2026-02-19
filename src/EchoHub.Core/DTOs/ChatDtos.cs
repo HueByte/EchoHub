@@ -29,3 +29,7 @@ public record UserDto(
     DateTimeOffset LastSeenAt);
 
 public record SendMessageRequest(string ChannelName, string Content);
+
+public record CreateChannelRequest(string Name, string? Topic = null);
+
+public record UpdateTopicRequest(string? Topic);

@@ -1,5 +1,7 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using EchoHub.Core.Constants;
+using Microsoft.AspNetCore.RateLimiting;
 using EchoHub.Core.Models;
 using EchoHub.Server.Auth;
 using EchoHub.Server.Data;
@@ -72,15 +74,48 @@ builder.Services.AddSingleton<PresenceTracker>();
 builder.Services.AddSingleton<ImageToAsciiService>();
 builder.Services.AddSingleton<FileStorageService>();
 
-// ── CORS (allow all for development) ──────────────────────────────────────────
+// ── Rate Limiting ────────────────────────────────────────────────────────────
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddFixedWindowLimiter("auth", limiter =>
+    {
+        limiter.PermitLimit = 10;
+        limiter.Window = TimeSpan.FromMinutes(1);
+        limiter.QueueLimit = 0;
+    });
+
+    options.AddFixedWindowLimiter("upload", limiter =>
+    {
+        limiter.PermitLimit = 5;
+        limiter.Window = TimeSpan.FromMinutes(1);
+        limiter.QueueLimit = 0;
+    });
+
+    options.AddFixedWindowLimiter("general", limiter =>
+    {
+        limiter.PermitLimit = 100;
+        limiter.Window = TimeSpan.FromMinutes(1);
+        limiter.QueueLimit = 0;
+    });
+});
+
+// ── CORS ─────────────────────────────────────────────────────────────────────
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
         policy.AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials()
-              .SetIsOriginAllowed(_ => true);
+              .AllowCredentials();
+
+        if (allowedOrigins is { Length: > 0 })
+            policy.WithOrigins(allowedOrigins);
+        else
+            policy.SetIsOriginAllowed(_ => true);
     });
 });
 
@@ -108,6 +143,7 @@ using (var scope = app.Services.CreateScope())
 
 // ── Middleware ─────────────────────────────────────────────────────────────────
 app.UseCors();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 

@@ -9,6 +9,7 @@ public class EchoHubDbContext(DbContextOptions<EchoHubDbContext> options) : DbCo
     public DbSet<User> Users => Set<User>();
     public DbSet<Channel> Channels => Set<Channel>();
     public DbSet<Message> Messages => Set<Message>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -36,7 +37,7 @@ public class EchoHubDbContext(DbContextOptions<EchoHubDbContext> options) : DbCo
         modelBuilder.Entity<Channel>(entity =>
         {
             entity.HasKey(c => c.Id);
-            entity.HasIndex(c => c.Name);
+            entity.HasIndex(c => c.Name).IsUnique();
             entity.Property(c => c.Name).IsRequired().HasMaxLength(100);
             entity.Property(c => c.Topic).HasMaxLength(500);
 
@@ -54,6 +55,19 @@ public class EchoHubDbContext(DbContextOptions<EchoHubDbContext> options) : DbCo
             entity.Property(m => m.SenderUsername).IsRequired().HasMaxLength(50);
             entity.Property(m => m.AttachmentUrl).HasMaxLength(500);
             entity.Property(m => m.AttachmentFileName).HasMaxLength(255);
+        });
+
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(r => r.Id);
+            entity.HasIndex(r => r.TokenHash);
+            entity.HasIndex(r => r.UserId);
+            entity.Property(r => r.TokenHash).IsRequired().HasMaxLength(128);
+
+            entity.HasOne(r => r.User)
+                  .WithMany()
+                  .HasForeignKey(r => r.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         // SQLite does not support DateTimeOffset in ORDER BY clauses.

@@ -29,3 +29,5 @@ public record UserPresenceDto(
     string? NicknameColor,
     UserStatus Status,
     string? StatusMessage);
+
+public record AvatarUploadResponse(string AvatarAscii);

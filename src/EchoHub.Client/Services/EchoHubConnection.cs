@@ -19,14 +19,14 @@ public sealed class EchoHubConnection : IAsyncDisposable
 
     public bool IsConnected => _connection.State == HubConnectionState.Connected;
 
-    public EchoHubConnection(string serverUrl, string jwtToken)
+    public EchoHubConnection(string serverUrl, ApiClient apiClient)
     {
         var hubUrl = serverUrl.TrimEnd('/') + HubConstants.ChatHubPath;
 
         _connection = new HubConnectionBuilder()
             .WithUrl(hubUrl, options =>
             {
-                options.AccessTokenProvider = () => Task.FromResult<string?>(jwtToken);
+                options.AccessTokenProvider = () => apiClient.GetValidTokenAsync();
             })
             .WithAutomaticReconnect()
             .Build();
