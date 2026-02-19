@@ -1,4 +1,4 @@
-name: CI / Release / Docs
+name: CI / Release
 
 on:
   push:
@@ -30,7 +30,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       src_changed: ${{ steps.check.outputs.src_changed }}
-      docs_changed: ${{ steps.check.outputs.docs_changed }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -44,14 +43,10 @@ jobs:
           if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
             # Initial push — treat everything as changed
             echo "src_changed=true" >> "$GITHUB_OUTPUT"
-            echo "docs_changed=true" >> "$GITHUB_OUTPUT"
           else
             SRC_CHANGED=$(git diff --name-only "$BEFORE" HEAD -- 'src/' | wc -l)
-            DOCS_CHANGED=$(git diff --name-only "$BEFORE" HEAD -- 'docs/' | wc -l)
 
             [ "$SRC_CHANGED" -gt 0 ] && echo "src_changed=true" >> "$GITHUB_OUTPUT" || echo "src_changed=false" >> "$GITHUB_OUTPUT"
-            # Docs rebuild on docs/ OR src/ changes (docfx reads XML comments from assemblies)
-            [ "$DOCS_CHANGED" -gt 0 ] || [ "$SRC_CHANGED" -gt 0 ] && echo "docs_changed=true" >> "$GITHUB_OUTPUT" || echo "docs_changed=false" >> "$GITHUB_OUTPUT"
           fi
 
   test:
@@ -177,39 +172,3 @@ jobs:
   #           EchoHub-Client-osx-arm64.zip
   #       env:
   #         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  docs:
-    name: Build & Deploy Docs
-    needs: [lint-markdown, detect-changes]
-    if: needs.detect-changes.outputs.docs_changed == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.0.x'
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('src/**/*.csproj') }}
-          restore-keys: nuget-${{ runner.os }}-
-
-      - name: Restore .NET tools
-        run: dotnet tool restore
-
-      - name: Build solution
-        run: dotnet build src/EchoHub.slnx --configuration Release
-
-      - name: Generate documentation
-        run: dotnet docfx docs/docfx.json
-
-      - name: Deploy to web branch
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/_site
-          publish_branch: web

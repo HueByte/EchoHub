@@ -3,18 +3,29 @@
     {
       "src": [
         {
-          "src": "../src",
-          "files": [
-            "EchoHub.Core/EchoHub.Core.csproj",
-            "EchoHub.Server/EchoHub.Server.csproj",
-            "EchoHub.Client/EchoHub.Client.csproj"
-          ]
+          "src": "../src/EchoHub.Core/bin/Release/net10.0",
+          "files": ["EchoHub.Core.dll"]
         }
       ],
-      "dest": "api",
-      "properties": {
-        "TargetFramework": "net10.0"
-      }
+      "dest": "api/core"
+    },
+    {
+      "src": [
+        {
+          "src": "../src/EchoHub.Server/bin/Release/net10.0",
+          "files": ["EchoHub.Server.dll"]
+        }
+      ],
+      "dest": "api/server"
+    },
+    {
+      "src": [
+        {
+          "src": "../src/EchoHub.Client/bin/Release/net10.0",
+          "files": ["EchoHub.Client.dll"]
+        }
+      ],
+      "dest": "api/client"
     }
   ],
   "build": {
