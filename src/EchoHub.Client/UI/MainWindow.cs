@@ -3,18 +3,17 @@ using EchoHub.Client.Themes;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
 using Terminal.Gui.App;
-using Terminal.Gui.Views;
-using Terminal.Gui.ViewBase;
-using Terminal.Gui.Drawing;
 using Terminal.Gui.Configuration;
 using Terminal.Gui.Input;
+using Terminal.Gui.ViewBase;
+using Terminal.Gui.Views;
 
 namespace EchoHub.Client.UI;
 
 /// <summary>
 /// Main Terminal.Gui window for the EchoHub chat client.
 /// </summary>
-public sealed class MainWindow : Window
+public sealed class MainWindow : Runnable
 {
     private readonly IApplication _app;
     private readonly ListView _channelList;
@@ -23,6 +22,11 @@ public sealed class MainWindow : Window
     private readonly FrameView _chatFrame;
     private readonly Label _statusLabel;
     private MenuBar _menuBar;
+
+    // Cached Key constants — compare via .KeyCode to avoid Key.Equals (which also checks Handled)
+    private static readonly Key EnterKey = Key.Enter;
+    private static readonly Key AltEnterKey = Key.Enter.WithAlt;
+    private static readonly Key CtrlCKey = Key.C.WithCtrl;
 
     private readonly List<string> _channelNames = [];
     private readonly Dictionary<string, List<string>> _channelMessages = [];
@@ -72,8 +76,7 @@ public sealed class MainWindow : Window
     public MainWindow(IApplication app)
     {
         _app = app;
-        Title = "EchoHub";
-        BorderStyle = LineStyle.None;
+        Arrangement = ViewArrangement.Fixed;
 
         // Menu bar at the top
         _menuBar = BuildMenuBar();
@@ -122,10 +125,10 @@ public sealed class MainWindow : Window
         _chatFrame.Add(_messageList);
         Add(_chatFrame);
 
-        // Bottom input area (multiline)
+        // Bottom input area
         var inputFrame = new FrameView
         {
-            Title = "Message (Enter=send, Shift+Enter=newline)",
+            Title = "Message (Enter=send, Alt+Enter=newline)",
             X = 25,
             Y = Pos.Bottom(_chatFrame),
             Width = Dim.Fill(),
@@ -138,7 +141,6 @@ public sealed class MainWindow : Window
             Y = 0,
             Width = Dim.Fill(),
             Height = Dim.Fill(),
-            Text = "",
             WordWrap = true
         };
         _inputField.KeyDown += OnInputKeyDown;
@@ -159,6 +161,9 @@ public sealed class MainWindow : Window
 
         // Apply our custom color schemes to all views
         ApplyColorSchemes();
+
+        // Window-level key handling for Ctrl+S (send) and Ctrl+C (quit)
+        KeyDown += OnWindowKeyDown;
     }
 
     /// <summary>
@@ -203,34 +208,43 @@ public sealed class MainWindow : Window
         }
 
         // Combine user items with theme items, separated by a line
-        var userMenuChildren = new MenuItem[]
+        var allUserItems = new List<View>
         {
             new MenuItem("_My Profile", "Open your profile panel", () => OnProfileRequested?.Invoke(), Key.Empty),
             new MenuItem("Set _Status...", "Set your status", () => OnStatusRequested?.Invoke(), Key.Empty),
+            new Line()
         };
+        allUserItems.AddRange(themeItems);
 
-        // Merge: user items + separator + theme items
-        var allUserItems = new MenuItem[userMenuChildren.Length + 1 + themeItems.Count];
-        userMenuChildren.CopyTo(allUserItems, 0);
-        allUserItems[userMenuChildren.Length] = null!; // null separator
-        for (int i = 0; i < themeItems.Count; i++)
-            allUserItems[userMenuChildren.Length + 1 + i] = themeItems[i];
-
-        return new MenuBar(
+        var menuBar = new MenuBar(
         [
             new MenuBarItem("_File",
             [
                 new MenuItem("_Quit", "Quit EchoHub", () => _app.RequestStop(), Key.Empty)
             ]),
-            new MenuBarItem("_Server",
-            [
+            new MenuBarItem("_Server", new View[]
+            {
                 new MenuItem("_Connect...", "Connect to a server", () => OnConnectRequested?.Invoke(), Key.Empty),
                 new MenuItem("_Disconnect", "Disconnect from server", () => OnDisconnectRequested?.Invoke(), Key.Empty),
-                null!,
+                new Line(),
                 new MenuItem("_Saved Servers...", "View saved servers", () => OnSavedServersRequested?.Invoke(), Key.Empty)
-            ]),
+            }),
             new MenuBarItem("_User", allUserItems)
         ]);
+        menuBar.X = 0;
+        menuBar.Y = 0;
+        menuBar.Width = Dim.Fill();
+
+        // Workaround: Make CommandView (title text area) mouse-transparent on each MenuBarItem.
+        // Without this, clicks on the text hit the CommandView sub-view whose Source propagates
+        // as a plain View — MenuBar.OnAccepting checks "sourceView is MenuBarItem" which fails.
+        // Making CommandView transparent lets clicks pass through to the MenuBarItem itself.
+        foreach (var mbi in menuBar.SubViews.OfType<MenuBarItem>())
+        {
+            mbi.CommandView.ViewportSettings |= ViewportSettingsFlags.TransparentMouse;
+        }
+
+        return menuBar;
     }
 
     /// <summary>
@@ -261,13 +275,12 @@ public sealed class MainWindow : Window
 
     private void OnInputKeyDown(object? sender, Key e)
     {
-        if (e == Key.Enter.WithShift)
+        if (e.KeyCode == AltEnterKey.KeyCode)
         {
-            // Shift+Enter: let TextView handle it (inserts newline)
-            return;
+            _inputField.InsertText("\n");
+            e.Handled = true;
         }
-
-        if (e == Key.Enter)
+        else if (e.KeyCode == EnterKey.KeyCode)
         {
             var text = _inputField.Text?.Trim() ?? string.Empty;
             if (!string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(_currentChannel))
@@ -275,6 +288,21 @@ public sealed class MainWindow : Window
                 OnMessageSubmitted?.Invoke(_currentChannel, text);
                 _inputField.Text = string.Empty;
             }
+            e.Handled = true;
+        }
+        else if (e.KeyCode == CtrlCKey.KeyCode)
+        {
+            _app.RequestStop();
+            e.Handled = true;
+        }
+    }
+
+    private void OnWindowKeyDown(object? sender, Key e)
+    {
+        // Ctrl+C quits from anywhere
+        if (e.KeyCode == CtrlCKey.KeyCode)
+        {
+            _app.RequestStop();
             e.Handled = true;
         }
     }

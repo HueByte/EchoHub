@@ -6,6 +6,7 @@ using EchoHub.Client.UI;
 using EchoHub.Core.Constants;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
+using Microsoft.Extensions.Configuration;
 using Serilog;
 using Terminal.Gui.App;
 using Terminal.Gui.Views;
@@ -26,16 +27,14 @@ public static class Program
 
     public static void Main()
     {
-        // Configure Serilog file logger
-        var logDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".echohub", "logs");
+        // Configure Serilog from appsettings.json
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+            .Build();
+
         Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .WriteTo.File(
-                Path.Combine(logDir, "echohub-.log"),
-                rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 7,
-                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+            .ReadFrom.Configuration(configuration)
             .CreateLogger();
 
         Log.Information("EchoHub client starting");

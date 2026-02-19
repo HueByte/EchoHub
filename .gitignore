@@ -427,3 +427,5 @@ appsettings.*.json
 CLAUDE.md
 *.db
 *.db-*
+src/EchoHub.Server/uploads/*
+.claude/*
