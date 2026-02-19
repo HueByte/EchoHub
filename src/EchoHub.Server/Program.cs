@@ -183,9 +183,32 @@ while (true)
         app.MapControllers();
         app.MapHub<ChatHub>(HubConstants.ChatHubPath);
 
-        Console.Error.WriteLine("[DIAG] Calling app.RunAsync()...");
-        await app.RunAsync();
-        Console.Error.WriteLine("[DIAG] app.RunAsync() returned.");
+        // ── Diagnostic hooks ────────────────────────────────────────────────
+        app.Lifetime.ApplicationStarted.Register(
+            () => Console.Error.WriteLine("[DIAG] ApplicationStarted fired"));
+        app.Lifetime.ApplicationStopping.Register(
+            () => Console.Error.WriteLine("[DIAG] ApplicationStopping fired"));
+        app.Lifetime.ApplicationStopped.Register(
+            () => Console.Error.WriteLine("[DIAG] ApplicationStopped fired"));
+
+        // Heartbeat — proves the process is alive even if nothing else logs
+        var heartbeatCts = new CancellationTokenSource();
+        _ = Task.Run(async () =>
+        {
+            while (!heartbeatCts.Token.IsCancellationRequested)
+            {
+                await Task.Delay(5000, heartbeatCts.Token).ConfigureAwait(false);
+                Console.Error.WriteLine($"[DIAG] heartbeat {DateTimeOffset.UtcNow:HH:mm:ss}");
+            }
+        }, heartbeatCts.Token);
+
+        Console.Error.WriteLine("[DIAG] Calling app.StartAsync()...");
+        await app.StartAsync();
+        Console.Error.WriteLine("[DIAG] app.StartAsync() completed — server is running.");
+
+        await app.WaitForShutdownAsync();
+        Console.Error.WriteLine("[DIAG] WaitForShutdownAsync returned.");
+        heartbeatCts.Cancel();
 
         // Graceful shutdown (Ctrl+C) — exit the loop
         Log.Information("Server shut down gracefully");
