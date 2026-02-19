@@ -197,6 +197,7 @@ public sealed class MainWindow : Runnable
             WordWrap = true
         };
         _inputField.KeyDown += OnInputKeyDown;
+        _inputField.ContentsChanged += OnInputContentsChanged;
         _inputFrame.Add(_inputField);
         Add(_inputFrame);
 
@@ -386,6 +387,31 @@ public sealed class MainWindow : Runnable
             _app.RequestStop();
             e.Handled = true;
         }
+    }
+
+    private bool _suppressEmojiReplace;
+
+    private void OnInputContentsChanged(object? sender, ContentsChangedEventArgs e)
+    {
+        if (_suppressEmojiReplace)
+            return;
+
+        var text = _inputField.Text;
+        if (string.IsNullOrEmpty(text))
+            return;
+
+        var replaced = EmojiHelper.ReplaceEmoji(text);
+        if (replaced == text)
+            return;
+
+        // Calculate where cursor should land after replacement
+        var lengthDelta = replaced.Length - text.Length;
+        var newCol = Math.Max(0, _inputField.CurrentColumn + lengthDelta);
+
+        _suppressEmojiReplace = true;
+        _inputField.Text = replaced;
+        _inputField.InsertionPoint = new System.Drawing.Point(newCol, _inputField.CurrentRow);
+        _suppressEmojiReplace = false;
     }
 
     /// <summary>

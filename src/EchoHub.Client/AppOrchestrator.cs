@@ -830,22 +830,30 @@ public sealed class AppOrchestrator : IDisposable
             InvokeUI(() =>
             {
                 _mainWindow.AddSystemMessage(channelName, $"{username} was kicked{reasonText}");
-                if (username.Equals(_currentUsername, StringComparison.OrdinalIgnoreCase))
-                {
-                    _mainWindow.AddSystemMessage(channelName, "You were kicked from this channel.");
-                }
             });
         };
 
         connection.OnUserBanned += (username, reason) =>
         {
+            var reasonText = reason is not null ? $" ({reason})" : "";
             InvokeUI(() =>
             {
-                if (username.Equals(_currentUsername, StringComparison.OrdinalIgnoreCase))
+                // Show ban notification for other users in the channel
+                if (!username.Equals(_currentUsername, StringComparison.OrdinalIgnoreCase))
                 {
-                    _mainWindow.ShowError("You have been banned from this server.");
-                    HandleDisconnect();
+                    var channel = _mainWindow.CurrentChannel;
+                    if (!string.IsNullOrEmpty(channel))
+                        _mainWindow.AddSystemMessage(channel, $"{username} was banned{reasonText}");
                 }
+            });
+        };
+
+        connection.OnForceDisconnect += reason =>
+        {
+            InvokeUI(() =>
+            {
+                _mainWindow.ShowError(reason);
+                HandleDisconnect();
             });
         };
 
