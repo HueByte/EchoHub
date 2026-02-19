@@ -244,7 +244,7 @@ public sealed class ApiClient : IDisposable
     {
         EnsureAuthenticated();
         var response = await AuthenticatedRequestAsync(() =>
-            _http.PostAsJsonAsync($"/api/moderation/unban/{Uri.EscapeDataString(username)}", new {}));
+            _http.PostAsJsonAsync($"/api/moderation/unban/{Uri.EscapeDataString(username)}", new { }));
         await EnsureSuccessAsync(response);
     }
 
@@ -260,7 +260,7 @@ public sealed class ApiClient : IDisposable
     {
         EnsureAuthenticated();
         var response = await AuthenticatedRequestAsync(() =>
-            _http.PostAsJsonAsync($"/api/moderation/unmute/{Uri.EscapeDataString(username)}", new {}));
+            _http.PostAsJsonAsync($"/api/moderation/unmute/{Uri.EscapeDataString(username)}", new { }));
         await EnsureSuccessAsync(response);
     }
 
