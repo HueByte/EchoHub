@@ -169,9 +169,7 @@ while (true)
         await using var app = builder.Build();
 
         // ── Database initialization ──────────────────────────────────────────
-        Console.Error.WriteLine("[DIAG] Database initialization starting...");
         await DatabaseSetup.InitializeAsync(app.Services);
-        Console.Error.WriteLine("[DIAG] Database initialization complete.");
 
         // ── Middleware ────────────────────────────────────────────────────────
         app.UseCors();
@@ -183,65 +181,7 @@ while (true)
         app.MapControllers();
         app.MapHub<ChatHub>(HubConstants.ChatHubPath);
 
-        // ── Diagnostic hooks ────────────────────────────────────────────────
-        app.Lifetime.ApplicationStarted.Register(
-            () => Console.Error.WriteLine("[DIAG] ApplicationStarted fired"));
-        app.Lifetime.ApplicationStopping.Register(
-            () => Console.Error.WriteLine("[DIAG] ApplicationStopping fired"));
-        app.Lifetime.ApplicationStopped.Register(
-            () => Console.Error.WriteLine("[DIAG] ApplicationStopped fired"));
-
-        // Heartbeat — proves the process is alive even if nothing else logs
-        var heartbeatCts = new CancellationTokenSource();
-        _ = Task.Run(async () =>
-        {
-            while (!heartbeatCts.Token.IsCancellationRequested)
-            {
-                await Task.Delay(5000, heartbeatCts.Token).ConfigureAwait(false);
-                Console.Error.WriteLine($"[DIAG] heartbeat {DateTimeOffset.UtcNow:HH:mm:ss}");
-            }
-        }, heartbeatCts.Token);
-
-        // ── Config diagnostics ─────────────────────────────────────────────
-        Console.Error.WriteLine($"[DIAG] Irc:Enabled = {app.Configuration.GetValue<bool>("Irc:Enabled")}");
-        Console.Error.WriteLine($"[DIAG] Environment = {app.Environment.EnvironmentName}");
-
-        // ── Resolve singletons one-by-one to find which one hangs ────────
-        Console.Error.WriteLine("[DIAG] Resolving PresenceTracker...");
-        _ = app.Services.GetRequiredService<PresenceTracker>();
-        Console.Error.WriteLine("[DIAG] PresenceTracker OK.");
-
-        Console.Error.WriteLine("[DIAG] Resolving JwtTokenService...");
-        _ = app.Services.GetRequiredService<JwtTokenService>();
-        Console.Error.WriteLine("[DIAG] JwtTokenService OK.");
-
-        Console.Error.WriteLine("[DIAG] Resolving FileStorageService...");
-        _ = app.Services.GetRequiredService<FileStorageService>();
-        Console.Error.WriteLine("[DIAG] FileStorageService OK.");
-
-        Console.Error.WriteLine("[DIAG] Resolving IChatBroadcaster...");
-        _ = app.Services.GetServices<IChatBroadcaster>().ToList();
-        Console.Error.WriteLine("[DIAG] IChatBroadcaster OK.");
-
-        Console.Error.WriteLine("[DIAG] Resolving IChatService...");
-        _ = app.Services.GetRequiredService<IChatService>();
-        Console.Error.WriteLine("[DIAG] IChatService OK.");
-
-        Console.Error.WriteLine("[DIAG] Resolving IHostedService instances...");
-        var hostedServices = app.Services.GetServices<IHostedService>().ToList();
-        Console.Error.WriteLine($"[DIAG] Found {hostedServices.Count} hosted services:");
-        foreach (var svc in hostedServices)
-            Console.Error.WriteLine($"[DIAG]   - {svc.GetType().FullName}");
-        Console.Error.Flush();
-
-        // ── Start with per-service timing ─────────────────────────────────
-        Console.Error.WriteLine("[DIAG] Calling app.StartAsync()...");
-        await app.StartAsync();
-        Console.Error.WriteLine("[DIAG] app.StartAsync() completed — server is running.");
-
-        await app.WaitForShutdownAsync();
-        Console.Error.WriteLine("[DIAG] WaitForShutdownAsync returned.");
-        heartbeatCts.Cancel();
+        await app.RunAsync();
 
         // Graceful shutdown (Ctrl+C) — exit the loop
         Log.Information("Server shut down gracefully");
@@ -249,8 +189,6 @@ while (true)
     }
     catch (Exception ex)
     {
-        Console.Error.WriteLine($"[DIAG] Top-level exception: {ex}");
-
         var uptime = DateTimeOffset.UtcNow - startTime;
 
         // If server ran for over 60 seconds, it's a runtime crash — reset failure count
@@ -273,6 +211,4 @@ while (true)
     }
 }
 
-Console.Error.WriteLine("[DIAG] Calling Log.CloseAndFlush()...");
 Log.CloseAndFlush();
-Console.Error.WriteLine("[DIAG] Log.CloseAndFlush() done. Exiting process.");

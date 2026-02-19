@@ -39,9 +39,7 @@ public sealed class IrcGatewayService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        Console.Error.WriteLine("[DIAG] IrcGatewayService.ExecuteAsync entered.");
         await Task.Yield();
-        Console.Error.WriteLine($"[DIAG] IrcGatewayService.ExecuteAsync resumed after Task.Yield(). Enabled={_options.Enabled}");
 
         if (!_options.Enabled)
         {
@@ -149,10 +147,8 @@ public sealed class IrcGatewayService : BackgroundService
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        Console.Error.WriteLine("[DIAG] IrcGatewayService.StopAsync entered.");
         // Cancel ExecuteAsync first so listeners stop accepting
         await base.StopAsync(cancellationToken);
-        Console.Error.WriteLine("[DIAG] IrcGatewayService.StopAsync: base.StopAsync returned.");
 
         // Force-close any remaining client connections
         foreach (var (_, conn) in _connections)
