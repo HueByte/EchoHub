@@ -70,97 +70,95 @@ jobs:
       - name: Test
         run: dotnet test src/EchoHub.slnx --no-build --configuration Release --verbosity normal
 
-  # NOTE: Release job disabled until workflows are verified.
-  # Uncomment to enable automatic releases with tags.
-  # release:
-  #   name: Create Release
-  #   needs: [lint-markdown, detect-changes, test]
-  #   if: needs.detect-changes.outputs.src_changed == 'true'
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #
-  #     - name: Setup .NET 10
-  #       uses: actions/setup-dotnet@v4
-  #       with:
-  #         dotnet-version: '10.0.x'
-  #
-  #     - name: Read version
-  #       id: version
-  #       run: |
-  #         VERSION=$(grep -oP '(?<=<Version>)[^<]+' src/Directory.Build.props)
-  #         echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-  #         echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
-  #
-  #     - name: Check if release exists
-  #       id: check_release
-  #       run: |
-  #         if gh release view "${{ steps.version.outputs.tag }}" &>/dev/null; then
-  #           echo "exists=true" >> "$GITHUB_OUTPUT"
-  #         else
-  #           echo "exists=false" >> "$GITHUB_OUTPUT"
-  #         fi
-  #       env:
-  #         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #
-  #     - name: Publish Server win-x64
-  #       if: steps.check_release.outputs.exists == 'false'
-  #       run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r win-x64 --self-contained true -o publish/server-win-x64
-  #
-  #     - name: Publish Server linux-x64
-  #       if: steps.check_release.outputs.exists == 'false'
-  #       run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r linux-x64 --self-contained true -o publish/server-linux-x64
-  #
-  #     - name: Publish Server osx-x64
-  #       if: steps.check_release.outputs.exists == 'false'
-  #       run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r osx-x64 --self-contained true -o publish/server-osx-x64
-  #
-  #     - name: Publish Server osx-arm64
-  #       if: steps.check_release.outputs.exists == 'false'
-  #       run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r osx-arm64 --self-contained true -o publish/server-osx-arm64
-  #
-  #     - name: Publish Client win-x64
-  #       if: steps.check_release.outputs.exists == 'false'
-  #       run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r win-x64 --self-contained true -o publish/client-win-x64
-  #
-  #     - name: Publish Client linux-x64
-  #       if: steps.check_release.outputs.exists == 'false'
-  #       run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r linux-x64 --self-contained true -o publish/client-linux-x64
-  #
-  #     - name: Publish Client osx-x64
-  #       if: steps.check_release.outputs.exists == 'false'
-  #       run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r osx-x64 --self-contained true -o publish/client-osx-x64
-  #
-  #     - name: Publish Client osx-arm64
-  #       if: steps.check_release.outputs.exists == 'false'
-  #       run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r osx-arm64 --self-contained true -o publish/client-osx-arm64
-  #
-  #     - name: Zip artifacts
-  #       if: steps.check_release.outputs.exists == 'false'
-  #       run: |
-  #         cd publish
-  #         zip -r ../EchoHub-Server-win-x64.zip server-win-x64/
-  #         zip -r ../EchoHub-Server-linux-x64.zip server-linux-x64/
-  #         zip -r ../EchoHub-Server-osx-x64.zip server-osx-x64/
-  #         zip -r ../EchoHub-Server-osx-arm64.zip server-osx-arm64/
-  #         zip -r ../EchoHub-Client-win-x64.zip client-win-x64/
-  #         zip -r ../EchoHub-Client-linux-x64.zip client-linux-x64/
-  #         zip -r ../EchoHub-Client-osx-x64.zip client-osx-x64/
-  #         zip -r ../EchoHub-Client-osx-arm64.zip client-osx-arm64/
-  #
-  #     - name: Create GitHub Release
-  #       if: steps.check_release.outputs.exists == 'false'
-  #       run: |
-  #         gh release create "${{ steps.version.outputs.tag }}" \
-  #           --title "EchoHub ${{ steps.version.outputs.tag }}" \
-  #           --generate-notes \
-  #           EchoHub-Server-win-x64.zip \
-  #           EchoHub-Server-linux-x64.zip \
-  #           EchoHub-Server-osx-x64.zip \
-  #           EchoHub-Server-osx-arm64.zip \
-  #           EchoHub-Client-win-x64.zip \
-  #           EchoHub-Client-linux-x64.zip \
-  #           EchoHub-Client-osx-x64.zip \
-  #           EchoHub-Client-osx-arm64.zip
-  #       env:
-  #         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  release:
+    name: Create Release
+    needs: [lint-markdown, detect-changes, test]
+    if: needs.detect-changes.outputs.src_changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Read version
+        id: version
+        run: |
+          VERSION=$(grep -oP '(?<=<Version>)[^<]+' src/Directory.Build.props)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check if release exists
+        id: check_release
+        run: |
+          if gh release view "${{ steps.version.outputs.tag }}" &>/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Server win-x64
+        if: steps.check_release.outputs.exists == 'false'
+        run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r win-x64 --self-contained true -o publish/server-win-x64
+
+      - name: Publish Server linux-x64
+        if: steps.check_release.outputs.exists == 'false'
+        run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r linux-x64 --self-contained true -o publish/server-linux-x64
+
+      - name: Publish Server osx-x64
+        if: steps.check_release.outputs.exists == 'false'
+        run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r osx-x64 --self-contained true -o publish/server-osx-x64
+
+      - name: Publish Server osx-arm64
+        if: steps.check_release.outputs.exists == 'false'
+        run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r osx-arm64 --self-contained true -o publish/server-osx-arm64
+
+      - name: Publish Client win-x64
+        if: steps.check_release.outputs.exists == 'false'
+        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r win-x64 --self-contained true -o publish/client-win-x64
+
+      - name: Publish Client linux-x64
+        if: steps.check_release.outputs.exists == 'false'
+        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r linux-x64 --self-contained true -o publish/client-linux-x64
+
+      - name: Publish Client osx-x64
+        if: steps.check_release.outputs.exists == 'false'
+        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r osx-x64 --self-contained true -o publish/client-osx-x64
+
+      - name: Publish Client osx-arm64
+        if: steps.check_release.outputs.exists == 'false'
+        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r osx-arm64 --self-contained true -o publish/client-osx-arm64
+
+      - name: Zip artifacts
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          cd publish
+          zip -r ../EchoHub-Server-win-x64.zip server-win-x64/
+          zip -r ../EchoHub-Server-linux-x64.zip server-linux-x64/
+          zip -r ../EchoHub-Server-osx-x64.zip server-osx-x64/
+          zip -r ../EchoHub-Server-osx-arm64.zip server-osx-arm64/
+          zip -r ../EchoHub-Client-win-x64.zip client-win-x64/
+          zip -r ../EchoHub-Client-linux-x64.zip client-linux-x64/
+          zip -r ../EchoHub-Client-osx-x64.zip client-osx-x64/
+          zip -r ../EchoHub-Client-osx-arm64.zip client-osx-arm64/
+
+      - name: Create GitHub Release
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --title "EchoHub ${{ steps.version.outputs.tag }}" \
+            --generate-notes \
+            EchoHub-Server-win-x64.zip \
+            EchoHub-Server-linux-x64.zip \
+            EchoHub-Server-osx-x64.zip \
+            EchoHub-Server-osx-arm64.zip \
+            EchoHub-Client-win-x64.zip \
+            EchoHub-Client-linux-x64.zip \
+            EchoHub-Client-osx-x64.zip \
+            EchoHub-Client-osx-arm64.zip
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
