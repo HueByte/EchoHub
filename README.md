@@ -76,7 +76,7 @@ graph TD
 ### Client
 
 - **Runs in your terminal** — no browser, no Electron, no 500MB of bundled Chromium
-- **6 built-in themes** — including `hacker` for when you want to feel like you're in a movie
+- **13 built-in themes** — including `hacker` for when you want to feel like you're in a movie
 - **Slash commands** — `/join`, `/send`, `/status`, `/theme`, etc.
 - **Colored nicknames** — pick your hex color, express yourself
 - **File/image sharing** — local files or URLs
@@ -151,6 +151,13 @@ dotnet build src/EchoHub.slnx
 | `light` | Black on white — for the brave |
 | `hacker` | Green on black — *I'm in* |
 | `solarized` | Cyan/yellow on dark gray — for the refined |
+| `dracula` | Purple accents on black — the classic dark theme |
+| `monokai` | Yellow highlights on black — warm and familiar |
+| `nord` | Cool blues — arctic vibes |
+| `gruvbox` | Earthy yellows on black — retro warmth |
+| `ocean` | Cyan on deep blue — underwater aesthetics |
+| `highcontrast` | Bright yellow on black — maximum readability |
+| `rosepine` | Muted pinks on black — cozy and soft |
 
 ## Configuration
 

@@ -1,0 +1,65 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches: [master]
+
+jobs:
+  lint-markdown:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run markdownlint-cli2
+        uses: DavidAnson/markdownlint-cli2-action@v19
+        with:
+          globs: |
+            **/*.md
+            !.dev/**
+            !docs/api/**
+            !**/node_modules/**
+            !**/bin/**
+            !**/obj/**
+
+  test:
+    name: Build & Test
+    needs: lint-markdown
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for src/ changes
+        id: changes
+        run: |
+          git fetch origin ${{ github.base_ref }} --depth=1
+          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- 'src/' | wc -l)
+          if [ "$CHANGED" -gt 0 ]; then
+            echo "src_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "src_changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup .NET 10
+        if: steps.changes.outputs.src_changed == 'true'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        if: steps.changes.outputs.src_changed == 'true'
+        run: dotnet restore src/EchoHub.slnx
+
+      - name: Build
+        if: steps.changes.outputs.src_changed == 'true'
+        run: dotnet build src/EchoHub.slnx --no-restore --configuration Release
+
+      - name: Test
+        if: steps.changes.outputs.src_changed == 'true'
+        run: dotnet test src/EchoHub.slnx --no-build --configuration Release --verbosity normal
+
+      - name: Skip notice
+        if: steps.changes.outputs.src_changed == 'false'
+        run: echo "No changes in src/ — skipping build and test"

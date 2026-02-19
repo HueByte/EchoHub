@@ -429,3 +429,8 @@ CLAUDE.md
 *.db-*
 src/EchoHub.Server/uploads/*
 .claude/*
+
+# DocFx generated output
+docs/_site/
+docs/api/
+!docs/api/.gitkeep

@@ -1,0 +1,177 @@
+name: CI / Release / Docs
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+
+jobs:
+  lint-markdown:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run markdownlint-cli2
+        uses: DavidAnson/markdownlint-cli2-action@v19
+        with:
+          globs: |
+            **/*.md
+            !.dev/**
+            !docs/api/**
+            !**/node_modules/**
+            !**/bin/**
+            !**/obj/**
+
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      src_changed: ${{ steps.check.outputs.src_changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check for src/ changes
+        id: check
+        run: |
+          CHANGED=$(git diff --name-only HEAD~1 HEAD -- 'src/' | wc -l)
+          if [ "$CHANGED" -gt 0 ]; then
+            echo "src_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "src_changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  test:
+    name: Build & Test
+    needs: [lint-markdown, detect-changes]
+    if: needs.detect-changes.outputs.src_changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore src/EchoHub.slnx
+
+      - name: Build
+        run: dotnet build src/EchoHub.slnx --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test src/EchoHub.slnx --no-build --configuration Release --verbosity normal
+
+  release:
+    name: Create Release
+    needs: [lint-markdown, detect-changes, test]
+    if: needs.detect-changes.outputs.src_changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Read version
+        id: version
+        run: |
+          VERSION=$(grep -oP '(?<=<Version>)[^<]+' src/Directory.Build.props)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check if release exists
+        id: check_release
+        run: |
+          if gh release view "${{ steps.version.outputs.tag }}" &>/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Server win-x64
+        if: steps.check_release.outputs.exists == 'false'
+        run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r win-x64 --self-contained true -o publish/server-win-x64
+
+      - name: Publish Server linux-x64
+        if: steps.check_release.outputs.exists == 'false'
+        run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r linux-x64 --self-contained true -o publish/server-linux-x64
+
+      - name: Publish Server osx-x64
+        if: steps.check_release.outputs.exists == 'false'
+        run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r osx-x64 --self-contained true -o publish/server-osx-x64
+
+      - name: Publish Client win-x64
+        if: steps.check_release.outputs.exists == 'false'
+        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r win-x64 --self-contained true -o publish/client-win-x64
+
+      - name: Publish Client linux-x64
+        if: steps.check_release.outputs.exists == 'false'
+        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r linux-x64 --self-contained true -o publish/client-linux-x64
+
+      - name: Publish Client osx-x64
+        if: steps.check_release.outputs.exists == 'false'
+        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r osx-x64 --self-contained true -o publish/client-osx-x64
+
+      - name: Zip artifacts
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          cd publish
+          zip -r ../EchoHub-Server-win-x64.zip server-win-x64/
+          zip -r ../EchoHub-Server-linux-x64.zip server-linux-x64/
+          zip -r ../EchoHub-Server-osx-x64.zip server-osx-x64/
+          zip -r ../EchoHub-Client-win-x64.zip client-win-x64/
+          zip -r ../EchoHub-Client-linux-x64.zip client-linux-x64/
+          zip -r ../EchoHub-Client-osx-x64.zip client-osx-x64/
+
+      - name: Create GitHub Release
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --title "EchoHub ${{ steps.version.outputs.tag }}" \
+            --generate-notes \
+            EchoHub-Server-win-x64.zip \
+            EchoHub-Server-linux-x64.zip \
+            EchoHub-Server-osx-x64.zip \
+            EchoHub-Client-win-x64.zip \
+            EchoHub-Client-linux-x64.zip \
+            EchoHub-Client-osx-x64.zip
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  docs:
+    name: Build & Deploy Docs
+    needs: lint-markdown
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore .NET tools
+        run: dotnet tool restore
+
+      - name: Build solution
+        run: dotnet build src/EchoHub.slnx --configuration Release
+
+      - name: Generate documentation
+        run: dotnet docfx docs/docfx.json
+
+      - name: Deploy to web branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/_site
+          publish_branch: web

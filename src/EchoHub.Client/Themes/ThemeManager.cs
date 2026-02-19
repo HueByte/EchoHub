@@ -181,6 +181,237 @@ public static class ThemeManager
         }
     };
 
+    private static readonly Theme DraculaTheme = new()
+    {
+        Name = "Dracula",
+        Base = new ThemeColors
+        {
+            Foreground = "White",
+            Background = "Black",
+            FocusForeground = "Black",
+            FocusBackground = "Magenta"
+        },
+        Menu = new ThemeColors
+        {
+            Foreground = "BrightMagenta",
+            Background = "Black",
+            FocusForeground = "Black",
+            FocusBackground = "BrightMagenta"
+        },
+        Dialog = new ThemeColors
+        {
+            Foreground = "White",
+            Background = "DarkGray",
+            FocusForeground = "Black",
+            FocusBackground = "Magenta"
+        },
+        Status = new ThemeColors
+        {
+            Foreground = "BrightMagenta",
+            Background = "Black",
+            FocusForeground = "BrightMagenta",
+            FocusBackground = "Black"
+        }
+    };
+
+    private static readonly Theme MonokaiTheme = new()
+    {
+        Name = "Monokai",
+        Base = new ThemeColors
+        {
+            Foreground = "White",
+            Background = "Black",
+            FocusForeground = "Black",
+            FocusBackground = "BrightYellow"
+        },
+        Menu = new ThemeColors
+        {
+            Foreground = "BrightYellow",
+            Background = "Black",
+            FocusForeground = "Black",
+            FocusBackground = "BrightYellow"
+        },
+        Dialog = new ThemeColors
+        {
+            Foreground = "White",
+            Background = "DarkGray",
+            FocusForeground = "Black",
+            FocusBackground = "BrightYellow"
+        },
+        Status = new ThemeColors
+        {
+            Foreground = "BrightYellow",
+            Background = "Black",
+            FocusForeground = "BrightYellow",
+            FocusBackground = "Black"
+        }
+    };
+
+    private static readonly Theme NordTheme = new()
+    {
+        Name = "Nord",
+        Base = new ThemeColors
+        {
+            Foreground = "White",
+            Background = "DarkBlue",
+            FocusForeground = "BrightCyan",
+            FocusBackground = "Blue"
+        },
+        Menu = new ThemeColors
+        {
+            Foreground = "White",
+            Background = "Blue",
+            FocusForeground = "BrightCyan",
+            FocusBackground = "DarkBlue"
+        },
+        Dialog = new ThemeColors
+        {
+            Foreground = "White",
+            Background = "Blue",
+            FocusForeground = "BrightCyan",
+            FocusBackground = "DarkBlue"
+        },
+        Status = new ThemeColors
+        {
+            Foreground = "BrightCyan",
+            Background = "DarkBlue",
+            FocusForeground = "BrightCyan",
+            FocusBackground = "DarkBlue"
+        }
+    };
+
+    private static readonly Theme GruvboxTheme = new()
+    {
+        Name = "Gruvbox",
+        Base = new ThemeColors
+        {
+            Foreground = "BrightYellow",
+            Background = "Black",
+            FocusForeground = "Black",
+            FocusBackground = "DarkYellow"
+        },
+        Menu = new ThemeColors
+        {
+            Foreground = "BrightYellow",
+            Background = "Black",
+            FocusForeground = "Black",
+            FocusBackground = "DarkYellow"
+        },
+        Dialog = new ThemeColors
+        {
+            Foreground = "BrightYellow",
+            Background = "DarkGray",
+            FocusForeground = "Black",
+            FocusBackground = "DarkYellow"
+        },
+        Status = new ThemeColors
+        {
+            Foreground = "DarkYellow",
+            Background = "Black",
+            FocusForeground = "DarkYellow",
+            FocusBackground = "Black"
+        }
+    };
+
+    private static readonly Theme OceanTheme = new()
+    {
+        Name = "Ocean",
+        Base = new ThemeColors
+        {
+            Foreground = "BrightCyan",
+            Background = "DarkBlue",
+            FocusForeground = "White",
+            FocusBackground = "DarkCyan"
+        },
+        Menu = new ThemeColors
+        {
+            Foreground = "White",
+            Background = "DarkCyan",
+            FocusForeground = "BrightCyan",
+            FocusBackground = "DarkBlue"
+        },
+        Dialog = new ThemeColors
+        {
+            Foreground = "White",
+            Background = "DarkCyan",
+            FocusForeground = "BrightCyan",
+            FocusBackground = "DarkBlue"
+        },
+        Status = new ThemeColors
+        {
+            Foreground = "BrightCyan",
+            Background = "DarkCyan",
+            FocusForeground = "BrightCyan",
+            FocusBackground = "DarkCyan"
+        }
+    };
+
+    private static readonly Theme HighContrastTheme = new()
+    {
+        Name = "HighContrast",
+        Base = new ThemeColors
+        {
+            Foreground = "BrightYellow",
+            Background = "Black",
+            FocusForeground = "Black",
+            FocusBackground = "BrightYellow"
+        },
+        Menu = new ThemeColors
+        {
+            Foreground = "BrightYellow",
+            Background = "Black",
+            FocusForeground = "Black",
+            FocusBackground = "BrightYellow"
+        },
+        Dialog = new ThemeColors
+        {
+            Foreground = "BrightYellow",
+            Background = "Black",
+            FocusForeground = "Black",
+            FocusBackground = "BrightYellow"
+        },
+        Status = new ThemeColors
+        {
+            Foreground = "BrightYellow",
+            Background = "Black",
+            FocusForeground = "BrightYellow",
+            FocusBackground = "Black"
+        }
+    };
+
+    private static readonly Theme RosePineTheme = new()
+    {
+        Name = "RosePine",
+        Base = new ThemeColors
+        {
+            Foreground = "White",
+            Background = "Black",
+            FocusForeground = "Black",
+            FocusBackground = "DarkMagenta"
+        },
+        Menu = new ThemeColors
+        {
+            Foreground = "Magenta",
+            Background = "Black",
+            FocusForeground = "White",
+            FocusBackground = "DarkMagenta"
+        },
+        Dialog = new ThemeColors
+        {
+            Foreground = "White",
+            Background = "DarkGray",
+            FocusForeground = "White",
+            FocusBackground = "DarkMagenta"
+        },
+        Status = new ThemeColors
+        {
+            Foreground = "Magenta",
+            Background = "Black",
+            FocusForeground = "Magenta",
+            FocusBackground = "Black"
+        }
+    };
+
     private static readonly Theme TransparentTheme = new()
     {
         Name = "Transparent",
@@ -221,7 +452,14 @@ public static class ThemeManager
         ClassicTheme,
         LightTheme,
         HackerTheme,
-        SolarizedTheme
+        SolarizedTheme,
+        DraculaTheme,
+        MonokaiTheme,
+        NordTheme,
+        GruvboxTheme,
+        OceanTheme,
+        HighContrastTheme,
+        RosePineTheme
     ];
 
     public static List<Theme> GetAvailableThemes()
