@@ -8,3 +8,4 @@ Articles related to the EchoHub TUI client built with Terminal.Gui v2.
 - Theme system and customization
 - Command system reference
 - Configuration management
+- [Notification sounds](../../articles/notification-sounds.md)

@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Collections.Specialized;
-using System.Text;
 using System.Text.RegularExpressions;
 using Terminal.Gui.Drawing;
+using Terminal.Gui.Text;
 using Terminal.Gui.Views;
 using Attribute = Terminal.Gui.Drawing.Attribute;
 
@@ -20,17 +20,19 @@ public partial class ChatLine
 {
     public List<ChatSegment> Segments { get; }
     public int TextLength { get; }
+    public Guid? MessageId { get; set; }
+    public bool IsMention { get; set; }
 
     public ChatLine(string plainText)
     {
         Segments = [new ChatSegment(plainText, null)];
-        TextLength = plainText.Length;
+        TextLength = plainText.GetColumns();
     }
 
     public ChatLine(List<ChatSegment> segments)
     {
         Segments = segments;
-        TextLength = segments.Sum(s => s.Text.Length);
+        TextLength = segments.Sum(s => s.Text.GetColumns());
     }
 
     public override string ToString() => string.Concat(Segments.Select(s => s.Text));
@@ -50,17 +52,22 @@ public partial class ChatLine
 
         foreach (var segment in Segments)
         {
-            int segPos = 0;
-            while (segPos < segment.Text.Length)
+            var text = segment.Text;
+            int chunkStart = 0;
+            int charPos = 0;
+
+            foreach (var grapheme in GraphemeHelper.GetGraphemes(text))
             {
-                int remaining = width - col;
-                if (remaining <= 0)
+                var graphemeCols = Math.Max(grapheme.GetColumns(), 1);
+
+                if (col + graphemeCols > width)
                 {
-                    // Emit current line and start a new one
+                    if (charPos > chunkStart)
+                        currentSegments.Add(new ChatSegment(text[chunkStart..charPos], segment.Color));
+
                     results.Add(new ChatLine(currentSegments));
                     currentSegments = [];
 
-                    // Add indent for continuation
                     if (continuationIndent > 0)
                     {
                         currentSegments.Add(new ChatSegment(new string(' ', continuationIndent), null));
@@ -71,14 +78,15 @@ public partial class ChatLine
                         col = 0;
                     }
 
-                    remaining = width - col;
+                    chunkStart = charPos;
                 }
 
-                int take = Math.Min(segment.Text.Length - segPos, remaining);
-                currentSegments.Add(new ChatSegment(segment.Text.Substring(segPos, take), segment.Color));
-                col += take;
-                segPos += take;
+                col += graphemeCols;
+                charPos += grapheme.Length;
             }
+
+            if (chunkStart < text.Length)
+                currentSegments.Add(new ChatSegment(text[chunkStart..], segment.Color));
         }
 
         if (currentSegments.Count > 0)
@@ -88,62 +96,83 @@ public partial class ChatLine
     }
 
     /// <summary>
-    /// Parse a string containing ANSI 24-bit color escape codes into colored segments.
-    /// Format: \x1b[38;2;R;G;Bm (foreground color), \x1b[0m (reset)
+    /// Returns true if a line contains printable color tags.
     /// </summary>
-    public static ChatLine FromAnsi(string ansiText, Attribute? defaultAttr = null)
+    public static bool HasColorTags(string text) =>
+        text.Contains("{F:") || text.Contains("{B:") || text.Contains("{X}");
+
+    /// <summary>
+    /// Remove all color tags from text, returning only the visible characters.
+    /// </summary>
+    public static string StripColorTags(string text) =>
+        ColorTagRegex().Replace(text, "");
+
+    /// <summary>
+    /// Parse a string containing printable color tags into colored segments.
+    /// Format: {F:RRGGBB} (foreground), {B:RRGGBB} (background), {X} (reset).
+    /// </summary>
+    public static ChatLine FromColoredText(string text, Attribute? defaultAttr = null)
     {
         var segments = new List<ChatSegment>();
-        var regex = AnsiColorRegex();
         int lastIndex = 0;
-        Attribute? currentColor = defaultAttr;
+        Color? currentFg = null;
+        Color? currentBg = null;
+        var defaultFg = defaultAttr?.Foreground;
+        var defaultBg = defaultAttr?.Background ?? Color.Black;
 
-        foreach (Match match in regex.Matches(ansiText))
+        Attribute? BuildAttr()
         {
-            // Add any text before this escape sequence
+            if (currentFg is null && currentBg is null) return defaultAttr;
+            var fg = currentFg ?? defaultFg ?? Color.White;
+            var bg = currentBg ?? defaultBg;
+            return new Attribute(fg, bg);
+        }
+
+        foreach (Match match in ColorTagRegex().Matches(text))
+        {
             if (match.Index > lastIndex)
             {
-                var text = ansiText[lastIndex..match.Index];
-                if (text.Length > 0)
-                    segments.Add(new ChatSegment(text, currentColor));
+                var t = text[lastIndex..match.Index];
+                if (t.Length > 0)
+                    segments.Add(new ChatSegment(t, BuildAttr()));
             }
 
-            // Parse the escape sequence
-            if (match.Groups[1].Value == "0")
+            if (match.Groups[1].Success)
             {
-                // Reset
-                currentColor = defaultAttr;
+                currentFg = null;
+                currentBg = null;
             }
             else if (match.Groups[2].Success)
             {
-                // 38;2;R;G;B — 24-bit foreground color
-                var r = int.Parse(match.Groups[3].Value);
-                var g = int.Parse(match.Groups[4].Value);
-                var b = int.Parse(match.Groups[5].Value);
-                currentColor = new Attribute(new Color(r, g, b), Color.Black);
+                var hex = match.Groups[3].Value;
+                var r = Convert.ToInt32(hex[..2], 16);
+                var g = Convert.ToInt32(hex[2..4], 16);
+                var b = Convert.ToInt32(hex[4..6], 16);
+                if (match.Groups[2].Value == "F")
+                    currentFg = new Color(r, g, b);
+                else
+                    currentBg = new Color(r, g, b);
             }
 
             lastIndex = match.Index + match.Length;
         }
 
-        // Add remaining text
-        if (lastIndex < ansiText.Length)
+        if (lastIndex < text.Length)
         {
-            var text = ansiText[lastIndex..];
-            if (text.Length > 0)
-                segments.Add(new ChatSegment(text, currentColor));
+            var t = text[lastIndex..];
+            if (t.Length > 0)
+                segments.Add(new ChatSegment(t, BuildAttr()));
         }
 
         return segments.Count > 0 ? new ChatLine(segments) : new ChatLine("");
     }
 
-    // Matches: \x1b[0m (reset) or \x1b[38;2;R;G;Bm (24-bit foreground)
-    [GeneratedRegex(@"\x1b\[(?:(0)|(?:(38;2);(\d{1,3});(\d{1,3});(\d{1,3})))m")]
-    private static partial Regex AnsiColorRegex();
+    [GeneratedRegex(@"\{(?:(X)|(?:(F|B):([0-9A-Fa-f]{6})))\}")]
+    private static partial Regex ColorTagRegex();
 }
 
 /// <summary>
-/// Custom list data source for chat messages with per-character coloring.
+/// Custom list data source for chat messages with per-segment coloring.
 /// </summary>
 public class ChatListSource : IListDataSource
 {
@@ -197,7 +226,8 @@ public class ChatListSource : IListDataSource
         listView.Move(Math.Max(col - viewportX, 0), row);
 
         var chatLine = _lines[item];
-        var normalAttr = listView.GetAttributeForRole(selected ? VisualRole.Focus : VisualRole.Normal);
+        var normalAttr = listView.GetAttributeForRole(VisualRole.Normal);
+        var mentionBg = chatLine.IsMention ? ChatColors.MentionHighlightAttr.Background : (Color?)null;
 
         int charPos = 0;
         int drawnChars = 0;
@@ -205,26 +235,26 @@ public class ChatListSource : IListDataSource
         foreach (var segment in chatLine.Segments)
         {
             var attr = segment.Color ?? normalAttr;
+            if (mentionBg.HasValue)
+                attr = new Attribute(attr.Foreground, mentionBg.Value);
             listView.SetAttribute(attr);
 
-            foreach (var ch in segment.Text)
+            foreach (var grapheme in GraphemeHelper.GetGraphemes(segment.Text))
             {
-                if (charPos >= viewportX && drawnChars < width)
+                var cols = Math.Max(grapheme.GetColumns(), 1);
+                if (charPos >= viewportX && drawnChars + cols <= width)
                 {
-                    listView.AddRune(new Rune(ch));
-                    drawnChars++;
+                    listView.AddStr(grapheme);
+                    drawnChars += cols;
                 }
-                charPos++;
+                charPos += cols;
             }
         }
 
-        // Fill remaining width with spaces using default colors
-        listView.SetAttribute(normalAttr);
-        while (drawnChars < width)
-        {
-            listView.AddRune(new Rune(' '));
-            drawnChars++;
-        }
+        var fillAttr = mentionBg.HasValue ? new Attribute(normalAttr.Foreground, mentionBg.Value) : normalAttr;
+        listView.SetAttribute(fillAttr);
+        for (int i = drawnChars; i < width; i++)
+            listView.AddStr(" ");
     }
 
     private void UpdateMaxLength(ChatLine line)
@@ -243,12 +273,225 @@ public class ChatListSource : IListDataSource
 }
 
 /// <summary>
+/// Custom list data source for colored channel list rendering.
+/// Active channel gets a > indicator, unread channels are bright with a count badge.
+/// </summary>
+public class ChannelListSource : IListDataSource
+{
+    private readonly List<string> _channelNames = [];
+    private readonly Dictionary<string, int> _unreadCounts = [];
+    private string _activeChannel = string.Empty;
+
+    public event NotifyCollectionChangedEventHandler? CollectionChanged;
+    public int Count => _channelNames.Count;
+    public int MaxItemLength { get; private set; }
+    public bool SuspendCollectionChangedEvent { get; set; }
+
+    private static readonly Attribute ActiveAttr = new(Color.White, Color.Black);
+    private static readonly Attribute UnreadAttr = new(Color.BrightCyan, Color.Black);
+    private static readonly Attribute NormalAttr = new(Color.DarkGray, Color.Black);
+    private static readonly Attribute BadgeAttr = new(Color.BrightYellow, Color.Black);
+
+    public void Update(List<string> channels, Dictionary<string, int> unread, string activeChannel)
+    {
+        _channelNames.Clear();
+        _channelNames.AddRange(channels);
+        _unreadCounts.Clear();
+        foreach (var kv in unread)
+            _unreadCounts[kv.Key] = kv.Value;
+        _activeChannel = activeChannel;
+        MaxItemLength = channels.Count > 0 ? channels.Max(c => c.Length + 6) : 0;
+        if (!SuspendCollectionChangedEvent)
+            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+    }
+
+    public bool IsMarked(int item) => false;
+    public void SetMark(int item, bool value) { }
+    public IList ToList() => _channelNames.Select(n => $"#{n}").ToList();
+
+    public void Render(ListView listView, bool selected, int item, int col, int row, int width, int viewportX = 0)
+    {
+        listView.Move(Math.Max(col - viewportX, 0), row);
+
+        var name = _channelNames[item];
+        var isActive = name == _activeChannel;
+        _unreadCounts.TryGetValue(name, out var unread);
+        var hasUnread = unread > 0;
+
+        var focusAttr = listView.GetAttributeForRole(VisualRole.Focus);
+        var prefix = isActive ? "> " : "  ";
+        var channelText = $"#{name}";
+        var badge = hasUnread ? $" ({unread})" : "";
+
+        int drawnChars = 0;
+
+        if (selected)
+        {
+            listView.SetAttribute(focusAttr);
+            drawnChars = RenderHelpers.WriteText(listView, prefix + channelText + badge, drawnChars, width);
+        }
+        else
+        {
+            listView.SetAttribute(isActive ? ActiveAttr : NormalAttr);
+            drawnChars = RenderHelpers.WriteText(listView, prefix, drawnChars, width);
+
+            listView.SetAttribute(isActive ? ActiveAttr : hasUnread ? UnreadAttr : NormalAttr);
+            drawnChars = RenderHelpers.WriteText(listView, channelText, drawnChars, width);
+
+            if (hasUnread)
+            {
+                listView.SetAttribute(BadgeAttr);
+                drawnChars = RenderHelpers.WriteText(listView, badge, drawnChars, width);
+            }
+        }
+
+        var fillAttr = selected ? focusAttr : listView.GetAttributeForRole(VisualRole.Normal);
+        listView.SetAttribute(fillAttr);
+        for (int i = drawnChars; i < width; i++)
+            listView.AddStr(" ");
+    }
+
+    public void Dispose() { }
+}
+
+/// <summary>
+/// Custom list data source for the online users panel with per-user nickname colors.
+/// </summary>
+public class UserListSource : IListDataSource
+{
+    private readonly List<(string Text, Attribute? NameColor)> _users = [];
+
+    public event NotifyCollectionChangedEventHandler? CollectionChanged;
+    public int Count => _users.Count;
+    public int MaxItemLength { get; private set; }
+    public bool SuspendCollectionChangedEvent { get; set; }
+
+    public void Update(List<(string Text, Attribute? NameColor)> users)
+    {
+        _users.Clear();
+        _users.AddRange(users);
+        MaxItemLength = users.Count > 0 ? users.Max(u => u.Text.GetColumns()) : 0;
+        if (!SuspendCollectionChangedEvent)
+            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+    }
+
+    public bool IsMarked(int item) => false;
+    public void SetMark(int item, bool value) { }
+    public IList ToList() => _users.Select(u => u.Text).ToList();
+
+    public void Render(ListView listView, bool selected, int item, int col, int row, int width, int viewportX = 0)
+    {
+        listView.Move(Math.Max(col - viewportX, 0), row);
+
+        var (text, nameColor) = _users[item];
+        var normalAttr = listView.GetAttributeForRole(selected ? VisualRole.Focus : VisualRole.Normal);
+
+        // Find where the name starts (after status icon + space + optional role badge)
+        // Format: "● ★Username" or "● Username"
+        var graphemes = GraphemeHelper.GetGraphemes(text).ToList();
+        int nameStart = 0;
+        while (nameStart < graphemes.Count)
+        {
+            var g = graphemes[nameStart];
+            if (g.Length > 0 && (char.IsLetterOrDigit(g[0]) || g[0] == '_'))
+                break;
+            nameStart++;
+        }
+
+        int drawnChars = 0;
+
+        // Draw prefix (status icon + role badge) in normal color
+        listView.SetAttribute(normalAttr);
+        for (int i = 0; i < nameStart; i++)
+        {
+            var cols = Math.Max(graphemes[i].GetColumns(), 1);
+            if (drawnChars + cols > width) break;
+            listView.AddStr(graphemes[i]);
+            drawnChars += cols;
+        }
+
+        // Draw name in nickname color
+        var userAttr = selected ? normalAttr : nameColor ?? normalAttr;
+        listView.SetAttribute(userAttr);
+        for (int i = nameStart; i < graphemes.Count; i++)
+        {
+            var cols = Math.Max(graphemes[i].GetColumns(), 1);
+            if (drawnChars + cols > width) break;
+            listView.AddStr(graphemes[i]);
+            drawnChars += cols;
+        }
+
+        // Fill rest
+        listView.SetAttribute(normalAttr);
+        for (int i = drawnChars; i < width; i++)
+            listView.AddStr(" ");
+    }
+
+    public void Dispose() { }
+}
+
+/// <summary>
+/// Shared rendering helpers for IListDataSource implementations.
+/// </summary>
+static class RenderHelpers
+{
+    /// <summary>
+    /// Write text grapheme-by-grapheme to a ListView, respecting a width limit.
+    /// Returns the updated drawn-columns count.
+    /// </summary>
+    public static int WriteText(ListView lv, string text, int drawn, int maxWidth)
+    {
+        foreach (var grapheme in GraphemeHelper.GetGraphemes(text))
+        {
+            var cols = Math.Max(grapheme.GetColumns(), 1);
+            if (drawn + cols > maxWidth) break;
+            lv.AddStr(grapheme);
+            drawn += cols;
+        }
+        return drawn;
+    }
+}
+
+/// <summary>
 /// Shared color attributes for chat rendering (timestamps, system messages).
 /// </summary>
-public static class ChatColors
+public static partial class ChatColors
 {
     public static readonly Attribute TimestampAttr = new(Color.DarkGray, Color.Black);
     public static readonly Attribute SystemAttr = new(new Color(0, 180, 180), Color.Black);
+    public static readonly Attribute MentionHighlightAttr = new(Color.White, new Color(80, 40, 0));
+    public static readonly Attribute MentionTextAttr = new(new Color(255, 180, 50), Color.Black);
+    public static readonly Attribute EmbedBorderAttr = new(new Color(91, 155, 213), Color.Black);
+    public static readonly Attribute EmbedTitleAttr = new(Color.White, Color.Black);
+    public static readonly Attribute EmbedDescAttr = new(new Color(160, 160, 160), Color.Black);
+    public static readonly Attribute EmbedUrlAttr = new(new Color(100, 100, 100), Color.Black);
+
+    /// <summary>
+    /// Split text around @mentions, giving each @word the MentionTextAttr accent color.
+    /// Non-mention text uses the provided default color.
+    /// </summary>
+    public static List<ChatSegment> SplitMentions(string text, Attribute? defaultColor = null)
+    {
+        var segments = new List<ChatSegment>();
+        int lastIndex = 0;
+
+        foreach (Match match in MentionRegex().Matches(text))
+        {
+            if (match.Index > lastIndex)
+                segments.Add(new ChatSegment(text[lastIndex..match.Index], defaultColor));
+
+            segments.Add(new ChatSegment(match.Value, MentionTextAttr));
+            lastIndex = match.Index + match.Length;
+        }
+
+        if (lastIndex < text.Length)
+            segments.Add(new ChatSegment(text[lastIndex..], defaultColor));
+
+        return segments;
+    }
+
+    [GeneratedRegex(@"@[\w-]+")]
+    private static partial Regex MentionRegex();
 }
 
 /// <summary>

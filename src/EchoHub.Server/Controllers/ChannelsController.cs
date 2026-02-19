@@ -37,15 +37,24 @@ public class ChannelsController : ControllerBase
         _httpClientFactory = httpClientFactory;
         _chatService = chatService;
     }
+
     [HttpGet]
     public async Task<IActionResult> GetChannels([FromQuery] int offset = 0, [FromQuery] int limit = 50)
     {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim is null)
+            return Unauthorized(new ErrorResponse("Authentication required."));
+
+        var userId = Guid.Parse(userIdClaim);
         offset = Math.Max(0, offset);
         limit = Math.Clamp(limit, 1, 100);
 
-        var total = await _db.Channels.CountAsync();
+        // Public channels + private channels the user has joined
+        var query = _db.Channels.Where(c =>
+            c.IsPublic || _db.ChannelMemberships.Any(m => m.ChannelId == c.Id && m.UserId == userId));
+        var total = await query.CountAsync();
 
-        var channels = await _db.Channels
+        var channels = await query
             .OrderBy(c => c.Name)
             .Skip(offset)
             .Take(limit)
@@ -53,6 +62,7 @@ public class ChannelsController : ControllerBase
                 c.Id,
                 c.Name,
                 c.Topic,
+                c.IsPublic,
                 c.Messages.Count,
                 c.CreatedAt))
             .ToListAsync();
@@ -83,14 +93,24 @@ public class ChannelsController : ControllerBase
             Id = Guid.NewGuid(),
             Name = channelName,
             Topic = request.Topic?.Trim(),
+            IsPublic = request.IsPublic,
             CreatedByUserId = Guid.Parse(userIdClaim),
         };
 
         _db.Channels.Add(channel);
+
+        // Creator automatically becomes a member
+        _db.ChannelMemberships.Add(new ChannelMembership
+        {
+            UserId = Guid.Parse(userIdClaim),
+            ChannelId = channel.Id,
+        });
+
         await _db.SaveChangesAsync();
 
-        var dto = new ChannelDto(channel.Id, channel.Name, channel.Topic, 0, channel.CreatedAt);
-        await _chatService.BroadcastChannelUpdatedAsync(dto);
+        var dto = new ChannelDto(channel.Id, channel.Name, channel.Topic, channel.IsPublic, 0, channel.CreatedAt);
+        if (channel.IsPublic)
+            await _chatService.BroadcastChannelUpdatedAsync(dto);
 
         return Created($"/api/channels/{channelName}", dto);
     }
@@ -118,7 +138,7 @@ public class ChannelsController : ControllerBase
         await _db.SaveChangesAsync();
 
         var messageCount = await _db.Messages.CountAsync(m => m.ChannelId == dbChannel.Id);
-        var dto = new ChannelDto(dbChannel.Id, dbChannel.Name, dbChannel.Topic, messageCount, dbChannel.CreatedAt);
+        var dto = new ChannelDto(dbChannel.Id, dbChannel.Name, dbChannel.Topic, dbChannel.IsPublic, messageCount, dbChannel.CreatedAt);
         await _chatService.BroadcastChannelUpdatedAsync(dto, channelName);
 
         return Ok(dto);
@@ -141,8 +161,10 @@ public class ChannelsController : ControllerBase
         if (dbChannel is null)
             return NotFound(new ErrorResponse($"Channel '{channelName}' does not exist."));
 
-        if (dbChannel.CreatedByUserId != Guid.Parse(userIdClaim))
-            return StatusCode(403, new ErrorResponse("Only the channel creator can delete the channel."));
+        var userId = Guid.Parse(userIdClaim);
+        var caller = await _db.Users.FindAsync(userId);
+        if (dbChannel.CreatedByUserId != userId && (caller is null || caller.Role < ServerRole.Admin))
+            return StatusCode(403, new ErrorResponse("Only the channel creator or an admin can delete the channel."));
 
         _db.Channels.Remove(dbChannel);
         await _db.SaveChangesAsync();
@@ -152,7 +174,7 @@ public class ChannelsController : ControllerBase
 
     [HttpPost("{channel}/upload")]
     [EnableRateLimiting("upload")]
-    public async Task<IActionResult> Upload(string channel)
+    public async Task<IActionResult> Upload(string channel, [FromQuery] string? size = null)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var usernameClaim = User.FindFirstValue("username");
@@ -188,8 +210,9 @@ public class ChannelsController : ControllerBase
 
         if (isImage)
         {
+            var (w, h) = ImageToAsciiService.GetDimensions(size);
             using var imageStream = System.IO.File.OpenRead(filePath);
-            content = _asciiService.ConvertToAscii(imageStream);
+            content = _asciiService.ConvertToAscii(imageStream, w, h);
         }
         else
         {
@@ -233,7 +256,7 @@ public class ChannelsController : ControllerBase
 
     [HttpPost("{channel}/send-url")]
     [EnableRateLimiting("upload")]
-    public async Task<IActionResult> SendUrl(string channel, [FromBody] SendUrlRequest request)
+    public async Task<IActionResult> SendUrl(string channel, [FromBody] SendUrlRequest request, [FromQuery] string? size = null)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var usernameClaim = User.FindFirstValue("username");
@@ -308,9 +331,10 @@ public class ChannelsController : ControllerBase
         var (fileId, filePath) = await _fileStorage.SaveFileAsync(memoryStream, fileName);
 
         string content;
+        var (w, h) = ImageToAsciiService.GetDimensions(size);
         using (var imageStream = System.IO.File.OpenRead(filePath))
         {
-            content = _asciiService.ConvertToAscii(imageStream);
+            content = _asciiService.ConvertToAscii(imageStream, w, h);
         }
 
         var attachmentUrl = $"/api/files/{fileId}";

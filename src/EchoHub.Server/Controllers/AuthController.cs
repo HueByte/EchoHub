@@ -22,6 +22,7 @@ public class AuthController : ControllerBase
         _db = db;
         _jwt = jwt;
     }
+
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
@@ -42,12 +43,16 @@ public class AuthController : ControllerBase
         if (await _db.Users.AnyAsync(u => u.Username == normalizedUsername))
             return Conflict(new ErrorResponse("Username is already taken."));
 
+        // First registered user on the server becomes the Owner
+        var isFirstUser = !await _db.Users.AnyAsync();
+
         var user = new User
         {
             Id = Guid.NewGuid(),
             Username = normalizedUsername,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
             DisplayName = request.DisplayName?.Trim(),
+            Role = isFirstUser ? ServerRole.Owner : ServerRole.Member,
         };
 
         _db.Users.Add(user);
@@ -79,6 +84,9 @@ public class AuthController : ControllerBase
 
         if (user is null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             return Unauthorized(new ErrorResponse("Invalid username or password."));
+
+        if (user.IsBanned)
+            return Unauthorized(new ErrorResponse("Your account has been banned."));
 
         user.LastSeenAt = DateTimeOffset.UtcNow;
         await _db.SaveChangesAsync();

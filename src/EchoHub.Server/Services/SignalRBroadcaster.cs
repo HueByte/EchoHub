@@ -54,11 +54,32 @@ public class SignalRBroadcaster : IChatBroadcaster
         return HubContext.Clients.Clients(connections).UserStatusChanged(presence);
     }
 
+    public Task SendUserKickedAsync(string channelName, string username, string? reason)
+        => HubContext.Clients.Group(channelName).UserKicked(channelName, username, reason);
+
+    public Task SendUserBannedAsync(string username, string? reason)
+        => HubContext.Clients.All.UserBanned(username, reason);
+
+    public Task SendMessageDeletedAsync(string channelName, Guid messageId)
+        => HubContext.Clients.Group(channelName).MessageDeleted(channelName, messageId);
+
+    public Task SendChannelNukedAsync(string channelName)
+        => HubContext.Clients.Group(channelName).ChannelNuked(channelName);
+
     public Task SendErrorAsync(string connectionId, string message)
     {
         if (connectionId.StartsWith("irc-"))
             return Task.CompletedTask;
 
         return HubContext.Clients.Client(connectionId).Error(message);
+    }
+
+    public Task ForceDisconnectUserAsync(List<string> connectionIds, string reason)
+    {
+        var signalRIds = connectionIds.Where(c => !c.StartsWith("irc-")).ToList();
+        if (signalRIds.Count == 0)
+            return Task.CompletedTask;
+
+        return HubContext.Clients.Clients(signalRIds).ForceDisconnect(reason);
     }
 }

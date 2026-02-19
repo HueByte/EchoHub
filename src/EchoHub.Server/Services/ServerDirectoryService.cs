@@ -61,6 +61,19 @@ public sealed class ServerDirectoryService : BackgroundService
             {
                 var connectionPermanentlyClosed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
+                connection.On("Ping", async () =>
+                {
+                    _logger.LogDebug("Received alive check from directory — sending heartbeat");
+                    try
+                    {
+                        await connection.InvokeAsync("Heartbeat");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to send heartbeat response");
+                    }
+                });
+
                 connection.Reconnected += async _ =>
                 {
                     _logger.LogInformation("Reconnected to directory — re-registering server");
@@ -156,8 +169,6 @@ public sealed class ServerDirectoryService : BackgroundService
                 continue;
 
             var currentCount = _presenceTracker.GetOnlineUserCount();
-            if (currentCount == _lastReportedUserCount)
-                continue;
 
             try
             {

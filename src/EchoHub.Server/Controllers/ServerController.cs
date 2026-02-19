@@ -17,6 +17,7 @@ public class ServerController : ControllerBase
         _db = db;
         _config = config;
     }
+
     [HttpGet("info")]
     public async Task<IActionResult> GetInfo()
     {

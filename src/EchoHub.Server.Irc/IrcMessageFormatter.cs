@@ -1,10 +1,11 @@
 using System.Text;
+using System.Text.RegularExpressions;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
 
 namespace EchoHub.Server.Irc;
 
-public static class IrcMessageFormatter
+public static partial class IrcMessageFormatter
 {
     private const int MaxIrcLineContentBytes = 400;
 
@@ -22,6 +23,13 @@ public static class IrcMessageFormatter
             case MessageType.Text:
                 foreach (var chunk in SplitMessage(message.Content, MaxIrcLineContentBytes))
                     lines.Add($"{prefix} PRIVMSG {ircChannel} :{chunk}");
+
+                // Append embed previews if present
+                if (message.Embeds is { Count: > 0 })
+                {
+                    foreach (var embed in message.Embeds)
+                        lines.AddRange(FormatEmbed(prefix, ircChannel, embed));
+                }
                 break;
 
             case MessageType.Image:
@@ -33,7 +41,7 @@ public static class IrcMessageFormatter
                 {
                     var trimmed = line.TrimEnd('\r');
                     if (trimmed.Length > 0)
-                        lines.Add($"{prefix} PRIVMSG {ircChannel} :{trimmed}");
+                        lines.Add($"{prefix} PRIVMSG {ircChannel} :{ColorTagsToAnsi(trimmed)}");
                 }
                 break;
 
@@ -44,6 +52,62 @@ public static class IrcMessageFormatter
 
         return lines;
     }
+
+    /// <summary>
+    /// Format a link embed as IRC PRIVMSG lines (text-only, no ASCII thumbnail).
+    /// </summary>
+    private static List<string> FormatEmbed(string prefix, string ircChannel, EmbedDto embed)
+    {
+        var lines = new List<string>();
+
+        var header = new List<string>();
+        if (!string.IsNullOrWhiteSpace(embed.SiteName))
+            header.Add(embed.SiteName);
+        if (!string.IsNullOrWhiteSpace(embed.Title))
+            header.Add(embed.Title);
+
+        if (header.Count > 0)
+            lines.Add($"{prefix} PRIVMSG {ircChannel} :\u2502 {string.Join(" \u2014 ", header)}");
+
+        if (!string.IsNullOrWhiteSpace(embed.Description))
+        {
+            var desc = embed.Description.Length > 200
+                ? embed.Description[..197] + "..."
+                : embed.Description;
+            lines.Add($"{prefix} PRIVMSG {ircChannel} :\u2502 {desc}");
+        }
+
+        return lines;
+    }
+
+    /// <summary>
+    /// Convert printable color tags ({F:RRGGBB}, {B:RRGGBB}, {X}) to ANSI escape codes for IRC clients.
+    /// Also passes through content that already uses ANSI codes unchanged.
+    /// </summary>
+    public static string ColorTagsToAnsi(string text)
+    {
+        if (!text.Contains('{'))
+            return text;
+
+        return ColorTagRegex().Replace(text, match =>
+        {
+            if (match.Groups[1].Success) // {X} reset
+                return "\x1b[0m";
+            if (match.Groups[2].Success) // {F:RRGGBB} or {B:RRGGBB}
+            {
+                var hex = match.Groups[3].Value;
+                var r = Convert.ToInt32(hex[..2], 16);
+                var g = Convert.ToInt32(hex[2..4], 16);
+                var b = Convert.ToInt32(hex[4..6], 16);
+                var code = match.Groups[2].Value == "F" ? "38" : "48";
+                return $"\x1b[{code};2;{r};{g};{b}m";
+            }
+            return match.Value;
+        });
+    }
+
+    [GeneratedRegex(@"\{(?:(X)|(?:(F|B):([0-9A-Fa-f]{6})))\}")]
+    private static partial Regex ColorTagRegex();
 
     /// <summary>
     /// Split a message into chunks of approximately maxBytes (UTF-8), at word boundaries.

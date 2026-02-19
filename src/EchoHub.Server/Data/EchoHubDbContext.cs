@@ -11,6 +11,7 @@ public class EchoHubDbContext : DbContext
     public DbSet<Channel> Channels => Set<Channel>();
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<ChannelMembership> ChannelMemberships => Set<ChannelMembership>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -34,6 +35,7 @@ public class EchoHubDbContext : DbContext
             entity.Property(u => u.NicknameColor).HasMaxLength(7);
             entity.Property(u => u.AvatarAscii).HasMaxLength(10000);
             entity.Property(u => u.StatusMessage).HasMaxLength(100);
+            entity.Property(u => u.Role).HasConversion<int>();
         });
 
         modelBuilder.Entity<Channel>(entity =>
@@ -57,6 +59,24 @@ public class EchoHubDbContext : DbContext
             entity.Property(m => m.SenderUsername).IsRequired().HasMaxLength(50);
             entity.Property(m => m.AttachmentUrl).HasMaxLength(500);
             entity.Property(m => m.AttachmentFileName).HasMaxLength(255);
+            entity.Property(m => m.EmbedJson).HasMaxLength(8000);
+        });
+
+        modelBuilder.Entity<ChannelMembership>(entity =>
+        {
+            entity.HasKey(cm => new { cm.UserId, cm.ChannelId });
+            entity.HasIndex(cm => cm.UserId);
+            entity.HasIndex(cm => cm.ChannelId);
+
+            entity.HasOne<Channel>()
+                  .WithMany()
+                  .HasForeignKey(cm => cm.ChannelId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne<User>()
+                  .WithMany()
+                  .HasForeignKey(cm => cm.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<RefreshToken>(entity =>

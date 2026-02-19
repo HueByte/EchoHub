@@ -1,3 +1,4 @@
+using System.Text.Json;
 using EchoHub.Core.Constants;
 using EchoHub.Core.Contracts;
 using EchoHub.Core.DTOs;
@@ -14,17 +15,20 @@ public class ChatService : IChatService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly PresenceTracker _presenceTracker;
     private readonly IEnumerable<IChatBroadcaster> _broadcasters;
+    private readonly LinkEmbedService _embedService;
     private readonly ILogger<ChatService> _logger;
 
     public ChatService(
         IServiceScopeFactory scopeFactory,
         PresenceTracker presenceTracker,
         IEnumerable<IChatBroadcaster> broadcasters,
+        LinkEmbedService embedService,
         ILogger<ChatService> logger)
     {
         _scopeFactory = scopeFactory;
         _presenceTracker = presenceTracker;
         _broadcasters = broadcasters;
+        _embedService = embedService;
         _logger = logger;
     }
 
@@ -72,7 +76,8 @@ public class ChatService : IChatService
                     user.DisplayName,
                     user.NicknameColor,
                     UserStatus.Invisible,
-                    user.StatusMessage);
+                    user.StatusMessage,
+                    user.Role);
 
                 await BroadcastToAllAsync(b => b.SendUserStatusChangedAsync(channelsBeforeDisconnect, presence));
             }
@@ -96,6 +101,19 @@ public class ChatService : IChatService
         var channel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
         if (channel is null)
             return ([], $"Channel '{channelName}' does not exist. Create it first via the channel list.");
+
+        // Persist membership so the channel shows in the user's channel list
+        var hasMembership = await db.ChannelMemberships
+            .AnyAsync(m => m.UserId == userId && m.ChannelId == channel.Id);
+        if (!hasMembership)
+        {
+            db.ChannelMemberships.Add(new ChannelMembership
+            {
+                UserId = userId,
+                ChannelId = channel.Id,
+            });
+            await db.SaveChangesAsync();
+        }
 
         var isNewJoin = _presenceTracker.JoinChannel(username, channelName);
 
@@ -130,6 +148,9 @@ public class ChatService : IChatService
         if (content.Length > HubConstants.MaxMessageLength)
             return $"Message exceeds maximum length of {HubConstants.MaxMessageLength} characters.";
 
+        // Sanitize: collapse excessive newlines
+        content = SanitizeNewlines(content);
+
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
@@ -138,6 +159,32 @@ public class ChatService : IChatService
             return $"Channel '{channelName}' does not exist.";
 
         var sender = await db.Users.FindAsync(userId);
+
+        // Check mute status
+        if (sender is not null && sender.IsMuted)
+        {
+            if (sender.MutedUntil.HasValue && sender.MutedUntil.Value <= DateTimeOffset.UtcNow)
+            {
+                sender.IsMuted = false;
+                sender.MutedUntil = null;
+                await db.SaveChangesAsync();
+            }
+            else
+            {
+                return "You are muted and cannot send messages.";
+            }
+        }
+
+        // Attempt to fetch link embeds for URLs in the message
+        List<EmbedDto>? embeds = null;
+        try
+        {
+            embeds = await _embedService.TryGetEmbedsAsync(content);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to fetch link embeds for message in '{Channel}'", channelName);
+        }
 
         var message = new Message
         {
@@ -148,6 +195,7 @@ public class ChatService : IChatService
             ChannelId = channel.Id,
             SenderUserId = userId,
             SenderUsername = username,
+            EmbedJson = embeds is not null ? JsonSerializer.Serialize(embeds) : null,
         };
 
         db.Messages.Add(message);
@@ -162,7 +210,8 @@ public class ChatService : IChatService
             MessageType.Text,
             null,
             null,
-            message.SentAt);
+            message.SentAt,
+            embeds);
 
         await BroadcastToAllAsync(b => b.SendMessageToChannelAsync(channelName, messageDto));
 
@@ -203,7 +252,8 @@ public class ChatService : IChatService
             user.DisplayName,
             user.NicknameColor,
             status,
-            statusMessage);
+            statusMessage,
+            user.Role);
 
         var channels = _presenceTracker.GetChannelsForUser(username);
         await BroadcastToAllAsync(b => b.SendUserStatusChangedAsync(channels, presence));
@@ -226,7 +276,8 @@ public class ChatService : IChatService
                 u.DisplayName,
                 u.NicknameColor,
                 u.Status,
-                u.StatusMessage))
+                u.StatusMessage,
+                u.Role))
             .ToListAsync();
     }
 
@@ -264,7 +315,7 @@ public class ChatService : IChatService
         return new UserProfileDto(
             user.Id, user.Username, user.DisplayName, user.Bio,
             user.NicknameColor, user.AvatarAscii, user.Status,
-            user.StatusMessage, user.CreatedAt, user.LastSeenAt);
+            user.StatusMessage, user.Role, user.CreatedAt, user.LastSeenAt);
     }
 
     public async Task<(string? Topic, bool Exists)> GetChannelTopicAsync(string channelName)
@@ -312,32 +363,79 @@ public class ChatService : IChatService
         return (user.Id, user.Username);
     }
 
+    /// <summary>
+    /// Collapse consecutive newlines and cap total line count to prevent newline spam.
+    /// </summary>
+    private static string SanitizeNewlines(string content)
+    {
+        // Normalize \r\n → \n
+        content = content.Replace("\r\n", "\n").Replace('\r', '\n');
+
+        // Collapse consecutive blank/whitespace-only lines into max 1 blank line
+        var lines = content.Split('\n');
+        var result = new List<string>(lines.Length);
+        int consecutiveBlanks = 0;
+
+        foreach (var line in lines)
+        {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                consecutiveBlanks++;
+                if (consecutiveBlanks <= HubConstants.MaxConsecutiveNewlines)
+                    result.Add(line);
+            }
+            else
+            {
+                consecutiveBlanks = 0;
+                result.Add(line);
+            }
+        }
+
+        // Cap total lines
+        if (result.Count > HubConstants.MaxMessageNewlines)
+            result = result.Take(HubConstants.MaxMessageNewlines).ToList();
+
+        return string.Join('\n', result);
+    }
+
     private static async Task<List<MessageDto>> GetChannelHistoryInternalAsync(EchoHubDbContext db, string channelName, int count)
     {
         var channel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
         if (channel is null)
             return [];
 
-        var messages = await db.Messages
+        var raw = await db.Messages
             .Where(m => m.ChannelId == channel.Id)
             .OrderByDescending(m => m.SentAt)
             .Take(count)
             .Join(db.Users,
                 m => m.SenderUserId,
                 u => u.Id,
-                (m, u) => new MessageDto(
-                    m.Id,
-                    m.Content,
-                    m.SenderUsername,
-                    u.NicknameColor,
-                    channelName,
-                    m.Type,
-                    m.AttachmentUrl,
-                    m.AttachmentFileName,
-                    m.SentAt))
+                (m, u) => new { m, u.NicknameColor })
             .ToListAsync();
 
-        messages.Reverse();
-        return messages;
+        raw.Reverse();
+
+        return raw.Select(x =>
+        {
+            List<EmbedDto>? embeds = null;
+            if (x.m.EmbedJson is not null)
+            {
+                try { embeds = JsonSerializer.Deserialize<List<EmbedDto>>(x.m.EmbedJson); }
+                catch { /* ignore malformed JSON */ }
+            }
+
+            return new MessageDto(
+                x.m.Id,
+                x.m.Content,
+                x.m.SenderUsername,
+                x.NicknameColor,
+                channelName,
+                x.m.Type,
+                x.m.AttachmentUrl,
+                x.m.AttachmentFileName,
+                x.m.SentAt,
+                embeds);
+        }).ToList();
     }
 }

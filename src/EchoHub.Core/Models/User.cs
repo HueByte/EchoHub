@@ -11,6 +11,10 @@ public class User
     public string? AvatarAscii { get; set; }
     public UserStatus Status { get; set; } = UserStatus.Online;
     public string? StatusMessage { get; set; }
+    public ServerRole Role { get; set; } = ServerRole.Member;
+    public bool IsMuted { get; set; }
+    public DateTimeOffset? MutedUntil { get; set; }
+    public bool IsBanned { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset LastSeenAt { get; set; } = DateTimeOffset.UtcNow;
 }

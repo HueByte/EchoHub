@@ -11,6 +11,7 @@ public record UserProfileDto(
     string? AvatarAscii,
     UserStatus Status,
     string? StatusMessage,
+    ServerRole Role,
     DateTimeOffset CreatedAt,
     DateTimeOffset LastSeenAt);
 
@@ -28,6 +29,7 @@ public record UserPresenceDto(
     string? DisplayName,
     string? NicknameColor,
     UserStatus Status,
-    string? StatusMessage);
+    string? StatusMessage,
+    ServerRole Role);
 
 public record AvatarUploadResponse(string AvatarAscii);

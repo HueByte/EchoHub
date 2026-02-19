@@ -12,5 +12,10 @@ public interface IEchoHubClient
     Task UserLeft(string channelName, string username);
     Task ChannelUpdated(ChannelDto channel);
     Task UserStatusChanged(UserPresenceDto presence);
+    Task UserKicked(string channelName, string username, string? reason);
+    Task UserBanned(string username, string? reason);
+    Task MessageDeleted(string channelName, Guid messageId);
+    Task ChannelNuked(string channelName);
+    Task ForceDisconnect(string reason);
     Task Error(string message);
 }

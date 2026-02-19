@@ -5,6 +5,14 @@ public class ClientConfig
     public List<SavedServer> SavedServers { get; set; } = [];
     public AccountPreset DefaultPreset { get; set; } = new();
     public string ActiveTheme { get; set; } = "Default";
+    public NotificationConfig Notifications { get; set; } = new();
+}
+
+public class NotificationConfig
+{
+    public bool Enabled { get; set; } = true;
+    public byte Volume { get; set; } = 30;
+    public string? SoundFile { get; set; }
 }
 
 public class SavedServer

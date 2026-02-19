@@ -106,6 +106,7 @@ while (true)
         builder.Services.AddSingleton<PresenceTracker>();
         builder.Services.AddSingleton<ImageToAsciiService>();
         builder.Services.AddSingleton<FileStorageService>();
+        builder.Services.AddSingleton<LinkEmbedService>();
         builder.Services.AddHostedService<ServerDirectoryService>();
 
         // ── Chat Service + Broadcasters ─────────────────────────────────────
@@ -119,6 +120,13 @@ while (true)
         {
             client.Timeout = TimeSpan.FromSeconds(15);
             client.MaxResponseContentBufferSize = 10 * 1024 * 1024; // 10 MB
+        });
+
+        builder.Services.AddHttpClient("OgFetch", client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(5);
+            client.MaxResponseContentBufferSize = 256 * 1024; // 256 KB
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("EchoHub/1.0 (Link Preview Bot)");
         });
 
         // ── Rate Limiting ────────────────────────────────────────────────────

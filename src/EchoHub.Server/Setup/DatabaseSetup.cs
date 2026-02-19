@@ -16,6 +16,9 @@ public static class DatabaseSetup
 
         await MigrateAsync(db, logger);
         await SeedDefaultChannelAsync(db, logger);
+
+        // Run data migrations (e.g. ANSI → color tag format)
+        await DataMigrationService.RunAsync(services);
     }
 
     private static async Task MigrateAsync(EchoHubDbContext db, ILogger logger)

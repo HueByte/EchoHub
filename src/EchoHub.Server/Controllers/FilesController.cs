@@ -18,6 +18,7 @@ public class FilesController : ControllerBase
     {
         _fileStorage = fileStorage;
     }
+
     [HttpGet("{fileId}")]
     public IActionResult GetFile(string fileId)
     {

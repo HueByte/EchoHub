@@ -3,6 +3,7 @@ using System;
 using EchoHub.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EchoHub.Server.Data.Migrations
 {
     [DbContext(typeof(EchoHubDbContext))]
-    partial class EchoHubDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260219172834_AddChannelIsPublic")]
+    partial class AddChannelIsPublic
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.3");
@@ -49,26 +52,6 @@ namespace EchoHub.Server.Data.Migrations
                     b.ToTable("Channels");
                 });
 
-            modelBuilder.Entity("EchoHub.Core.Models.ChannelMembership", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("ChannelId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<long>("JoinedAt")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("UserId", "ChannelId");
-
-                    b.HasIndex("ChannelId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ChannelMemberships");
-                });
-
             modelBuilder.Entity("EchoHub.Core.Models.Message", b =>
                 {
                     b.Property<Guid>("Id")
@@ -89,10 +72,6 @@ namespace EchoHub.Server.Data.Migrations
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasMaxLength(2000)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("EmbedJson")
-                        .HasMaxLength(8000)
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("SenderUserId")
@@ -212,21 +191,6 @@ namespace EchoHub.Server.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("EchoHub.Core.Models.ChannelMembership", b =>
-                {
-                    b.HasOne("EchoHub.Core.Models.Channel", null)
-                        .WithMany()
-                        .HasForeignKey("ChannelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("EchoHub.Core.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("EchoHub.Core.Models.Message", b =>

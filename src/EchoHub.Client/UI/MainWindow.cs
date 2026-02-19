@@ -1,10 +1,12 @@
-using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
 using EchoHub.Client.Themes;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
 using Terminal.Gui.App;
 using Terminal.Gui.Configuration;
+using Terminal.Gui.Drawing;
 using Terminal.Gui.Input;
+using Terminal.Gui.Text;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 using Attribute = Terminal.Gui.Drawing.Attribute;
@@ -21,14 +23,26 @@ public sealed class MainWindow : Runnable
     private readonly ListView _messageList;
     private readonly TextView _inputField;
     private readonly FrameView _chatFrame;
+    private readonly FrameView _inputFrame;
     private readonly Label _statusLabel;
     private readonly Label _topicLabel;
     private MenuBar _menuBar;
 
+    // Online users panel
+    private readonly FrameView _usersFrame;
+    private readonly ListView _usersList;
+    private readonly UserListSource _usersListSource;
+    private bool _usersPanelVisible = true;
+    private const int UsersPanelWidth = 22;
+    private static readonly Key F2Key = Key.F2;
+
+    internal static readonly string AppVersion =
+        typeof(MainWindow).Assembly.GetName().Version?.ToString(3) ?? "?";
+
     // Cached Key constants — compare via .KeyCode to avoid Key.Equals (which also checks Handled)
     private static readonly Key EnterKey = Key.Enter;
     private static readonly Key NewlineKey = Key.N.WithCtrl;
-    private static readonly Key CtrlCKey = Key.C.WithCtrl;
+    private static readonly Key AltQKey = Key.Q.WithAlt;
     private static readonly Key TabKey = Key.Tab;
 
     // Available slash commands for Tab autocomplete
@@ -36,13 +50,15 @@ public sealed class MainWindow : Runnable
     [
         "/status", "/nick", "/color", "/theme", "/send",
         "/avatar", "/profile", "/servers", "/join", "/leave",
-        "/topic", "/users", "/quit", "/help"
+        "/topic", "/users", "/kick", "/ban", "/unban",
+        "/mute", "/unmute", "/role", "/nuke", "/test-sound", "/quit", "/help"
     ];
 
     private readonly List<string> _channelNames = [];
     private readonly Dictionary<string, List<ChatLine>> _channelMessages = [];
     private readonly Dictionary<string, int> _channelUnread = [];
     private readonly Dictionary<string, string?> _channelTopics = [];
+    private readonly ChannelListSource _channelListSource;
     private string _currentChannel = string.Empty;
     private string _currentUser = string.Empty;
     private int _lastChatWidth;
@@ -92,6 +108,11 @@ public sealed class MainWindow : Runnable
     /// </summary>
     public event Action? OnCreateChannelRequested;
 
+    /// <summary>
+    /// Fired when the user requests to delete the current channel.
+    /// </summary>
+    public event Action? OnDeleteChannelRequested;
+
     public MainWindow(IApplication app)
     {
         _app = app;
@@ -107,7 +128,7 @@ public sealed class MainWindow : Runnable
             Title = "Channels",
             X = 0,
             Y = 1, // below menu bar
-            Width = 25,
+            Width = 22,
             Height = Dim.Fill(1) // leave room for status bar
         };
 
@@ -118,7 +139,8 @@ public sealed class MainWindow : Runnable
             Width = Dim.Fill(),
             Height = Dim.Fill()
         };
-        _channelList.SetSource(new ObservableCollection<string>(_channelNames));
+        _channelListSource = new ChannelListSource();
+        _channelList.Source = _channelListSource;
         _channelList.ValueChanged += OnChannelListSelectionChanged;
         channelsFrame.Add(_channelList);
         Add(channelsFrame);
@@ -127,9 +149,9 @@ public sealed class MainWindow : Runnable
         _topicLabel = new Label
         {
             Text = "",
-            X = 25,
+            X = 22,
             Y = 1,
-            Width = Dim.Fill(),
+            Width = Dim.Fill(UsersPanelWidth),
             Height = 1,
             Visible = false
         };
@@ -139,9 +161,9 @@ public sealed class MainWindow : Runnable
         _chatFrame = new FrameView
         {
             Title = "Chat",
-            X = 25,
+            X = 22,
             Y = 1, // below menu bar (shifts to 2 when topic is visible)
-            Width = Dim.Fill(),
+            Width = Dim.Fill(UsersPanelWidth),
             Height = Dim.Fill(6) // leave room for input area and status bar
         };
 
@@ -157,12 +179,12 @@ public sealed class MainWindow : Runnable
         Add(_chatFrame);
 
         // Bottom input area
-        var inputFrame = new FrameView
+        _inputFrame = new FrameView
         {
-            Title = "Message (Enter=send, Ctrl+N=newline, Tab=autocomplete)",
-            X = 25,
+            Title = "Message \u2502 Enter=send \u2502 Ctrl+N=newline \u2502 Tab=complete",
+            X = 22,
             Y = Pos.Bottom(_chatFrame),
-            Width = Dim.Fill(),
+            Width = Dim.Fill(UsersPanelWidth),
             Height = 5
         };
 
@@ -175,8 +197,31 @@ public sealed class MainWindow : Runnable
             WordWrap = true
         };
         _inputField.KeyDown += OnInputKeyDown;
-        inputFrame.Add(_inputField);
-        Add(inputFrame);
+        _inputField.ContentsChanged += OnInputContentsChanged;
+        _inputFrame.Add(_inputField);
+        Add(_inputFrame);
+
+        // Right panel - online users
+        _usersFrame = new FrameView
+        {
+            Title = "Users",
+            X = Pos.AnchorEnd(UsersPanelWidth),
+            Y = 1,
+            Width = UsersPanelWidth,
+            Height = Dim.Fill(1)
+        };
+
+        _usersList = new ListView
+        {
+            X = 0,
+            Y = 0,
+            Width = Dim.Fill(),
+            Height = Dim.Fill()
+        };
+        _usersListSource = new UserListSource();
+        _usersList.Source = _usersListSource;
+        _usersFrame.Add(_usersList);
+        Add(_usersFrame);
 
         // Status bar at the very bottom
         _statusLabel = new Label
@@ -198,7 +243,7 @@ public sealed class MainWindow : Runnable
         _messageList.ViewportChanged += (_, _) => OnChatViewportChanged();
         _chatFrame.ViewportChanged += (_, _) => OnChatViewportChanged();
 
-        // Window-level key handling for Ctrl+C (quit)
+        // Window-level key handling for Alt+Q (quit), F2 (toggle users panel)
         KeyDown += OnWindowKeyDown;
     }
 
@@ -265,7 +310,11 @@ public sealed class MainWindow : Runnable
                 new MenuItem("_Disconnect", "Disconnect from server", () => OnDisconnectRequested?.Invoke(), Key.Empty),
                 new Line(),
                 new MenuItem("New C_hannel...", "Create a new channel", () => OnCreateChannelRequested?.Invoke(), Key.Empty),
-                new MenuItem("_Saved Servers...", "View saved servers", () => OnSavedServersRequested?.Invoke(), Key.Empty)
+                new MenuItem("_Delete Channel", "Delete the current channel", () => OnDeleteChannelRequested?.Invoke(), Key.Empty),
+                new Line(),
+                new MenuItem("_Saved Servers...", "View saved servers", () => OnSavedServersRequested?.Invoke(), Key.Empty),
+                new Line(),
+                new MenuItem("Toggle _Users Panel", "Toggle online users (F2)", () => ToggleUsersPanel(), Key.Empty)
             }),
             new MenuBarItem("_User", allUserItems)
         ]);
@@ -333,11 +382,36 @@ public sealed class MainWindow : Runnable
             }
             e.Handled = true;
         }
-        else if (e.KeyCode == CtrlCKey.KeyCode)
+        else if (e.KeyCode == AltQKey.KeyCode)
         {
             _app.RequestStop();
             e.Handled = true;
         }
+    }
+
+    private bool _suppressEmojiReplace;
+
+    private void OnInputContentsChanged(object? sender, ContentsChangedEventArgs e)
+    {
+        if (_suppressEmojiReplace)
+            return;
+
+        var text = _inputField.Text;
+        if (string.IsNullOrEmpty(text))
+            return;
+
+        var replaced = EmojiHelper.ReplaceEmoji(text);
+        if (replaced == text)
+            return;
+
+        // Calculate where cursor should land after replacement
+        var lengthDelta = replaced.Length - text.Length;
+        var newCol = Math.Max(0, _inputField.CurrentColumn + lengthDelta);
+
+        _suppressEmojiReplace = true;
+        _inputField.Text = replaced;
+        _inputField.InsertionPoint = new System.Drawing.Point(newCol, _inputField.CurrentRow);
+        _suppressEmojiReplace = false;
     }
 
     /// <summary>
@@ -386,10 +460,14 @@ public sealed class MainWindow : Runnable
 
     private void OnWindowKeyDown(object? sender, Key e)
     {
-        // Ctrl+C quits from anywhere
-        if (e.KeyCode == CtrlCKey.KeyCode)
+        if (e.KeyCode == AltQKey.KeyCode)
         {
             _app.RequestStop();
+            e.Handled = true;
+        }
+        else if (e.KeyCode == F2Key.KeyCode)
+        {
+            ToggleUsersPanel();
             e.Handled = true;
         }
     }
@@ -430,19 +508,33 @@ public sealed class MainWindow : Runnable
     /// </summary>
     public void AddSystemMessage(string channelName, string text)
     {
-        var time = DateTimeOffset.Now.ToString("HH:mm");
-        var segments = new List<ChatSegment>
-        {
-            new($"[{time}] ", ChatColors.TimestampAttr),
-            new($"** {text}", ChatColors.SystemAttr)
-        };
-
         if (!_channelMessages.TryGetValue(channelName, out var messages))
         {
             messages = [];
             _channelMessages[channelName] = messages;
         }
-        messages.Add(new ChatLine(segments));
+
+        var time = DateTimeOffset.Now.ToString("HH:mm");
+        var textLines = text.Split('\n');
+
+        // First line gets timestamp prefix
+        messages.Add(new ChatLine(
+        [
+            new($"[{time}] ", ChatColors.TimestampAttr),
+            new($"** {textLines[0].TrimEnd('\r')}", ChatColors.SystemAttr)
+        ]));
+
+        // Continuation lines are indented to align
+        var indent = new string(' ', $"[{time}] ** ".Length);
+        for (int i = 1; i < textLines.Length; i++)
+        {
+            var line = textLines[i].TrimEnd('\r');
+            if (string.IsNullOrWhiteSpace(line)) continue;
+            messages.Add(new ChatLine(
+            [
+                new($"{indent}{line}", ChatColors.SystemAttr)
+            ]));
+        }
 
         if (channelName == _currentChannel)
         {
@@ -476,6 +568,32 @@ public sealed class MainWindow : Runnable
     }
 
     /// <summary>
+    /// Remove all lines associated with a specific message ID.
+    /// </summary>
+    public void RemoveMessage(string channelName, Guid messageId)
+    {
+        if (_channelMessages.TryGetValue(channelName, out var messages))
+        {
+            messages.RemoveAll(l => l.MessageId == messageId);
+            if (channelName == _currentChannel)
+                RefreshMessages();
+        }
+    }
+
+    /// <summary>
+    /// Clear all messages from a specific channel.
+    /// </summary>
+    public void ClearChannelMessages(string channelName)
+    {
+        if (_channelMessages.TryGetValue(channelName, out var messages))
+        {
+            messages.Clear();
+            if (channelName == _currentChannel)
+                RefreshMessages();
+        }
+    }
+
+    /// <summary>
     /// Set the list of available channels, storing topics, and refresh the channel list view.
     /// </summary>
     public void SetChannels(List<ChannelDto> channels)
@@ -489,6 +607,30 @@ public sealed class MainWindow : Runnable
             if (!_channelMessages.ContainsKey(ch.Name))
                 _channelMessages[ch.Name] = [];
         }
+        RefreshChannelList();
+    }
+
+    /// <summary>
+    /// Ensure a channel exists in the left panel list (used for private channels joined via /join).
+    /// </summary>
+    public void EnsureChannelInList(string channelName)
+    {
+        if (_channelNames.Contains(channelName))
+            return;
+
+        _channelNames.Add(channelName);
+        if (!_channelMessages.ContainsKey(channelName))
+            _channelMessages[channelName] = [];
+        RefreshChannelList();
+    }
+
+    /// <summary>
+    /// Remove a channel from the left panel list.
+    /// </summary>
+    public void RemoveChannel(string channelName)
+    {
+        _channelNames.Remove(channelName);
+        _channelTopics.Remove(channelName);
         RefreshChannelList();
     }
 
@@ -515,9 +657,9 @@ public sealed class MainWindow : Runnable
     /// </summary>
     public void UpdateStatusBar(string status)
     {
-        var userPart = string.IsNullOrEmpty(_currentUser) ? "" : $" | User: {_currentUser}";
-        var channelPart = string.IsNullOrEmpty(_currentChannel) ? "" : $" | #{_currentChannel}";
-        _statusLabel.Text = $" {status}{userPart}{channelPart}";
+        var userPart = string.IsNullOrEmpty(_currentUser) ? "" : $" \u2502 User: {_currentUser}";
+        var channelPart = string.IsNullOrEmpty(_currentChannel) ? "" : $" \u2502 #{_currentChannel}";
+        _statusLabel.Text = $" v{AppVersion} \u2502 {status}{userPart}{channelPart}";
     }
 
     /// <summary>
@@ -585,10 +727,14 @@ public sealed class MainWindow : Runnable
         _channelTopics.Clear();
         _currentChannel = string.Empty;
         _currentUser = string.Empty;
-        _channelList.SetSource(new ObservableCollection<string>(_channelNames));
+        _channelListSource.Update([], [], string.Empty);
+        _channelList.Source = _channelListSource;
         _chatFrame.Title = "Chat";
         _topicLabel.Visible = false;
         _chatFrame.Y = 1;
+        _usersListSource.Update([]);
+        _usersList.Source = _usersListSource;
+        _usersFrame.Title = "Users";
         RefreshMessages();
     }
 
@@ -640,13 +786,8 @@ public sealed class MainWindow : Runnable
     /// </summary>
     private void RefreshChannelList()
     {
-        var displayNames = _channelNames.Select(name =>
-        {
-            _channelUnread.TryGetValue(name, out var unread);
-            return unread > 0 ? $"#{name} ({unread})" : $"#{name}";
-        }).ToList();
-
-        _channelList.SetSource(new ObservableCollection<string>(displayNames));
+        _channelListSource.Update(_channelNames, _channelUnread, _currentChannel);
+        _channelList.Source = _channelListSource;
 
         // Restore selection to current channel
         var idx = _channelNames.IndexOf(_currentChannel);
@@ -674,10 +815,65 @@ public sealed class MainWindow : Runnable
     }
 
     /// <summary>
+    /// Adjusts widths of chat, topic, and input frames based on users panel visibility.
+    /// </summary>
+    private void UpdateLayout()
+    {
+        var rightMargin = _usersPanelVisible ? UsersPanelWidth : 0;
+        _chatFrame.Width = Dim.Fill(rightMargin);
+        _topicLabel.Width = Dim.Fill(rightMargin);
+        _inputFrame.Width = Dim.Fill(rightMargin);
+        _usersFrame.Visible = _usersPanelVisible;
+        SetNeedsDraw();
+    }
+
+    /// <summary>
+    /// Toggle the online users panel visibility (F2).
+    /// </summary>
+    public void ToggleUsersPanel()
+    {
+        _usersPanelVisible = !_usersPanelVisible;
+        UpdateLayout();
+    }
+
+    /// <summary>
+    /// Update the online users list display.
+    /// </summary>
+    public void UpdateOnlineUsers(List<UserPresenceDto> users)
+    {
+        var displayItems = users.Select(u =>
+        {
+            var statusIcon = u.Status switch
+            {
+                UserStatus.Online => "\u25cf", // ●
+                UserStatus.Away => "\u25cb",   // ○
+                UserStatus.DoNotDisturb => "\u25d0", // ◐
+                UserStatus.Invisible => "\u25cc",    // ◌
+                _ => " "
+            };
+            var name = u.DisplayName ?? u.Username;
+            var roleTag = u.Role switch
+            {
+                ServerRole.Owner => "\u2605", // ★
+                ServerRole.Admin => "\u2666", // ♦
+                ServerRole.Mod => "\u2740",   // ❀
+                _ => ""
+            };
+            var text = $"{statusIcon} {roleTag}{name}";
+            var nameColor = ColorHelper.ParseHexColor(u.NicknameColor);
+            return (text, nameColor);
+        }).ToList();
+
+        _usersListSource.Update(displayItems);
+        _usersList.Source = _usersListSource;
+        _usersFrame.Title = $"Users ({users.Count})";
+    }
+
+    /// <summary>
     /// Format a message DTO into one or more display lines based on its MessageType.
     /// Timestamps are dimmed and sender names are colored.
     /// </summary>
-    private static List<ChatLine> FormatMessage(MessageDto message)
+    private List<ChatLine> FormatMessage(MessageDto message)
     {
         var time = message.SentAt.ToLocalTime().ToString("HH:mm");
         var senderName = message.SenderUsername + ":";
@@ -694,10 +890,10 @@ public sealed class MainWindow : Runnable
                 {
                     foreach (var artLine in message.Content.Split('\n'))
                     {
-                        // Parse ANSI color codes from colored ASCII art
+                        // Parse color tags from colored ASCII art
                         var trimmed = artLine.TrimEnd('\r');
-                        if (trimmed.Contains('\x1b'))
-                            lines.Add(ChatLine.FromAnsi("       " + trimmed));
+                        if (ChatLine.HasColorTags(trimmed))
+                            lines.Add(ChatLine.FromColoredText("       " + trimmed));
                         else
                             lines.Add(new ChatLine($"       {trimmed}"));
                     }
@@ -712,16 +908,41 @@ public sealed class MainWindow : Runnable
 
             case MessageType.Text:
             default:
-                var contentLines = message.Content.Split('\n');
+                var displayContent = EmojiHelper.ReplaceEmoji(message.Content);
+                var contentLines = displayContent.Split('\n');
                 var firstLine = contentLines[0].TrimEnd('\r');
-                lines.Add(BuildChatLine(time, senderName, senderColor, $" {firstLine}"));
+                lines.Add(BuildChatLineWithMentions(time, senderName, senderColor, $" {firstLine}"));
                 // Continuation lines indented to align with first line's content
                 var indent = new string(' ', $"[{time}] {senderName} ".Length);
                 for (int i = 1; i < contentLines.Length; i++)
                 {
-                    lines.Add(new ChatLine($"{indent}{contentLines[i].TrimEnd('\r')}"));
+                    var contText = $"{indent}{contentLines[i].TrimEnd('\r')}";
+                    lines.Add(new ChatLine(ChatColors.SplitMentions(contText)));
+                }
+
+                // Render link embeds if present
+                if (message.Embeds is { Count: > 0 })
+                {
+                    var chatWidth = _lastChatWidth > 0 ? _lastChatWidth : 80;
+                    foreach (var embed in message.Embeds)
+                        lines.AddRange(FormatEmbed(embed, indent, chatWidth));
                 }
                 break;
+        }
+
+        // Tag all lines with the message ID for deletion support
+        foreach (var line in lines)
+            line.MessageId = message.Id;
+
+        // Check for @mention of current user
+        if (!string.IsNullOrEmpty(_currentUser) && message.Type == MessageType.Text)
+        {
+            var pattern = $@"@{Regex.Escape(_currentUser)}\b";
+            if (Regex.IsMatch(message.Content, pattern, RegexOptions.IgnoreCase))
+            {
+                foreach (var line in lines)
+                    line.IsMention = true;
+            }
         }
 
         return lines;
@@ -739,5 +960,99 @@ public sealed class MainWindow : Runnable
             new(suffix, null)
         };
         return new ChatLine(segments);
+    }
+
+    /// <summary>
+    /// Build a chat line with @mention highlighting in the suffix text.
+    /// </summary>
+    private static ChatLine BuildChatLineWithMentions(string time, string senderName, Attribute? senderColor, string suffix)
+    {
+        var segments = new List<ChatSegment>
+        {
+            new($"[{time}] ", ChatColors.TimestampAttr),
+            new(senderName, senderColor),
+        };
+        segments.AddRange(ChatColors.SplitMentions(suffix));
+        return new ChatLine(segments);
+    }
+
+    /// <summary>
+    /// Format a link embed as indented chat lines with a left border bar,
+    /// text at full width, and optional icon below (preview image).
+    /// Each line is pre-wrapped to fit chatWidth so ChatLine.Wrap won't break layout.
+    /// </summary>
+    private static List<ChatLine> FormatEmbed(EmbedDto embed, string indent, int chatWidth)
+    {
+        var lines = new List<ChatLine>();
+        const string border = "\u258f "; // ▏ + space
+        const int borderCols = 2;
+        int indentCols = indent.GetColumns();
+        int textWidth = chatWidth - indentCols - borderCols;
+        if (textWidth < 20) textWidth = 20;
+
+        // Helper: create a bordered text line
+        void AddTextLine(string text, Attribute? color)
+        {
+            lines.Add(new ChatLine(
+            [
+                new ChatSegment(indent, null),
+                new ChatSegment(border, ChatColors.EmbedBorderAttr),
+                new ChatSegment(text, color)
+            ]));
+        }
+
+        // Site name
+        if (!string.IsNullOrWhiteSpace(embed.SiteName))
+            AddTextLine(embed.SiteName, ChatColors.EmbedBorderAttr);
+
+        // Title
+        if (!string.IsNullOrWhiteSpace(embed.Title))
+        {
+            foreach (var wrapped in WordWrap(embed.Title, textWidth))
+                AddTextLine(wrapped, ChatColors.EmbedTitleAttr);
+        }
+
+        // Description (word-wrapped at full available width)
+        if (!string.IsNullOrWhiteSpace(embed.Description))
+        {
+            foreach (var wrapped in WordWrap(embed.Description, textWidth))
+                AddTextLine(wrapped, ChatColors.EmbedDescAttr);
+        }
+
+        return lines;
+    }
+
+    /// <summary>
+    /// Simple word-wrap: splits text into lines that fit within maxCols display columns.
+    /// </summary>
+    private static List<string> WordWrap(string text, int maxCols)
+    {
+        if (maxCols <= 0)
+            return [text];
+
+        var result = new List<string>();
+        var words = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var currentLine = "";
+
+        foreach (var word in words)
+        {
+            var candidate = currentLine.Length == 0 ? word : currentLine + " " + word;
+            if (candidate.GetColumns() <= maxCols)
+            {
+                currentLine = candidate;
+            }
+            else
+            {
+                if (currentLine.Length > 0)
+                    result.Add(currentLine);
+                // If a single word exceeds maxCols, just add it as-is
+                currentLine = word;
+            }
+        }
+
+        if (currentLine.Length > 0)
+            result.Add(currentLine);
+
+        return result;
     }
 }

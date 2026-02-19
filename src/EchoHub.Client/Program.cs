@@ -4,6 +4,8 @@ using EchoHub.Client.Themes;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using Terminal.Gui.App;
+using Terminal.Gui.Drawing;
+
 
 var appSettingsPath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
 if (!File.Exists(appSettingsPath))

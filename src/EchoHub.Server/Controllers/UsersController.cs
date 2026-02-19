@@ -24,6 +24,7 @@ public class UsersController : ControllerBase
         _db = db;
         _asciiService = asciiService;
     }
+
     [HttpGet("{username}/profile")]
     public async Task<IActionResult> GetProfile(string username)
     {
@@ -120,6 +121,7 @@ public class UsersController : ControllerBase
         user.AvatarAscii,
         user.Status,
         user.StatusMessage,
+        user.Role,
         user.CreatedAt,
         user.LastSeenAt);
 }

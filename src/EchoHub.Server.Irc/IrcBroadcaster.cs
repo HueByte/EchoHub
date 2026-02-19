@@ -62,6 +62,41 @@ public class IrcBroadcaster : IChatBroadcaster
         return Task.CompletedTask;
     }
 
+    public async Task SendUserKickedAsync(string channelName, string username, string? reason)
+    {
+        var reasonText = reason is not null ? $" :{reason}" : "";
+        foreach (var conn in _gateway.GetConnectionsInChannel(channelName))
+        {
+            await conn.SendAsync($":{_gateway.Options.ServerName} KICK #{channelName} {username}{reasonText}");
+        }
+    }
+
+    public async Task SendUserBannedAsync(string username, string? reason)
+    {
+        var reasonText = reason ?? "You have been banned.";
+        foreach (var conn in _gateway.GetAllConnections())
+        {
+            if (conn.Nickname == username)
+                await conn.SendAsync($":{_gateway.Options.ServerName} NOTICE {username} :You have been banned: {reasonText}");
+        }
+    }
+
+    public async Task SendMessageDeletedAsync(string channelName, Guid messageId)
+    {
+        foreach (var conn in _gateway.GetConnectionsInChannel(channelName))
+        {
+            await conn.SendAsync($":{_gateway.Options.ServerName} NOTICE {conn.Nickname ?? "*"} :Message {messageId} was deleted in #{channelName}");
+        }
+    }
+
+    public async Task SendChannelNukedAsync(string channelName)
+    {
+        foreach (var conn in _gateway.GetConnectionsInChannel(channelName))
+        {
+            await conn.SendAsync($":{_gateway.Options.ServerName} NOTICE {conn.Nickname ?? "*"} :All messages in #{channelName} have been cleared");
+        }
+    }
+
     public async Task SendErrorAsync(string connectionId, string message)
     {
         if (!connectionId.StartsWith("irc-")) return;
@@ -69,6 +104,24 @@ public class IrcBroadcaster : IChatBroadcaster
         if (_gateway.Connections.TryGetValue(connectionId, out var conn))
         {
             await conn.SendAsync($":{_gateway.Options.ServerName} NOTICE {conn.Nickname ?? "*"} :{message}");
+        }
+    }
+
+    public async Task ForceDisconnectUserAsync(List<string> connectionIds, string reason)
+    {
+        foreach (var connId in connectionIds)
+        {
+            if (!connId.StartsWith("irc-")) continue;
+
+            if (_gateway.Connections.TryGetValue(connId, out var conn))
+            {
+                try
+                {
+                    await conn.SendAsync($"ERROR :Closing Link: {reason}");
+                    await conn.DisposeAsync();
+                }
+                catch { /* connection may already be closed */ }
+            }
         }
     }
 }

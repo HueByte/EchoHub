@@ -37,6 +37,7 @@ public class JwtTokenService
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new("username", user.Username),
             new("display_name", user.DisplayName ?? user.Username),
+            new("role", user.Role.ToString()),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         ];
 
