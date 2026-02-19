@@ -141,17 +141,24 @@ public sealed class IrcGatewayService : BackgroundService
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
+        // Cancel ExecuteAsync first so listeners stop accepting
+        await base.StopAsync(cancellationToken);
+
+        // Force-close any remaining client connections
         foreach (var (_, conn) in _connections)
         {
             try
             {
-                await conn.SendAsync("ERROR :Server shutting down");
-                await conn.DisposeAsync();
+                await conn.SendAsync("ERROR :Server shutting down")
+                    .WaitAsync(TimeSpan.FromSeconds(2));
             }
             catch { }
+            finally
+            {
+                try { await conn.DisposeAsync(); }
+                catch { }
+            }
         }
         _connections.Clear();
-
-        await base.StopAsync(cancellationToken);
     }
 }
