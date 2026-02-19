@@ -169,7 +169,9 @@ while (true)
         await using var app = builder.Build();
 
         // ── Database initialization ──────────────────────────────────────────
+        Console.Error.WriteLine("[DIAG] Database initialization starting...");
         await DatabaseSetup.InitializeAsync(app.Services);
+        Console.Error.WriteLine("[DIAG] Database initialization complete.");
 
         // ── Middleware ────────────────────────────────────────────────────────
         app.UseCors();
@@ -181,7 +183,9 @@ while (true)
         app.MapControllers();
         app.MapHub<ChatHub>(HubConstants.ChatHubPath);
 
+        Console.Error.WriteLine("[DIAG] Calling app.RunAsync()...");
         await app.RunAsync();
+        Console.Error.WriteLine("[DIAG] app.RunAsync() returned.");
 
         // Graceful shutdown (Ctrl+C) — exit the loop
         Log.Information("Server shut down gracefully");
@@ -189,6 +193,8 @@ while (true)
     }
     catch (Exception ex)
     {
+        Console.Error.WriteLine($"[DIAG] Top-level exception: {ex}");
+
         var uptime = DateTimeOffset.UtcNow - startTime;
 
         // If server ran for over 60 seconds, it's a runtime crash — reset failure count
@@ -211,4 +217,6 @@ while (true)
     }
 }
 
+Console.Error.WriteLine("[DIAG] Calling Log.CloseAndFlush()...");
 Log.CloseAndFlush();
+Console.Error.WriteLine("[DIAG] Log.CloseAndFlush() done. Exiting process.");

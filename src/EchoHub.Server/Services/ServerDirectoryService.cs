@@ -17,10 +17,13 @@ public sealed class ServerDirectoryService(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        Console.Error.WriteLine("[DIAG] ServerDirectoryService.ExecuteAsync entered.");
         // Yield to let the host finish starting before we log or connect
         await Task.Yield();
+        Console.Error.WriteLine("[DIAG] ServerDirectoryService.ExecuteAsync resumed after Task.Yield().");
 
         var isPublic = configuration.GetValue<bool>("Server:PublicServer");
+        Console.Error.WriteLine($"[DIAG] ServerDirectoryService: PublicServer={isPublic}");
         if (!isPublic)
         {
             logger.LogInformation("PublicServer is disabled — not registering with directory");
@@ -28,6 +31,7 @@ public sealed class ServerDirectoryService(
         }
 
         var host = configuration["Server:PublicHost"];
+        Console.Error.WriteLine($"[DIAG] ServerDirectoryService: PublicHost={host}");
 
         if (string.IsNullOrWhiteSpace(host))
         {
@@ -48,6 +52,7 @@ public sealed class ServerDirectoryService(
 
             try
             {
+                Console.Error.WriteLine("[DIAG] ServerDirectoryService: Building new connection, entering try block.");
                 var connectionPermanentlyClosed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 connection.Reconnected += async _ =>
@@ -69,9 +74,14 @@ public sealed class ServerDirectoryService(
                 };
 
                 // Connect with retry
+                Console.Error.WriteLine("[DIAG] ServerDirectoryService: Calling ConnectWithRetryAsync...");
                 if (!await ConnectWithRetryAsync(connection, stoppingToken))
+                {
+                    Console.Error.WriteLine("[DIAG] ServerDirectoryService: ConnectWithRetryAsync returned false (cancelled).");
                     return;
+                }
 
+                Console.Error.WriteLine("[DIAG] ServerDirectoryService: Connected successfully!");
                 logger.LogInformation("Successfully connected to EchoHubSpace API at {Url}", DirectoryHubUrl);
                 await RegisterAsync(serverName, description, host);
 
@@ -188,20 +198,25 @@ public sealed class ServerDirectoryService(
 
     private static async Task DisposeConnectionAsync(HubConnection connection)
     {
+        Console.Error.WriteLine("[DIAG] ServerDirectoryService.DisposeConnectionAsync entered.");
         try
         {
             await connection.DisposeAsync()
                 .AsTask().WaitAsync(TimeSpan.FromSeconds(3));
+            Console.Error.WriteLine("[DIAG] ServerDirectoryService.DisposeConnectionAsync completed normally.");
         }
         catch
         {
+            Console.Error.WriteLine("[DIAG] ServerDirectoryService.DisposeConnectionAsync timed out or failed (3s).");
             // Don't let a slow dispose block shutdown
         }
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
+        Console.Error.WriteLine("[DIAG] ServerDirectoryService.StopAsync entered.");
         await base.StopAsync(cancellationToken);
+        Console.Error.WriteLine("[DIAG] ServerDirectoryService.StopAsync: base.StopAsync returned.");
         _connection = null;
     }
 
