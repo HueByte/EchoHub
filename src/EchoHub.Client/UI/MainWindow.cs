@@ -40,7 +40,7 @@ public sealed class MainWindow : Runnable
     // Cached Key constants — compare via .KeyCode to avoid Key.Equals (which also checks Handled)
     private static readonly Key EnterKey = Key.Enter;
     private static readonly Key NewlineKey = Key.N.WithCtrl;
-    private static readonly Key CtrlCKey = Key.C.WithCtrl;
+    private static readonly Key AltQKey = Key.Q.WithAlt;
     private static readonly Key TabKey = Key.Tab;
 
     // Available slash commands for Tab autocomplete
@@ -240,7 +240,7 @@ public sealed class MainWindow : Runnable
         _messageList.ViewportChanged += (_, _) => OnChatViewportChanged();
         _chatFrame.ViewportChanged += (_, _) => OnChatViewportChanged();
 
-        // Window-level key handling for Ctrl+C (quit), F2 (toggle users panel)
+        // Window-level key handling for Alt+Q (quit), F2 (toggle users panel)
         KeyDown += OnWindowKeyDown;
     }
 
@@ -379,7 +379,7 @@ public sealed class MainWindow : Runnable
             }
             e.Handled = true;
         }
-        else if (e.KeyCode == CtrlCKey.KeyCode)
+        else if (e.KeyCode == AltQKey.KeyCode)
         {
             _app.RequestStop();
             e.Handled = true;
@@ -432,7 +432,7 @@ public sealed class MainWindow : Runnable
 
     private void OnWindowKeyDown(object? sender, Key e)
     {
-        if (e.KeyCode == CtrlCKey.KeyCode)
+        if (e.KeyCode == AltQKey.KeyCode)
         {
             _app.RequestStop();
             e.Handled = true;
