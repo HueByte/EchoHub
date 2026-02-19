@@ -136,20 +136,8 @@ public class CommandHandler
         if (string.IsNullOrWhiteSpace(args))
             return new CommandResult(true, "Usage: /send <filepath or URL> [-s|-m|-l]", IsError: true);
 
-        // Parse optional size flag (-s, -m, -l)
-        string? size = null;
-        var parts = args.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        var targetParts = new List<string>();
-
-        foreach (var part in parts)
-        {
-            if (part is "-s" or "-m" or "-l")
-                size = part[1..]; // "s", "m", or "l"
-            else
-                targetParts.Add(part);
-        }
-
-        var target = string.Join(' ', targetParts).Trim('"');
+        // Extract optional size flag from end or start, respecting quoted paths
+        var (target, size) = ParsePathAndSizeFlag(args);
 
         if (string.IsNullOrWhiteSpace(target))
             return new CommandResult(true, "Usage: /send <filepath or URL> [-s|-m|-l]", IsError: true);
@@ -186,7 +174,7 @@ public class CommandHandler
         if (string.IsNullOrWhiteSpace(args))
             return new CommandResult(true, "Usage: /avatar <URL or filepath>", IsError: true);
 
-        var target = args.Trim().Trim('"');
+        var target = StripQuotes(args.Trim());
 
         if (OnSetAvatar is not null)
             await OnSetAvatar(target);
@@ -360,6 +348,51 @@ public class CommandHandler
               /nuke                                - Clear channel history (Mod+)
               /quit                                - Exit the app
             """);
+    }
+
+    /// <summary>
+    /// Extract a file path (possibly quoted) and an optional size flag (-s, -m, -l).
+    /// The flag can appear before or after the path.
+    /// </summary>
+    private static (string Path, string? Size) ParsePathAndSizeFlag(string args)
+    {
+        var trimmed = args.Trim();
+        string? size = null;
+
+        // Check for flag at the end: "path" -m  or  path -m
+        if (trimmed.Length > 3)
+        {
+            var suffix = trimmed[^2..];
+            if (suffix is "-s" or "-m" or "-l" && trimmed[^3] == ' ')
+            {
+                size = suffix[1..];
+                trimmed = trimmed[..^3].TrimEnd();
+            }
+        }
+
+        // Check for flag at the start: -m "path"  or  -m path
+        if (size is null && trimmed.Length > 3)
+        {
+            var prefix = trimmed[..2];
+            if (prefix is "-s" or "-m" or "-l" && trimmed[2] == ' ')
+            {
+                size = prefix[1..];
+                trimmed = trimmed[3..].TrimStart();
+            }
+        }
+
+        return (StripQuotes(trimmed), size);
+    }
+
+    /// <summary>
+    /// Remove matching surrounding quotes (double or single) from a string.
+    /// </summary>
+    private static string StripQuotes(string s)
+    {
+        if (s.Length >= 2 &&
+            ((s[0] == '"' && s[^1] == '"') || (s[0] == '\'' && s[^1] == '\'')))
+            return s[1..^1];
+        return s;
     }
 
     private static bool IsValidHex(string s) =>

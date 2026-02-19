@@ -140,12 +140,20 @@ public sealed class ProfileViewDialog
         dialog.Add(bioView);
         row += 3;
 
-        // ASCII Avatar
+        // ASCII Avatar — render with color tags
         if (!string.IsNullOrWhiteSpace(profile.AvatarAscii))
         {
             row++;
-            var avatarLines = profile.AvatarAscii.Split('\n').Length;
-            var avatarHeight = Math.Min(avatarLines + 2, 6);
+            var rawLines = profile.AvatarAscii.Split('\n');
+            var avatarSource = new ChatListSource();
+            foreach (var line in rawLines)
+            {
+                avatarSource.Add(ChatLine.HasColorTags(line)
+                    ? ChatLine.FromColoredText(line)
+                    : new ChatLine(line));
+            }
+
+            var avatarHeight = Math.Min(rawLines.Length + 2, 24);
             var avatarFrame = new FrameView
             {
                 Title = "Avatar",
@@ -154,9 +162,22 @@ public sealed class ProfileViewDialog
                 Width = Dim.Fill(2),
                 Height = avatarHeight
             };
-            avatarFrame.Add(new Label { Text = profile.AvatarAscii, X = 0, Y = 0 });
+            var avatarList = new ListView
+            {
+                X = 0,
+                Y = 0,
+                Width = Dim.Fill(),
+                Height = Dim.Fill(),
+                Source = avatarSource
+            };
+            avatarFrame.Add(avatarList);
             dialog.Add(avatarFrame);
-            // Grow dialog to fit avatar
+
+            // Grow dialog to fit avatar + widen for art
+            var artWidth = rawLines.Max(l => ChatLine.HasColorTags(l)
+                ? ChatLine.FromColoredText(l).TextLength
+                : l.Length);
+            dialog.Width = Math.Max(50, artWidth + 6);
             dialog.Height = row + avatarHeight + 4;
         }
 
