@@ -90,22 +90,17 @@ public partial class ChatLine
     }
 
     /// <summary>
-    /// Returns true if a line contains color tags (new format or legacy ANSI).
+    /// Returns true if a line contains printable color tags.
     /// </summary>
     public static bool HasColorTags(string text) =>
-        text.Contains("{F:") || text.Contains("{B:") || text.Contains("{X}") || text.Contains('\x1b');
+        text.Contains("{F:") || text.Contains("{B:") || text.Contains("{X}");
 
     /// <summary>
-    /// Parse a string containing color tags into colored segments.
-    /// Supports the new printable format ({F:RRGGBB}, {B:RRGGBB}, {X})
-    /// and legacy ANSI format (\x1b[38;2;R;G;Bm, \x1b[48;2;R;G;Bm, \x1b[0m).
+    /// Parse a string containing printable color tags into colored segments.
+    /// Format: {F:RRGGBB} (foreground), {B:RRGGBB} (background), {X} (reset).
     /// </summary>
     public static ChatLine FromColoredText(string text, Attribute? defaultAttr = null)
     {
-        // Detect which format is used and pick the right regex
-        var regex = text.Contains('\x1b') ? AnsiColorRegex() : ColorTagRegex();
-        bool isAnsi = text.Contains('\x1b');
-
         var segments = new List<ChatSegment>();
         int lastIndex = 0;
         Color? currentFg = null;
@@ -121,7 +116,7 @@ public partial class ChatLine
             return new Attribute(fg, bg);
         }
 
-        foreach (Match match in regex.Matches(text))
+        foreach (Match match in ColorTagRegex().Matches(text))
         {
             if (match.Index > lastIndex)
             {
@@ -130,45 +125,22 @@ public partial class ChatLine
                     segments.Add(new ChatSegment(t, BuildAttr()));
             }
 
-            if (isAnsi)
+            if (match.Groups[1].Success)
             {
-                // Legacy ANSI format
-                if (match.Groups[1].Value == "0")
-                {
-                    currentFg = null;
-                    currentBg = null;
-                }
-                else if (match.Groups[2].Success)
-                {
-                    var r = int.Parse(match.Groups[3].Value);
-                    var g = int.Parse(match.Groups[4].Value);
-                    var b = int.Parse(match.Groups[5].Value);
-                    if (match.Groups[2].Value == "38;2")
-                        currentFg = new Color(r, g, b);
-                    else
-                        currentBg = new Color(r, g, b);
-                }
+                // Reset {X}
+                currentFg = null;
+                currentBg = null;
             }
-            else
+            else if (match.Groups[2].Success)
             {
-                // New printable tag format: {F:RRGGBB}, {B:RRGGBB}, {X}
-                if (match.Groups[6].Success)
-                {
-                    // Reset {X}
-                    currentFg = null;
-                    currentBg = null;
-                }
-                else if (match.Groups[7].Success)
-                {
-                    var hex = match.Groups[8].Value;
-                    var r = Convert.ToInt32(hex[..2], 16);
-                    var g = Convert.ToInt32(hex[2..4], 16);
-                    var b = Convert.ToInt32(hex[4..6], 16);
-                    if (match.Groups[7].Value == "F")
-                        currentFg = new Color(r, g, b);
-                    else
-                        currentBg = new Color(r, g, b);
-                }
+                var hex = match.Groups[3].Value;
+                var r = Convert.ToInt32(hex[..2], 16);
+                var g = Convert.ToInt32(hex[2..4], 16);
+                var b = Convert.ToInt32(hex[4..6], 16);
+                if (match.Groups[2].Value == "F")
+                    currentFg = new Color(r, g, b);
+                else
+                    currentBg = new Color(r, g, b);
             }
 
             lastIndex = match.Index + match.Length;
@@ -184,11 +156,7 @@ public partial class ChatLine
         return segments.Count > 0 ? new ChatLine(segments) : new ChatLine("");
     }
 
-    // Legacy: \x1b[0m, \x1b[38;2;R;G;Bm, \x1b[48;2;R;G;Bm
-    [GeneratedRegex(@"\x1b\[(?:(0)|(?:(38;2|48;2);(\d{1,3});(\d{1,3});(\d{1,3})))m")]
-    private static partial Regex AnsiColorRegex();
-
-    // New: {X} (reset), {F:RRGGBB} (foreground), {B:RRGGBB} (background)
+    // {X} (reset), {F:RRGGBB} (foreground), {B:RRGGBB} (background)
     [GeneratedRegex(@"\{(?:(X)|(?:(F|B):([0-9A-Fa-f]{6})))\}")]
     private static partial Regex ColorTagRegex();
 }
