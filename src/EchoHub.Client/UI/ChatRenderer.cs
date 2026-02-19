@@ -191,6 +191,15 @@ public class ChatListSource : IListDataSource
 }
 
 /// <summary>
+/// Shared color attributes for chat rendering (timestamps, system messages).
+/// </summary>
+public static class ChatColors
+{
+    public static readonly Attribute TimestampAttr = new(Color.DarkGray, Color.Black);
+    public static readonly Attribute SystemAttr = new(new Color(0, 180, 180), Color.Black);
+}
+
+/// <summary>
 /// Helper to parse hex colors to Terminal.Gui Attributes.
 /// </summary>
 public static class ColorHelper

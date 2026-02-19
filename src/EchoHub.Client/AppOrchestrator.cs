@@ -203,7 +203,11 @@ public sealed class AppOrchestrator : IDisposable
             try
             {
                 await _apiClient!.UpdateChannelTopicAsync(channel, topic);
-                InvokeUI(() => _mainWindow.AddSystemMessage(channel, $"Topic set to: {topic}"));
+                InvokeUI(() =>
+                {
+                    _mainWindow.SetChannelTopic(channel, topic);
+                    _mainWindow.AddSystemMessage(channel, $"Topic set to: {topic}");
+                });
             }
             catch (Exception ex)
             {
