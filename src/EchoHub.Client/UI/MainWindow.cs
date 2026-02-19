@@ -7,6 +7,7 @@ using Terminal.Gui.Configuration;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
+using Attribute = Terminal.Gui.Drawing.Attribute;
 
 namespace EchoHub.Client.UI;
 
@@ -29,7 +30,7 @@ public sealed class MainWindow : Runnable
     private static readonly Key CtrlCKey = Key.C.WithCtrl;
 
     private readonly List<string> _channelNames = [];
-    private readonly Dictionary<string, List<string>> _channelMessages = [];
+    private readonly Dictionary<string, List<ChatLine>> _channelMessages = [];
     private string _currentChannel = string.Empty;
     private string _currentUser = string.Empty;
 
@@ -121,7 +122,7 @@ public sealed class MainWindow : Runnable
             Width = Dim.Fill(),
             Height = Dim.Fill()
         };
-        _messageList.SetSource(new ObservableCollection<string>(new List<string>()));
+        _messageList.Source = new ChatListSource();
         _chatFrame.Add(_messageList);
         Add(_chatFrame);
 
@@ -341,7 +342,7 @@ public sealed class MainWindow : Runnable
             messages = [];
             _channelMessages[channelName] = messages;
         }
-        messages.Add(formatted);
+        messages.Add(new ChatLine(formatted));
 
         if (channelName == _currentChannel)
         {
@@ -360,7 +361,7 @@ public sealed class MainWindow : Runnable
             messages = [];
             _channelMessages[channelName] = messages;
         }
-        messages.Add(formatted);
+        messages.Add(new ChatLine(formatted));
 
         if (channelName == _currentChannel)
         {
@@ -454,6 +455,7 @@ public sealed class MainWindow : Runnable
         }
     }
 
+
     /// <summary>
     /// Clear all messages and channels (used on disconnect).
     /// </summary>
@@ -480,38 +482,44 @@ public sealed class MainWindow : Runnable
     {
         if (_channelMessages.TryGetValue(_currentChannel, out var messages))
         {
-            _messageList.SetSource(new ObservableCollection<string>(messages));
+            var source = new ChatListSource();
+            source.AddRange(messages);
+            _messageList.Source = source;
             if (messages.Count > 0)
                 _messageList.SelectedItem = messages.Count - 1;
         }
         else
         {
-            _messageList.SetSource(new ObservableCollection<string>(new List<string>()));
+            _messageList.Source = new ChatListSource();
         }
     }
 
     /// <summary>
     /// Format a message DTO into one or more display lines based on its MessageType.
     /// </summary>
-    private static List<string> FormatMessage(MessageDto message)
+    private static List<ChatLine> FormatMessage(MessageDto message)
     {
         var time = message.SentAt.ToLocalTime().ToString("HH:mm");
-        var sender = message.SenderNicknameColor is not null
-            ? $"<{message.SenderUsername}>"
-            : message.SenderUsername + ":";
+        var senderName = message.SenderUsername + ":";
+        var senderColor = ColorHelper.ParseHexColor(message.SenderNicknameColor);
 
-        var lines = new List<string>();
+        var lines = new List<ChatLine>();
 
         switch (message.Type)
         {
             case MessageType.Image:
-                lines.Add($"[{time}] {sender} [Image]");
+                lines.Add(BuildChatLine($"[{time}] ", senderName, senderColor, " [Image]"));
                 // Content IS the ASCII art — add each line as a separate list item
                 if (!string.IsNullOrWhiteSpace(message.Content))
                 {
                     foreach (var artLine in message.Content.Split('\n'))
                     {
-                        lines.Add($"       {artLine}");
+                        // Parse ANSI color codes from colored ASCII art
+                        var trimmed = artLine.TrimEnd('\r');
+                        if (trimmed.Contains('\x1b'))
+                            lines.Add(ChatLine.FromAnsi("       " + trimmed));
+                        else
+                            lines.Add(new ChatLine($"       {trimmed}"));
                     }
                 }
                 break;
@@ -519,21 +527,41 @@ public sealed class MainWindow : Runnable
             case MessageType.File:
                 var fileName = message.AttachmentFileName ?? "unknown";
                 var fileContent = !string.IsNullOrWhiteSpace(message.Content) ? $" {message.Content}" : "";
-                lines.Add($"[{time}] {sender} [File: {fileName}]{fileContent}");
+                lines.Add(BuildChatLine($"[{time}] ", senderName, senderColor, $" [File: {fileName}]{fileContent}"));
                 break;
 
             case MessageType.Text:
             default:
                 var contentLines = message.Content.Split('\n');
-                lines.Add($"[{time}] {sender} {contentLines[0]}");
+                var firstLine = contentLines[0].TrimEnd('\r');
+                lines.Add(BuildChatLine($"[{time}] ", senderName, senderColor, $" {firstLine}"));
                 // Continuation lines indented to align with first line's content
+                // Prefix is: [HH:mm] + space + senderName + space
+                var indent = new string(' ', $"[{time}] {senderName} ".Length);
                 for (int i = 1; i < contentLines.Length; i++)
                 {
-                    lines.Add($"       {contentLines[i]}");
+                    lines.Add(new ChatLine($"{indent}{contentLines[i].TrimEnd('\r')}"));
                 }
                 break;
         }
 
         return lines;
+    }
+
+    /// <summary>
+    /// Build a chat line with an optionally colored sender name.
+    /// </summary>
+    private static ChatLine BuildChatLine(string prefix, string senderName, Attribute? senderColor, string suffix)
+    {
+        if (senderColor is null)
+            return new ChatLine($"{prefix}{senderName}{suffix}");
+
+        var segments = new List<ChatSegment>
+        {
+            new(prefix, null),
+            new(senderName, senderColor.Value),
+            new(suffix, null)
+        };
+        return new ChatLine(segments);
     }
 }
