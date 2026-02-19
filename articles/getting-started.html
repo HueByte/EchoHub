@@ -91,6 +91,7 @@
 <ul>
 <li><a href="https://dotnet.microsoft.com/download">.NET 10 SDK</a></li>
 </ul>
+<p>Or grab a self-contained binary from <a href="https://github.com/HueByte/EchoHub/releases">Releases</a> -- no runtime needed.</p>
 <h2 id="run-the-server">Run the Server</h2>
 <pre><code class="lang-bash">dotnet run --project src/EchoHub.Server
 </code></pre>
@@ -104,6 +105,24 @@
 <pre><code class="lang-bash">dotnet run --project src/EchoHub.Client
 </code></pre>
 <p>Connect to a server, register an account, and start chatting.</p>
+<h2 id="connect-via-irc">Connect via IRC</h2>
+<p>Enable the IRC gateway in the server's <code>appsettings.json</code>:</p>
+<pre><code class="lang-json">{
+  &quot;Irc&quot;: {
+    &quot;Enabled&quot;: true,
+    &quot;Port&quot;: 6667
+  }
+}
+</code></pre>
+<p>Then connect with any standard IRC client:</p>
+<pre><code class="lang-bash">irssi -c localhost -p 6667 -w &lt;password&gt; -n &lt;username&gt;
+</code></pre>
+<p>IRC users must have an existing EchoHub account. Authentication works via <code>PASS</code>/<code>NICK</code>/<code>USER</code> or SASL PLAIN. Messages flow bidirectionally between IRC and TUI clients.</p>
+<p>For TLS, set <code>TlsEnabled: true</code>, <code>TlsPort: 6697</code>, and provide a PKCS#12 certificate path.</p>
+<p>See the <a href="architecture.html">Architecture</a> page for details on how the IRC gateway integrates with the chat service.</p>
+<h2 id="configuration">Configuration</h2>
+<p>Server configuration is in <code>appsettings.json</code> (auto-generated on first run). See the <a href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/appsettings.example.json">example config</a> for all available options.</p>
+<p>To list your server on the <a href="https://echohub.voidcube.cloud/servers">public directory</a>, set <code>Server:PublicServer</code> to <code>true</code> and <code>Server:PublicHost</code> to your server's public address.</p>
 <h2 id="build-from-source">Build from Source</h2>
 <pre><code class="lang-bash">dotnet build src/EchoHub.slnx
 </code></pre>

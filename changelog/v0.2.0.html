@@ -2,18 +2,18 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Server Articles | EchoHub Documentation </title>
+      <title>v0.2.0 - IRC Gateway | EchoHub Documentation </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Server Articles | EchoHub Documentation ">
+      <meta name="title" content="v0.2.0 - IRC Gateway | EchoHub Documentation ">
       
       
-      <link rel="icon" href="../../images/hue_icon.svg">
-      <link rel="stylesheet" href="../../public/docfx.min.css">
-      <link rel="stylesheet" href="../../public/main.css">
-      <meta name="docfx:navrel" content="../../toc.html">
+      <link rel="icon" href="../images/hue_icon.svg">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
       <meta name="docfx:tocrel" content="toc.html">
       
-      <meta name="docfx:rel" content="../../">
+      <meta name="docfx:rel" content="../">
       
       
       <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/blob/master/docs/#L1">
@@ -30,7 +30,7 @@
       <meta name="loc:copy" content="Copy">
       <meta name="loc:downloadPdf" content="Download PDF">
 
-      <script type="module" src="./../../public/docfx.min.js"></script>
+      <script type="module" src="./../public/docfx.min.js"></script>
 
       <script>
         const theme = localStorage.getItem('theme') || 'auto'
@@ -43,8 +43,8 @@
     <header class="bg-body border-bottom">
       <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
         <div class="container-xxl flex-nowrap">
-          <a class="navbar-brand" href="../../index.html">
-            <img id="logo" class="svg" src="../../images/hue_icon.svg" alt="EchoHub">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/hue_icon.svg" alt="EchoHub">
             EchoHub
           </a>
           <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,18 +85,27 @@
         </div>
 
         <article data-uid="">
-<h1 id="server-articles">Server Articles</h1>
+<h1 id="v020---irc-gateway">v0.2.0 - IRC Gateway</h1>
 
-<p>Articles related to the EchoHub server built with ASP.NET Core.</p>
-<h2 id="topics">Topics</h2>
+<h2 id="features">Features</h2>
 <ul>
-<li>Authentication and JWT tokens</li>
-<li>SignalR hub and real-time messaging</li>
-<li>IRC gateway and protocol bridging</li>
-<li>ChatService and broadcaster pattern</li>
-<li>File upload and validation</li>
-<li>Rate limiting configuration</li>
-<li>Database schema and migrations</li>
+<li><strong>IRC protocol gateway</strong> -- native IRC clients (irssi, WeeChat, HexChat, etc.) can connect to EchoHub servers</li>
+<li><strong>Cross-protocol messaging</strong> -- messages flow bidirectionally between IRC and TUI clients in real time</li>
+<li><strong>SASL PLAIN authentication</strong> -- IRC clients can authenticate via SASL or traditional PASS/NICK/USER</li>
+<li><strong>Full IRC command support</strong> -- JOIN, PART, PRIVMSG, QUIT, NAMES, TOPIC, WHO, WHOIS, AWAY, LIST, MODE, MOTD</li>
+<li><strong>TLS support</strong> -- optional encrypted IRC connections on port 6697</li>
+<li><strong>Image-to-IRC formatting</strong> -- images appear as ASCII art line-by-line with download URLs</li>
+<li><strong>Message splitting</strong> -- long messages automatically split at word boundaries (~400 byte chunks)</li>
+<li><strong>Configurable MOTD</strong> -- server message of the day for IRC clients</li>
+</ul>
+<h2 id="architecture-changes">Architecture Changes</h2>
+<ul>
+<li>Extracted shared business logic from <code>ChatHub</code> into protocol-agnostic <code>IChatService</code></li>
+<li>Introduced <code>IChatBroadcaster</code> pattern for multi-protocol event fan-out</li>
+<li><code>ChatHub</code> refactored to thin adapter delegating to <code>IChatService</code></li>
+<li><code>ChannelsController</code> updated to use <code>IChatService</code> for broadcasts</li>
+<li>New <code>EchoHub.Server.Irc</code> project for clean separation of concerns</li>
+<li><code>IChatService</code> and <code>IChatBroadcaster</code> interfaces live in <code>EchoHub.Core/Contracts</code></li>
 </ul>
 
 </article>

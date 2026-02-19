@@ -159,8 +159,8 @@ public class ChannelsController : ControllerBase</code></pre>
 
   <a id="EchoHub_Server_Controllers_ChannelsController__ctor_" data-uid="EchoHub.Server.Controllers.ChannelsController.#ctor*"></a>
 
-  <h3 id="EchoHub_Server_Controllers_ChannelsController__ctor_EchoHub_Server_Data_EchoHubDbContext_EchoHub_Server_Services_FileStorageService_EchoHub_Server_Services_ImageToAsciiService_System_Net_Http_IHttpClientFactory_Microsoft_AspNetCore_SignalR_IHubContext_EchoHub_Server_Hubs_ChatHub_EchoHub_Core_Contracts_IEchoHubClient__" data-uid="EchoHub.Server.Controllers.ChannelsController.#ctor(EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Services.FileStorageService,EchoHub.Server.Services.ImageToAsciiService,System.Net.Http.IHttpClientFactory,Microsoft.AspNetCore.SignalR.IHubContext{EchoHub.Server.Hubs.ChatHub,EchoHub.Core.Contracts.IEchoHubClient})">
-  ChannelsController(EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IHubContext&lt;ChatHub, IEchoHubClient&gt;)
+  <h3 id="EchoHub_Server_Controllers_ChannelsController__ctor_EchoHub_Server_Data_EchoHubDbContext_EchoHub_Server_Services_FileStorageService_EchoHub_Server_Services_ImageToAsciiService_System_Net_Http_IHttpClientFactory_EchoHub_Core_Contracts_IChatService_" data-uid="EchoHub.Server.Controllers.ChannelsController.#ctor(EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Services.FileStorageService,EchoHub.Server.Services.ImageToAsciiService,System.Net.Http.IHttpClientFactory,EchoHub.Core.Contracts.IChatService)">
+  ChannelsController(EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/ChannelsController.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -168,7 +168,7 @@ public class ChannelsController : ControllerBase</code></pre>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public ChannelsController(EchoHubDbContext db, FileStorageService fileStorage, ImageToAsciiService asciiService, IHttpClientFactory httpClientFactory, IHubContext&lt;ChatHub, IEchoHubClient&gt; hubContext)</code></pre>
+    <pre><code class="lang-csharp hljs">public ChannelsController(EchoHubDbContext db, FileStorageService fileStorage, ImageToAsciiService asciiService, IHttpClientFactory httpClientFactory, IChatService chatService)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -181,7 +181,7 @@ public class ChannelsController : ControllerBase</code></pre>
     <dd></dd>
     <dt><code>httpClientFactory</code> <span class="xref">IHttpClientFactory</span></dt>
     <dd></dd>
-    <dt><code>hubContext</code> <span class="xref">IHubContext</span>&lt;<a class="xref" href="EchoHub.Server.Hubs.ChatHub.html">ChatHub</a>, <a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/Contracts/IEchoHubClient.cs">IEchoHubClient</a>&gt;</dt>
+    <dt><code>chatService</code> <a class="xref" href="../core/EchoHub.Core.Contracts.IChatService.html">IChatService</a></dt>
     <dd></dd>
   </dl>
 

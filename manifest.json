@@ -544,6 +544,48 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Contracts.ChannelListItem.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Contracts.ChannelListItem.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Contracts.ChannelListItem",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Contracts.IChatBroadcaster.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Contracts.IChatBroadcaster.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Contracts.IChatBroadcaster",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Contracts.IChatService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Contracts.IChatService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Contracts.IChatService",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/core/EchoHub.Core.Contracts.IEchoHubClient.yml",
       "output": {
         ".html": {
@@ -950,6 +992,146 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server-irc/EchoHub.Server.Irc.IrcBroadcaster.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server-irc/EchoHub.Server.Irc.IrcBroadcaster.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Irc.IrcBroadcaster",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server-irc/EchoHub.Server.Irc.IrcClientConnection.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server-irc/EchoHub.Server.Irc.IrcClientConnection.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Irc.IrcClientConnection",
+      "Summary": "<p sourcefile=\"_api_meta/server-irc/EchoHub.Server.Irc.IrcClientConnection.yml\" sourcestartlinenumber=\"1\">Manages a single IRC client TCP connection.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server-irc/EchoHub.Server.Irc.IrcCommandHandler.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server-irc/EchoHub.Server.Irc.IrcCommandHandler.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Irc.IrcCommandHandler",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server-irc/EchoHub.Server.Irc.IrcGatewayService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server-irc/EchoHub.Server.Irc.IrcGatewayService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Irc.IrcGatewayService",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server-irc/EchoHub.Server.Irc.IrcMessage.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server-irc/EchoHub.Server.Irc.IrcMessage.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Irc.IrcMessage",
+      "Summary": "<p sourcefile=\"_api_meta/server-irc/EchoHub.Server.Irc.IrcMessage.yml\" sourcestartlinenumber=\"1\">Parsed representation of an IRC protocol line.\nFormat: [:prefix] COMMAND [params...] [:trailing]</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server-irc/EchoHub.Server.Irc.IrcMessageFormatter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server-irc/EchoHub.Server.Irc.IrcMessageFormatter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Irc.IrcMessageFormatter",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server-irc/EchoHub.Server.Irc.IrcNumericReply.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server-irc/EchoHub.Server.Irc.IrcNumericReply.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Irc.IrcNumericReply",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server-irc/EchoHub.Server.Irc.IrcOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server-irc/EchoHub.Server.Irc.IrcOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Irc.IrcOptions",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server-irc/EchoHub.Server.Irc.IrcServiceExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server-irc/EchoHub.Server.Irc.IrcServiceExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Irc.IrcServiceExtensions",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server-irc/EchoHub.Server.Irc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server-irc/EchoHub.Server.Irc.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Irc",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/server/EchoHub.Server.Auth.JwtTokenService.yml",
       "output": {
         ".html": {
@@ -1146,6 +1328,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.ChatService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.ChatService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.ChatService",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/server/EchoHub.Server.Services.FileStorageService.yml",
       "output": {
         ".html": {
@@ -1212,6 +1408,20 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Server.Services.ServerDirectoryService",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.SignalRBroadcaster.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.SignalRBroadcaster.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.SignalRBroadcaster",
       "Summary": null
     },
     {
@@ -1434,6 +1644,16 @@
       "output": {
         ".html": {
           "relative_path": "changelog/v0.1.1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "changelog/v0.2.0.md",
+      "output": {
+        ".html": {
+          "relative_path": "changelog/v0.2.0.html"
         }
       },
       "version": ""

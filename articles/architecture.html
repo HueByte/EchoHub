@@ -89,38 +89,62 @@
 
 <h2 id="overview">Overview</h2>
 <p>EchoHub follows a decentralized model where each server is fully independent. There is no central authority or account federation. Users create one account per server.</p>
+<p>The server exposes two protocol interfaces to the same chat backend:</p>
+<pre><code class="lang-text">IRC Client ──► TCP :6667 ──► IrcGateway ──┐
+                                           ├──► ChatService ──► DB + PresenceTracker
+TUI Client ──► WebSocket ──► ChatHub ─────┘
+</code></pre>
+<p>Both protocols call into a shared <code>IChatService</code> for business logic. Events fan out to all registered <code>IChatBroadcaster</code> implementations (SignalR and IRC).</p>
 <h2 id="components">Components</h2>
 <h3 id="echohubcore">EchoHub.Core</h3>
 <p>Shared library containing:</p>
 <ul>
 <li><strong>Models</strong>: <code>User</code>, <code>Channel</code>, <code>Message</code>, <code>RefreshToken</code></li>
 <li><strong>DTOs</strong>: Record types for API requests/responses</li>
-<li><strong>Contracts</strong>: <code>IEchoHubClient</code> -- the strongly-typed SignalR client interface</li>
+<li><strong>Contracts</strong>: <code>IChatService</code> (protocol-agnostic chat operations), <code>IChatBroadcaster</code> (event fan-out interface), <code>IEchoHubClient</code> (SignalR client interface)</li>
 <li><strong>Constants</strong>: <code>ValidationConstants</code> (shared regex patterns), <code>HubConstants</code></li>
 </ul>
 <h3 id="echohubserver">EchoHub.Server</h3>
 <p>ASP.NET Core web application:</p>
 <ul>
 <li><strong>Controllers</strong>: REST API endpoints for auth, channels, users, files, server info</li>
-<li><strong>Hubs</strong>: SignalR <code>ChatHub</code> for real-time messaging</li>
+<li><strong>Hubs</strong>: SignalR <code>ChatHub</code> -- thin adapter delegating to <code>IChatService</code></li>
 <li><strong>Auth</strong>: JWT token service (15-min access tokens, 30-day refresh tokens)</li>
 <li><strong>Data</strong>: EF Core with SQLite</li>
-<li><strong>Services</strong>: Presence tracking, file storage, image-to-ASCII conversion</li>
+<li><strong>Services</strong>: <code>ChatService</code> (core business logic), <code>SignalRBroadcaster</code>, presence tracking, file storage, image-to-ASCII conversion</li>
 </ul>
+<h3 id="echohubserverirc">EchoHub.Server.Irc</h3>
+<p>IRC protocol gateway (separate project for clean separation of concerns):</p>
+<ul>
+<li><strong>IrcGatewayService</strong>: <code>BackgroundService</code> with TCP listener on configured port(s), optional TLS</li>
+<li><strong>IrcCommandHandler</strong>: Per-client IRC command dispatch -- handles <code>CAP</code>/<code>SASL</code>, <code>NICK</code>/<code>USER</code>/<code>PASS</code>, <code>JOIN</code>/<code>PART</code>/<code>PRIVMSG</code>/<code>QUIT</code>, <code>NAMES</code>/<code>TOPIC</code>/<code>WHO</code>/<code>WHOIS</code>/<code>AWAY</code>/<code>LIST</code>/<code>MODE</code>/<code>MOTD</code></li>
+<li><strong>IrcBroadcaster</strong>: <code>IChatBroadcaster</code> implementation that formats chat events as IRC protocol lines, with echo suppression (IRC convention)</li>
+<li><strong>IrcMessageFormatter</strong>: Converts <code>MessageDto</code> to IRC <code>PRIVMSG</code> lines -- splits long text at word boundaries (~400 byte chunks), sends images as ASCII art line-by-line</li>
+</ul>
+<p>IRC users authenticate with existing EchoHub accounts via <code>PASS</code>/<code>NICK</code>/<code>USER</code> or SASL PLAIN (BCrypt verification against the database).</p>
 <h3 id="echohubclient">EchoHub.Client</h3>
 <p>Terminal.Gui v2 TUI application:</p>
 <ul>
 <li><strong>UI</strong>: Main window, dialogs, chat renderer with ANSI color support</li>
 <li><strong>Services</strong>: API client with automatic token refresh, SignalR connection wrapper</li>
-<li><strong>Themes</strong>: 6 built-in color themes</li>
+<li><strong>Themes</strong>: 13 built-in color themes</li>
 <li><strong>Config</strong>: Client configuration management</li>
 </ul>
 <h2 id="communication">Communication</h2>
 <ul>
-<li>REST API for authentication, profile management, channel CRUD, file uploads</li>
-<li>SignalR WebSocket for real-time messaging and presence updates</li>
+<li><strong>REST API</strong> for authentication, profile management, channel CRUD, file uploads</li>
+<li><strong>SignalR WebSocket</strong> for real-time messaging and presence updates (TUI client)</li>
+<li><strong>IRC TCP</strong> for real-time messaging via standard IRC protocol (IRC clients)</li>
 <li>JWT tokens passed via query string for SignalR authentication</li>
+<li>IRC authentication via PASS/SASL PLAIN against BCrypt password hashes</li>
 </ul>
+<h2 id="broadcaster-pattern">Broadcaster Pattern</h2>
+<p>The <code>IChatBroadcaster</code> interface allows multiple protocols to receive chat events:</p>
+<ul>
+<li><strong>SignalRBroadcaster</strong>: Wraps <code>IHubContext&lt;ChatHub&gt;</code>, filters out IRC connections</li>
+<li><strong>IrcBroadcaster</strong>: Iterates live IRC connections in a channel, formats events as IRC protocol lines</li>
+</ul>
+<p>Both are registered in DI and called by <code>ChatService</code> when events occur. This means a message sent from an IRC client appears in the TUI client, and vice versa.</p>
 
 </article>
 

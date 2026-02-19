@@ -163,8 +163,8 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
 
   <a id="EchoHub_Server_Hubs_ChatHub__ctor_" data-uid="EchoHub.Server.Hubs.ChatHub.#ctor*"></a>
 
-  <h3 id="EchoHub_Server_Hubs_ChatHub__ctor_EchoHub_Server_Data_EchoHubDbContext_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Hubs_ChatHub__EchoHub_Server_Services_PresenceTracker_" data-uid="EchoHub.Server.Hubs.ChatHub.#ctor(EchoHub.Server.Data.EchoHubDbContext,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Hubs.ChatHub},EchoHub.Server.Services.PresenceTracker)">
-  ChatHub(EchoHubDbContext, ILogger&lt;ChatHub&gt;, PresenceTracker)
+  <h3 id="EchoHub_Server_Hubs_ChatHub__ctor_EchoHub_Core_Contracts_IChatService_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Hubs_ChatHub__" data-uid="EchoHub.Server.Hubs.ChatHub.#ctor(EchoHub.Core.Contracts.IChatService,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Hubs.ChatHub})">
+  ChatHub(IChatService, ILogger&lt;ChatHub&gt;)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Hubs/ChatHub.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -172,16 +172,14 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public ChatHub(EchoHubDbContext db, ILogger&lt;ChatHub&gt; logger, PresenceTracker presenceTracker)</code></pre>
+    <pre><code class="lang-csharp hljs">public ChatHub(IChatService chatService, ILogger&lt;ChatHub&gt; logger)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
-    <dt><code>db</code> <a class="xref" href="EchoHub.Server.Data.EchoHubDbContext.html">EchoHubDbContext</a></dt>
+    <dt><code>chatService</code> <a class="xref" href="../core/EchoHub.Core.Contracts.IChatService.html">IChatService</a></dt>
     <dd></dd>
     <dt><code>logger</code> <span class="xref">ILogger</span>&lt;<a class="xref" href="EchoHub.Server.Hubs.ChatHub.html">ChatHub</a>&gt;</dt>
-    <dd></dd>
-    <dt><code>presenceTracker</code> <a class="xref" href="EchoHub.Server.Services.PresenceTracker.html">PresenceTracker</a></dt>
     <dd></dd>
   </dl>
 
