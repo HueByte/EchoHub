@@ -7,16 +7,16 @@
       <meta name="title" content="Class ChatHub | EchoHub Documentation ">
       
       
-      <link rel="icon" href="../../favicon.ico">
+      <link rel="icon" href="../../images/hue_icon.svg">
       <link rel="stylesheet" href="../../public/docfx.min.css">
       <link rel="stylesheet" href="../../public/main.css">
       <meta name="docfx:navrel" content="../../toc.html">
-      <meta name="docfx:tocrel" content="toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
       
       <meta name="docfx:rel" content="../../">
       
       
-      
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/new/master/apiSpec/new?filename=EchoHub_Server_Hubs_ChatHub.md&amp;value=---%0Auid%3A%20EchoHub.Server.Hubs.ChatHub%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -44,7 +44,7 @@
       <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
         <div class="container-xxl flex-nowrap">
           <a class="navbar-brand" href="../../index.html">
-            <img id="logo" class="svg" src="../../logo.svg" alt="EchoHub">
+            <img id="logo" class="svg" src="../../images/hue_icon.svg" alt="EchoHub">
             EchoHub
           </a>
           <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
@@ -112,8 +112,8 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
     <dt>Inheritance</dt>
     <dd>
       <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
-      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.signalr.hub">Hub</a></div>
-      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.signalr.hub-1">Hub</a>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/Contracts/IEchoHubClient.cs">IEchoHubClient</a>&gt;</div>
+      <div><span class="xref">Hub</span></div>
+      <div><span class="xref">Hub</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/Contracts/IEchoHubClient.cs">IEchoHubClient</a>&gt;</div>
       <div><span class="xref">ChatHub</span></div>
     </dd>
   </dl>
@@ -129,21 +129,6 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
   <dl class="typelist inheritedMembers">
     <dt>Inherited Members</dt>
     <dd>
-    <div>
-      <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.signalr.hub-1.clients">Hub&lt;IEchoHubClient&gt;.Clients</a>
-    </div>
-    <div>
-      <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.signalr.hub.dispose#microsoft-aspnetcore-signalr-hub-dispose(system-boolean)">Hub.Dispose(bool)</a>
-    </div>
-    <div>
-      <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.signalr.hub.dispose#microsoft-aspnetcore-signalr-hub-dispose">Hub.Dispose()</a>
-    </div>
-    <div>
-      <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.signalr.hub.context">Hub.Context</a>
-    </div>
-    <div>
-      <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.signalr.hub.groups">Hub.Groups</a>
-    </div>
     <div>
       <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
     </div>
@@ -194,7 +179,7 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
   <dl class="parameters">
     <dt><code>db</code> <a class="xref" href="EchoHub.Server.Data.EchoHubDbContext.html">EchoHubDbContext</a></dt>
     <dd></dd>
-    <dt><code>logger</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1">ILogger</a>&lt;<a class="xref" href="EchoHub.Server.Hubs.ChatHub.html">ChatHub</a>&gt;</dt>
+    <dt><code>logger</code> <span class="xref">ILogger</span>&lt;<a class="xref" href="EchoHub.Server.Hubs.ChatHub.html">ChatHub</a>&gt;</dt>
     <dd></dd>
     <dt><code>presenceTracker</code> <a class="xref" href="EchoHub.Server.Services.PresenceTracker.html">PresenceTracker</a></dt>
     <dd></dd>
@@ -239,7 +224,7 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs">MessageDto</a>&gt;&gt;</dt>
+    <dt><span class="xref">Task</span>&lt;<span class="xref">List</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs">MessageDto</a>&gt;&gt;</dt>
     <dd></dd>
   </dl>
 
@@ -275,7 +260,7 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ProfileDtos.cs">UserPresenceDto</a>&gt;&gt;</dt>
+    <dt><span class="xref">Task</span>&lt;<span class="xref">List</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ProfileDtos.cs">UserPresenceDto</a>&gt;&gt;</dt>
     <dd></dd>
   </dl>
 
@@ -311,7 +296,7 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs">MessageDto</a>&gt;&gt;</dt>
+    <dt><span class="xref">Task</span>&lt;<span class="xref">List</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs">MessageDto</a>&gt;&gt;</dt>
     <dd></dd>
   </dl>
 
@@ -347,7 +332,7 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dt><span class="xref">Task</span></dt>
     <dd></dd>
   </dl>
 
@@ -378,7 +363,7 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dt><span class="xref">Task</span></dt>
     <dd></dd>
   </dl>
 
@@ -414,7 +399,7 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dt><span class="xref">Task</span></dt>
     <dd></dd>
   </dl>
 
@@ -452,7 +437,7 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dt><span class="xref">Task</span></dt>
     <dd></dd>
   </dl>
 
@@ -490,7 +475,7 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dt><span class="xref">Task</span></dt>
     <dd></dd>
   </dl>
 
@@ -524,7 +509,7 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
     <footer class="border-top text-secondary">
       <div class="container-xxl">
         <div class="flex-fill">
-          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a><span class='footer-sep'>&middot;</span><span class='footer-credit'>Built with <a href='https://dotnet.github.io/docfx'>DocFX</a></span></div></div>
         </div>
       </div>
     </footer>

@@ -7,16 +7,16 @@
       <meta name="title" content="Class ServerDirectoryService | EchoHub Documentation ">
       
       
-      <link rel="icon" href="../../favicon.ico">
+      <link rel="icon" href="../../images/hue_icon.svg">
       <link rel="stylesheet" href="../../public/docfx.min.css">
       <link rel="stylesheet" href="../../public/main.css">
       <meta name="docfx:navrel" content="../../toc.html">
-      <meta name="docfx:tocrel" content="toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
       
       <meta name="docfx:rel" content="../../">
       
       
-      
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/new/master/apiSpec/new?filename=EchoHub_Server_Services_ServerDirectoryService.md&amp;value=---%0Auid%3A%20EchoHub.Server.Services.ServerDirectoryService%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -44,7 +44,7 @@
       <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
         <div class="container-xxl flex-nowrap">
           <a class="navbar-brand" href="../../index.html">
-            <img id="logo" class="svg" src="../../logo.svg" alt="EchoHub">
+            <img id="logo" class="svg" src="../../images/hue_icon.svg" alt="EchoHub">
             EchoHub
           </a>
           <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
@@ -101,7 +101,7 @@ Class ServerDirectoryService  <a class="header-action link-secondary" title="Vie
   <div class="markdown conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public sealed class ServerDirectoryService : BackgroundService, IHostedService, IDisposable</code></pre>
+    <pre><code class="lang-csharp hljs">public sealed class ServerDirectoryService : BackgroundService, IDisposable</code></pre>
   </div>
 
 
@@ -111,7 +111,7 @@ Class ServerDirectoryService  <a class="header-action link-secondary" title="Vie
     <dt>Inheritance</dt>
     <dd>
       <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
-      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice">BackgroundService</a></div>
+      <div><span class="xref">BackgroundService</span></div>
       <div><span class="xref">ServerDirectoryService</span></div>
     </dd>
   </dl>
@@ -119,7 +119,6 @@ Class ServerDirectoryService  <a class="header-action link-secondary" title="Vie
   <dl class="typelist implements">
     <dt>Implements</dt>
     <dd>
-      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.ihostedservice">IHostedService</a></div>
       <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
     </dd>
   </dl>
@@ -128,15 +127,6 @@ Class ServerDirectoryService  <a class="header-action link-secondary" title="Vie
   <dl class="typelist inheritedMembers">
     <dt>Inherited Members</dt>
     <dd>
-    <div>
-      <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.startasync">BackgroundService.StartAsync(CancellationToken)</a>
-    </div>
-    <div>
-      <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.dispose">BackgroundService.Dispose()</a>
-    </div>
-    <div>
-      <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.backgroundservice.executetask">BackgroundService.ExecuteTask</a>
-    </div>
     <div>
       <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
     </div>
@@ -182,11 +172,11 @@ Class ServerDirectoryService  <a class="header-action link-secondary" title="Vie
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
-    <dt><code>configuration</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration.iconfiguration">IConfiguration</a></dt>
+    <dt><code>configuration</code> <span class="xref">IConfiguration</span></dt>
     <dd></dd>
     <dt><code>presenceTracker</code> <a class="xref" href="EchoHub.Server.Services.PresenceTracker.html">PresenceTracker</a></dt>
     <dd></dd>
-    <dt><code>logger</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1">ILogger</a>&lt;<a class="xref" href="EchoHub.Server.Services.ServerDirectoryService.html">ServerDirectoryService</a>&gt;</dt>
+    <dt><code>logger</code> <span class="xref">ILogger</span>&lt;<a class="xref" href="EchoHub.Server.Services.ServerDirectoryService.html">ServerDirectoryService</a>&gt;</dt>
     <dd></dd>
   </dl>
 
@@ -221,13 +211,13 @@ Class ServerDirectoryService  <a class="header-action link-secondary" title="Vie
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
-    <dt><code>stoppingToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dt><code>stoppingToken</code> <span class="xref">CancellationToken</span></dt>
     <dd></dd>
   </dl>
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dt><span class="xref">Task</span></dt>
     <dd></dd>
   </dl>
 
@@ -257,13 +247,13 @@ Class ServerDirectoryService  <a class="header-action link-secondary" title="Vie
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
-    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dt><code>cancellationToken</code> <span class="xref">CancellationToken</span></dt>
     <dd></dd>
   </dl>
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dt><span class="xref">Task</span></dt>
     <dd></dd>
   </dl>
 
@@ -297,7 +287,7 @@ Class ServerDirectoryService  <a class="header-action link-secondary" title="Vie
     <footer class="border-top text-secondary">
       <div class="container-xxl">
         <div class="flex-fill">
-          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a><span class='footer-sep'>&middot;</span><span class='footer-credit'>Built with <a href='https://dotnet.github.io/docfx'>DocFX</a></span></div></div>
         </div>
       </div>
     </footer>

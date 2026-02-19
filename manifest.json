@@ -12,7 +12,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.AppOrchestrator.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.AppOrchestrator.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.AppOrchestrator.html"
@@ -22,11 +22,11 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Client.AppOrchestrator",
-      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.AppOrchestrator.yml\" sourcestartlinenumber=\"1\">Central orchestrator for the EchoHub TUI client.\nOwns session state and wires UI events to service calls.</p>\n"
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.AppOrchestrator.yml\" sourcestartlinenumber=\"1\">Central orchestrator for the EchoHub TUI client.\nOwns session state and wires UI events to service calls.</p>\n"
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.AsyncRunner.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.AsyncRunner.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.AsyncRunner.html"
@@ -36,11 +36,11 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Client.AsyncRunner",
-      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.AsyncRunner.yml\" sourcestartlinenumber=\"1\">Eliminates repeated Task.Run/try/catch/app.Invoke(ShowError) boilerplate.\nRuns async work on a background thread and routes exceptions to the UI.</p>\n"
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.AsyncRunner.yml\" sourcestartlinenumber=\"1\">Eliminates repeated Task.Run/try/catch/app.Invoke(ShowError) boilerplate.\nRuns async work on a background thread and routes exceptions to the UI.</p>\n"
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.Commands.CommandHandler.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Commands.CommandHandler.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.Commands.CommandHandler.html"
@@ -54,7 +54,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.Commands.CommandResult.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Commands.CommandResult.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.Commands.CommandResult.html"
@@ -68,7 +68,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.Commands.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Commands.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.Commands.html"
@@ -82,7 +82,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.Config.AccountPreset.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Config.AccountPreset.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.Config.AccountPreset.html"
@@ -96,7 +96,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.Config.ClientConfig.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Config.ClientConfig.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.Config.ClientConfig.html"
@@ -110,7 +110,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.Config.ConfigManager.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Config.ConfigManager.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.Config.ConfigManager.html"
@@ -124,7 +124,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.Config.SavedServer.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Config.SavedServer.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.Config.SavedServer.html"
@@ -138,7 +138,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.Config.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Config.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.Config.html"
@@ -152,7 +152,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.Services.ApiClient.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Services.ApiClient.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.Services.ApiClient.html"
@@ -166,7 +166,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.Services.EchoHubConnection.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Services.EchoHubConnection.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.Services.EchoHubConnection.html"
@@ -180,7 +180,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.Services.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Services.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.Services.html"
@@ -194,7 +194,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.Themes.Theme.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Themes.Theme.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.Themes.Theme.html"
@@ -208,7 +208,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.Themes.ThemeColors.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Themes.ThemeColors.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.Themes.ThemeColors.html"
@@ -222,7 +222,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.Themes.ThemeManager.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Themes.ThemeManager.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.Themes.ThemeManager.html"
@@ -236,7 +236,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.Themes.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Themes.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.Themes.html"
@@ -250,7 +250,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.UI.ChatColors.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ChatColors.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.UI.ChatColors.html"
@@ -260,11 +260,11 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Client.UI.ChatColors",
-      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ChatColors.yml\" sourcestartlinenumber=\"1\">Shared color attributes for chat rendering (timestamps, system messages).</p>\n"
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ChatColors.yml\" sourcestartlinenumber=\"1\">Shared color attributes for chat rendering (timestamps, system messages).</p>\n"
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.UI.ChatLine.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ChatLine.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.UI.ChatLine.html"
@@ -274,11 +274,11 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Client.UI.ChatLine",
-      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ChatLine.yml\" sourcestartlinenumber=\"1\">A single line in the chat, composed of colored segments.</p>\n"
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ChatLine.yml\" sourcestartlinenumber=\"1\">A single line in the chat, composed of colored segments.</p>\n"
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.UI.ChatListSource.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ChatListSource.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.UI.ChatListSource.html"
@@ -288,11 +288,11 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Client.UI.ChatListSource",
-      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ChatListSource.yml\" sourcestartlinenumber=\"1\">Custom list data source for chat messages with per-character coloring.</p>\n"
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ChatListSource.yml\" sourcestartlinenumber=\"1\">Custom list data source for chat messages with per-character coloring.</p>\n"
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.UI.ChatSegment.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ChatSegment.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.UI.ChatSegment.html"
@@ -302,11 +302,11 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Client.UI.ChatSegment",
-      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ChatSegment.yml\" sourcestartlinenumber=\"1\">A colored text segment within a chat line.</p>\n"
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ChatSegment.yml\" sourcestartlinenumber=\"1\">A colored text segment within a chat line.</p>\n"
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.UI.ColorHelper.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ColorHelper.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.UI.ColorHelper.html"
@@ -316,11 +316,11 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Client.UI.ColorHelper",
-      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ColorHelper.yml\" sourcestartlinenumber=\"1\">Helper to parse hex colors to Terminal.Gui Attributes.</p>\n"
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ColorHelper.yml\" sourcestartlinenumber=\"1\">Helper to parse hex colors to Terminal.Gui Attributes.</p>\n"
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.UI.ConnectDialog.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ConnectDialog.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.UI.ConnectDialog.html"
@@ -330,11 +330,11 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Client.UI.ConnectDialog",
-      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ConnectDialog.yml\" sourcestartlinenumber=\"1\">A Terminal.Gui dialog for entering server connection and authentication details.\nIncludes a saved servers selector when saved servers are available.</p>\n"
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ConnectDialog.yml\" sourcestartlinenumber=\"1\">A Terminal.Gui dialog for entering server connection and authentication details.\nIncludes a saved servers selector when saved servers are available.</p>\n"
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.UI.ConnectDialogResult.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ConnectDialogResult.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.UI.ConnectDialogResult.html"
@@ -344,11 +344,11 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Client.UI.ConnectDialogResult",
-      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ConnectDialogResult.yml\" sourcestartlinenumber=\"1\">Result returned from the connect dialog.</p>\n"
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ConnectDialogResult.yml\" sourcestartlinenumber=\"1\">Result returned from the connect dialog.</p>\n"
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.UI.CreateChannelDialog.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.CreateChannelDialog.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.UI.CreateChannelDialog.html"
@@ -362,7 +362,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.UI.CreateChannelResult.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.CreateChannelResult.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.UI.CreateChannelResult.html"
@@ -376,7 +376,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.UI.MainWindow.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.MainWindow.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.UI.MainWindow.html"
@@ -386,11 +386,11 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Client.UI.MainWindow",
-      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.MainWindow.yml\" sourcestartlinenumber=\"1\">Main Terminal.Gui window for the EchoHub chat client.</p>\n"
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.MainWindow.yml\" sourcestartlinenumber=\"1\">Main Terminal.Gui window for the EchoHub chat client.</p>\n"
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.UI.ProfileAction.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ProfileAction.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.UI.ProfileAction.html"
@@ -400,11 +400,11 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Client.UI.ProfileAction",
-      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ProfileAction.yml\" sourcestartlinenumber=\"1\">Action selected by the user in their own profile dialog.</p>\n"
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ProfileAction.yml\" sourcestartlinenumber=\"1\">Action selected by the user in their own profile dialog.</p>\n"
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.UI.ProfileEditDialog.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ProfileEditDialog.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.UI.ProfileEditDialog.html"
@@ -414,11 +414,11 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Client.UI.ProfileEditDialog",
-      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ProfileEditDialog.yml\" sourcestartlinenumber=\"1\">A Terminal.Gui dialog for editing the user's profile (display name, bio, nickname color).</p>\n"
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ProfileEditDialog.yml\" sourcestartlinenumber=\"1\">A Terminal.Gui dialog for editing the user's profile (display name, bio, nickname color).</p>\n"
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.UI.ProfileEditResult.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ProfileEditResult.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.UI.ProfileEditResult.html"
@@ -428,11 +428,11 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Client.UI.ProfileEditResult",
-      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ProfileEditResult.yml\" sourcestartlinenumber=\"1\">Result returned from the profile edit dialog.</p>\n"
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ProfileEditResult.yml\" sourcestartlinenumber=\"1\">Result returned from the profile edit dialog.</p>\n"
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.UI.ProfileViewDialog.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ProfileViewDialog.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.UI.ProfileViewDialog.html"
@@ -442,11 +442,11 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Client.UI.ProfileViewDialog",
-      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.ProfileViewDialog.yml\" sourcestartlinenumber=\"1\">Dialog for viewing a user's server profile.\nShows Edit Profile / Set Status buttons when viewing own profile.</p>\n"
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ProfileViewDialog.yml\" sourcestartlinenumber=\"1\">Dialog for viewing a user's server profile.\nShows Edit Profile / Set Status buttons when viewing own profile.</p>\n"
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.UI.StatusDialog.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.StatusDialog.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.UI.StatusDialog.html"
@@ -456,11 +456,11 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Client.UI.StatusDialog",
-      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.StatusDialog.yml\" sourcestartlinenumber=\"1\">A Terminal.Gui dialog for setting the user's status and status message.</p>\n"
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.StatusDialog.yml\" sourcestartlinenumber=\"1\">A Terminal.Gui dialog for setting the user's status and status message.</p>\n"
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.UI.StatusDialogResult.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.StatusDialogResult.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.UI.StatusDialogResult.html"
@@ -470,11 +470,11 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Client.UI.StatusDialogResult",
-      "Summary": "<p sourcefile=\"api/client/EchoHub.Client.UI.StatusDialogResult.yml\" sourcestartlinenumber=\"1\">Result returned from the status dialog.</p>\n"
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.StatusDialogResult.yml\" sourcestartlinenumber=\"1\">Result returned from the status dialog.</p>\n"
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.UI.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.UI.html"
@@ -488,7 +488,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/client/EchoHub.Client.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.yml",
       "output": {
         ".html": {
           "relative_path": "api/client/EchoHub.Client.html"
@@ -501,21 +501,8 @@
       "Summary": null
     },
     {
-      "type": "Toc",
-      "source_relative_path": "api/client/toc.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/client/toc.html"
-        },
-        ".json": {
-          "relative_path": "api/client/toc.json"
-        }
-      },
-      "version": ""
-    },
-    {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.Constants.HubConstants.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Constants.HubConstants.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.Constants.HubConstants.html"
@@ -529,7 +516,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.Constants.ValidationConstants.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Constants.ValidationConstants.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.Constants.ValidationConstants.html"
@@ -543,7 +530,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.Constants.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Constants.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.Constants.html"
@@ -557,7 +544,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.Contracts.IEchoHubClient.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Contracts.IEchoHubClient.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.Contracts.IEchoHubClient.html"
@@ -567,11 +554,11 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Core.Contracts.IEchoHubClient",
-      "Summary": "<p sourcefile=\"api/core/EchoHub.Core.Contracts.IEchoHubClient.yml\" sourcestartlinenumber=\"1\">Methods the server can invoke on connected clients.</p>\n"
+      "Summary": "<p sourcefile=\"_api_meta/core/EchoHub.Core.Contracts.IEchoHubClient.yml\" sourcestartlinenumber=\"1\">Methods the server can invoke on connected clients.</p>\n"
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.Contracts.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Contracts.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.Contracts.html"
@@ -585,7 +572,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.DTOs.AvatarUploadResponse.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.AvatarUploadResponse.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.DTOs.AvatarUploadResponse.html"
@@ -599,7 +586,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.DTOs.ChannelDto.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.ChannelDto.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.DTOs.ChannelDto.html"
@@ -613,7 +600,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.DTOs.CreateChannelRequest.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.CreateChannelRequest.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.DTOs.CreateChannelRequest.html"
@@ -627,7 +614,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.DTOs.ErrorResponse.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.ErrorResponse.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.DTOs.ErrorResponse.html"
@@ -641,7 +628,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.DTOs.LoginRequest.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.LoginRequest.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.DTOs.LoginRequest.html"
@@ -655,7 +642,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.DTOs.LoginResponse.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.LoginResponse.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.DTOs.LoginResponse.html"
@@ -669,7 +656,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.DTOs.MessageDto.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.MessageDto.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.DTOs.MessageDto.html"
@@ -683,7 +670,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.DTOs.PaginatedResponse-1.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.PaginatedResponse-1.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.DTOs.PaginatedResponse-1.html"
@@ -697,7 +684,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.DTOs.RefreshRequest.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.RefreshRequest.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.DTOs.RefreshRequest.html"
@@ -711,7 +698,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.DTOs.RegisterRequest.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.RegisterRequest.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.DTOs.RegisterRequest.html"
@@ -725,7 +712,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.DTOs.SendMessageRequest.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.SendMessageRequest.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.DTOs.SendMessageRequest.html"
@@ -739,7 +726,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.DTOs.SendUrlRequest.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.SendUrlRequest.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.DTOs.SendUrlRequest.html"
@@ -753,7 +740,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.DTOs.ServerStatusDto.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.ServerStatusDto.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.DTOs.ServerStatusDto.html"
@@ -767,7 +754,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.DTOs.UpdateProfileRequest.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.UpdateProfileRequest.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.DTOs.UpdateProfileRequest.html"
@@ -781,7 +768,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.DTOs.UpdateStatusRequest.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.UpdateStatusRequest.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.DTOs.UpdateStatusRequest.html"
@@ -795,7 +782,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.DTOs.UpdateTopicRequest.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.UpdateTopicRequest.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.DTOs.UpdateTopicRequest.html"
@@ -809,7 +796,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.DTOs.UserDto.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.UserDto.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.DTOs.UserDto.html"
@@ -823,7 +810,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.DTOs.UserPresenceDto.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.UserPresenceDto.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.DTOs.UserPresenceDto.html"
@@ -837,7 +824,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.DTOs.UserProfileDto.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.UserProfileDto.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.DTOs.UserProfileDto.html"
@@ -851,7 +838,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.DTOs.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.DTOs.html"
@@ -865,7 +852,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.Models.Channel.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Models.Channel.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.Models.Channel.html"
@@ -879,7 +866,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.Models.Message.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Models.Message.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.Models.Message.html"
@@ -893,7 +880,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.Models.MessageType.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Models.MessageType.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.Models.MessageType.html"
@@ -907,7 +894,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.Models.RefreshToken.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Models.RefreshToken.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.Models.RefreshToken.html"
@@ -921,7 +908,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.Models.User.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Models.User.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.Models.User.html"
@@ -935,7 +922,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.Models.UserStatus.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Models.UserStatus.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.Models.UserStatus.html"
@@ -949,7 +936,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/core/EchoHub.Core.Models.yml",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Models.yml",
       "output": {
         ".html": {
           "relative_path": "api/core/EchoHub.Core.Models.html"
@@ -962,21 +949,8 @@
       "Summary": null
     },
     {
-      "type": "Toc",
-      "source_relative_path": "api/core/toc.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/core/toc.html"
-        },
-        ".json": {
-          "relative_path": "api/core/toc.json"
-        }
-      },
-      "version": ""
-    },
-    {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Auth.JwtTokenService.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Auth.JwtTokenService.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Auth.JwtTokenService.html"
@@ -990,7 +964,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Auth.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Auth.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Auth.html"
@@ -1004,7 +978,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Controllers.AuthController.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Controllers.AuthController.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Controllers.AuthController.html"
@@ -1018,7 +992,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Controllers.ChannelsController.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Controllers.ChannelsController.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Controllers.ChannelsController.html"
@@ -1032,7 +1006,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Controllers.FilesController.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Controllers.FilesController.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Controllers.FilesController.html"
@@ -1046,7 +1020,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Controllers.ServerController.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Controllers.ServerController.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Controllers.ServerController.html"
@@ -1060,7 +1034,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Controllers.UsersController.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Controllers.UsersController.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Controllers.UsersController.html"
@@ -1074,7 +1048,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Controllers.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Controllers.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Controllers.html"
@@ -1088,7 +1062,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Data.EchoHubDbContext.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Data.EchoHubDbContext.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Data.EchoHubDbContext.html"
@@ -1102,7 +1076,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Data.Migrations.InitialCreate.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Data.Migrations.InitialCreate.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Data.Migrations.InitialCreate.html"
@@ -1116,7 +1090,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Data.Migrations.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Data.Migrations.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Data.Migrations.html"
@@ -1130,7 +1104,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Data.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Data.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Data.html"
@@ -1144,7 +1118,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Hubs.ChatHub.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Hubs.ChatHub.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Hubs.ChatHub.html"
@@ -1158,7 +1132,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Hubs.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Hubs.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Hubs.html"
@@ -1172,7 +1146,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Services.FileStorageService.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.FileStorageService.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Services.FileStorageService.html"
@@ -1186,7 +1160,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Services.FileValidationHelper.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.FileValidationHelper.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Services.FileValidationHelper.html"
@@ -1200,7 +1174,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Services.ImageToAsciiService.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.ImageToAsciiService.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Services.ImageToAsciiService.html"
@@ -1214,7 +1188,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Services.PresenceTracker.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.PresenceTracker.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Services.PresenceTracker.html"
@@ -1228,7 +1202,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Services.ServerDirectoryService.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.ServerDirectoryService.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Services.ServerDirectoryService.html"
@@ -1242,7 +1216,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Services.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Services.html"
@@ -1256,7 +1230,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Setup.DatabaseSetup.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Setup.DatabaseSetup.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Setup.DatabaseSetup.html"
@@ -1270,7 +1244,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Setup.FirstRunSetup.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Setup.FirstRunSetup.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Setup.FirstRunSetup.html"
@@ -1284,7 +1258,7 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/server/EchoHub.Server.Setup.yml",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Setup.yml",
       "output": {
         ".html": {
           "relative_path": "api/server/EchoHub.Server.Setup.html"
@@ -1297,14 +1271,93 @@
       "Summary": null
     },
     {
-      "type": "Toc",
-      "source_relative_path": "api/server/toc.yml",
+      "type": "Conceptual",
+      "source_relative_path": "api/client-articles/index.md",
       "output": {
         ".html": {
-          "relative_path": "api/server/toc.html"
+          "relative_path": "api/client-articles/index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "api/client-articles/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client-articles/toc.html"
         },
         ".json": {
-          "relative_path": "api/server/toc.json"
+          "relative_path": "api/client-articles/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "api/core-articles/index.md",
+      "output": {
+        ".html": {
+          "relative_path": "api/core-articles/index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "api/core-articles/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core-articles/toc.html"
+        },
+        ".json": {
+          "relative_path": "api/core-articles/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "api/index.md",
+      "output": {
+        ".html": {
+          "relative_path": "api/index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "api/server-articles/index.md",
+      "output": {
+        ".html": {
+          "relative_path": "api/server-articles/index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "api/server-articles/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server-articles/toc.html"
+        },
+        ".json": {
+          "relative_path": "api/server-articles/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "api/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/toc.html"
+        },
+        ".json": {
+          "relative_path": "api/toc.json"
         }
       },
       "version": ""
@@ -1343,6 +1396,16 @@
       "version": ""
     },
     {
+      "type": "Conceptual",
+      "source_relative_path": "changelog/index.md",
+      "output": {
+        ".html": {
+          "relative_path": "changelog/index.html"
+        }
+      },
+      "version": ""
+    },
+    {
       "type": "Toc",
       "source_relative_path": "changelog/toc.yml",
       "output": {
@@ -1361,6 +1424,16 @@
       "output": {
         ".html": {
           "relative_path": "changelog/v0.1.0.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "images/hue_icon.svg",
+      "output": {
+        "resource": {
+          "relative_path": "images/hue_icon.svg"
         }
       },
       "version": ""
