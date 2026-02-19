@@ -110,4 +110,9 @@ public class PresenceTracker
     {
         return _userConnections.TryGetValue(username, out var connections) && connections.Count > 0;
     }
+
+    public int GetOnlineUserCount()
+    {
+        return _userConnections.Count;
+    }
 }

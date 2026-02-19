@@ -100,6 +100,7 @@ while (true)
         builder.Services.AddSingleton<PresenceTracker>();
         builder.Services.AddSingleton<ImageToAsciiService>();
         builder.Services.AddSingleton<FileStorageService>();
+        builder.Services.AddHostedService<ServerDirectoryService>();
         builder.Services.AddHttpClient("ImageDownload", client =>
         {
             client.Timeout = TimeSpan.FromSeconds(15);
