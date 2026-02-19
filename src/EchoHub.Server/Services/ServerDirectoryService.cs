@@ -43,46 +43,57 @@ public sealed class ServerDirectoryService(
         // Outer loop: rebuilds the connection if automatic reconnect permanently fails
         while (!stoppingToken.IsCancellationRequested)
         {
-            await using var connection = BuildConnection();
+            var connection = BuildConnection();
             _connection = connection;
 
-            var connectionPermanentlyClosed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            connection.Reconnected += async _ =>
+            try
             {
-                logger.LogInformation("Reconnected to directory — re-registering server");
-                _lastReportedUserCount = -1;
+                var connectionPermanentlyClosed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                connection.Reconnected += async _ =>
+                {
+                    logger.LogInformation("Reconnected to directory — re-registering server");
+                    _lastReportedUserCount = -1;
+                    await RegisterAsync(serverName, description, host);
+                };
+
+                connection.Closed += ex =>
+                {
+                    if (ex is not null)
+                        logger.LogWarning(ex, "Directory connection permanently closed — will rebuild");
+                    else
+                        logger.LogWarning("Directory connection permanently closed — will rebuild");
+
+                    connectionPermanentlyClosed.TrySetResult();
+                    return Task.CompletedTask;
+                };
+
+                // Connect with retry
+                if (!await ConnectWithRetryAsync(connection, stoppingToken))
+                    return;
+
+                logger.LogInformation("Successfully connected to EchoHubSpace API at {Url}", DirectoryHubUrl);
                 await RegisterAsync(serverName, description, host);
-            };
 
-            connection.Closed += ex =>
+                // Poll user count until the connection is permanently closed or cancellation
+                await PollUserCountAsync(connection, connectionPermanentlyClosed.Task, stoppingToken);
+
+                if (stoppingToken.IsCancellationRequested)
+                    return;
+
+                // Connection was permanently closed — wait briefly then rebuild
+                logger.LogInformation("Rebuilding directory connection...");
+                await Task.Delay(ReconnectBaseDelay, stoppingToken);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
-                if (ex is not null)
-                    logger.LogWarning(ex, "Directory connection permanently closed — will rebuild");
-                else
-                    logger.LogWarning("Directory connection permanently closed — will rebuild");
-
-                connectionPermanentlyClosed.TrySetResult();
-                return Task.CompletedTask;
-            };
-
-            // Connect with retry
-            if (!await ConnectWithRetryAsync(connection, stoppingToken))
                 return;
-
-            logger.LogInformation("Successfully connected to EchoHubSpace API at {Url}", DirectoryHubUrl);
-            await RegisterAsync(serverName, description, host);
-
-            // Poll user count until the connection is permanently closed or cancellation
-            await PollUserCountAsync(connection, connectionPermanentlyClosed.Task, stoppingToken);
-
-            if (stoppingToken.IsCancellationRequested)
-                return;
-
-            // Connection was permanently closed — wait briefly then rebuild
-            _connection = null;
-            logger.LogInformation("Rebuilding directory connection...");
-            await Task.Delay(ReconnectBaseDelay, stoppingToken);
+            }
+            finally
+            {
+                _connection = null;
+                await DisposeConnectionAsync(connection);
+            }
         }
     }
 
@@ -175,9 +186,21 @@ public sealed class ServerDirectoryService(
         }
     }
 
+    private static async Task DisposeConnectionAsync(HubConnection connection)
+    {
+        try
+        {
+            await connection.DisposeAsync()
+                .AsTask().WaitAsync(TimeSpan.FromSeconds(3));
+        }
+        catch
+        {
+            // Don't let a slow dispose block shutdown
+        }
+    }
+
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        // Cancel ExecuteAsync first — it disposes the connection via await using
         await base.StopAsync(cancellationToken);
         _connection = null;
     }
