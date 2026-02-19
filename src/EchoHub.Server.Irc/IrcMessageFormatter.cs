@@ -24,9 +24,12 @@ public static partial class IrcMessageFormatter
                 foreach (var chunk in SplitMessage(message.Content, MaxIrcLineContentBytes))
                     lines.Add($"{prefix} PRIVMSG {ircChannel} :{chunk}");
 
-                // Append embed preview if present
-                if (message.Embed is not null)
-                    lines.AddRange(FormatEmbed(prefix, ircChannel, message.Embed));
+                // Append embed previews if present
+                if (message.Embeds is { Count: > 0 })
+                {
+                    foreach (var embed in message.Embeds)
+                        lines.AddRange(FormatEmbed(prefix, ircChannel, embed));
+                }
                 break;
 
             case MessageType.Image:

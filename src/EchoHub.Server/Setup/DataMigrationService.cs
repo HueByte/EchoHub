@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using EchoHub.Core.Constants;
+using EchoHub.Core.DTOs;
 using EchoHub.Server.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +17,7 @@ public static partial class DataMigrationService
 
         await EnsureDefaultChannelsPublicAsync(db, logger);
         await MigrateAnsiMessagesAsync(db, logger);
+        await MigrateEmbedJsonToArrayAsync(db, logger);
     }
 
     /// <summary>
@@ -91,4 +93,47 @@ public static partial class DataMigrationService
 
     [GeneratedRegex(@"\x1b\[(?:(0)|(?:(38;2|48;2);(\d{1,3});(\d{1,3});(\d{1,3})))m")]
     private static partial Regex AnsiColorRegex();
+
+    /// <summary>
+    /// Migrate old single-object EmbedJson ("{...}") to array format ("[{...}]").
+    /// </summary>
+    private static async Task MigrateEmbedJsonToArrayAsync(EchoHubDbContext db, ILogger logger)
+    {
+        var messages = await db.Messages
+            .Where(m => m.EmbedJson != null)
+            .ToListAsync();
+
+        var toMigrate = messages
+            .Where(m => m.EmbedJson!.TrimStart().StartsWith('{'))
+            .ToList();
+
+        if (toMigrate.Count == 0)
+            return;
+
+        logger.LogInformation("Found {Count} messages with legacy single-embed JSON. Migrating to array format...", toMigrate.Count);
+
+        var modified = 0;
+        foreach (var message in toMigrate)
+        {
+            try
+            {
+                var single = System.Text.Json.JsonSerializer.Deserialize<EmbedDto>(message.EmbedJson!);
+                if (single is not null)
+                {
+                    message.EmbedJson = System.Text.Json.JsonSerializer.Serialize(new[] { single });
+                    modified++;
+                }
+            }
+            catch
+            {
+                // Skip malformed JSON
+            }
+        }
+
+        if (modified > 0)
+        {
+            await db.SaveChangesAsync();
+            logger.LogInformation("Migrated {Count} embed records from single-object to array format.", modified);
+        }
+    }
 }

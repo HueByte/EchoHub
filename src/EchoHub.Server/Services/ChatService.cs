@@ -175,15 +175,15 @@ public class ChatService : IChatService
             }
         }
 
-        // Attempt to fetch link embed for URLs in the message
-        EmbedDto? embed = null;
+        // Attempt to fetch link embeds for URLs in the message
+        List<EmbedDto>? embeds = null;
         try
         {
-            embed = await _embedService.TryGetEmbedAsync(content);
+            embeds = await _embedService.TryGetEmbedsAsync(content);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to fetch link embed for message in '{Channel}'", channelName);
+            _logger.LogWarning(ex, "Failed to fetch link embeds for message in '{Channel}'", channelName);
         }
 
         var message = new Message
@@ -195,7 +195,7 @@ public class ChatService : IChatService
             ChannelId = channel.Id,
             SenderUserId = userId,
             SenderUsername = username,
-            EmbedJson = embed is not null ? JsonSerializer.Serialize(embed) : null,
+            EmbedJson = embeds is not null ? JsonSerializer.Serialize(embeds) : null,
         };
 
         db.Messages.Add(message);
@@ -211,7 +211,7 @@ public class ChatService : IChatService
             null,
             null,
             message.SentAt,
-            embed);
+            embeds);
 
         await BroadcastToAllAsync(b => b.SendMessageToChannelAsync(channelName, messageDto));
 
@@ -418,10 +418,10 @@ public class ChatService : IChatService
 
         return raw.Select(x =>
         {
-            EmbedDto? embed = null;
+            List<EmbedDto>? embeds = null;
             if (x.m.EmbedJson is not null)
             {
-                try { embed = JsonSerializer.Deserialize<EmbedDto>(x.m.EmbedJson); }
+                try { embeds = JsonSerializer.Deserialize<List<EmbedDto>>(x.m.EmbedJson); }
                 catch { /* ignore malformed JSON */ }
             }
 
@@ -435,7 +435,7 @@ public class ChatService : IChatService
                 x.m.AttachmentUrl,
                 x.m.AttachmentFileName,
                 x.m.SentAt,
-                embed);
+                embeds);
         }).ToList();
     }
 }

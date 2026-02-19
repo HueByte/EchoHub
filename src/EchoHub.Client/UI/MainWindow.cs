@@ -4,7 +4,9 @@ using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
 using Terminal.Gui.App;
 using Terminal.Gui.Configuration;
+using Terminal.Gui.Drawing;
 using Terminal.Gui.Input;
+using Terminal.Gui.Text;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 using Attribute = Terminal.Gui.Drawing.Attribute;
@@ -880,7 +882,8 @@ public sealed class MainWindow : Runnable
 
             case MessageType.Text:
             default:
-                var contentLines = message.Content.Split('\n');
+                var displayContent = EmojiHelper.ReplaceEmoji(message.Content);
+                var contentLines = displayContent.Split('\n');
                 var firstLine = contentLines[0].TrimEnd('\r');
                 lines.Add(BuildChatLineWithMentions(time, senderName, senderColor, $" {firstLine}"));
                 // Continuation lines indented to align with first line's content
@@ -891,9 +894,12 @@ public sealed class MainWindow : Runnable
                     lines.Add(new ChatLine(ChatColors.SplitMentions(contText)));
                 }
 
-                // Render link embed if present
-                if (message.Embed is not null)
-                    lines.AddRange(FormatEmbed(message.Embed, indent));
+                // Render link embeds if present
+                if (message.Embeds is { Count: > 0 })
+                {
+                    foreach (var embed in message.Embeds)
+                        lines.AddRange(FormatEmbed(embed, indent));
+                }
                 break;
         }
 
@@ -944,65 +950,152 @@ public sealed class MainWindow : Runnable
     }
 
     /// <summary>
-    /// Format a link embed as indented chat lines with a left border bar.
+    /// Format a link embed as indented chat lines with a left border bar,
+    /// optional description wrapping, and a small icon on the right (Discord-style).
+    /// Layout: ▏ {text column}  {icon column}
     /// </summary>
     private static List<ChatLine> FormatEmbed(EmbedDto embed, string indent)
     {
         var lines = new List<ChatLine>();
         const string border = "\u258f "; // ▏ + space
+        const int borderCols = 2; // ▏ = 1 col + space = 1 col
+        const int iconGap = 1; // space between text and icon
 
-        // Site name
-        if (!string.IsNullOrWhiteSpace(embed.SiteName))
-        {
-            lines.Add(new ChatLine(new List<ChatSegment>
-            {
-                new(indent, null),
-                new(border, ChatColors.EmbedBorderAttr),
-                new(embed.SiteName, ChatColors.EmbedBorderAttr)
-            }));
-        }
-
-        // Title
-        if (!string.IsNullOrWhiteSpace(embed.Title))
-        {
-            lines.Add(new ChatLine(new List<ChatSegment>
-            {
-                new(indent, null),
-                new(border, ChatColors.EmbedBorderAttr),
-                new(embed.Title, ChatColors.EmbedTitleAttr)
-            }));
-        }
-
-        // Description (truncated)
-        if (!string.IsNullOrWhiteSpace(embed.Description))
-        {
-            var desc = embed.Description.Length > 120
-                ? embed.Description[..117] + "..."
-                : embed.Description;
-
-            lines.Add(new ChatLine(new List<ChatSegment>
-            {
-                new(indent, null),
-                new(border, ChatColors.EmbedBorderAttr),
-                new(desc, ChatColors.EmbedDescAttr)
-            }));
-        }
-
-        // ASCII image thumbnail
+        // Parse icon lines if present
+        var iconLines = new List<string>();
+        int iconWidth = 0;
         if (!string.IsNullOrWhiteSpace(embed.ImageAscii))
         {
             foreach (var artLine in embed.ImageAscii.Split('\n'))
             {
                 var trimmed = artLine.TrimEnd('\r');
-                if (string.IsNullOrEmpty(trimmed)) continue;
-
-                if (ChatLine.HasColorTags(trimmed))
-                    lines.Add(ChatLine.FromColoredText(indent + border + trimmed));
-                else
-                    lines.Add(new ChatLine(indent + border + trimmed));
+                if (!string.IsNullOrEmpty(trimmed))
+                    iconLines.Add(trimmed);
+            }
+            if (iconLines.Count > 0)
+            {
+                // Measure icon width from the first line (strip color tags for measurement)
+                var stripped = ChatLine.StripColorTags(iconLines[0]);
+                iconWidth = stripped.GetColumns();
             }
         }
 
+        bool hasIcon = iconLines.Count > 0 && iconWidth > 0;
+        int indentCols = indent.GetColumns();
+
+        // We don't know the terminal width at format time, so use a reasonable default
+        // for text wrapping. The ChatListSource.Render will handle final clipping.
+        const int estimatedWidth = 80;
+        int availableForText = estimatedWidth - indentCols - borderCols;
+        int textColWidth = hasIcon
+            ? availableForText - iconWidth - iconGap
+            : availableForText;
+        if (textColWidth < 20) textColWidth = 20;
+
+        // Collect all text rows (site name, title, wrapped description, URL)
+        var textRows = new List<(string Text, Attribute? Color)>();
+
+        if (!string.IsNullOrWhiteSpace(embed.SiteName))
+            textRows.Add((embed.SiteName, ChatColors.EmbedBorderAttr));
+
+        if (!string.IsNullOrWhiteSpace(embed.Title))
+            textRows.Add((embed.Title, ChatColors.EmbedTitleAttr));
+
+        // Word-wrap description
+        if (!string.IsNullOrWhiteSpace(embed.Description))
+        {
+            foreach (var wrappedLine in WordWrap(embed.Description, textColWidth))
+                textRows.Add((wrappedLine, ChatColors.EmbedDescAttr));
+        }
+
+        // Dim URL at the bottom
+        textRows.Add((embed.Url, ChatColors.EmbedUrlAttr));
+
+        // Merge text rows with icon rows side-by-side
+        int totalLines = Math.Max(textRows.Count, iconLines.Count);
+        for (int i = 0; i < totalLines; i++)
+        {
+            var segments = new List<ChatSegment>();
+            segments.Add(new ChatSegment(indent, null));
+            segments.Add(new ChatSegment(border, ChatColors.EmbedBorderAttr));
+
+            if (i < textRows.Count)
+            {
+                var (text, color) = textRows[i];
+                segments.Add(new ChatSegment(text, color));
+
+                // Pad to align icon column
+                if (hasIcon && i < iconLines.Count)
+                {
+                    int textCols = text.GetColumns();
+                    int padding = textColWidth - textCols + iconGap;
+                    if (padding > 0)
+                        segments.Add(new ChatSegment(new string(' ', padding), null));
+                }
+            }
+            else if (hasIcon && i < iconLines.Count)
+            {
+                // No text row, pad the full text column + gap
+                segments.Add(new ChatSegment(new string(' ', textColWidth + iconGap), null));
+            }
+
+            // Append icon line
+            if (hasIcon && i < iconLines.Count)
+            {
+                var iconLine = iconLines[i];
+                if (ChatLine.HasColorTags(iconLine))
+                {
+                    // Build a composite: plain segments + colored icon
+                    var plainPart = new ChatLine(segments);
+                    var iconPart = ChatLine.FromColoredText(iconLine);
+                    var merged = new List<ChatSegment>(plainPart.Segments);
+                    merged.AddRange(iconPart.Segments);
+                    lines.Add(new ChatLine(merged));
+                    continue;
+                }
+                else
+                {
+                    segments.Add(new ChatSegment(iconLine, null));
+                }
+            }
+
+            lines.Add(new ChatLine(segments));
+        }
+
         return lines;
+    }
+
+    /// <summary>
+    /// Simple word-wrap: splits text into lines that fit within maxCols display columns.
+    /// </summary>
+    private static List<string> WordWrap(string text, int maxCols)
+    {
+        if (maxCols <= 0)
+            return [text];
+
+        var result = new List<string>();
+        var words = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var currentLine = "";
+
+        foreach (var word in words)
+        {
+            var candidate = currentLine.Length == 0 ? word : currentLine + " " + word;
+            if (candidate.GetColumns() <= maxCols)
+            {
+                currentLine = candidate;
+            }
+            else
+            {
+                if (currentLine.Length > 0)
+                    result.Add(currentLine);
+                // If a single word exceeds maxCols, just add it as-is
+                currentLine = word;
+            }
+        }
+
+        if (currentLine.Length > 0)
+            result.Add(currentLine);
+
+        return result;
     }
 }

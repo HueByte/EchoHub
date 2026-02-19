@@ -102,6 +102,12 @@ public partial class ChatLine
         text.Contains("{F:") || text.Contains("{B:") || text.Contains("{X}");
 
     /// <summary>
+    /// Remove all color tags from text, returning only the visible characters.
+    /// </summary>
+    public static string StripColorTags(string text) =>
+        ColorTagRegex().Replace(text, "");
+
+    /// <summary>
     /// Parse a string containing printable color tags into colored segments.
     /// Format: {F:RRGGBB} (foreground), {B:RRGGBB} (background), {X} (reset).
     /// </summary>
@@ -458,6 +464,7 @@ public static partial class ChatColors
     public static readonly Attribute EmbedBorderAttr = new(new Color(91, 155, 213), Color.Black);
     public static readonly Attribute EmbedTitleAttr = new(Color.White, Color.Black);
     public static readonly Attribute EmbedDescAttr = new(new Color(160, 160, 160), Color.Black);
+    public static readonly Attribute EmbedUrlAttr = new(new Color(100, 100, 100), Color.Black);
 
     /// <summary>
     /// Split text around @mentions, giving each @word the MentionTextAttr accent color.

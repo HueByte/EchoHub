@@ -12,7 +12,7 @@ public record MessageDto(
     string? AttachmentUrl,
     string? AttachmentFileName,
     DateTimeOffset SentAt,
-    EmbedDto? Embed = null);
+    List<EmbedDto>? Embeds = null);
 
 public record ChannelDto(
     Guid Id,

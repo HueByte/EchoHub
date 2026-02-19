@@ -24,108 +24,119 @@ public partial class LinkEmbedService
     }
 
     /// <summary>
-    /// Detect the first URL in message content and attempt to fetch OG embed data.
-    /// Returns null if no URL found, fetch fails, or no useful OG data.
+    /// Detect all URLs in message content and attempt to fetch OG embed data for each.
+    /// Returns null if no URLs found or all fetches fail.
     /// Never throws — all errors are caught internally.
     /// </summary>
-    public async Task<EmbedDto?> TryGetEmbedAsync(string content)
+    public async Task<List<EmbedDto>?> TryGetEmbedsAsync(string content)
     {
-        try
-        {
-            var url = ExtractFirstUrl(content);
-            if (url is null)
-                return null;
-
-            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
-                return null;
-
-            if (uri.Scheme is not ("http" or "https"))
-                return null;
-
-            if (IsPrivateHost(uri))
-                return null;
-
-            using var cts = new CancellationTokenSource(
-                TimeSpan.FromSeconds(HubConstants.EmbedFetchTimeoutSeconds));
-
-            var client = _httpClientFactory.CreateClient("OgFetch");
-
-            using var request = new HttpRequestMessage(HttpMethod.Get, uri);
-            using var response = await client.SendAsync(request,
-                HttpCompletionOption.ResponseHeadersRead, cts.Token);
-
-            if (!response.IsSuccessStatusCode)
-                return null;
-
-            var contentType = response.Content.Headers.ContentType?.MediaType;
-            if (contentType is null || !contentType.StartsWith("text/html", StringComparison.OrdinalIgnoreCase))
-                return null;
-
-            var html = await ReadLimitedAsync(response, HubConstants.EmbedMaxHtmlBytes, cts.Token);
-            if (string.IsNullOrWhiteSpace(html))
-                return null;
-
-            var ogTags = ParseOgTags(html);
-
-            // Try og:title, fallback to <title> tag
-            var title = ogTags.GetValueOrDefault("title");
-            if (string.IsNullOrWhiteSpace(title))
-            {
-                var titleMatch = TitleTagRegex().Match(html);
-                if (titleMatch.Success)
-                    title = WebUtility.HtmlDecode(titleMatch.Groups[1].Value.Trim());
-            }
-
-            // If no title at all, nothing useful to show
-            if (string.IsNullOrWhiteSpace(title))
-                return null;
-
-            var siteName = ogTags.GetValueOrDefault("site_name");
-            var description = ogTags.GetValueOrDefault("description");
-
-            // Truncate description
-            if (description is not null && description.Length > HubConstants.EmbedMaxDescriptionLength)
-                description = description[..(HubConstants.EmbedMaxDescriptionLength - 3)] + "...";
-
-            // HTML decode text fields
-            title = WebUtility.HtmlDecode(title);
-            siteName = siteName is not null ? WebUtility.HtmlDecode(siteName) : null;
-            description = description is not null ? WebUtility.HtmlDecode(description) : null;
-
-            // Attempt to fetch OG image thumbnail
-            string? imageAscii = null;
-            var imageUrl = ogTags.GetValueOrDefault("image");
-            if (!string.IsNullOrWhiteSpace(imageUrl))
-            {
-                imageAscii = await FetchImageThumbnailAsync(imageUrl, uri, cts.Token);
-            }
-
-            return new EmbedDto(siteName, title, description, imageAscii, url);
-        }
-        catch (OperationCanceledException)
-        {
-            _logger.LogDebug("Embed fetch timed out for message content");
+        var urls = ExtractUrls(content);
+        if (urls.Count == 0)
             return null;
-        }
-        catch (Exception ex)
+
+        var embeds = new List<EmbedDto>();
+
+        foreach (var url in urls)
         {
-            _logger.LogDebug(ex, "Failed to fetch embed");
-            return null;
+            try
+            {
+                var embed = await FetchEmbedForUrlAsync(url);
+                if (embed is not null)
+                    embeds.Add(embed);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Failed to fetch embed for {Url}", url);
+            }
         }
+
+        return embeds.Count > 0 ? embeds : null;
     }
 
-    private static string? ExtractFirstUrl(string content)
+    private async Task<EmbedDto?> FetchEmbedForUrlAsync(string url)
     {
-        var match = UrlRegex().Match(content);
-        if (!match.Success)
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
             return null;
 
-        var url = match.Value;
+        if (uri.Scheme is not ("http" or "https"))
+            return null;
 
-        // Strip trailing punctuation that's likely not part of the URL
-        url = url.TrimEnd('.', ',', '!', '?', ')', ']', ';', ':');
+        if (IsPrivateHost(uri))
+            return null;
 
-        return url;
+        using var cts = new CancellationTokenSource(
+            TimeSpan.FromSeconds(HubConstants.EmbedFetchTimeoutSeconds));
+
+        var client = _httpClientFactory.CreateClient("OgFetch");
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+        using var response = await client.SendAsync(request,
+            HttpCompletionOption.ResponseHeadersRead, cts.Token);
+
+        if (!response.IsSuccessStatusCode)
+            return null;
+
+        var contentType = response.Content.Headers.ContentType?.MediaType;
+        if (contentType is null || !contentType.StartsWith("text/html", StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        var html = await ReadLimitedAsync(response, HubConstants.EmbedMaxHtmlBytes, cts.Token);
+        if (string.IsNullOrWhiteSpace(html))
+            return null;
+
+        var ogTags = ParseOgTags(html);
+
+        // Try og:title, fallback to <title> tag
+        var title = ogTags.GetValueOrDefault("title");
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            var titleMatch = TitleTagRegex().Match(html);
+            if (titleMatch.Success)
+                title = WebUtility.HtmlDecode(titleMatch.Groups[1].Value.Trim());
+        }
+
+        // If no title at all, nothing useful to show
+        if (string.IsNullOrWhiteSpace(title))
+            return null;
+
+        var siteName = ogTags.GetValueOrDefault("site_name");
+        var description = ogTags.GetValueOrDefault("description");
+
+        // Truncate very long descriptions but keep a generous limit
+        if (description is not null && description.Length > HubConstants.EmbedMaxDescriptionLength)
+            description = description[..(HubConstants.EmbedMaxDescriptionLength - 3)] + "...";
+
+        // HTML decode text fields
+        title = WebUtility.HtmlDecode(title);
+        siteName = siteName is not null ? WebUtility.HtmlDecode(siteName) : null;
+        description = description is not null ? WebUtility.HtmlDecode(description) : null;
+
+        // Attempt to fetch OG image as small icon
+        string? imageAscii = null;
+        var imageUrl = ogTags.GetValueOrDefault("image");
+        if (!string.IsNullOrWhiteSpace(imageUrl))
+        {
+            imageAscii = await FetchImageThumbnailAsync(imageUrl, uri, cts.Token);
+        }
+
+        return new EmbedDto(siteName, title, description, imageAscii, url);
+    }
+
+    private static List<string> ExtractUrls(string content)
+    {
+        var urls = new List<string>();
+
+        foreach (Match match in UrlRegex().Matches(content))
+        {
+            var url = match.Value.TrimEnd('.', ',', '!', '?', ')', ']', ';', ':');
+            if (!urls.Contains(url))
+                urls.Add(url);
+
+            if (urls.Count >= HubConstants.EmbedMaxUrlsPerMessage)
+                break;
+        }
+
+        return urls;
     }
 
     private static bool IsPrivateHost(Uri uri)
@@ -220,8 +231,8 @@ public partial class LinkEmbedService
             memoryStream.Position = 0;
 
             return _asciiService.ConvertToAscii(memoryStream,
-                HubConstants.EmbedThumbnailWidth,
-                HubConstants.EmbedThumbnailHeight);
+                HubConstants.EmbedIconWidth,
+                HubConstants.EmbedIconHeight);
         }
         catch (Exception ex)
         {
