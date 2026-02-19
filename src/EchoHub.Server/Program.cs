@@ -39,8 +39,10 @@ while (true)
 
         // ── SQLite + EF Core ─────────────────────────────────────────────────
         var defaultDbPath = Path.Combine(AppContext.BaseDirectory, "echohub.db");
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-            ?? $"Data Source={defaultDbPath}";
+        var configured = builder.Configuration.GetConnectionString("DefaultConnection");
+        var connectionString = string.IsNullOrWhiteSpace(configured)
+            ? $"Data Source={defaultDbPath}"
+            : configured;
 
         builder.Services.AddDbContext<EchoHubDbContext>(options =>
             options.UseSqlite(connectionString));
