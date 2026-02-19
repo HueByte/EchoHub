@@ -27,7 +27,7 @@ public sealed class MainWindow : Runnable
 
     // Cached Key constants — compare via .KeyCode to avoid Key.Equals (which also checks Handled)
     private static readonly Key EnterKey = Key.Enter;
-    private static readonly Key AltEnterKey = Key.Enter.WithAlt;
+    private static readonly Key NewlineKey = Key.N.WithCtrl;
     private static readonly Key CtrlCKey = Key.C.WithCtrl;
     private static readonly Key TabKey = Key.Tab;
 
@@ -35,8 +35,8 @@ public sealed class MainWindow : Runnable
     private static readonly string[] SlashCommands =
     [
         "/status", "/nick", "/color", "/theme", "/send",
-        "/profile", "/servers", "/join", "/leave", "/topic",
-        "/users", "/quit", "/help"
+        "/avatar", "/profile", "/servers", "/join", "/leave",
+        "/topic", "/users", "/quit", "/help"
     ];
 
     private readonly List<string> _channelNames = [];
@@ -159,7 +159,7 @@ public sealed class MainWindow : Runnable
         // Bottom input area
         var inputFrame = new FrameView
         {
-            Title = "Message (Enter=send, Tab=autocomplete)",
+            Title = "Message (Enter=send, Ctrl+N=newline, Tab=autocomplete)",
             X = 25,
             Y = Pos.Bottom(_chatFrame),
             Width = Dim.Fill(),
@@ -194,7 +194,9 @@ public sealed class MainWindow : Runnable
         ApplyColorSchemes();
 
         // Re-wrap messages when the chat area is resized
+        // Subscribe to both ListView and FrameView viewport changes for reliable resize detection
         _messageList.ViewportChanged += (_, _) => OnChatViewportChanged();
+        _chatFrame.ViewportChanged += (_, _) => OnChatViewportChanged();
 
         // Window-level key handling for Ctrl+C (quit)
         KeyDown += OnWindowKeyDown;
@@ -316,7 +318,7 @@ public sealed class MainWindow : Runnable
             TryAutocompleteCommand();
             e.Handled = true;
         }
-        else if (e.KeyCode == AltEnterKey.KeyCode)
+        else if (e.KeyCode == NewlineKey.KeyCode)
         {
             _inputField.InsertText("\n");
             e.Handled = true;
@@ -603,6 +605,14 @@ public sealed class MainWindow : Runnable
         if (_channelMessages.TryGetValue(_currentChannel, out var messages))
         {
             var width = _messageList.Viewport.Width;
+
+            // Update cached width when viewport reports a valid value;
+            // fall back to last known width if viewport hasn't been laid out yet.
+            if (width > 0)
+                _lastChatWidth = width;
+            else
+                width = _lastChatWidth;
+
             var source = new ChatListSource();
 
             if (width > 0)

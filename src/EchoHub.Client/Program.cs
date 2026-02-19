@@ -9,7 +9,7 @@ var appSettingsPath = Path.Combine(AppContext.BaseDirectory, "appsettings.json")
 if (!File.Exists(appSettingsPath))
 {
     using var stream = typeof(AppOrchestrator).Assembly
-        .GetManifestResourceStream("EchoHub.Client.appsettings.json");
+        .GetManifestResourceStream("EchoHub.Client.appsettings.example.json");
 
     if (stream is not null)
     {

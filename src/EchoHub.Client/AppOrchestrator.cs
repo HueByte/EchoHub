@@ -144,9 +144,54 @@ public sealed class AppOrchestrator : IDisposable
             }
         };
 
-        _commandHandler.OnOpenProfile += () =>
+        _commandHandler.OnSetAvatar += async (target) =>
         {
-            InvokeUI(HandleProfileRequested);
+            if (!IsAuthenticated) return;
+
+            try
+            {
+                Stream stream;
+                string fileName;
+
+                if (Uri.TryCreate(target, UriKind.Absolute, out var uri)
+                    && (uri.Scheme == "http" || uri.Scheme == "https"))
+                {
+                    using var http = new HttpClient();
+                    var bytes = await http.GetByteArrayAsync(uri);
+                    stream = new MemoryStream(bytes);
+                    fileName = Path.GetFileName(uri.LocalPath);
+                    if (string.IsNullOrWhiteSpace(fileName) || !fileName.Contains('.'))
+                        fileName = "avatar.png";
+                }
+                else
+                {
+                    if (!File.Exists(target))
+                    {
+                        InvokeUI(() => _mainWindow.ShowError($"File not found: {target}"));
+                        return;
+                    }
+                    stream = File.OpenRead(target);
+                    fileName = Path.GetFileName(target);
+                }
+
+                await using (stream)
+                {
+                    var ascii = await _apiClient!.UploadAvatarAsync(stream, fileName);
+                    var channel = _mainWindow.CurrentChannel;
+                    if (!string.IsNullOrEmpty(channel))
+                        InvokeUI(() => _mainWindow.AddSystemMessage(channel, "Avatar updated."));
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Avatar upload failed for {Target}", target);
+                InvokeUI(() => _mainWindow.ShowError($"Avatar upload failed: {ex.Message}"));
+            }
+        };
+
+        _commandHandler.OnOpenProfile += (username) =>
+        {
+            InvokeUI(() => HandleViewProfile(username));
             return Task.CompletedTask;
         };
 
@@ -400,35 +445,55 @@ public sealed class AppOrchestrator : IDisposable
 
     private void HandleProfileRequested()
     {
+        HandleViewProfile(null);
+    }
+
+    private void HandleViewProfile(string? username)
+    {
+        // If no username or it's our own, show the full user panel
+        var isOwnProfile = string.IsNullOrWhiteSpace(username)
+            || username.Equals(_currentUsername, StringComparison.OrdinalIgnoreCase);
+
         Task.Run(async () =>
         {
             UserProfileDto? profile = null;
             try
             {
-                if (IsAuthenticated && !string.IsNullOrEmpty(_currentUsername))
-                    profile = await _apiClient!.GetUserProfileAsync(_currentUsername);
+                if (IsAuthenticated)
+                {
+                    var target = isOwnProfile ? _currentUsername : username!;
+                    if (!string.IsNullOrEmpty(target))
+                        profile = await _apiClient!.GetUserProfileAsync(target);
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                // Profile may not be available; continue with null
+                InvokeUI(() => _mainWindow.ShowError($"Failed to load profile: {ex.Message}"));
+                return;
             }
 
             InvokeUI(() =>
             {
-                var action = UserPanelDialog.Show(_app,
-                    profile,
-                    _config.SavedServers,
-                    _currentStatus,
-                    _currentStatusMessage);
-
-                switch (action)
+                if (isOwnProfile)
                 {
-                    case UserPanelAction.EditProfile:
-                        HandleEditProfile(profile);
-                        break;
-                    case UserPanelAction.SetStatus:
-                        HandleStatusRequested();
-                        break;
+                    var action = ProfileViewDialog.ShowOwn(_app,
+                        profile,
+                        _currentStatus,
+                        _currentStatusMessage);
+
+                    switch (action)
+                    {
+                        case ProfileAction.EditProfile:
+                            HandleEditProfile(profile);
+                            break;
+                        case ProfileAction.SetStatus:
+                            HandleStatusRequested();
+                            break;
+                    }
+                }
+                else
+                {
+                    ProfileViewDialog.Show(_app, profile);
                 }
             });
         });

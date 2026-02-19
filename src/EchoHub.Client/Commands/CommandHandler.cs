@@ -11,12 +11,13 @@ public class CommandHandler
     public event Func<string, Task>? OnSetColor;
     public event Func<string, Task>? OnSetTheme;
     public event Func<string, Task>? OnSendFile;
-    public event Func<Task>? OnOpenProfile;
+    public event Func<string?, Task>? OnOpenProfile;
     public event Func<Task>? OnOpenServers;
     public event Func<string, Task>? OnJoinChannel;
     public event Func<Task>? OnLeaveChannel;
     public event Func<string, Task>? OnSetTopic;
     public event Func<Task>? OnListUsers;
+    public event Func<string, Task>? OnSetAvatar;
     public event Func<Task>? OnQuit;
     public event Func<Task>? OnHelp;
 
@@ -38,7 +39,8 @@ public class CommandHandler
             "color" => await HandleColor(args),
             "theme" => await HandleTheme(args),
             "send" => await HandleSend(args),
-            "profile" => await HandleProfile(),
+            "profile" => await HandleProfile(args),
+            "avatar" => await HandleAvatar(args),
             "servers" => await HandleServers(),
             "join" => await HandleJoin(args),
             "leave" => await HandleLeave(),
@@ -141,11 +143,24 @@ public class CommandHandler
         return new CommandResult(true, $"Uploading: {Path.GetFileName(target)}...");
     }
 
-    private async Task<CommandResult> HandleProfile()
+    private async Task<CommandResult> HandleProfile(string args)
     {
+        var username = string.IsNullOrWhiteSpace(args) ? null : args.Trim();
         if (OnOpenProfile is not null)
-            await OnOpenProfile();
+            await OnOpenProfile(username);
         return new CommandResult(true);
+    }
+
+    private async Task<CommandResult> HandleAvatar(string args)
+    {
+        if (string.IsNullOrWhiteSpace(args))
+            return new CommandResult(true, "Usage: /avatar <URL or filepath>", IsError: true);
+
+        var target = args.Trim().Trim('"');
+
+        if (OnSetAvatar is not null)
+            await OnSetAvatar(target);
+        return new CommandResult(true, "Uploading avatar...");
     }
 
     private async Task<CommandResult> HandleServers()
@@ -209,7 +224,8 @@ public class CommandHandler
               /color <#hex>                        - Set nickname color
               /theme <name>                        - Switch theme
               /send <filepath or URL>               - Send a file or image
-              /profile                             - Open your profile
+              /avatar <URL or filepath>             - Set your avatar
+              /profile [username]                   - View a profile (yours if no name given)
               /servers                             - Open saved servers
               /join <channel>                      - Join a channel
               /leave                               - Leave current channel

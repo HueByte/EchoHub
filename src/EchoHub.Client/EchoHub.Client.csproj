@@ -14,11 +14,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="appsettings.json">
+    <Content Include="appsettings.json" Condition="Exists('appsettings.json')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <EmbeddedResource Include="appsettings.json">
-      <LogicalName>EchoHub.Client.appsettings.json</LogicalName>
+    <EmbeddedResource Include="appsettings.example.json">
+      <LogicalName>EchoHub.Client.appsettings.example.json</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 
