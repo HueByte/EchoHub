@@ -59,6 +59,7 @@ public class EchoHubDbContext : DbContext
             entity.Property(m => m.SenderUsername).IsRequired().HasMaxLength(50);
             entity.Property(m => m.AttachmentUrl).HasMaxLength(500);
             entity.Property(m => m.AttachmentFileName).HasMaxLength(255);
+            entity.Property(m => m.EmbedJson).HasMaxLength(8000);
         });
 
         modelBuilder.Entity<ChannelMembership>(entity =>

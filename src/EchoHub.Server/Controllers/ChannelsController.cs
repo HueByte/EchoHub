@@ -37,6 +37,7 @@ public class ChannelsController : ControllerBase
         _httpClientFactory = httpClientFactory;
         _chatService = chatService;
     }
+
     [HttpGet]
     public async Task<IActionResult> GetChannels([FromQuery] int offset = 0, [FromQuery] int limit = 50)
     {

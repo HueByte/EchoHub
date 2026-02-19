@@ -24,6 +24,7 @@ public class UsersController : ControllerBase
         _db = db;
         _asciiService = asciiService;
     }
+
     [HttpGet("{username}/profile")]
     public async Task<IActionResult> GetProfile(string username)
     {

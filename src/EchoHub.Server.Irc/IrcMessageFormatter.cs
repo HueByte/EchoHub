@@ -23,6 +23,10 @@ public static partial class IrcMessageFormatter
             case MessageType.Text:
                 foreach (var chunk in SplitMessage(message.Content, MaxIrcLineContentBytes))
                     lines.Add($"{prefix} PRIVMSG {ircChannel} :{chunk}");
+
+                // Append embed preview if present
+                if (message.Embed is not null)
+                    lines.AddRange(FormatEmbed(prefix, ircChannel, message.Embed));
                 break;
 
             case MessageType.Image:
@@ -41,6 +45,33 @@ public static partial class IrcMessageFormatter
             case MessageType.File:
                 lines.Add($"{prefix} PRIVMSG {ircChannel} :[File: {message.AttachmentFileName}] {message.AttachmentUrl}");
                 break;
+        }
+
+        return lines;
+    }
+
+    /// <summary>
+    /// Format a link embed as IRC PRIVMSG lines (text-only, no ASCII thumbnail).
+    /// </summary>
+    private static List<string> FormatEmbed(string prefix, string ircChannel, EmbedDto embed)
+    {
+        var lines = new List<string>();
+
+        var header = new List<string>();
+        if (!string.IsNullOrWhiteSpace(embed.SiteName))
+            header.Add(embed.SiteName);
+        if (!string.IsNullOrWhiteSpace(embed.Title))
+            header.Add(embed.Title);
+
+        if (header.Count > 0)
+            lines.Add($"{prefix} PRIVMSG {ircChannel} :\u2502 {string.Join(" \u2014 ", header)}");
+
+        if (!string.IsNullOrWhiteSpace(embed.Description))
+        {
+            var desc = embed.Description.Length > 200
+                ? embed.Description[..197] + "..."
+                : embed.Description;
+            lines.Add($"{prefix} PRIVMSG {ircChannel} :\u2502 {desc}");
         }
 
         return lines;

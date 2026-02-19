@@ -455,6 +455,9 @@ public static partial class ChatColors
     public static readonly Attribute SystemAttr = new(new Color(0, 180, 180), Color.Black);
     public static readonly Attribute MentionHighlightAttr = new(Color.White, new Color(80, 40, 0));
     public static readonly Attribute MentionTextAttr = new(new Color(255, 180, 50), Color.Black);
+    public static readonly Attribute EmbedBorderAttr = new(new Color(91, 155, 213), Color.Black);
+    public static readonly Attribute EmbedTitleAttr = new(Color.White, Color.Black);
+    public static readonly Attribute EmbedDescAttr = new(new Color(160, 160, 160), Color.Black);
 
     /// <summary>
     /// Split text around @mentions, giving each @word the MentionTextAttr accent color.

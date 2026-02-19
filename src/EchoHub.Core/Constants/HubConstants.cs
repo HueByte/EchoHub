@@ -13,4 +13,11 @@ public static class HubConstants
     public const int AsciiArtWidth = 80;
     public const int AsciiArtHeight = 40;
     public const int AsciiArtHeightHalfBlock = 80;
+
+    // Link embed constants
+    public const int EmbedThumbnailWidth = 24;
+    public const int EmbedThumbnailHeight = 12;
+    public const int EmbedMaxDescriptionLength = 200;
+    public const int EmbedMaxHtmlBytes = 64 * 1024; // 64 KB
+    public const int EmbedFetchTimeoutSeconds = 3;
 }

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using EchoHub.Core.Constants;
 using EchoHub.Core.Contracts;
 using EchoHub.Core.DTOs;
@@ -14,17 +15,20 @@ public class ChatService : IChatService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly PresenceTracker _presenceTracker;
     private readonly IEnumerable<IChatBroadcaster> _broadcasters;
+    private readonly LinkEmbedService _embedService;
     private readonly ILogger<ChatService> _logger;
 
     public ChatService(
         IServiceScopeFactory scopeFactory,
         PresenceTracker presenceTracker,
         IEnumerable<IChatBroadcaster> broadcasters,
+        LinkEmbedService embedService,
         ILogger<ChatService> logger)
     {
         _scopeFactory = scopeFactory;
         _presenceTracker = presenceTracker;
         _broadcasters = broadcasters;
+        _embedService = embedService;
         _logger = logger;
     }
 
@@ -171,6 +175,17 @@ public class ChatService : IChatService
             }
         }
 
+        // Attempt to fetch link embed for URLs in the message
+        EmbedDto? embed = null;
+        try
+        {
+            embed = await _embedService.TryGetEmbedAsync(content);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to fetch link embed for message in '{Channel}'", channelName);
+        }
+
         var message = new Message
         {
             Id = Guid.NewGuid(),
@@ -180,6 +195,7 @@ public class ChatService : IChatService
             ChannelId = channel.Id,
             SenderUserId = userId,
             SenderUsername = username,
+            EmbedJson = embed is not null ? JsonSerializer.Serialize(embed) : null,
         };
 
         db.Messages.Add(message);
@@ -194,7 +210,8 @@ public class ChatService : IChatService
             MessageType.Text,
             null,
             null,
-            message.SentAt);
+            message.SentAt,
+            embed);
 
         await BroadcastToAllAsync(b => b.SendMessageToChannelAsync(channelName, messageDto));
 
@@ -387,26 +404,38 @@ public class ChatService : IChatService
         if (channel is null)
             return [];
 
-        var messages = await db.Messages
+        var raw = await db.Messages
             .Where(m => m.ChannelId == channel.Id)
             .OrderByDescending(m => m.SentAt)
             .Take(count)
             .Join(db.Users,
                 m => m.SenderUserId,
                 u => u.Id,
-                (m, u) => new MessageDto(
-                    m.Id,
-                    m.Content,
-                    m.SenderUsername,
-                    u.NicknameColor,
-                    channelName,
-                    m.Type,
-                    m.AttachmentUrl,
-                    m.AttachmentFileName,
-                    m.SentAt))
+                (m, u) => new { m, u.NicknameColor })
             .ToListAsync();
 
-        messages.Reverse();
-        return messages;
+        raw.Reverse();
+
+        return raw.Select(x =>
+        {
+            EmbedDto? embed = null;
+            if (x.m.EmbedJson is not null)
+            {
+                try { embed = JsonSerializer.Deserialize<EmbedDto>(x.m.EmbedJson); }
+                catch { /* ignore malformed JSON */ }
+            }
+
+            return new MessageDto(
+                x.m.Id,
+                x.m.Content,
+                x.m.SenderUsername,
+                x.NicknameColor,
+                channelName,
+                x.m.Type,
+                x.m.AttachmentUrl,
+                x.m.AttachmentFileName,
+                x.m.SentAt,
+                embed);
+        }).ToList();
     }
 }

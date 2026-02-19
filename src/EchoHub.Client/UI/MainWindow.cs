@@ -890,6 +890,10 @@ public sealed class MainWindow : Runnable
                     var contText = $"{indent}{contentLines[i].TrimEnd('\r')}";
                     lines.Add(new ChatLine(ChatColors.SplitMentions(contText)));
                 }
+
+                // Render link embed if present
+                if (message.Embed is not null)
+                    lines.AddRange(FormatEmbed(message.Embed, indent));
                 break;
         }
 
@@ -937,5 +941,68 @@ public sealed class MainWindow : Runnable
         };
         segments.AddRange(ChatColors.SplitMentions(suffix));
         return new ChatLine(segments);
+    }
+
+    /// <summary>
+    /// Format a link embed as indented chat lines with a left border bar.
+    /// </summary>
+    private static List<ChatLine> FormatEmbed(EmbedDto embed, string indent)
+    {
+        var lines = new List<ChatLine>();
+        const string border = "\u258f "; // ▏ + space
+
+        // Site name
+        if (!string.IsNullOrWhiteSpace(embed.SiteName))
+        {
+            lines.Add(new ChatLine(new List<ChatSegment>
+            {
+                new(indent, null),
+                new(border, ChatColors.EmbedBorderAttr),
+                new(embed.SiteName, ChatColors.EmbedBorderAttr)
+            }));
+        }
+
+        // Title
+        if (!string.IsNullOrWhiteSpace(embed.Title))
+        {
+            lines.Add(new ChatLine(new List<ChatSegment>
+            {
+                new(indent, null),
+                new(border, ChatColors.EmbedBorderAttr),
+                new(embed.Title, ChatColors.EmbedTitleAttr)
+            }));
+        }
+
+        // Description (truncated)
+        if (!string.IsNullOrWhiteSpace(embed.Description))
+        {
+            var desc = embed.Description.Length > 120
+                ? embed.Description[..117] + "..."
+                : embed.Description;
+
+            lines.Add(new ChatLine(new List<ChatSegment>
+            {
+                new(indent, null),
+                new(border, ChatColors.EmbedBorderAttr),
+                new(desc, ChatColors.EmbedDescAttr)
+            }));
+        }
+
+        // ASCII image thumbnail
+        if (!string.IsNullOrWhiteSpace(embed.ImageAscii))
+        {
+            foreach (var artLine in embed.ImageAscii.Split('\n'))
+            {
+                var trimmed = artLine.TrimEnd('\r');
+                if (string.IsNullOrEmpty(trimmed)) continue;
+
+                if (ChatLine.HasColorTags(trimmed))
+                    lines.Add(ChatLine.FromColoredText(indent + border + trimmed));
+                else
+                    lines.Add(new ChatLine(indent + border + trimmed));
+            }
+        }
+
+        return lines;
     }
 }
