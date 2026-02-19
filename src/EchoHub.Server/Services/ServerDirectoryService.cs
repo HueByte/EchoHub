@@ -23,17 +23,10 @@ public sealed class ServerDirectoryService(
         }
 
         var host = configuration["Server:PublicHost"];
-        var port = configuration.GetValue<int>("Server:PublicPort");
 
         if (string.IsNullOrWhiteSpace(host))
         {
             logger.LogWarning("PublicServer is enabled but Server:PublicHost is not set — skipping directory registration");
-            return;
-        }
-
-        if (port <= 0)
-        {
-            logger.LogWarning("PublicServer is enabled but Server:PublicPort is invalid — skipping directory registration");
             return;
         }
 
@@ -48,7 +41,7 @@ public sealed class ServerDirectoryService(
         _connection.Reconnected += async _ =>
         {
             logger.LogInformation("Reconnected to directory — re-registering server");
-            await RegisterAsync(serverName, description, host, port);
+            await RegisterAsync(serverName, description, host);
         };
 
         _connection.Closed += ex =>
@@ -64,7 +57,7 @@ public sealed class ServerDirectoryService(
             try
             {
                 await _connection.StartAsync(stoppingToken);
-                logger.LogInformation("Connected to directory at {Url}", DirectoryHubUrl);
+                logger.LogInformation("Successfully connected to EchoHubSpace API at {Url}", DirectoryHubUrl);
                 break;
             }
             catch (Exception ex)
@@ -78,7 +71,7 @@ public sealed class ServerDirectoryService(
             return;
 
         // Register on first connect
-        await RegisterAsync(serverName, description, host, port);
+        await RegisterAsync(serverName, description, host);
 
         // Poll user count and send updates
         while (!stoppingToken.IsCancellationRequested)
@@ -105,7 +98,7 @@ public sealed class ServerDirectoryService(
         }
     }
 
-    private async Task RegisterAsync(string name, string? description, string host, int port)
+    private async Task RegisterAsync(string name, string? description, string host)
     {
         if (_connection?.State != HubConnectionState.Connected)
             return;
@@ -113,10 +106,10 @@ public sealed class ServerDirectoryService(
         try
         {
             var userCount = presenceTracker.GetOnlineUserCount();
-            var dto = new RegisterServerDto(name, description, host, port, userCount);
+            var dto = new RegisterServerDto(name, description, host, userCount);
             await _connection.InvokeAsync("RegisterServer", dto);
             _lastReportedUserCount = userCount;
-            logger.LogInformation("Registered with directory as {Name} at {Host}:{Port}", name, host, port);
+            logger.LogInformation("Registered with directory as {Name} at {Host}", name, host);
         }
         catch (Exception ex)
         {
@@ -136,4 +129,4 @@ public sealed class ServerDirectoryService(
     }
 }
 
-internal record RegisterServerDto(string Name, string? Description, string Host, int Port, int UserCount);
+internal record RegisterServerDto(string Name, string? Description, string Host, int UserCount);
