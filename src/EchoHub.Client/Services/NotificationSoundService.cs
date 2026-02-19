@@ -16,6 +16,10 @@ public class NotificationSoundService
         ResolveSoundPath();
     }
 
+    public void SetEnabled(bool enabled) => _config.Enabled = enabled;
+
+    public void SetVolume(byte volume) => _config.Volume = Math.Min(volume, (byte)100);
+
     public async Task PlayAsync()
     {
         if (!_config.Enabled || _resolvedSoundPath is null)
@@ -26,6 +30,7 @@ public class NotificationSoundService
             if (_player.Playing)
                 await _player.Stop();
 
+            await _player.SetVolume(_config.Volume);
             await _player.Play(_resolvedSoundPath);
         }
         catch (Exception ex)

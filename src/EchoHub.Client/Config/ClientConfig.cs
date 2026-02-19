@@ -10,7 +10,8 @@ public class ClientConfig
 
 public class NotificationConfig
 {
-    public bool Enabled { get; set; } = true;
+    public bool Enabled { get; set; } = false;
+    public byte Volume { get; set; } = 30;
     public string? SoundFile { get; set; }
 }
 

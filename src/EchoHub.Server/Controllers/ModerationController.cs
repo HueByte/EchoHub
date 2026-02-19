@@ -72,12 +72,16 @@ public class ModerationController : ControllerBase
         if (target.Role >= caller!.Role)
             return BadRequest(new ErrorResponse("Cannot kick a user with equal or higher role."));
 
-        // Broadcast kick to all channels the user is in
+        // Broadcast kick to all channels the user is in, then clean up presence
         var channels = _presenceTracker.GetChannelsForUser(target.Username);
         foreach (var channel in channels)
         {
             await BroadcastToAllAsync(b => b.SendUserKickedAsync(channel, target.Username, request?.Reason));
         }
+
+        // Remove from presence tracker and force disconnect all connections
+        var reason = request?.Reason ?? "You have been kicked from the server.";
+        await ForceDisconnectAndCleanupAsync(target.Username, reason);
 
         return Ok(new { Message = $"{target.Username} has been kicked." });
     }
@@ -98,7 +102,11 @@ public class ModerationController : ControllerBase
         target.IsBanned = true;
         await _db.SaveChangesAsync();
 
+        // Broadcast ban notification, then force disconnect
         await BroadcastToAllAsync(b => b.SendUserBannedAsync(target.Username, request?.Reason));
+
+        var reason = request?.Reason ?? "You have been banned from this server.";
+        await ForceDisconnectAndCleanupAsync(target.Username, reason);
 
         return Ok(new { Message = $"{target.Username} has been banned." });
     }
@@ -215,6 +223,36 @@ public class ModerationController : ControllerBase
             return (null, StatusCode(403, new ErrorResponse($"Requires {minimumRole} role or higher.")));
 
         return (caller, null);
+    }
+
+    /// <summary>
+    /// Remove user from presence tracking, broadcast their departure from all channels,
+    /// send a ForceDisconnect signal, and update their DB status.
+    /// </summary>
+    private async Task ForceDisconnectAndCleanupAsync(string username, string reason)
+    {
+        var (connectionIds, channels) = _presenceTracker.ForceRemoveUser(username);
+
+        // Notify remaining users that this person left each channel
+        foreach (var channel in channels)
+        {
+            await BroadcastToAllAsync(b => b.SendUserLeftAsync(channel, username));
+        }
+
+        // Signal the user's clients to disconnect
+        if (connectionIds.Count > 0)
+        {
+            await BroadcastToAllAsync(b => b.ForceDisconnectUserAsync(connectionIds, reason));
+        }
+
+        // Mark user offline in DB
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Username == username);
+        if (user is not null)
+        {
+            user.Status = UserStatus.Invisible;
+            user.LastSeenAt = DateTimeOffset.UtcNow;
+            await _db.SaveChangesAsync();
+        }
     }
 
     private async Task BroadcastToAllAsync(Func<IChatBroadcaster, Task> action)

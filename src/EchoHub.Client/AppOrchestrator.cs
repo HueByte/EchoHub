@@ -21,6 +21,7 @@ public sealed class AppOrchestrator : IDisposable
     private readonly IApplication _app;
     private readonly MainWindow _mainWindow;
     private readonly CommandHandler _commandHandler;
+    private readonly NotificationSoundService _notificationSound;
 
     private EchoHubConnection? _connection;
     private ApiClient? _apiClient;
@@ -41,6 +42,7 @@ public sealed class AppOrchestrator : IDisposable
         _config = config;
         _mainWindow = new MainWindow(app);
         _commandHandler = new CommandHandler();
+        _notificationSound = new NotificationSoundService(config.Notifications);
 
         WireMainWindowEvents();
         WireCommandHandlerEvents();
@@ -572,7 +574,9 @@ public sealed class AppOrchestrator : IDisposable
         var editResult = ProfileEditDialog.Show(_app,
             currentProfile?.DisplayName,
             currentProfile?.Bio,
-            currentProfile?.NicknameColor);
+            currentProfile?.NicknameColor,
+            _config.Notifications.Enabled,
+            _config.Notifications.Volume);
 
         if (editResult is null) return;
 
@@ -631,6 +635,18 @@ public sealed class AppOrchestrator : IDisposable
                     Log.Error(ex, "Avatar upload failed for {Target}", editResult.AvatarPath);
                     InvokeUI(() => _mainWindow.ShowError($"Avatar upload failed: {ex.Message}"));
                 }
+            }
+
+            if (editResult.NotificationSoundEnabled.HasValue)
+            {
+                _config.Notifications.Enabled = editResult.NotificationSoundEnabled.Value;
+                _notificationSound.SetEnabled(editResult.NotificationSoundEnabled.Value);
+            }
+
+            if (editResult.NotificationVolume.HasValue)
+            {
+                _config.Notifications.Volume = editResult.NotificationVolume.Value;
+                _notificationSound.SetVolume(editResult.NotificationVolume.Value);
             }
 
             _config.DefaultPreset = new AccountPreset
@@ -768,7 +784,16 @@ public sealed class AppOrchestrator : IDisposable
     private void WireConnectionEvents(EchoHubConnection connection)
     {
         connection.OnMessageReceived += message =>
+        {
             InvokeUI(() => _mainWindow.AddMessage(message));
+
+            if (!string.IsNullOrEmpty(_currentUsername)
+                && !message.SenderUsername.Equals(_currentUsername, StringComparison.OrdinalIgnoreCase)
+                && message.Content.Contains($"@{_currentUsername}", StringComparison.OrdinalIgnoreCase))
+            {
+                _ = _notificationSound.PlayAsync();
+            }
+        };
 
         connection.OnUserJoined += (channelName, username) =>
         {

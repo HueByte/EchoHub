@@ -73,4 +73,13 @@ public class SignalRBroadcaster : IChatBroadcaster
 
         return HubContext.Clients.Client(connectionId).Error(message);
     }
+
+    public Task ForceDisconnectUserAsync(List<string> connectionIds, string reason)
+    {
+        var signalRIds = connectionIds.Where(c => !c.StartsWith("irc-")).ToList();
+        if (signalRIds.Count == 0)
+            return Task.CompletedTask;
+
+        return HubContext.Clients.Clients(signalRIds).ForceDisconnect(reason);
+    }
 }

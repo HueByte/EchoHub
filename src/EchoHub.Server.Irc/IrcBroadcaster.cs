@@ -106,4 +106,22 @@ public class IrcBroadcaster : IChatBroadcaster
             await conn.SendAsync($":{_gateway.Options.ServerName} NOTICE {conn.Nickname ?? "*"} :{message}");
         }
     }
+
+    public async Task ForceDisconnectUserAsync(List<string> connectionIds, string reason)
+    {
+        foreach (var connId in connectionIds)
+        {
+            if (!connId.StartsWith("irc-")) continue;
+
+            if (_gateway.Connections.TryGetValue(connId, out var conn))
+            {
+                try
+                {
+                    await conn.SendAsync($"ERROR :Closing Link: {reason}");
+                    await conn.DisposeAsync();
+                }
+                catch { /* connection may already be closed */ }
+            }
+        }
+    }
 }

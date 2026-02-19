@@ -151,4 +151,27 @@ public class PresenceTracker
     {
         return _userConnections.Count;
     }
+
+    /// <summary>
+    /// Forcibly remove a user from all tracking. Returns their connection IDs and channels
+    /// so the caller can broadcast departures and force-disconnect connections.
+    /// </summary>
+    public (List<string> ConnectionIds, List<string> Channels) ForceRemoveUser(string username)
+    {
+        lock (_lock)
+        {
+            var channels = _userChannels.TryRemove(username, out var ch)
+                ? ch.ToList()
+                : [];
+
+            var connectionIds = _userConnections.TryRemove(username, out var conns)
+                ? conns.ToList()
+                : [];
+
+            foreach (var connId in connectionIds)
+                _connections.TryRemove(connId, out _);
+
+            return (connectionIds, channels);
+        }
+    }
 }

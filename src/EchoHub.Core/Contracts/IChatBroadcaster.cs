@@ -14,4 +14,5 @@ public interface IChatBroadcaster
     Task SendMessageDeletedAsync(string channelName, Guid messageId);
     Task SendChannelNukedAsync(string channelName);
     Task SendErrorAsync(string connectionId, string message);
+    Task ForceDisconnectUserAsync(List<string> connectionIds, string reason);
 }
