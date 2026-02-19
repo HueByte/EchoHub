@@ -9514,15 +9514,15 @@ references:
   commentId: T:EchoHub.Server.Irc.IrcGatewayService
   fullName: EchoHub.Server.Irc.IrcGatewayService
   nameWithType: IrcGatewayService
-- uid: EchoHub.Server.Irc.IrcGatewayService.#ctor(Microsoft.Extensions.Options.IOptions{EchoHub.Server.Irc.IrcOptions},EchoHub.Core.Contracts.IChatService,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Irc.IrcGatewayService})
-  name: IrcGatewayService(IOptions<IrcOptions>, IChatService, ILogger<IrcGatewayService>)
-  href: api/server-irc/EchoHub.Server.Irc.IrcGatewayService.html#EchoHub_Server_Irc_IrcGatewayService__ctor_Microsoft_Extensions_Options_IOptions_EchoHub_Server_Irc_IrcOptions__EchoHub_Core_Contracts_IChatService_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Irc_IrcGatewayService__
-  commentId: M:EchoHub.Server.Irc.IrcGatewayService.#ctor(Microsoft.Extensions.Options.IOptions{EchoHub.Server.Irc.IrcOptions},EchoHub.Core.Contracts.IChatService,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Irc.IrcGatewayService})
-  name.vb: New(IOptions(Of IrcOptions), IChatService, ILogger(Of IrcGatewayService))
-  fullName: EchoHub.Server.Irc.IrcGatewayService.IrcGatewayService(Microsoft.Extensions.Options.IOptions<EchoHub.Server.Irc.IrcOptions>, EchoHub.Core.Contracts.IChatService, Microsoft.Extensions.Logging.ILogger<EchoHub.Server.Irc.IrcGatewayService>)
-  fullName.vb: EchoHub.Server.Irc.IrcGatewayService.New(Microsoft.Extensions.Options.IOptions(Of EchoHub.Server.Irc.IrcOptions), EchoHub.Core.Contracts.IChatService, Microsoft.Extensions.Logging.ILogger(Of EchoHub.Server.Irc.IrcGatewayService))
-  nameWithType: IrcGatewayService.IrcGatewayService(IOptions<IrcOptions>, IChatService, ILogger<IrcGatewayService>)
-  nameWithType.vb: IrcGatewayService.New(IOptions(Of IrcOptions), IChatService, ILogger(Of IrcGatewayService))
+- uid: EchoHub.Server.Irc.IrcGatewayService.#ctor(Microsoft.Extensions.Options.IOptions{EchoHub.Server.Irc.IrcOptions},System.IServiceProvider,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Irc.IrcGatewayService})
+  name: IrcGatewayService(IOptions<IrcOptions>, IServiceProvider, ILogger<IrcGatewayService>)
+  href: api/server-irc/EchoHub.Server.Irc.IrcGatewayService.html#EchoHub_Server_Irc_IrcGatewayService__ctor_Microsoft_Extensions_Options_IOptions_EchoHub_Server_Irc_IrcOptions__System_IServiceProvider_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Irc_IrcGatewayService__
+  commentId: M:EchoHub.Server.Irc.IrcGatewayService.#ctor(Microsoft.Extensions.Options.IOptions{EchoHub.Server.Irc.IrcOptions},System.IServiceProvider,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Irc.IrcGatewayService})
+  name.vb: New(IOptions(Of IrcOptions), IServiceProvider, ILogger(Of IrcGatewayService))
+  fullName: EchoHub.Server.Irc.IrcGatewayService.IrcGatewayService(Microsoft.Extensions.Options.IOptions<EchoHub.Server.Irc.IrcOptions>, System.IServiceProvider, Microsoft.Extensions.Logging.ILogger<EchoHub.Server.Irc.IrcGatewayService>)
+  fullName.vb: EchoHub.Server.Irc.IrcGatewayService.New(Microsoft.Extensions.Options.IOptions(Of EchoHub.Server.Irc.IrcOptions), System.IServiceProvider, Microsoft.Extensions.Logging.ILogger(Of EchoHub.Server.Irc.IrcGatewayService))
+  nameWithType: IrcGatewayService.IrcGatewayService(IOptions<IrcOptions>, IServiceProvider, ILogger<IrcGatewayService>)
+  nameWithType.vb: IrcGatewayService.New(IOptions(Of IrcOptions), IServiceProvider, ILogger(Of IrcGatewayService))
 - uid: EchoHub.Server.Irc.IrcGatewayService.#ctor*
   name: IrcGatewayService
   href: api/server-irc/EchoHub.Server.Irc.IrcGatewayService.html#EchoHub_Server_Irc_IrcGatewayService__ctor_
@@ -10726,15 +10726,15 @@ references:
   commentId: T:EchoHub.Server.Services.SignalRBroadcaster
   fullName: EchoHub.Server.Services.SignalRBroadcaster
   nameWithType: SignalRBroadcaster
-- uid: EchoHub.Server.Services.SignalRBroadcaster.#ctor(Microsoft.AspNetCore.SignalR.IHubContext{EchoHub.Server.Hubs.ChatHub,EchoHub.Core.Contracts.IEchoHubClient},EchoHub.Server.Services.PresenceTracker)
-  name: SignalRBroadcaster(IHubContext<ChatHub, IEchoHubClient>, PresenceTracker)
-  href: api/server/EchoHub.Server.Services.SignalRBroadcaster.html#EchoHub_Server_Services_SignalRBroadcaster__ctor_Microsoft_AspNetCore_SignalR_IHubContext_EchoHub_Server_Hubs_ChatHub_EchoHub_Core_Contracts_IEchoHubClient__EchoHub_Server_Services_PresenceTracker_
-  commentId: M:EchoHub.Server.Services.SignalRBroadcaster.#ctor(Microsoft.AspNetCore.SignalR.IHubContext{EchoHub.Server.Hubs.ChatHub,EchoHub.Core.Contracts.IEchoHubClient},EchoHub.Server.Services.PresenceTracker)
-  name.vb: New(IHubContext(Of ChatHub, IEchoHubClient), PresenceTracker)
-  fullName: EchoHub.Server.Services.SignalRBroadcaster.SignalRBroadcaster(Microsoft.AspNetCore.SignalR.IHubContext<EchoHub.Server.Hubs.ChatHub, EchoHub.Core.Contracts.IEchoHubClient>, EchoHub.Server.Services.PresenceTracker)
-  fullName.vb: EchoHub.Server.Services.SignalRBroadcaster.New(Microsoft.AspNetCore.SignalR.IHubContext(Of EchoHub.Server.Hubs.ChatHub, EchoHub.Core.Contracts.IEchoHubClient), EchoHub.Server.Services.PresenceTracker)
-  nameWithType: SignalRBroadcaster.SignalRBroadcaster(IHubContext<ChatHub, IEchoHubClient>, PresenceTracker)
-  nameWithType.vb: SignalRBroadcaster.New(IHubContext(Of ChatHub, IEchoHubClient), PresenceTracker)
+- uid: EchoHub.Server.Services.SignalRBroadcaster.#ctor(System.IServiceProvider,EchoHub.Server.Services.PresenceTracker)
+  name: SignalRBroadcaster(IServiceProvider, PresenceTracker)
+  href: api/server/EchoHub.Server.Services.SignalRBroadcaster.html#EchoHub_Server_Services_SignalRBroadcaster__ctor_System_IServiceProvider_EchoHub_Server_Services_PresenceTracker_
+  commentId: M:EchoHub.Server.Services.SignalRBroadcaster.#ctor(System.IServiceProvider,EchoHub.Server.Services.PresenceTracker)
+  name.vb: New(IServiceProvider, PresenceTracker)
+  fullName: EchoHub.Server.Services.SignalRBroadcaster.SignalRBroadcaster(System.IServiceProvider, EchoHub.Server.Services.PresenceTracker)
+  fullName.vb: EchoHub.Server.Services.SignalRBroadcaster.New(System.IServiceProvider, EchoHub.Server.Services.PresenceTracker)
+  nameWithType: SignalRBroadcaster.SignalRBroadcaster(IServiceProvider, PresenceTracker)
+  nameWithType.vb: SignalRBroadcaster.New(IServiceProvider, PresenceTracker)
 - uid: EchoHub.Server.Services.SignalRBroadcaster.#ctor*
   name: SignalRBroadcaster
   href: api/server/EchoHub.Server.Services.SignalRBroadcaster.html#EchoHub_Server_Services_SignalRBroadcaster__ctor_

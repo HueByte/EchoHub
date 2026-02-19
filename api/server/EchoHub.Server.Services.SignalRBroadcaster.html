@@ -160,8 +160,8 @@ Class SignalRBroadcaster  <a class="header-action link-secondary" title="View so
 
   <a id="EchoHub_Server_Services_SignalRBroadcaster__ctor_" data-uid="EchoHub.Server.Services.SignalRBroadcaster.#ctor*"></a>
 
-  <h3 id="EchoHub_Server_Services_SignalRBroadcaster__ctor_Microsoft_AspNetCore_SignalR_IHubContext_EchoHub_Server_Hubs_ChatHub_EchoHub_Core_Contracts_IEchoHubClient__EchoHub_Server_Services_PresenceTracker_" data-uid="EchoHub.Server.Services.SignalRBroadcaster.#ctor(Microsoft.AspNetCore.SignalR.IHubContext{EchoHub.Server.Hubs.ChatHub,EchoHub.Core.Contracts.IEchoHubClient},EchoHub.Server.Services.PresenceTracker)">
-  SignalRBroadcaster(IHubContext&lt;ChatHub, IEchoHubClient&gt;, PresenceTracker)
+  <h3 id="EchoHub_Server_Services_SignalRBroadcaster__ctor_System_IServiceProvider_EchoHub_Server_Services_PresenceTracker_" data-uid="EchoHub.Server.Services.SignalRBroadcaster.#ctor(System.IServiceProvider,EchoHub.Server.Services.PresenceTracker)">
+  SignalRBroadcaster(IServiceProvider, PresenceTracker)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/SignalRBroadcaster.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -169,12 +169,12 @@ Class SignalRBroadcaster  <a class="header-action link-secondary" title="View so
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public SignalRBroadcaster(IHubContext&lt;ChatHub, IEchoHubClient&gt; hubContext, PresenceTracker presenceTracker)</code></pre>
+    <pre><code class="lang-csharp hljs">public SignalRBroadcaster(IServiceProvider serviceProvider, PresenceTracker presenceTracker)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
-    <dt><code>hubContext</code> <span class="xref">IHubContext</span>&lt;<a class="xref" href="EchoHub.Server.Hubs.ChatHub.html">ChatHub</a>, <a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/Contracts/IEchoHubClient.cs">IEchoHubClient</a>&gt;</dt>
+    <dt><code>serviceProvider</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iserviceprovider">IServiceProvider</a></dt>
     <dd></dd>
     <dt><code>presenceTracker</code> <a class="xref" href="EchoHub.Server.Services.PresenceTracker.html">PresenceTracker</a></dt>
     <dd></dd>

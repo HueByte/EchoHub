@@ -158,8 +158,8 @@ Class IrcGatewayService  <a class="header-action link-secondary" title="View sou
 
   <a id="EchoHub_Server_Irc_IrcGatewayService__ctor_" data-uid="EchoHub.Server.Irc.IrcGatewayService.#ctor*"></a>
 
-  <h3 id="EchoHub_Server_Irc_IrcGatewayService__ctor_Microsoft_Extensions_Options_IOptions_EchoHub_Server_Irc_IrcOptions__EchoHub_Core_Contracts_IChatService_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Irc_IrcGatewayService__" data-uid="EchoHub.Server.Irc.IrcGatewayService.#ctor(Microsoft.Extensions.Options.IOptions{EchoHub.Server.Irc.IrcOptions},EchoHub.Core.Contracts.IChatService,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Irc.IrcGatewayService})">
-  IrcGatewayService(IOptions&lt;IrcOptions&gt;, IChatService, ILogger&lt;IrcGatewayService&gt;)
+  <h3 id="EchoHub_Server_Irc_IrcGatewayService__ctor_Microsoft_Extensions_Options_IOptions_EchoHub_Server_Irc_IrcOptions__System_IServiceProvider_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Irc_IrcGatewayService__" data-uid="EchoHub.Server.Irc.IrcGatewayService.#ctor(Microsoft.Extensions.Options.IOptions{EchoHub.Server.Irc.IrcOptions},System.IServiceProvider,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Irc.IrcGatewayService})">
+  IrcGatewayService(IOptions&lt;IrcOptions&gt;, IServiceProvider, ILogger&lt;IrcGatewayService&gt;)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server.Irc/IrcGatewayService.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -167,14 +167,14 @@ Class IrcGatewayService  <a class="header-action link-secondary" title="View sou
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public IrcGatewayService(IOptions&lt;IrcOptions&gt; options, IChatService chatService, ILogger&lt;IrcGatewayService&gt; logger)</code></pre>
+    <pre><code class="lang-csharp hljs">public IrcGatewayService(IOptions&lt;IrcOptions&gt; options, IServiceProvider services, ILogger&lt;IrcGatewayService&gt; logger)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>options</code> <span class="xref">IOptions</span>&lt;<a class="xref" href="EchoHub.Server.Irc.IrcOptions.html">IrcOptions</a>&gt;</dt>
     <dd></dd>
-    <dt><code>chatService</code> <a class="xref" href="../core/EchoHub.Core.Contracts.IChatService.html">IChatService</a></dt>
+    <dt><code>services</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iserviceprovider">IServiceProvider</a></dt>
     <dd></dd>
     <dt><code>logger</code> <span class="xref">ILogger</span>&lt;<a class="xref" href="EchoHub.Server.Irc.IrcGatewayService.html">IrcGatewayService</a>&gt;</dt>
     <dd></dd>

@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Changelog | EchoHub Documentation </title>
+      <title>v0.2.2 - Startup &amp; Shutdown Fixes | EchoHub Documentation </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Changelog | EchoHub Documentation ">
+      <meta name="title" content="v0.2.2 - Startup &amp; Shutdown Fixes | EchoHub Documentation ">
       
       
       <link rel="icon" href="../images/hue_icon.svg">
@@ -85,16 +85,20 @@
         </div>
 
         <article data-uid="">
-<h1 id="changelog">Changelog</h1>
+<h1 id="v022---startup--shutdown-fixes">v0.2.2 - Startup &amp; Shutdown Fixes</h1>
 
-<p>Release history for EchoHub.</p>
-<h2 id="releases">Releases</h2>
+<h2 id="fixes">Fixes</h2>
 <ul>
-<li><a href="v0.2.2.html">v0.2.2</a> - Startup &amp; Shutdown Fixes</li>
-<li><a href="v0.2.1.html">v0.2.1</a> - Shutdown &amp; CI Fixes</li>
-<li><a href="v0.2.0.html">v0.2.0</a> - IRC Gateway</li>
-<li><a href="v0.1.1.html">v0.1.1</a> - Directory Connection Self-Healing</li>
-<li><a href="v0.1.0.html">v0.1.0</a> - Initial Release</li>
+<li>Fixed server hanging on startup when IRC gateway is enabled — circular DI dependency between <code>IrcGatewayService</code> → <code>IChatService</code> → <code>IChatBroadcaster</code> → <code>IrcBroadcaster</code> caused the DI container to deadlock</li>
+<li>Fixed <code>SignalRBroadcaster</code> eagerly resolving <code>IHubContext&lt;ChatHub&gt;</code> during DI construction, which could deadlock on some platforms — now lazy-resolves via <code>IServiceProvider</code> on first use</li>
+<li>Simplified IRC service registration to use standard <code>AddSingleton&lt;IChatBroadcaster, IrcBroadcaster&gt;</code> instead of manual factory, breaking the circular resolution chain</li>
+<li>Fixed server hanging on Ctrl+C — replaced <code>await using</code> with explicit dispose bounded to 3 seconds, so a stuck <code>HubConnection</code> can no longer block shutdown</li>
+<li>Reduced host shutdown timeout from 30s (default) to 5s</li>
+<li>Caught <code>OperationCanceledException</code> in the directory service reconnect loop so cancellation exits immediately instead of propagating through dispose</li>
+</ul>
+<h2 id="refactoring">Refactoring</h2>
+<ul>
+<li>Replaced primary constructors with standard constructor injection across all server classes for consistency</li>
 </ul>
 
 </article>
