@@ -10,7 +10,7 @@ Open your profile (`/profile`) and check the **"Notification sound on @mention"*
 
 The client ships with a default `Notification.mp3` in the `Assets` folder. To use your own notification sound, replace the file at:
 
-```
+```text
 <app-directory>/Assets/Notification.mp3
 ```
 
