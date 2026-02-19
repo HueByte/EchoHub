@@ -14,13 +14,21 @@ namespace EchoHub.Server.Controllers;
 [Route("api/users")]
 [Authorize]
 [EnableRateLimiting("general")]
-public class UsersController(EchoHubDbContext db, ImageToAsciiService asciiService) : ControllerBase
+public class UsersController : ControllerBase
 {
+    private readonly EchoHubDbContext _db;
+    private readonly ImageToAsciiService _asciiService;
+
+    public UsersController(EchoHubDbContext db, ImageToAsciiService asciiService)
+    {
+        _db = db;
+        _asciiService = asciiService;
+    }
     [HttpGet("{username}/profile")]
     public async Task<IActionResult> GetProfile(string username)
     {
         var normalizedUsername = username.ToLowerInvariant().Trim();
-        var user = await db.Users.FirstOrDefaultAsync(u => u.Username == normalizedUsername);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Username == normalizedUsername);
 
         if (user is null)
             return NotFound(new ErrorResponse("User not found."));
@@ -36,7 +44,7 @@ public class UsersController(EchoHubDbContext db, ImageToAsciiService asciiServi
             return Unauthorized(new ErrorResponse("Authentication required."));
 
         var userId = Guid.Parse(userIdClaim);
-        var user = await db.Users.FindAsync(userId);
+        var user = await _db.Users.FindAsync(userId);
 
         if (user is null)
             return NotFound(new ErrorResponse("User not found."));
@@ -63,7 +71,7 @@ public class UsersController(EchoHubDbContext db, ImageToAsciiService asciiServi
             user.NicknameColor = color.Length > 0 ? color : null;
         }
 
-        await db.SaveChangesAsync();
+        await _db.SaveChangesAsync();
 
         return Ok(ToProfileDto(user));
     }
@@ -77,7 +85,7 @@ public class UsersController(EchoHubDbContext db, ImageToAsciiService asciiServi
             return Unauthorized(new ErrorResponse("Authentication required."));
 
         var userId = Guid.Parse(userIdClaim);
-        var user = await db.Users.FindAsync(userId);
+        var user = await _db.Users.FindAsync(userId);
 
         if (user is null)
             return NotFound(new ErrorResponse("User not found."));
@@ -95,10 +103,10 @@ public class UsersController(EchoHubDbContext db, ImageToAsciiService asciiServi
         if (!FileValidationHelper.IsValidImage(stream))
             return BadRequest(new ErrorResponse("File is not a valid image. Supported formats: JPEG, PNG, GIF, WebP."));
 
-        var asciiArt = asciiService.ConvertToAscii(stream);
+        var asciiArt = _asciiService.ConvertToAscii(stream);
 
         user.AvatarAscii = asciiArt;
-        await db.SaveChangesAsync();
+        await _db.SaveChangesAsync();
 
         return Ok(new AvatarUploadResponse(asciiArt));
     }

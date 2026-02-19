@@ -15,8 +15,7 @@ public static class IrcServiceExtensions
         if (builder.Configuration.GetValue<bool>("Irc:Enabled"))
         {
             builder.Services.AddSingleton<IrcGatewayService>();
-            builder.Services.AddSingleton<IChatBroadcaster>(sp =>
-                new IrcBroadcaster(sp.GetRequiredService<IrcGatewayService>()));
+            builder.Services.AddSingleton<IChatBroadcaster, IrcBroadcaster>();
             builder.Services.AddHostedService(sp =>
                 sp.GetRequiredService<IrcGatewayService>());
         }

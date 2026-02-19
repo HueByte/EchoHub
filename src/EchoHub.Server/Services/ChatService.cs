@@ -9,17 +9,30 @@ using Microsoft.Extensions.Logging;
 
 namespace EchoHub.Server.Services;
 
-public class ChatService(
-    IServiceScopeFactory scopeFactory,
-    PresenceTracker presenceTracker,
-    IEnumerable<IChatBroadcaster> broadcasters,
-    ILogger<ChatService> logger) : IChatService
+public class ChatService : IChatService
 {
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly PresenceTracker _presenceTracker;
+    private readonly IEnumerable<IChatBroadcaster> _broadcasters;
+    private readonly ILogger<ChatService> _logger;
+
+    public ChatService(
+        IServiceScopeFactory scopeFactory,
+        PresenceTracker presenceTracker,
+        IEnumerable<IChatBroadcaster> broadcasters,
+        ILogger<ChatService> logger)
+    {
+        _scopeFactory = scopeFactory;
+        _presenceTracker = presenceTracker;
+        _broadcasters = broadcasters;
+        _logger = logger;
+    }
+
     public async Task UserConnectedAsync(string connectionId, Guid userId, string username)
     {
-        presenceTracker.UserConnected(connectionId, userId, username);
+        _presenceTracker.UserConnected(connectionId, userId, username);
 
-        using var scope = scopeFactory.CreateScope();
+        using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
         var user = await db.Users.FindAsync(userId);
@@ -30,21 +43,21 @@ public class ChatService(
             await db.SaveChangesAsync();
         }
 
-        logger.LogInformation("{User} connected (ConnectionId: {ConnectionId})", username, connectionId);
+        _logger.LogInformation("{User} connected (ConnectionId: {ConnectionId})", username, connectionId);
     }
 
     public async Task<string?> UserDisconnectedAsync(string connectionId)
     {
-        var preDisconnectUsername = presenceTracker.GetUsernameForConnection(connectionId);
+        var preDisconnectUsername = _presenceTracker.GetUsernameForConnection(connectionId);
         var channelsBeforeDisconnect = preDisconnectUsername is not null
-            ? presenceTracker.GetChannelsForUser(preDisconnectUsername)
+            ? _presenceTracker.GetChannelsForUser(preDisconnectUsername)
             : [];
 
-        var username = presenceTracker.UserDisconnected(connectionId);
+        var username = _presenceTracker.UserDisconnected(connectionId);
 
-        if (username is not null && !presenceTracker.IsOnline(username))
+        if (username is not null && !_presenceTracker.IsOnline(username))
         {
-            using var scope = scopeFactory.CreateScope();
+            using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
             var user = await db.Users.FirstOrDefaultAsync(u => u.Username == username);
@@ -65,7 +78,7 @@ public class ChatService(
             }
         }
 
-        logger.LogInformation("{User} disconnected (ConnectionId: {ConnectionId})", username ?? "Unknown", connectionId);
+        _logger.LogInformation("{User} disconnected (ConnectionId: {ConnectionId})", username ?? "Unknown", connectionId);
         return username;
     }
 
@@ -77,19 +90,19 @@ public class ChatService(
         if (!ValidationConstants.ChannelNameRegex().IsMatch(channelName))
             return ([], "Invalid channel name. Use 2-100 characters: letters, digits, underscores, or hyphens.");
 
-        using var scope = scopeFactory.CreateScope();
+        using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
         var channel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
         if (channel is null)
             return ([], $"Channel '{channelName}' does not exist. Create it first via the channel list.");
 
-        var isNewJoin = presenceTracker.JoinChannel(username, channelName);
+        var isNewJoin = _presenceTracker.JoinChannel(username, channelName);
 
         if (isNewJoin)
         {
             await BroadcastToAllAsync(b => b.SendUserJoinedAsync(channelName, username, connectionId));
-            logger.LogInformation("{User} joined channel '{Channel}'", username, channelName);
+            _logger.LogInformation("{User} joined channel '{Channel}'", username, channelName);
         }
 
         var history = await GetChannelHistoryInternalAsync(db, channelName, HubConstants.DefaultHistoryCount);
@@ -99,9 +112,9 @@ public class ChatService(
     public async Task LeaveChannelAsync(string connectionId, string username, string channelName)
     {
         channelName = channelName.ToLowerInvariant().Trim();
-        presenceTracker.LeaveChannel(username, channelName);
+        _presenceTracker.LeaveChannel(username, channelName);
         await BroadcastToAllAsync(b => b.SendUserLeftAsync(channelName, username));
-        logger.LogInformation("{User} left channel '{Channel}'", username, channelName);
+        _logger.LogInformation("{User} left channel '{Channel}'", username, channelName);
     }
 
     public async Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content)
@@ -117,7 +130,7 @@ public class ChatService(
         if (content.Length > HubConstants.MaxMessageLength)
             return $"Message exceeds maximum length of {HubConstants.MaxMessageLength} characters.";
 
-        using var scope = scopeFactory.CreateScope();
+        using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
         var channel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
@@ -153,7 +166,7 @@ public class ChatService(
 
         await BroadcastToAllAsync(b => b.SendMessageToChannelAsync(channelName, messageDto));
 
-        logger.LogDebug("{User} sent message in '{Channel}'", username, channelName);
+        _logger.LogDebug("{User} sent message in '{Channel}'", username, channelName);
         return null;
     }
 
@@ -162,7 +175,7 @@ public class ChatService(
         channelName = channelName.ToLowerInvariant().Trim();
         count = Math.Clamp(count, 1, ValidationConstants.MaxHistoryCount);
 
-        using var scope = scopeFactory.CreateScope();
+        using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
         return await GetChannelHistoryInternalAsync(db, channelName, count);
@@ -173,7 +186,7 @@ public class ChatService(
         if (statusMessage is not null && statusMessage.Length > ValidationConstants.MaxStatusMessageLength)
             return $"Status message must not exceed {ValidationConstants.MaxStatusMessageLength} characters.";
 
-        using var scope = scopeFactory.CreateScope();
+        using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
         var user = await db.Users.FindAsync(userId);
@@ -192,7 +205,7 @@ public class ChatService(
             status,
             statusMessage);
 
-        var channels = presenceTracker.GetChannelsForUser(username);
+        var channels = _presenceTracker.GetChannelsForUser(username);
         await BroadcastToAllAsync(b => b.SendUserStatusChangedAsync(channels, presence));
 
         return null;
@@ -201,9 +214,9 @@ public class ChatService(
     public async Task<List<UserPresenceDto>> GetOnlineUsersAsync(string channelName)
     {
         channelName = channelName.ToLowerInvariant().Trim();
-        var onlineUsernames = presenceTracker.GetOnlineUsersInChannel(channelName);
+        var onlineUsernames = _presenceTracker.GetOnlineUsersInChannel(channelName);
 
-        using var scope = scopeFactory.CreateScope();
+        using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
         return await db.Users
@@ -225,7 +238,7 @@ public class ChatService(
 
     private async Task BroadcastToAllAsync(Func<IChatBroadcaster, Task> action)
     {
-        foreach (var broadcaster in broadcasters)
+        foreach (var broadcaster in _broadcasters)
         {
             try
             {
@@ -233,7 +246,7 @@ public class ChatService(
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Broadcaster {Type} failed", broadcaster.GetType().Name);
+                _logger.LogError(ex, "Broadcaster {Type} failed", broadcaster.GetType().Name);
             }
         }
     }
@@ -242,7 +255,7 @@ public class ChatService(
     {
         username = username.ToLowerInvariant();
 
-        using var scope = scopeFactory.CreateScope();
+        using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
         var user = await db.Users.FirstOrDefaultAsync(u => u.Username == username);
@@ -258,7 +271,7 @@ public class ChatService(
     {
         channelName = channelName.ToLowerInvariant().Trim();
 
-        using var scope = scopeFactory.CreateScope();
+        using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
         var channel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
@@ -269,7 +282,7 @@ public class ChatService(
 
     public async Task<List<ChannelListItem>> GetChannelListAsync()
     {
-        using var scope = scopeFactory.CreateScope();
+        using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
         var channels = await db.Channels.OrderBy(c => c.Name).ToListAsync();
@@ -277,17 +290,17 @@ public class ChatService(
         return channels.Select(c => new ChannelListItem(
             c.Name,
             c.Topic,
-            presenceTracker.GetOnlineUsersInChannel(c.Name).Count)).ToList();
+            _presenceTracker.GetOnlineUsersInChannel(c.Name).Count)).ToList();
     }
 
     public Task<List<string>> GetChannelsForUserAsync(string username)
-        => Task.FromResult(presenceTracker.GetChannelsForUser(username));
+        => Task.FromResult(_presenceTracker.GetChannelsForUser(username));
 
     public async Task<(Guid UserId, string Username)?> AuthenticateUserAsync(string username, string password)
     {
         username = username.ToLowerInvariant();
 
-        using var scope = scopeFactory.CreateScope();
+        using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
         var user = await db.Users.FirstOrDefaultAsync(u => u.Username == username);

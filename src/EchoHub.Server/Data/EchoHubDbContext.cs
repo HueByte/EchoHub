@@ -4,8 +4,9 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace EchoHub.Server.Data;
 
-public class EchoHubDbContext(DbContextOptions<EchoHubDbContext> options) : DbContext(options)
+public class EchoHubDbContext : DbContext
 {
+    public EchoHubDbContext(DbContextOptions<EchoHubDbContext> options) : base(options) { }
     public DbSet<User> Users => Set<User>();
     public DbSet<Channel> Channels => Set<Channel>();
     public DbSet<Message> Messages => Set<Message>();

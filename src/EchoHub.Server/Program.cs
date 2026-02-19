@@ -35,6 +35,10 @@ while (true)
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        // ── Host options ────────────────────────────────────────────────────
+        builder.Services.Configure<HostOptions>(options =>
+            options.ShutdownTimeout = TimeSpan.FromSeconds(5));
+
         // ── Serilog ──────────────────────────────────────────────────────────
         builder.Host.UseSerilog((context, config) =>
             config.ReadFrom.Configuration(context.Configuration));

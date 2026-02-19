@@ -12,8 +12,16 @@ namespace EchoHub.Server.Controllers;
 [ApiController]
 [Route("api/auth")]
 [EnableRateLimiting("auth")]
-public class AuthController(EchoHubDbContext db, JwtTokenService jwt) : ControllerBase
+public class AuthController : ControllerBase
 {
+    private readonly EchoHubDbContext _db;
+    private readonly JwtTokenService _jwt;
+
+    public AuthController(EchoHubDbContext db, JwtTokenService jwt)
+    {
+        _db = db;
+        _jwt = jwt;
+    }
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
@@ -31,7 +39,7 @@ public class AuthController(EchoHubDbContext db, JwtTokenService jwt) : Controll
 
         var normalizedUsername = request.Username.ToLowerInvariant().Trim();
 
-        if (await db.Users.AnyAsync(u => u.Username == normalizedUsername))
+        if (await _db.Users.AnyAsync(u => u.Username == normalizedUsername))
             return Conflict(new ErrorResponse("Username is already taken."));
 
         var user = new User
@@ -42,20 +50,20 @@ public class AuthController(EchoHubDbContext db, JwtTokenService jwt) : Controll
             DisplayName = request.DisplayName?.Trim(),
         };
 
-        db.Users.Add(user);
-        await db.SaveChangesAsync();
+        _db.Users.Add(user);
+        await _db.SaveChangesAsync();
 
-        var (accessToken, expiresAt) = jwt.GenerateAccessToken(user);
+        var (accessToken, expiresAt) = _jwt.GenerateAccessToken(user);
         var refreshToken = JwtTokenService.GenerateRefreshToken();
 
-        db.RefreshTokens.Add(new RefreshToken
+        _db.RefreshTokens.Add(new RefreshToken
         {
             Id = Guid.NewGuid(),
             TokenHash = JwtTokenService.HashToken(refreshToken),
             UserId = user.Id,
             ExpiresAt = DateTimeOffset.UtcNow.Add(JwtTokenService.RefreshTokenLifetime),
         });
-        await db.SaveChangesAsync();
+        await _db.SaveChangesAsync();
 
         return Ok(new LoginResponse(accessToken, refreshToken, expiresAt, user.Username, user.DisplayName, user.NicknameColor));
     }
@@ -67,25 +75,25 @@ public class AuthController(EchoHubDbContext db, JwtTokenService jwt) : Controll
             return BadRequest(new ErrorResponse("Username and password are required."));
 
         var normalizedUsername = request.Username.ToLowerInvariant().Trim();
-        var user = await db.Users.FirstOrDefaultAsync(u => u.Username == normalizedUsername);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Username == normalizedUsername);
 
         if (user is null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             return Unauthorized(new ErrorResponse("Invalid username or password."));
 
         user.LastSeenAt = DateTimeOffset.UtcNow;
-        await db.SaveChangesAsync();
+        await _db.SaveChangesAsync();
 
-        var (accessToken, expiresAt) = jwt.GenerateAccessToken(user);
+        var (accessToken, expiresAt) = _jwt.GenerateAccessToken(user);
         var refreshToken = JwtTokenService.GenerateRefreshToken();
 
-        db.RefreshTokens.Add(new RefreshToken
+        _db.RefreshTokens.Add(new RefreshToken
         {
             Id = Guid.NewGuid(),
             TokenHash = JwtTokenService.HashToken(refreshToken),
             UserId = user.Id,
             ExpiresAt = DateTimeOffset.UtcNow.Add(JwtTokenService.RefreshTokenLifetime),
         });
-        await db.SaveChangesAsync();
+        await _db.SaveChangesAsync();
 
         return Ok(new LoginResponse(accessToken, refreshToken, expiresAt, user.Username, user.DisplayName, user.NicknameColor));
     }
@@ -97,7 +105,7 @@ public class AuthController(EchoHubDbContext db, JwtTokenService jwt) : Controll
             return BadRequest(new ErrorResponse("Refresh token is required."));
 
         var tokenHash = JwtTokenService.HashToken(request.RefreshToken);
-        var storedToken = await db.RefreshTokens
+        var storedToken = await _db.RefreshTokens
             .Include(r => r.User)
             .FirstOrDefaultAsync(r => r.TokenHash == tokenHash);
 
@@ -111,17 +119,17 @@ public class AuthController(EchoHubDbContext db, JwtTokenService jwt) : Controll
         user.LastSeenAt = DateTimeOffset.UtcNow;
 
         // Issue new token pair
-        var (accessToken, expiresAt) = jwt.GenerateAccessToken(user);
+        var (accessToken, expiresAt) = _jwt.GenerateAccessToken(user);
         var newRefreshToken = JwtTokenService.GenerateRefreshToken();
 
-        db.RefreshTokens.Add(new RefreshToken
+        _db.RefreshTokens.Add(new RefreshToken
         {
             Id = Guid.NewGuid(),
             TokenHash = JwtTokenService.HashToken(newRefreshToken),
             UserId = user.Id,
             ExpiresAt = DateTimeOffset.UtcNow.Add(JwtTokenService.RefreshTokenLifetime),
         });
-        await db.SaveChangesAsync();
+        await _db.SaveChangesAsync();
 
         return Ok(new LoginResponse(accessToken, newRefreshToken, expiresAt, user.Username, user.DisplayName, user.NicknameColor));
     }
@@ -133,12 +141,12 @@ public class AuthController(EchoHubDbContext db, JwtTokenService jwt) : Controll
             return BadRequest(new ErrorResponse("Refresh token is required."));
 
         var tokenHash = JwtTokenService.HashToken(request.RefreshToken);
-        var storedToken = await db.RefreshTokens.FirstOrDefaultAsync(r => r.TokenHash == tokenHash);
+        var storedToken = await _db.RefreshTokens.FirstOrDefaultAsync(r => r.TokenHash == tokenHash);
 
         if (storedToken is not null && storedToken.IsActive)
         {
             storedToken.RevokedAt = DateTimeOffset.UtcNow;
-            await db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
         }
 
         return Ok();

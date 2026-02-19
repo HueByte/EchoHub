@@ -5,42 +5,53 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace EchoHub.Server.Services;
 
-public class SignalRBroadcaster(
-    IHubContext<ChatHub, IEchoHubClient> hubContext,
-    PresenceTracker presenceTracker) : IChatBroadcaster
+public class SignalRBroadcaster : IChatBroadcaster
 {
+    private readonly IServiceProvider _serviceProvider;
+    private readonly PresenceTracker _presenceTracker;
+    private IHubContext<ChatHub, IEchoHubClient>? _hubContext;
+
+    private IHubContext<ChatHub, IEchoHubClient> HubContext
+        => _hubContext ??= _serviceProvider.GetRequiredService<IHubContext<ChatHub, IEchoHubClient>>();
+
+    public SignalRBroadcaster(IServiceProvider serviceProvider, PresenceTracker presenceTracker)
+    {
+        _serviceProvider = serviceProvider;
+        _presenceTracker = presenceTracker;
+    }
+
     public Task SendMessageToChannelAsync(string channelName, MessageDto message)
-        => hubContext.Clients.Group(channelName).ReceiveMessage(message);
+        => HubContext.Clients.Group(channelName).ReceiveMessage(message);
 
     public Task SendUserJoinedAsync(string channelName, string username, string? excludeConnectionId = null)
     {
         if (excludeConnectionId is not null && !excludeConnectionId.StartsWith("irc-"))
-            return hubContext.Clients.GroupExcept(channelName, [excludeConnectionId]).UserJoined(channelName, username);
+            return HubContext.Clients.GroupExcept(channelName, [excludeConnectionId]).UserJoined(channelName, username);
 
-        return hubContext.Clients.Group(channelName).UserJoined(channelName, username);
+        return HubContext.Clients.Group(channelName).UserJoined(channelName, username);
     }
 
     public Task SendUserLeftAsync(string channelName, string username)
-        => hubContext.Clients.Group(channelName).UserLeft(channelName, username);
+        => HubContext.Clients.Group(channelName).UserLeft(channelName, username);
 
     public Task SendChannelUpdatedAsync(ChannelDto channel, string? channelName = null)
     {
         if (channelName is not null)
-            return hubContext.Clients.Group(channelName).ChannelUpdated(channel);
+            return HubContext.Clients.Group(channelName).ChannelUpdated(channel);
 
-        return hubContext.Clients.All.ChannelUpdated(channel);
+        return HubContext.Clients.All.ChannelUpdated(channel);
     }
 
     public Task SendUserStatusChangedAsync(List<string> channelNames, UserPresenceDto presence)
     {
-        var connections = presenceTracker.GetConnectionsInChannels(channelNames)
+        var connections = _presenceTracker.GetConnectionsInChannels(channelNames)
             .Where(c => !c.StartsWith("irc-"))
             .ToList();
 
         if (connections.Count == 0)
             return Task.CompletedTask;
 
-        return hubContext.Clients.Clients(connections).UserStatusChanged(presence);
+        return HubContext.Clients.Clients(connections).UserStatusChanged(presence);
     }
 
     public Task SendErrorAsync(string connectionId, string message)
@@ -48,6 +59,6 @@ public class SignalRBroadcaster(
         if (connectionId.StartsWith("irc-"))
             return Task.CompletedTask;
 
-        return hubContext.Clients.Client(connectionId).Error(message);
+        return HubContext.Clients.Client(connectionId).Error(message);
     }
 }

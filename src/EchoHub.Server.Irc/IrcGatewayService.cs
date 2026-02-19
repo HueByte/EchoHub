@@ -4,6 +4,7 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using EchoHub.Core.Contracts;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -13,7 +14,7 @@ namespace EchoHub.Server.Irc;
 public sealed class IrcGatewayService : BackgroundService
 {
     private readonly IrcOptions _options;
-    private readonly IChatService _chatService;
+    private readonly IServiceProvider _services;
     private readonly ILogger<IrcGatewayService> _logger;
     private readonly ConcurrentDictionary<string, IrcClientConnection> _connections = new();
 
@@ -22,11 +23,11 @@ public sealed class IrcGatewayService : BackgroundService
 
     public IrcGatewayService(
         IOptions<IrcOptions> options,
-        IChatService chatService,
+        IServiceProvider services,
         ILogger<IrcGatewayService> logger)
     {
         _options = options.Value;
-        _chatService = chatService;
+        _services = services;
         _logger = logger;
     }
 
@@ -109,10 +110,13 @@ public sealed class IrcGatewayService : BackgroundService
 
         _logger.LogInformation("IRC client connected: {Id}", connection.ConnectionId);
 
+        IChatService? chatService = null;
+
         try
         {
+            chatService = _services.GetRequiredService<IChatService>();
             var handler = new IrcCommandHandler(
-                connection, _options, _chatService, _logger);
+                connection, _options, chatService, _logger);
 
             await handler.RunAsync(ct);
         }
@@ -126,10 +130,12 @@ public sealed class IrcGatewayService : BackgroundService
             {
                 foreach (var ch in connection.JoinedChannels.ToList())
                 {
-                    await _chatService.LeaveChannelAsync(
+                    if (chatService is null) break;
+                    await chatService.LeaveChannelAsync(
                         connection.ConnectionId, connection.Nickname!, ch);
                 }
-                await _chatService.UserDisconnectedAsync(connection.ConnectionId);
+                if (chatService is not null)
+                    await chatService.UserDisconnectedAsync(connection.ConnectionId);
             }
 
             _connections.TryRemove(connection.ConnectionId, out _);
