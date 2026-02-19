@@ -1,2 +1,13 @@
-# Force LF line endings for shell scripts (required for Linux CI runners)
-*.sh text eol=lf
+# Normalize all text files to LF in the repository
+* text=auto eol=lf
+
+# Explicitly mark binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.zip binary
+*.db binary
