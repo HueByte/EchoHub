@@ -15,7 +15,8 @@ public class EchoHubDbContext(DbContextOptions<EchoHubDbContext> options) : DbCo
     {
         if (!optionsBuilder.IsConfigured)
         {
-            optionsBuilder.UseSqlite("Data Source=echohub.db");
+            var dbPath = Path.Combine(AppContext.BaseDirectory, "echohub.db");
+            optionsBuilder.UseSqlite($"Data Source={dbPath}");
         }
     }
 

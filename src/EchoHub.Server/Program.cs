@@ -1,21 +1,31 @@
 using System.Text;
 using System.Threading.RateLimiting;
 using EchoHub.Core.Constants;
-using Microsoft.AspNetCore.RateLimiting;
 using EchoHub.Core.Models;
 using EchoHub.Server.Auth;
 using EchoHub.Server.Data;
 using EchoHub.Server.Hubs;
 using EchoHub.Server.Services;
+using EchoHub.Server.Setup;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
+
+// ── First-run setup ──────────────────────────────────────────────────────────
+FirstRunSetup.EnsureAppSettings();
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ── Serilog ──────────────────────────────────────────────────────────────────
+builder.Host.UseSerilog((context, config) =>
+    config.ReadFrom.Configuration(context.Configuration));
+
 // ── SQLite + EF Core ──────────────────────────────────────────────────────────
+var defaultDbPath = Path.Combine(AppContext.BaseDirectory, "echohub.db");
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? "Data Source=echohub.db";
+    ?? $"Data Source={defaultDbPath}";
 
 builder.Services.AddDbContext<EchoHubDbContext>(options =>
     options.UseSqlite(connectionString));
@@ -127,81 +137,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // ── Database initialization ───────────────────────────────────────────────────
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
-    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-
-    try
-    {
-        // If the DB was created by EnsureCreated (no __EFMigrationsHistory table),
-        // back it up and recreate so MigrateAsync can manage the schema properly.
-        if (await db.Database.CanConnectAsync())
-        {
-            var conn = db.Database.GetDbConnection();
-            await conn.OpenAsync();
-
-            using var cmd = conn.CreateCommand();
-            cmd.CommandText = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='__EFMigrationsHistory'";
-            var hasMigrationTable = Convert.ToInt64(await cmd.ExecuteScalarAsync()) > 0;
-
-            if (!hasMigrationTable)
-            {
-                cmd.CommandText = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='Users'";
-                var hasLegacyTables = Convert.ToInt64(await cmd.ExecuteScalarAsync()) > 0;
-
-                if (hasLegacyTables)
-                {
-                    var dbPath = conn.DataSource;
-                    await conn.CloseAsync();
-
-                    // Back up the legacy DB file before deleting
-                    if (!string.IsNullOrEmpty(dbPath) && File.Exists(dbPath))
-                    {
-                        var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                        var backupPath = $"{dbPath}.legacy_{timestamp}";
-                        File.Copy(dbPath, backupPath, overwrite: false);
-                        logger.LogWarning("Legacy database backed up to '{BackupPath}'.", backupPath);
-                    }
-
-                    await db.Database.EnsureDeletedAsync();
-                    logger.LogWarning("Legacy database removed. A new database will be created with migration support.");
-                }
-                else
-                {
-                    await conn.CloseAsync();
-                }
-            }
-            else
-            {
-                await conn.CloseAsync();
-            }
-        }
-
-        await db.Database.MigrateAsync();
-        logger.LogInformation("Database migrated successfully.");
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Database migration failed.");
-        throw;
-    }
-
-    // Seed the default channel if it doesn't exist
-    if (!await db.Channels.AnyAsync(c => c.Name == HubConstants.DefaultChannel))
-    {
-        db.Channels.Add(new Channel
-        {
-            Id = Guid.NewGuid(),
-            Name = HubConstants.DefaultChannel,
-            Topic = "General discussion",
-            CreatedByUserId = Guid.Empty,
-        });
-
-        await db.SaveChangesAsync();
-        logger.LogInformation("Default channel '{Channel}' created.", HubConstants.DefaultChannel);
-    }
-}
+await DatabaseSetup.InitializeAsync(app.Services);
 
 // ── Middleware ─────────────────────────────────────────────────────────────────
 app.UseCors();

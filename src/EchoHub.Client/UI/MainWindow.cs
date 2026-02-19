@@ -74,6 +74,11 @@ public sealed class MainWindow : Runnable
     /// </summary>
     public event Action? OnSavedServersRequested;
 
+    /// <summary>
+    /// Fired when the user requests to create a new channel.
+    /// </summary>
+    public event Action? OnCreateChannelRequested;
+
     public MainWindow(IApplication app)
     {
         _app = app;
@@ -228,6 +233,7 @@ public sealed class MainWindow : Runnable
                 new MenuItem("_Connect...", "Connect to a server", () => OnConnectRequested?.Invoke(), Key.Empty),
                 new MenuItem("_Disconnect", "Disconnect from server", () => OnDisconnectRequested?.Invoke(), Key.Empty),
                 new Line(),
+                new MenuItem("New C_hannel...", "Create a new channel", () => OnCreateChannelRequested?.Invoke(), Key.Empty),
                 new MenuItem("_Saved Servers...", "View saved servers", () => OnSavedServersRequested?.Invoke(), Key.Empty)
             }),
             new MenuBarItem("_User", allUserItems)

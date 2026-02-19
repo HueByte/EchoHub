@@ -16,6 +16,7 @@ public sealed class EchoHubConnection : IAsyncDisposable
     public event Action<UserPresenceDto>? OnUserStatusChanged;
     public event Action<string>? OnError;
     public event Action<string>? OnConnectionStateChanged;
+    public event Action? OnReconnected;
 
     public bool IsConnected => _connection.State == HubConnectionState.Connected;
 
@@ -42,6 +43,7 @@ public sealed class EchoHubConnection : IAsyncDisposable
         _connection.Reconnected += _ =>
         {
             OnConnectionStateChanged?.Invoke("Connected");
+            OnReconnected?.Invoke();
             return Task.CompletedTask;
         };
 

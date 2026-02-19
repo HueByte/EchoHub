@@ -6,7 +6,8 @@ public class FileStorageService
 
     public FileStorageService(IConfiguration configuration)
     {
-        _storagePath = configuration["Storage:Path"] ?? "./uploads";
+        _storagePath = configuration["Storage:Path"]
+            ?? Path.Combine(AppContext.BaseDirectory, "uploads");
 
         if (!Directory.Exists(_storagePath))
         {
