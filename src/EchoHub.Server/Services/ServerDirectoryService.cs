@@ -9,6 +9,8 @@ public sealed class ServerDirectoryService(
 {
     private const string DirectoryHubUrl = "https://echohub.voidcube.cloud/hubs/servers";
     private static readonly TimeSpan UpdateInterval = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan ReconnectBaseDelay = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan ReconnectMaxDelay = TimeSpan.FromSeconds(30);
 
     private HubConnection? _connection;
     private int _lastReportedUserCount = -1;
@@ -38,52 +40,97 @@ public sealed class ServerDirectoryService(
 
         logger.LogInformation("PublicServer is enabled — connecting to EchoHubSpace directory as {Name} ({Host})", serverName, host);
 
-        _connection = new HubConnectionBuilder()
-            .WithUrl(DirectoryHubUrl)
-            .WithAutomaticReconnect()
-            .Build();
-
-        _connection.Reconnected += async _ =>
-        {
-            logger.LogInformation("Reconnected to directory — re-registering server");
-            await RegisterAsync(serverName, description, host);
-        };
-
-        _connection.Closed += ex =>
-        {
-            if (ex is not null)
-                logger.LogWarning(ex, "Directory connection closed with error");
-            return Task.CompletedTask;
-        };
-
-        // Initial connection with retry
+        // Outer loop: rebuilds the connection if automatic reconnect permanently fails
         while (!stoppingToken.IsCancellationRequested)
+        {
+            await using var connection = BuildConnection();
+            _connection = connection;
+
+            var connectionPermanentlyClosed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            connection.Reconnected += async _ =>
+            {
+                logger.LogInformation("Reconnected to directory — re-registering server");
+                _lastReportedUserCount = -1;
+                await RegisterAsync(serverName, description, host);
+            };
+
+            connection.Closed += ex =>
+            {
+                if (ex is not null)
+                    logger.LogWarning(ex, "Directory connection permanently closed — will rebuild");
+                else
+                    logger.LogWarning("Directory connection permanently closed — will rebuild");
+
+                connectionPermanentlyClosed.TrySetResult();
+                return Task.CompletedTask;
+            };
+
+            // Connect with retry
+            if (!await ConnectWithRetryAsync(connection, stoppingToken))
+                return;
+
+            logger.LogInformation("Successfully connected to EchoHubSpace API at {Url}", DirectoryHubUrl);
+            await RegisterAsync(serverName, description, host);
+
+            // Poll user count until the connection is permanently closed or cancellation
+            await PollUserCountAsync(connection, connectionPermanentlyClosed.Task, stoppingToken);
+
+            if (stoppingToken.IsCancellationRequested)
+                return;
+
+            // Connection was permanently closed — wait briefly then rebuild
+            _connection = null;
+            logger.LogInformation("Rebuilding directory connection...");
+            await Task.Delay(ReconnectBaseDelay, stoppingToken);
+        }
+    }
+
+    private HubConnection BuildConnection()
+    {
+        return new HubConnectionBuilder()
+            .WithUrl(DirectoryHubUrl)
+            .WithAutomaticReconnect(new InfiniteRetryPolicy())
+            .Build();
+    }
+
+    private async Task<bool> ConnectWithRetryAsync(HubConnection connection, CancellationToken ct)
+    {
+        var attempt = 0;
+        while (!ct.IsCancellationRequested)
         {
             try
             {
-                await _connection.StartAsync(stoppingToken);
-                logger.LogInformation("Successfully connected to EchoHubSpace API at {Url}", DirectoryHubUrl);
-                break;
+                await connection.StartAsync(ct);
+                return true;
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex, "Failed to connect to directory — retrying in 30s");
-                await Task.Delay(UpdateInterval, stoppingToken);
+                attempt++;
+                var delay = GetBackoffDelay(attempt);
+                logger.LogWarning(ex, "Failed to connect to directory — retrying in {Delay}s", delay.TotalSeconds);
+                await Task.Delay(delay, ct);
             }
         }
 
-        if (stoppingToken.IsCancellationRequested)
-            return;
+        return false;
+    }
 
-        // Register on first connect
-        await RegisterAsync(serverName, description, host);
-
-        // Poll user count and send updates
-        while (!stoppingToken.IsCancellationRequested)
+    private async Task PollUserCountAsync(HubConnection connection, Task connectionClosed, CancellationToken ct)
+    {
+        while (!ct.IsCancellationRequested)
         {
-            await Task.Delay(UpdateInterval, stoppingToken);
+            var delayTask = Task.Delay(UpdateInterval, ct);
+            var completed = await Task.WhenAny(delayTask, connectionClosed);
 
-            if (_connection.State != HubConnectionState.Connected)
+            if (completed == connectionClosed)
+                return;
+
+            // Observe the delay task (may throw if cancelled)
+            try { await delayTask; }
+            catch (OperationCanceledException) { return; }
+
+            if (connection.State != HubConnectionState.Connected)
                 continue;
 
             var currentCount = presenceTracker.GetOnlineUserCount();
@@ -92,7 +139,7 @@ public sealed class ServerDirectoryService(
 
             try
             {
-                await _connection.InvokeAsync("UpdateUserCount", currentCount, stoppingToken);
+                await connection.InvokeAsync("UpdateUserCount", currentCount, ct);
                 _lastReportedUserCount = currentCount;
                 logger.LogDebug("Updated directory user count to {Count}", currentCount);
             }
@@ -101,6 +148,12 @@ public sealed class ServerDirectoryService(
                 logger.LogWarning(ex, "Failed to update user count on directory");
             }
         }
+    }
+
+    private static TimeSpan GetBackoffDelay(int attempt)
+    {
+        var delay = TimeSpan.FromSeconds(Math.Pow(2, Math.Min(attempt, 10)));
+        return delay > ReconnectMaxDelay ? ReconnectMaxDelay : delay;
     }
 
     private async Task RegisterAsync(string name, string? description, string host)
@@ -131,6 +184,18 @@ public sealed class ServerDirectoryService(
         }
 
         await base.StopAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Retries indefinitely with exponential backoff capped at 30 seconds.
+    /// </summary>
+    private sealed class InfiniteRetryPolicy : IRetryPolicy
+    {
+        public TimeSpan? NextRetryDelay(RetryContext retryContext)
+        {
+            var delay = TimeSpan.FromSeconds(Math.Pow(2, Math.Min(retryContext.PreviousRetryCount, 10)));
+            return delay > ReconnectMaxDelay ? ReconnectMaxDelay : delay;
+        }
     }
 }
 
