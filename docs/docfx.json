@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
   "metadata": [
     {
       "src": [
@@ -7,7 +8,8 @@
           "files": ["EchoHub.Core.dll"]
         }
       ],
-      "dest": "api/core"
+      "dest": "api/core",
+      "filter": "filterConfig.yml"
     },
     {
       "src": [
@@ -16,7 +18,8 @@
           "files": ["EchoHub.Server.dll"]
         }
       ],
-      "dest": "api/server"
+      "dest": "api/server",
+      "filter": "filterConfig.yml"
     },
     {
       "src": [
@@ -25,40 +28,36 @@
           "files": ["EchoHub.Client.dll"]
         }
       ],
-      "dest": "api/client"
+      "dest": "api/client",
+      "filter": "filterConfig.yml"
     }
   ],
   "build": {
     "content": [
       {
-        "files": [
-          "**/*.{md,yml}"
-        ],
-        "exclude": [
-          "_site/**"
-        ]
+        "files": ["**/*.{md,yml}"],
+        "exclude": ["_site/**", "_temp/**"]
       }
     ],
     "resource": [
       {
-        "files": [
-          "images/**"
-        ]
+        "files": ["images/**"]
       }
     ],
     "output": "_site",
-    "template": [
-      "default",
-      "modern"
-    ],
+    "template": ["default", "modern", "templates/echohub"],
     "globalMetadata": {
       "_appName": "EchoHub",
       "_appTitle": "EchoHub Documentation",
+      "_appLogoPath": "images/hue_icon.svg",
+      "_appFaviconPath": "images/hue_icon.svg",
+      "_appFooter": "<div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a><span class='footer-sep'>&middot;</span><span class='footer-credit'>Built with <a href='https://dotnet.github.io/docfx'>DocFX</a></span></div></div>",
       "_enableSearch": true,
       "_disableContribution": false,
       "_gitContribute": {
         "repo": "https://github.com/HueByte/EchoHub",
-        "branch": "master"
+        "branch": "master",
+        "path": "docs"
       }
     },
     "markdownEngineName": "markdig"

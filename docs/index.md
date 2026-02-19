@@ -11,4 +11,4 @@ Welcome to the EchoHub documentation. EchoHub is a decentralized, IRC-like chat 
 - [Getting Started](articles/getting-started.md) - Set up and run EchoHub
 - [Architecture](articles/architecture.md) - Understand the system design
 - [API Reference](api/index.md) - Generated C# API documentation
-- [Changelog](changelog/v0.1.0.md) - Release history
+- [Changelog](changelog/index.md) - Release history

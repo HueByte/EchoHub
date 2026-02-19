@@ -1,7 +1,9 @@
 - name: Articles
   href: articles/
+  homepage: articles/getting-started.md
 - name: Changelog
   href: changelog/
-- name: API Reference
+  homepage: changelog/index.md
+- name: API
   href: api/
   homepage: api/index.md
