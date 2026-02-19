@@ -15,6 +15,9 @@ public sealed class ServerDirectoryService(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // Yield to let the host finish starting before we log or connect
+        await Task.Yield();
+
         var isPublic = configuration.GetValue<bool>("Server:PublicServer");
         if (!isPublic)
         {
