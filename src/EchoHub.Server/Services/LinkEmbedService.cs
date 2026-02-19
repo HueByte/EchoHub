@@ -10,16 +10,13 @@ namespace EchoHub.Server.Services;
 public partial class LinkEmbedService
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ImageToAsciiService _asciiService;
     private readonly ILogger<LinkEmbedService> _logger;
 
     public LinkEmbedService(
         IHttpClientFactory httpClientFactory,
-        ImageToAsciiService asciiService,
         ILogger<LinkEmbedService> logger)
     {
         _httpClientFactory = httpClientFactory;
-        _asciiService = asciiService;
         _logger = logger;
     }
 
@@ -111,15 +108,7 @@ public partial class LinkEmbedService
         siteName = siteName is not null ? WebUtility.HtmlDecode(siteName) : null;
         description = description is not null ? WebUtility.HtmlDecode(description) : null;
 
-        // Attempt to fetch OG image as small icon
-        string? imageAscii = null;
-        var imageUrl = ogTags.GetValueOrDefault("image");
-        if (!string.IsNullOrWhiteSpace(imageUrl))
-        {
-            imageAscii = await FetchImageThumbnailAsync(imageUrl, uri, cts.Token);
-        }
-
-        return new EmbedDto(siteName, title, description, imageAscii, url);
+        return new EmbedDto(siteName, title, description, null, url);
     }
 
     private static List<string> ExtractUrls(string content)
@@ -169,76 +158,24 @@ public partial class LinkEmbedService
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         // Match: <meta property="og:key" content="value" />
+        // Groups: 1=prop quote, 2=key, 3=content quote, 4=value
         foreach (Match match in OgTagRegex().Matches(html))
         {
-            var key = match.Groups[1].Value;
-            var value = match.Groups[2].Value;
+            var key = match.Groups[2].Value;
+            var value = match.Groups[4].Value;
             tags.TryAdd(key, value);
         }
 
         // Match reversed order: <meta content="value" property="og:key" />
+        // Groups: 1=content quote, 2=value, 3=prop quote, 4=key
         foreach (Match match in OgTagReversedRegex().Matches(html))
         {
-            var value = match.Groups[1].Value;
-            var key = match.Groups[2].Value;
+            var value = match.Groups[2].Value;
+            var key = match.Groups[4].Value;
             tags.TryAdd(key, value);
         }
 
         return tags;
-    }
-
-    private async Task<string?> FetchImageThumbnailAsync(string imageUrl, Uri pageUri, CancellationToken ct)
-    {
-        try
-        {
-            // Resolve relative image URLs against the page URI
-            if (!Uri.TryCreate(imageUrl, UriKind.Absolute, out var imageUri))
-            {
-                if (!Uri.TryCreate(pageUri, imageUrl, out imageUri))
-                    return null;
-            }
-
-            if (imageUri.Scheme is not ("http" or "https"))
-                return null;
-
-            if (IsPrivateHost(imageUri))
-                return null;
-
-            var client = _httpClientFactory.CreateClient("OgFetch");
-            using var response = await client.GetAsync(imageUri, ct);
-
-            if (!response.IsSuccessStatusCode)
-                return null;
-
-            var contentType = response.Content.Headers.ContentType?.MediaType;
-            if (contentType is null || !contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
-                return null;
-
-            await using var stream = await response.Content.ReadAsStreamAsync(ct);
-
-            // Buffer into a MemoryStream for validation + conversion
-            using var memoryStream = new MemoryStream();
-            await stream.CopyToAsync(memoryStream, ct);
-
-            if (memoryStream.Length == 0 || memoryStream.Length > HubConstants.MaxFileSizeBytes)
-                return null;
-
-            memoryStream.Position = 0;
-
-            if (!FileValidationHelper.IsValidImage(memoryStream))
-                return null;
-
-            memoryStream.Position = 0;
-
-            return _asciiService.ConvertToAscii(memoryStream,
-                HubConstants.EmbedIconWidth,
-                HubConstants.EmbedIconHeight);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogDebug(ex, "Failed to fetch OG image thumbnail from {Url}", imageUrl);
-            return null;
-        }
     }
 
     private static async Task<string> ReadLimitedAsync(HttpResponseMessage response, int maxBytes, CancellationToken ct)
@@ -263,17 +200,17 @@ public partial class LinkEmbedService
         return encoding.GetString(buffer, 0, totalRead);
     }
 
-    [GeneratedRegex(@"https?://[^\s<>""')\]]+", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"https?://[^\s<>""')\]]+", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
     private static partial Regex UrlRegex();
 
-    [GeneratedRegex(@"<meta\s+[^>]*?property\s*=\s*[""']og:(\w+)[""'][^>]*?content\s*=\s*[""']([^""']*)[""'][^>]*/?>",
-        RegexOptions.IgnoreCase | RegexOptions.Singleline)]
+    [GeneratedRegex(@"<meta\s+[^>]*?property\s*=\s*([""'])og:(\w+)\1[^>]*?content\s*=\s*([""'])(.*?)\3[^>]*/?>",
+        RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled)]
     private static partial Regex OgTagRegex();
 
-    [GeneratedRegex(@"<meta\s+[^>]*?content\s*=\s*[""']([^""']*)[""'][^>]*?property\s*=\s*[""']og:(\w+)[""'][^>]*/?>",
-        RegexOptions.IgnoreCase | RegexOptions.Singleline)]
+    [GeneratedRegex(@"<meta\s+[^>]*?content\s*=\s*([""'])(.*?)\1[^>]*?property\s*=\s*([""'])og:(\w+)\3[^>]*/?>",
+        RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled)]
     private static partial Regex OgTagReversedRegex();
 
-    [GeneratedRegex(@"<title[^>]*>([^<]+)</title>", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"<title[^>]*>([^<]+)</title>", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
     private static partial Regex TitleTagRegex();
 }

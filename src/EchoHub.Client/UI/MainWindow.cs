@@ -51,7 +51,7 @@ public sealed class MainWindow : Runnable
         "/status", "/nick", "/color", "/theme", "/send",
         "/avatar", "/profile", "/servers", "/join", "/leave",
         "/topic", "/users", "/kick", "/ban", "/unban",
-        "/mute", "/unmute", "/role", "/nuke", "/quit", "/help"
+        "/mute", "/unmute", "/role", "/nuke", "/test-sound", "/quit", "/help"
     ];
 
     private readonly List<string> _channelNames = [];
@@ -923,8 +923,9 @@ public sealed class MainWindow : Runnable
                 // Render link embeds if present
                 if (message.Embeds is { Count: > 0 })
                 {
+                    var chatWidth = _lastChatWidth > 0 ? _lastChatWidth : 80;
                     foreach (var embed in message.Embeds)
-                        lines.AddRange(FormatEmbed(embed, indent));
+                        lines.AddRange(FormatEmbed(embed, indent, chatWidth));
                 }
                 break;
         }
@@ -977,115 +978,45 @@ public sealed class MainWindow : Runnable
 
     /// <summary>
     /// Format a link embed as indented chat lines with a left border bar,
-    /// optional description wrapping, and a small icon on the right (Discord-style).
-    /// Layout: ▏ {text column}  {icon column}
+    /// text at full width, and optional icon below (preview image).
+    /// Each line is pre-wrapped to fit chatWidth so ChatLine.Wrap won't break layout.
     /// </summary>
-    private static List<ChatLine> FormatEmbed(EmbedDto embed, string indent)
+    private static List<ChatLine> FormatEmbed(EmbedDto embed, string indent, int chatWidth)
     {
         var lines = new List<ChatLine>();
         const string border = "\u258f "; // ▏ + space
-        const int borderCols = 2; // ▏ = 1 col + space = 1 col
-        const int iconGap = 1; // space between text and icon
+        const int borderCols = 2;
+        int indentCols = indent.GetColumns();
+        int textWidth = chatWidth - indentCols - borderCols;
+        if (textWidth < 20) textWidth = 20;
 
-        // Parse icon lines if present
-        var iconLines = new List<string>();
-        int iconWidth = 0;
-        if (!string.IsNullOrWhiteSpace(embed.ImageAscii))
+        // Helper: create a bordered text line
+        void AddTextLine(string text, Attribute? color)
         {
-            foreach (var artLine in embed.ImageAscii.Split('\n'))
-            {
-                var trimmed = artLine.TrimEnd('\r');
-                if (!string.IsNullOrEmpty(trimmed))
-                    iconLines.Add(trimmed);
-            }
-            if (iconLines.Count > 0)
-            {
-                // Measure icon width from the first line (strip color tags for measurement)
-                var stripped = ChatLine.StripColorTags(iconLines[0]);
-                iconWidth = stripped.GetColumns();
-            }
+            lines.Add(new ChatLine(
+            [
+                new ChatSegment(indent, null),
+                new ChatSegment(border, ChatColors.EmbedBorderAttr),
+                new ChatSegment(text, color)
+            ]));
         }
 
-        bool hasIcon = iconLines.Count > 0 && iconWidth > 0;
-        int indentCols = indent.GetColumns();
-
-        // We don't know the terminal width at format time, so use a reasonable default
-        // for text wrapping. The ChatListSource.Render will handle final clipping.
-        const int estimatedWidth = 80;
-        int availableForText = estimatedWidth - indentCols - borderCols;
-        int textColWidth = hasIcon
-            ? availableForText - iconWidth - iconGap
-            : availableForText;
-        if (textColWidth < 20) textColWidth = 20;
-
-        // Collect all text rows (site name, title, wrapped description, URL)
-        var textRows = new List<(string Text, Attribute? Color)>();
-
+        // Site name
         if (!string.IsNullOrWhiteSpace(embed.SiteName))
-            textRows.Add((embed.SiteName, ChatColors.EmbedBorderAttr));
+            AddTextLine(embed.SiteName, ChatColors.EmbedBorderAttr);
 
+        // Title
         if (!string.IsNullOrWhiteSpace(embed.Title))
-            textRows.Add((embed.Title, ChatColors.EmbedTitleAttr));
+        {
+            foreach (var wrapped in WordWrap(embed.Title, textWidth))
+                AddTextLine(wrapped, ChatColors.EmbedTitleAttr);
+        }
 
-        // Word-wrap description
+        // Description (word-wrapped at full available width)
         if (!string.IsNullOrWhiteSpace(embed.Description))
         {
-            foreach (var wrappedLine in WordWrap(embed.Description, textColWidth))
-                textRows.Add((wrappedLine, ChatColors.EmbedDescAttr));
-        }
-
-        // Dim URL at the bottom
-        textRows.Add((embed.Url, ChatColors.EmbedUrlAttr));
-
-        // Merge text rows with icon rows side-by-side
-        int totalLines = Math.Max(textRows.Count, iconLines.Count);
-        for (int i = 0; i < totalLines; i++)
-        {
-            var segments = new List<ChatSegment>();
-            segments.Add(new ChatSegment(indent, null));
-            segments.Add(new ChatSegment(border, ChatColors.EmbedBorderAttr));
-
-            if (i < textRows.Count)
-            {
-                var (text, color) = textRows[i];
-                segments.Add(new ChatSegment(text, color));
-
-                // Pad to align icon column
-                if (hasIcon && i < iconLines.Count)
-                {
-                    int textCols = text.GetColumns();
-                    int padding = textColWidth - textCols + iconGap;
-                    if (padding > 0)
-                        segments.Add(new ChatSegment(new string(' ', padding), null));
-                }
-            }
-            else if (hasIcon && i < iconLines.Count)
-            {
-                // No text row, pad the full text column + gap
-                segments.Add(new ChatSegment(new string(' ', textColWidth + iconGap), null));
-            }
-
-            // Append icon line
-            if (hasIcon && i < iconLines.Count)
-            {
-                var iconLine = iconLines[i];
-                if (ChatLine.HasColorTags(iconLine))
-                {
-                    // Build a composite: plain segments + colored icon
-                    var plainPart = new ChatLine(segments);
-                    var iconPart = ChatLine.FromColoredText(iconLine);
-                    var merged = new List<ChatSegment>(plainPart.Segments);
-                    merged.AddRange(iconPart.Segments);
-                    lines.Add(new ChatLine(merged));
-                    continue;
-                }
-                else
-                {
-                    segments.Add(new ChatSegment(iconLine, null));
-                }
-            }
-
-            lines.Add(new ChatLine(segments));
+            foreach (var wrapped in WordWrap(embed.Description, textWidth))
+                AddTextLine(wrapped, ChatColors.EmbedDescAttr);
         }
 
         return lines;

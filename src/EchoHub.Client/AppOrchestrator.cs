@@ -347,6 +347,11 @@ public sealed class AppOrchestrator : IDisposable
             await _apiClient!.NukeChannelAsync(channel);
         };
 
+        _commandHandler.OnTestSound += async () =>
+        {
+            await _notificationSound.PlayTestAsync();
+        };
+
         _commandHandler.OnQuit += () =>
         {
             InvokeUI(() => _app.RequestStop());
@@ -788,7 +793,6 @@ public sealed class AppOrchestrator : IDisposable
             InvokeUI(() => _mainWindow.AddMessage(message));
 
             if (!string.IsNullOrEmpty(_currentUsername)
-                && !message.SenderUsername.Equals(_currentUsername, StringComparison.OrdinalIgnoreCase)
                 && message.Content.Contains($"@{_currentUsername}", StringComparison.OrdinalIgnoreCase))
             {
                 _ = _notificationSound.PlayAsync();

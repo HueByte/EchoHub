@@ -15,10 +15,8 @@ public static class HubConstants
     public const int AsciiArtHeightHalfBlock = 80;
 
     // Link embed constants
-    public const int EmbedIconWidth = 12;
-    public const int EmbedIconHeight = 6;
     public const int EmbedMaxDescriptionLength = 500;
     public const int EmbedMaxHtmlBytes = 64 * 1024; // 64 KB
-    public const int EmbedFetchTimeoutSeconds = 3;
+    public const int EmbedFetchTimeoutSeconds = 5;
     public const int EmbedMaxUrlsPerMessage = 3;
 }

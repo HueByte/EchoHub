@@ -25,13 +25,29 @@ public class NotificationSoundService
         if (!_config.Enabled || _resolvedSoundPath is null)
             return;
 
+        await PlayInternal();
+    }
+
+    /// <summary>
+    /// Plays the notification sound regardless of the Enabled setting (for /test-sound).
+    /// </summary>
+    public async Task PlayTestAsync()
+    {
+        if (_resolvedSoundPath is null)
+            return;
+
+        await PlayInternal();
+    }
+
+    private async Task PlayInternal()
+    {
         try
         {
             if (_player.Playing)
                 await _player.Stop();
 
             await _player.SetVolume(_config.Volume);
-            await _player.Play(_resolvedSoundPath);
+            await _player.Play(_resolvedSoundPath!);
         }
         catch (Exception ex)
         {

@@ -25,6 +25,7 @@ public class CommandHandler
     public event Func<string, Task>? OnUnmuteUser;
     public event Func<string, string, Task>? OnAssignRole;
     public event Func<Task>? OnNukeChannel;
+    public event Func<Task>? OnTestSound;
     public event Func<Task>? OnQuit;
     public event Func<Task>? OnHelp;
 
@@ -60,6 +61,7 @@ public class CommandHandler
             "unmute" => await HandleUnmute(args),
             "role" => await HandleRole(args),
             "nuke" => await HandleNuke(),
+            "test-sound" => await HandleTestSound(),
             "quit" or "exit" => await HandleQuit(),
             "help" or "?" => await HandleHelp(),
             _ => new CommandResult(true, $"Unknown command: /{command}. Type /help for available commands.", IsError: true),
@@ -319,6 +321,13 @@ public class CommandHandler
         return new CommandResult(true, "Nuking channel history...");
     }
 
+    private async Task<CommandResult> HandleTestSound()
+    {
+        if (OnTestSound is not null)
+            await OnTestSound();
+        return new CommandResult(true, "Playing notification sound...");
+    }
+
     private async Task<CommandResult> HandleHelp()
     {
         if (OnHelp is not null)
@@ -346,6 +355,7 @@ public class CommandHandler
               /unmute <user>                       - Unmute a user (Mod+)
               /role <user> <admin|mod|member>      - Assign role (Admin+)
               /nuke                                - Clear channel history (Mod+)
+              /test-sound                          - Play notification sound
               /quit                                - Exit the app
             """);
     }
