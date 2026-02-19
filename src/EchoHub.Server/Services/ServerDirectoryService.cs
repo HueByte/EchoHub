@@ -33,6 +33,8 @@ public sealed class ServerDirectoryService(
         var serverName = configuration["Server:Name"] ?? "EchoHub Server";
         var description = configuration["Server:Description"];
 
+        logger.LogInformation("PublicServer is enabled — connecting to EchoHubSpace directory as {Name} ({Host})", serverName, host);
+
         _connection = new HubConnectionBuilder()
             .WithUrl(DirectoryHubUrl)
             .WithAutomaticReconnect()
