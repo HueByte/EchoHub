@@ -1,0 +1,18 @@
+- name: Client
+  items:
+    - name: API Reference
+      href: ../_api_meta/client/toc.yml
+    - name: Articles
+      href: client-articles/
+- name: Core
+  items:
+    - name: API Reference
+      href: ../_api_meta/core/toc.yml
+    - name: Articles
+      href: core-articles/
+- name: Server
+  items:
+    - name: API Reference
+      href: ../_api_meta/server/toc.yml
+    - name: Articles
+      href: server-articles/

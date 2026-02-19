@@ -1,14 +1,27 @@
 {
+  // https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
   "config": {
+    "default": true,
+    // Allow long lines (common in docs with URLs and code)
     "MD013": false,
+    // Allow duplicate headings in different sections
+    "MD024": { "siblings_only": true },
+    // Allow inline HTML (docfx uses it)
     "MD033": false,
-    "MD041": false
+    // Allow bare URLs
+    "MD034": false
   },
+
+  "globs": ["**/*.md"],
+
   "ignores": [
     ".dev/**",
+    "docs/_site/**",
     "docs/api/**",
-    "**/node_modules/**",
+    "node_modules/**",
     "**/bin/**",
-    "**/obj/**"
+    "**/obj/**",
+    "publish/**",
+    ".claude/**"
   ]
 }

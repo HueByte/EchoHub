@@ -1,3 +1,5 @@
+# EchoHub
+
 <p align="center">
   <img src="https://cdn.voidcube.cloud/assets/hue_icon.svg" alt="EchoHub Logo" width="120" />
 </p>

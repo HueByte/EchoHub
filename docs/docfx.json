@@ -8,7 +8,7 @@
           "files": ["EchoHub.Core.dll"]
         }
       ],
-      "dest": "api/core",
+      "dest": "_api_meta/core",
       "filter": "filterConfig.yml"
     },
     {
@@ -18,7 +18,7 @@
           "files": ["EchoHub.Server.dll"]
         }
       ],
-      "dest": "api/server",
+      "dest": "_api_meta/server",
       "filter": "filterConfig.yml"
     },
     {
@@ -28,7 +28,7 @@
           "files": ["EchoHub.Client.dll"]
         }
       ],
-      "dest": "api/client",
+      "dest": "_api_meta/client",
       "filter": "filterConfig.yml"
     }
   ],
@@ -36,7 +36,25 @@
     "content": [
       {
         "files": ["**/*.{md,yml}"],
-        "exclude": ["_site/**", "_temp/**"]
+        "exclude": ["_site/**", "_api_meta/**"]
+      },
+      {
+        "src": "_api_meta/core",
+        "dest": "api/core",
+        "files": ["*.yml", ".manifest"],
+        "exclude": ["toc.yml"]
+      },
+      {
+        "src": "_api_meta/server",
+        "dest": "api/server",
+        "files": ["*.yml", ".manifest"],
+        "exclude": ["toc.yml"]
+      },
+      {
+        "src": "_api_meta/client",
+        "dest": "api/client",
+        "files": ["*.yml", ".manifest"],
+        "exclude": ["toc.yml"]
       }
     ],
     "resource": [

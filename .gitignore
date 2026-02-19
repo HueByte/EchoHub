@@ -432,5 +432,4 @@ src/EchoHub.Server/uploads/*
 
 # DocFx generated output
 docs/_site/
-docs/api/
-!docs/api/.gitkeep
+docs/_api_meta/
