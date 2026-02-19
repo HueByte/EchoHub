@@ -45,6 +45,7 @@ public sealed class MainWindow : Runnable
     private readonly Dictionary<string, string?> _channelTopics = [];
     private string _currentChannel = string.Empty;
     private string _currentUser = string.Empty;
+    private int _lastChatWidth;
 
     /// <summary>
     /// Fired when the user selects a channel. Parameter is the channel name.
@@ -191,6 +192,9 @@ public sealed class MainWindow : Runnable
 
         // Apply our custom color schemes to all views
         ApplyColorSchemes();
+
+        // Re-wrap messages when the chat area is resized
+        _messageList.ViewportChanged += (_, _) => OnChatViewportChanged();
 
         // Window-level key handling for Ctrl+C (quit)
         KeyDown += OnWindowKeyDown;
@@ -365,6 +369,16 @@ public sealed class MainWindow : Runnable
             }
             if (prefix.Length > text.Length)
                 _inputField.Text = prefix;
+        }
+    }
+
+    private void OnChatViewportChanged()
+    {
+        var newWidth = _messageList.Viewport.Width;
+        if (newWidth > 0 && newWidth != _lastChatWidth)
+        {
+            _lastChatWidth = newWidth;
+            RefreshMessages();
         }
     }
 
@@ -588,11 +602,22 @@ public sealed class MainWindow : Runnable
     {
         if (_channelMessages.TryGetValue(_currentChannel, out var messages))
         {
+            var width = _messageList.Viewport.Width;
             var source = new ChatListSource();
-            source.AddRange(messages);
+
+            if (width > 0)
+            {
+                foreach (var line in messages)
+                    source.AddRange(line.Wrap(width));
+            }
+            else
+            {
+                source.AddRange(messages);
+            }
+
             _messageList.Source = source;
-            if (messages.Count > 0)
-                _messageList.SelectedItem = messages.Count - 1;
+            if (source.Count > 0)
+                _messageList.SelectedItem = source.Count - 1;
         }
         else
         {

@@ -146,7 +146,8 @@ public sealed class UserPanelDialog
             Width = Dim.Fill(1),
             Height = 3,
             Text = bioText,
-            ReadOnly = true
+            ReadOnly = true,
+            WordWrap = true
         };
         bioView.SetScheme(new Scheme
         {

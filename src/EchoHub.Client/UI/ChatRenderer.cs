@@ -36,6 +36,58 @@ public partial class ChatLine
     public override string ToString() => string.Concat(Segments.Select(s => s.Text));
 
     /// <summary>
+    /// Wrap this line into multiple lines that fit within the given width.
+    /// Continuation lines are indented with the specified number of spaces.
+    /// </summary>
+    public List<ChatLine> Wrap(int width, int continuationIndent = 0)
+    {
+        if (width <= 0 || TextLength <= width)
+            return [this];
+
+        var results = new List<ChatLine>();
+        var currentSegments = new List<ChatSegment>();
+        int col = 0;
+
+        foreach (var segment in Segments)
+        {
+            int segPos = 0;
+            while (segPos < segment.Text.Length)
+            {
+                int remaining = width - col;
+                if (remaining <= 0)
+                {
+                    // Emit current line and start a new one
+                    results.Add(new ChatLine(currentSegments));
+                    currentSegments = [];
+
+                    // Add indent for continuation
+                    if (continuationIndent > 0)
+                    {
+                        currentSegments.Add(new ChatSegment(new string(' ', continuationIndent), null));
+                        col = continuationIndent;
+                    }
+                    else
+                    {
+                        col = 0;
+                    }
+
+                    remaining = width - col;
+                }
+
+                int take = Math.Min(segment.Text.Length - segPos, remaining);
+                currentSegments.Add(new ChatSegment(segment.Text.Substring(segPos, take), segment.Color));
+                col += take;
+                segPos += take;
+            }
+        }
+
+        if (currentSegments.Count > 0)
+            results.Add(new ChatLine(currentSegments));
+
+        return results;
+    }
+
+    /// <summary>
     /// Parse a string containing ANSI 24-bit color escape codes into colored segments.
     /// Format: \x1b[38;2;R;G;Bm (foreground color), \x1b[0m (reset)
     /// </summary>
