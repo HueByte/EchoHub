@@ -2,3 +2,7 @@
   href: getting-started.md
 - name: Architecture
   href: architecture.md
+- name: Encryption
+  href: encryption.md
+- name: Notification Sounds
+  href: notification-sounds.md
