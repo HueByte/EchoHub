@@ -79,10 +79,10 @@ To encrypt messages at rest, enable the setting:
 
 ### Behavior by Setting
 
-| Setting | DB Storage | Transport | Key Rotation Risk |
-|---------|-----------|-----------|-------------------|
-| `false` (default) | Plaintext | Encrypted | None — stored data is unaffected |
-| `true` | Encrypted | Encrypted | Changing the key makes old messages unreadable |
+| Setting           | DB Storage | Transport | Key Rotation Risk                              |
+| ----------------- | ---------- | --------- | ---------------------------------------------- |
+| `false` (default) | Plaintext  | Encrypted | None - stored data is unaffected               |
+| `true`            | Encrypted  | Encrypted | Changing the key makes old messages unreadable |
 
 ### Mixed Content
 
