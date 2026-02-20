@@ -31,13 +31,13 @@ public class JwtTokenServiceTests
         string username = "alice",
         ServerRole role = ServerRole.Member,
         string? displayName = null) => new()
-    {
-        Id = Guid.NewGuid(),
-        Username = username,
-        PasswordHash = "hash",
-        DisplayName = displayName,
-        Role = role,
-    };
+        {
+            Id = Guid.NewGuid(),
+            Username = username,
+            PasswordHash = "hash",
+            DisplayName = displayName,
+            Role = role,
+        };
 
     // ── Constructor ───────────────────────────────────────────────────
 
