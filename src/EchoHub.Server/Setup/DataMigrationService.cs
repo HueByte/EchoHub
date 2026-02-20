@@ -136,4 +136,5 @@ public static partial class DataMigrationService
             logger.LogInformation("Migrated {Count} embed records from single-object to array format.", modified);
         }
     }
+
 }

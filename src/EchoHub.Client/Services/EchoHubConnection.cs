@@ -8,6 +8,7 @@ namespace EchoHub.Client.Services;
 public sealed class EchoHubConnection : IAsyncDisposable
 {
     private readonly HubConnection _connection;
+    private readonly ClientEncryptionService _encryption;
 
     public event Action<MessageDto>? OnMessageReceived;
     public event Action<string, string>? OnUserJoined;
@@ -25,8 +26,9 @@ public sealed class EchoHubConnection : IAsyncDisposable
 
     public bool IsConnected => _connection.State == HubConnectionState.Connected;
 
-    public EchoHubConnection(string serverUrl, ApiClient apiClient)
+    public EchoHubConnection(string serverUrl, ApiClient apiClient, ClientEncryptionService encryption)
     {
+        _encryption = encryption;
         var hubUrl = serverUrl.TrimEnd('/') + HubConstants.ChatHubPath;
 
         _connection = new HubConnectionBuilder()
@@ -63,7 +65,9 @@ public sealed class EchoHubConnection : IAsyncDisposable
     {
         _connection.On<MessageDto>(nameof(Core.Contracts.IEchoHubClient.ReceiveMessage), message =>
         {
-            OnMessageReceived?.Invoke(message);
+            // Decrypt message content received from server
+            var decrypted = message with { Content = _encryption.Decrypt(message.Content) };
+            OnMessageReceived?.Invoke(decrypted);
         });
 
         _connection.On<string, string>(nameof(Core.Contracts.IEchoHubClient.UserJoined), (channelName, username) =>
@@ -132,7 +136,8 @@ public sealed class EchoHubConnection : IAsyncDisposable
 
     public async Task<List<MessageDto>> JoinChannelAsync(string channelName)
     {
-        return await _connection.InvokeAsync<List<MessageDto>>("JoinChannel", channelName);
+        var messages = await _connection.InvokeAsync<List<MessageDto>>("JoinChannel", channelName);
+        return DecryptMessages(messages);
     }
 
     public async Task LeaveChannelAsync(string channelName)
@@ -142,12 +147,15 @@ public sealed class EchoHubConnection : IAsyncDisposable
 
     public async Task SendMessageAsync(string channelName, string content)
     {
-        await _connection.InvokeAsync("SendMessage", channelName, content);
+        // Encrypt content before sending to server
+        var encrypted = _encryption.Encrypt(content);
+        await _connection.InvokeAsync("SendMessage", channelName, encrypted);
     }
 
     public async Task<List<MessageDto>> GetHistoryAsync(string channelName, int count = HubConstants.DefaultHistoryCount)
     {
-        return await _connection.InvokeAsync<List<MessageDto>>("GetChannelHistory", channelName, count);
+        var messages = await _connection.InvokeAsync<List<MessageDto>>("GetChannelHistory", channelName, count);
+        return DecryptMessages(messages);
     }
 
     public async Task UpdateStatusAsync(UserStatus status, string? statusMessage = null)
@@ -158,6 +166,11 @@ public sealed class EchoHubConnection : IAsyncDisposable
     public async Task<List<UserPresenceDto>> GetOnlineUsersAsync(string channelName)
     {
         return await _connection.InvokeAsync<List<UserPresenceDto>>("GetOnlineUsers", channelName);
+    }
+
+    private List<MessageDto> DecryptMessages(List<MessageDto> messages)
+    {
+        return messages.Select(m => m with { Content = _encryption.Decrypt(m.Content) }).ToList();
     }
 
     public async ValueTask DisposeAsync()

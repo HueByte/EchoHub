@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\EchoHub.Client\EchoHub.Client.csproj" />
     <ProjectReference Include="..\EchoHub.Core\EchoHub.Core.csproj" />
     <ProjectReference Include="..\EchoHub.Server\EchoHub.Server.csproj" />
   </ItemGroup>

@@ -22,6 +22,7 @@ public static class FirstRunSetup
             return;
 
         EnsureJwtSecret(settingsPath);
+        EnsureEncryptionKey(settingsPath);
     }
 
     private static void EnsureJwtSecret(string settingsPath)
@@ -44,5 +45,28 @@ public static class FirstRunSetup
         var writeOptions = new JsonSerializerOptions { WriteIndented = true };
         File.WriteAllText(settingsPath, root.ToJsonString(writeOptions));
         Console.WriteLine("Generated new JWT secret in appsettings.json.");
+    }
+
+    private static void EnsureEncryptionKey(string settingsPath)
+    {
+        var json = File.ReadAllText(settingsPath);
+        var root = JsonNode.Parse(json, documentOptions: new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip });
+        if (root is null)
+            return;
+
+        var currentKey = root["Encryption"]?["Key"]?.GetValue<string>();
+
+        if (!string.IsNullOrEmpty(currentKey))
+            return;
+
+        // Generate a 256-bit (32-byte) AES key
+        var key = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+
+        root["Encryption"] ??= new JsonObject();
+        root["Encryption"]!["Key"] = key;
+
+        var writeOptions = new JsonSerializerOptions { WriteIndented = true };
+        File.WriteAllText(settingsPath, root.ToJsonString(writeOptions));
+        Console.WriteLine("Generated new encryption key in appsettings.json.");
     }
 }

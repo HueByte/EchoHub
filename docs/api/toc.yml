@@ -3,19 +3,19 @@
     - name: API Reference
       href: ../_api_meta/client/toc.yml
     - name: Articles
-      href: client-articles/
+      href: client-articles/toc.yml
 - name: Core
   items:
     - name: API Reference
       href: ../_api_meta/core/toc.yml
     - name: Articles
-      href: core-articles/
+      href: core-articles/toc.yml
 - name: Server
   items:
     - name: API Reference
       href: ../_api_meta/server/toc.yml
     - name: Articles
-      href: server-articles/
+      href: server-articles/toc.yml
 - name: Server.Irc
   items:
     - name: API Reference
