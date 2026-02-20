@@ -21,6 +21,7 @@
     <ProjectReference Include="..\EchoHub.Client\EchoHub.Client.csproj" />
     <ProjectReference Include="..\EchoHub.Core\EchoHub.Core.csproj" />
     <ProjectReference Include="..\EchoHub.Server\EchoHub.Server.csproj" />
+    <ProjectReference Include="..\EchoHub.Server.Irc\EchoHub.Server.Irc.csproj" />
   </ItemGroup>
 
 </Project>
