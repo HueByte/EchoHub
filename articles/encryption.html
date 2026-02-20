@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Message Encryption | EchoHub Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Message Encryption | EchoHub Documentation ">
+      
+      
+      <link rel="icon" href="../images/hue_icon.svg">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/blob/master/docs/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/hue_icon.svg" alt="EchoHub">
+            EchoHub
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="message-encryption">Message Encryption</h1>
+
+<p>EchoHub uses application-layer AES-256-GCM encryption to protect message content in transit between clients and the server. This is an additional layer on top of TLS, protecting against ISPs, proxies, and any middleman that can inspect HTTPS traffic (e.g. corporate proxies with trusted root CA certificates).</p>
+<h2 id="how-it-works">How It Works</h2>
+<pre><code class="lang-mermaid">sequenceDiagram
+    participant Sender as TUI Client (Sender)
+    participant Server
+    participant Receiver as TUI Client (Receiver)
+    participant IRC as IRC Client
+
+    Sender-&gt;&gt;Sender: encrypt(plaintext)
+    Sender-&gt;&gt;Server: $ENC$v1$... (SignalR)
+    Server-&gt;&gt;Server: decrypt → validate/sanitize
+    Server-&gt;&gt;Server: fetch embeds on plaintext
+    Server-&gt;&gt;Server: (optional) encrypt for DB storage
+    Server-&gt;&gt;Server: encrypt(plaintext) with fresh nonce
+    Server-&gt;&gt;Receiver: $ENC$v1$... (SignalR broadcast)
+    Receiver-&gt;&gt;Receiver: decrypt → display
+    Server-&gt;&gt;Server: decrypt for IRC
+    Server-&gt;&gt;IRC: plaintext (IRC PRIVMSG)
+</code></pre>
+<ol>
+<li><strong>Client encrypts</strong> the message before sending it over SignalR</li>
+<li><strong>Server decrypts</strong> to validate content, sanitize newlines, and fetch link embeds</li>
+<li><strong>Server re-encrypts</strong> with a fresh nonce and broadcasts to all connected SignalR clients</li>
+<li><strong>Clients decrypt</strong> the broadcast and display the plaintext</li>
+<li><strong>IRC clients</strong> receive plaintext automatically (the IRC broadcaster decrypts before forwarding)</li>
+</ol>
+<p>Each encryption uses a random 12-byte nonce, so the same message produces different ciphertext every time.</p>
+<h2 id="encryption-key">Encryption Key</h2>
+<p>A 256-bit AES key is auto-generated on first server startup and saved to <code>appsettings.json</code>:</p>
+<pre><code class="lang-json">{
+  &quot;Encryption&quot;: {
+    &quot;Key&quot;: &quot;base64-encoded-32-byte-key&quot;,
+    &quot;EncryptDatabase&quot;: false
+  }
+}
+</code></pre>
+<p>The key is generated by <code>FirstRunSetup</code> using <code>RandomNumberGenerator.GetBytes(32)</code>. If the key is missing or empty when the server starts, a new one is created automatically.</p>
+<p>Clients fetch the key after login via an authenticated endpoint (<code>GET /api/server/encryption-key</code>). No manual configuration is needed on the client side.</p>
+<h2 id="encrypted-content-format">Encrypted Content Format</h2>
+<p>Encrypted content uses a self-describing format:</p>
+<pre><code class="lang-text">$ENC$v1${nonce_base64}${ciphertext+tag_base64}
+</code></pre>
+<ul>
+<li><strong><code>$ENC$v1$</code></strong> — version prefix (allows future algorithm changes)</li>
+<li><strong>Nonce</strong> — 12 bytes, Base64-encoded, randomly generated per message</li>
+<li><strong>Ciphertext + Tag</strong> — AES-256-GCM output with 16-byte authentication tag appended</li>
+</ul>
+<p>The authentication tag ensures both confidentiality and integrity — any tampering with the ciphertext is detected during decryption.</p>
+<h2 id="database-encryption-optional">Database Encryption (Optional)</h2>
+<p>By default, messages are stored as <strong>plaintext</strong> in the database. Transport encryption still protects everything on the wire, but the SQLite file itself contains readable messages.</p>
+<p>To encrypt messages at rest, enable the setting:</p>
+<pre><code class="lang-json">{
+  &quot;Encryption&quot;: {
+    &quot;Key&quot;: &quot;...&quot;,
+    &quot;EncryptDatabase&quot;: true
+  }
+}
+</code></pre>
+<h3 id="behavior-by-setting">Behavior by Setting</h3>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>DB Storage</th>
+<th>Transport</th>
+<th>Key Rotation Risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>false</code> (default)</td>
+<td>Plaintext</td>
+<td>Encrypted</td>
+<td>None - stored data is unaffected</td>
+</tr>
+<tr>
+<td><code>true</code></td>
+<td>Encrypted</td>
+<td>Encrypted</td>
+<td>Changing the key makes old messages unreadable</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mixed-content">Mixed Content</h3>
+<p>The server handles mixed encrypted/plaintext content in the database gracefully. When reading messages:</p>
+<ul>
+<li>Content starting with <code>$ENC$v1$</code> is decrypted</li>
+<li>Everything else is treated as plaintext</li>
+</ul>
+<p>This means you can safely toggle <code>EncryptDatabase</code> at any time. Old messages remain readable regardless of the current setting.</p>
+<h3 id="enabling-encryption-at-rest">Enabling Encryption at Rest</h3>
+<p>When you set <code>EncryptDatabase: true</code>, only <strong>new messages</strong> are encrypted going forward. Existing plaintext messages in the database are not retroactively encrypted. This is intentional — it keeps key rotation safe and avoids irreversible bulk changes.</p>
+<h3 id="key-rotation">Key Rotation</h3>
+<p>Changing the encryption key is safe:</p>
+<ul>
+<li><strong>Plaintext messages</strong> — always readable regardless of key</li>
+<li><strong>Messages encrypted with the old key</strong> — will show <code>[encrypted message — decryption failed]</code></li>
+<li><strong>New messages</strong> — encrypted with the new key going forward</li>
+</ul>
+<p>If you need to recover old encrypted messages, restore the original key from a backup of <code>appsettings.json</code>. Since plaintext messages are never retroactively encrypted, you'll never lose access to your entire history from a key change.</p>
+<h2 id="security-considerations">Security Considerations</h2>
+<h3 id="what-this-protects-against">What This Protects Against</h3>
+<ul>
+<li><strong>Passive network sniffing</strong> — messages are encrypted even if captured off the wire</li>
+<li><strong>ISP/proxy inspection</strong> — content is encrypted at the application layer, independent of TLS</li>
+<li><strong>Database theft</strong> (when <code>EncryptDatabase: true</code>) — SQLite file contains only ciphertext</li>
+</ul>
+<h3 id="limitations">Limitations</h3>
+<ul>
+<li><strong>TLS-inspecting proxies</strong> — if a corporate proxy terminates TLS with a trusted root CA, it can intercept the key exchange (<code>GET /api/server/encryption-key</code>) and read all traffic. A future upgrade to ECDH key exchange would address this.</li>
+<li><strong>Server has full access</strong> — the server decrypts all messages for processing. This is not end-to-end encryption between users; it's transport encryption between client and server.</li>
+<li><strong>IRC clients receive plaintext</strong> — IRC is an open protocol and third-party clients cannot participate in the encryption scheme.</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="messages-show-encrypted-message--decryption-failed-try-re-logging-to-fetch-the-latest-key">Messages show <code>[encrypted message — decryption failed, try re-logging to fetch the latest key]</code></h3>
+<p>The client's encryption key doesn't match the server's. This happens when:</p>
+<ul>
+<li>The server's encryption key was rotated while the client was connected</li>
+<li>The client cached a stale key</li>
+</ul>
+<p><strong>Fix</strong>: Disconnect and reconnect (re-login). The client fetches the current key on each login.</p>
+<h3 id="messages-show-encrypted-message--decryption-failed-in-channel-history">Messages show <code>[encrypted message — decryption failed]</code> in channel history</h3>
+<p>The server cannot decrypt messages stored in the database. This happens when:</p>
+<ul>
+<li><code>EncryptDatabase</code> was enabled, and the key was changed afterwards</li>
+</ul>
+<p><strong>Fix</strong>: Restore the original key from a backup. There is no way to recover messages encrypted with a lost key.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/HueByte/EchoHub/blob/master/docs/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a><span class='footer-sep'>&middot;</span><span class='footer-credit'>Built with <a href='https://dotnet.github.io/docfx'>DocFX</a></span></div></div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

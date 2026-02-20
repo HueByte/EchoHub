@@ -937,6 +937,18 @@ references:
   commentId: Overload:EchoHub.Client.Services.ApiClient.GetChannelsAsync
   fullName: EchoHub.Client.Services.ApiClient.GetChannelsAsync
   nameWithType: ApiClient.GetChannelsAsync
+- uid: EchoHub.Client.Services.ApiClient.GetEncryptionKeyAsync
+  name: GetEncryptionKeyAsync()
+  href: api/client/EchoHub.Client.Services.ApiClient.html#EchoHub_Client_Services_ApiClient_GetEncryptionKeyAsync
+  commentId: M:EchoHub.Client.Services.ApiClient.GetEncryptionKeyAsync
+  fullName: EchoHub.Client.Services.ApiClient.GetEncryptionKeyAsync()
+  nameWithType: ApiClient.GetEncryptionKeyAsync()
+- uid: EchoHub.Client.Services.ApiClient.GetEncryptionKeyAsync*
+  name: GetEncryptionKeyAsync
+  href: api/client/EchoHub.Client.Services.ApiClient.html#EchoHub_Client_Services_ApiClient_GetEncryptionKeyAsync_
+  commentId: Overload:EchoHub.Client.Services.ApiClient.GetEncryptionKeyAsync
+  fullName: EchoHub.Client.Services.ApiClient.GetEncryptionKeyAsync
+  nameWithType: ApiClient.GetEncryptionKeyAsync
 - uid: EchoHub.Client.Services.ApiClient.GetServerInfoAsync
   name: GetServerInfoAsync()
   href: api/client/EchoHub.Client.Services.ApiClient.html#EchoHub_Client_Services_ApiClient_GetServerInfoAsync
@@ -1201,21 +1213,144 @@ references:
   commentId: Overload:EchoHub.Client.Services.ApiClient.UploadFileAsync
   fullName: EchoHub.Client.Services.ApiClient.UploadFileAsync
   nameWithType: ApiClient.UploadFileAsync
+- uid: EchoHub.Client.Services.ClientEncryptionService
+  name: ClientEncryptionService
+  href: api/client/EchoHub.Client.Services.ClientEncryptionService.html
+  commentId: T:EchoHub.Client.Services.ClientEncryptionService
+  fullName: EchoHub.Client.Services.ClientEncryptionService
+  nameWithType: ClientEncryptionService
+- uid: EchoHub.Client.Services.ClientEncryptionService.#ctor
+  name: ClientEncryptionService()
+  href: api/client/EchoHub.Client.Services.ClientEncryptionService.html#EchoHub_Client_Services_ClientEncryptionService__ctor
+  commentId: M:EchoHub.Client.Services.ClientEncryptionService.#ctor
+  name.vb: New()
+  fullName: EchoHub.Client.Services.ClientEncryptionService.ClientEncryptionService()
+  fullName.vb: EchoHub.Client.Services.ClientEncryptionService.New()
+  nameWithType: ClientEncryptionService.ClientEncryptionService()
+  nameWithType.vb: ClientEncryptionService.New()
+- uid: EchoHub.Client.Services.ClientEncryptionService.#ctor*
+  name: ClientEncryptionService
+  href: api/client/EchoHub.Client.Services.ClientEncryptionService.html#EchoHub_Client_Services_ClientEncryptionService__ctor_
+  commentId: Overload:EchoHub.Client.Services.ClientEncryptionService.#ctor
+  name.vb: New
+  fullName: EchoHub.Client.Services.ClientEncryptionService.ClientEncryptionService
+  fullName.vb: EchoHub.Client.Services.ClientEncryptionService.New
+  nameWithType: ClientEncryptionService.ClientEncryptionService
+  nameWithType.vb: ClientEncryptionService.New
+- uid: EchoHub.Client.Services.ClientEncryptionService.Decrypt(System.String)
+  name: Decrypt(string)
+  href: api/client/EchoHub.Client.Services.ClientEncryptionService.html#EchoHub_Client_Services_ClientEncryptionService_Decrypt_System_String_
+  commentId: M:EchoHub.Client.Services.ClientEncryptionService.Decrypt(System.String)
+  name.vb: Decrypt(String)
+  fullName: EchoHub.Client.Services.ClientEncryptionService.Decrypt(string)
+  fullName.vb: EchoHub.Client.Services.ClientEncryptionService.Decrypt(String)
+  nameWithType: ClientEncryptionService.Decrypt(string)
+  nameWithType.vb: ClientEncryptionService.Decrypt(String)
+- uid: EchoHub.Client.Services.ClientEncryptionService.Decrypt*
+  name: Decrypt
+  href: api/client/EchoHub.Client.Services.ClientEncryptionService.html#EchoHub_Client_Services_ClientEncryptionService_Decrypt_
+  commentId: Overload:EchoHub.Client.Services.ClientEncryptionService.Decrypt
+  fullName: EchoHub.Client.Services.ClientEncryptionService.Decrypt
+  nameWithType: ClientEncryptionService.Decrypt
+- uid: EchoHub.Client.Services.ClientEncryptionService.DecryptNullable(System.String)
+  name: DecryptNullable(string?)
+  href: api/client/EchoHub.Client.Services.ClientEncryptionService.html#EchoHub_Client_Services_ClientEncryptionService_DecryptNullable_System_String_
+  commentId: M:EchoHub.Client.Services.ClientEncryptionService.DecryptNullable(System.String)
+  name.vb: DecryptNullable(String)
+  fullName: EchoHub.Client.Services.ClientEncryptionService.DecryptNullable(string?)
+  fullName.vb: EchoHub.Client.Services.ClientEncryptionService.DecryptNullable(String)
+  nameWithType: ClientEncryptionService.DecryptNullable(string?)
+  nameWithType.vb: ClientEncryptionService.DecryptNullable(String)
+- uid: EchoHub.Client.Services.ClientEncryptionService.DecryptNullable*
+  name: DecryptNullable
+  href: api/client/EchoHub.Client.Services.ClientEncryptionService.html#EchoHub_Client_Services_ClientEncryptionService_DecryptNullable_
+  commentId: Overload:EchoHub.Client.Services.ClientEncryptionService.DecryptNullable
+  fullName: EchoHub.Client.Services.ClientEncryptionService.DecryptNullable
+  nameWithType: ClientEncryptionService.DecryptNullable
+- uid: EchoHub.Client.Services.ClientEncryptionService.Encrypt(System.String)
+  name: Encrypt(string)
+  href: api/client/EchoHub.Client.Services.ClientEncryptionService.html#EchoHub_Client_Services_ClientEncryptionService_Encrypt_System_String_
+  commentId: M:EchoHub.Client.Services.ClientEncryptionService.Encrypt(System.String)
+  name.vb: Encrypt(String)
+  fullName: EchoHub.Client.Services.ClientEncryptionService.Encrypt(string)
+  fullName.vb: EchoHub.Client.Services.ClientEncryptionService.Encrypt(String)
+  nameWithType: ClientEncryptionService.Encrypt(string)
+  nameWithType.vb: ClientEncryptionService.Encrypt(String)
+- uid: EchoHub.Client.Services.ClientEncryptionService.Encrypt*
+  name: Encrypt
+  href: api/client/EchoHub.Client.Services.ClientEncryptionService.html#EchoHub_Client_Services_ClientEncryptionService_Encrypt_
+  commentId: Overload:EchoHub.Client.Services.ClientEncryptionService.Encrypt
+  fullName: EchoHub.Client.Services.ClientEncryptionService.Encrypt
+  nameWithType: ClientEncryptionService.Encrypt
+- uid: EchoHub.Client.Services.ClientEncryptionService.EncryptDatabaseEnabled
+  name: EncryptDatabaseEnabled
+  href: api/client/EchoHub.Client.Services.ClientEncryptionService.html#EchoHub_Client_Services_ClientEncryptionService_EncryptDatabaseEnabled
+  commentId: P:EchoHub.Client.Services.ClientEncryptionService.EncryptDatabaseEnabled
+  fullName: EchoHub.Client.Services.ClientEncryptionService.EncryptDatabaseEnabled
+  nameWithType: ClientEncryptionService.EncryptDatabaseEnabled
+- uid: EchoHub.Client.Services.ClientEncryptionService.EncryptDatabaseEnabled*
+  name: EncryptDatabaseEnabled
+  href: api/client/EchoHub.Client.Services.ClientEncryptionService.html#EchoHub_Client_Services_ClientEncryptionService_EncryptDatabaseEnabled_
+  commentId: Overload:EchoHub.Client.Services.ClientEncryptionService.EncryptDatabaseEnabled
+  fullName: EchoHub.Client.Services.ClientEncryptionService.EncryptDatabaseEnabled
+  nameWithType: ClientEncryptionService.EncryptDatabaseEnabled
+- uid: EchoHub.Client.Services.ClientEncryptionService.EncryptNullable(System.String)
+  name: EncryptNullable(string?)
+  href: api/client/EchoHub.Client.Services.ClientEncryptionService.html#EchoHub_Client_Services_ClientEncryptionService_EncryptNullable_System_String_
+  commentId: M:EchoHub.Client.Services.ClientEncryptionService.EncryptNullable(System.String)
+  name.vb: EncryptNullable(String)
+  fullName: EchoHub.Client.Services.ClientEncryptionService.EncryptNullable(string?)
+  fullName.vb: EchoHub.Client.Services.ClientEncryptionService.EncryptNullable(String)
+  nameWithType: ClientEncryptionService.EncryptNullable(string?)
+  nameWithType.vb: ClientEncryptionService.EncryptNullable(String)
+- uid: EchoHub.Client.Services.ClientEncryptionService.EncryptNullable*
+  name: EncryptNullable
+  href: api/client/EchoHub.Client.Services.ClientEncryptionService.html#EchoHub_Client_Services_ClientEncryptionService_EncryptNullable_
+  commentId: Overload:EchoHub.Client.Services.ClientEncryptionService.EncryptNullable
+  fullName: EchoHub.Client.Services.ClientEncryptionService.EncryptNullable
+  nameWithType: ClientEncryptionService.EncryptNullable
+- uid: EchoHub.Client.Services.ClientEncryptionService.IsInitialized
+  name: IsInitialized
+  href: api/client/EchoHub.Client.Services.ClientEncryptionService.html#EchoHub_Client_Services_ClientEncryptionService_IsInitialized
+  commentId: P:EchoHub.Client.Services.ClientEncryptionService.IsInitialized
+  fullName: EchoHub.Client.Services.ClientEncryptionService.IsInitialized
+  nameWithType: ClientEncryptionService.IsInitialized
+- uid: EchoHub.Client.Services.ClientEncryptionService.IsInitialized*
+  name: IsInitialized
+  href: api/client/EchoHub.Client.Services.ClientEncryptionService.html#EchoHub_Client_Services_ClientEncryptionService_IsInitialized_
+  commentId: Overload:EchoHub.Client.Services.ClientEncryptionService.IsInitialized
+  fullName: EchoHub.Client.Services.ClientEncryptionService.IsInitialized
+  nameWithType: ClientEncryptionService.IsInitialized
+- uid: EchoHub.Client.Services.ClientEncryptionService.SetKey(System.String)
+  name: SetKey(string)
+  href: api/client/EchoHub.Client.Services.ClientEncryptionService.html#EchoHub_Client_Services_ClientEncryptionService_SetKey_System_String_
+  commentId: M:EchoHub.Client.Services.ClientEncryptionService.SetKey(System.String)
+  name.vb: SetKey(String)
+  fullName: EchoHub.Client.Services.ClientEncryptionService.SetKey(string)
+  fullName.vb: EchoHub.Client.Services.ClientEncryptionService.SetKey(String)
+  nameWithType: ClientEncryptionService.SetKey(string)
+  nameWithType.vb: ClientEncryptionService.SetKey(String)
+- uid: EchoHub.Client.Services.ClientEncryptionService.SetKey*
+  name: SetKey
+  href: api/client/EchoHub.Client.Services.ClientEncryptionService.html#EchoHub_Client_Services_ClientEncryptionService_SetKey_
+  commentId: Overload:EchoHub.Client.Services.ClientEncryptionService.SetKey
+  fullName: EchoHub.Client.Services.ClientEncryptionService.SetKey
+  nameWithType: ClientEncryptionService.SetKey
 - uid: EchoHub.Client.Services.EchoHubConnection
   name: EchoHubConnection
   href: api/client/EchoHub.Client.Services.EchoHubConnection.html
   commentId: T:EchoHub.Client.Services.EchoHubConnection
   fullName: EchoHub.Client.Services.EchoHubConnection
   nameWithType: EchoHubConnection
-- uid: EchoHub.Client.Services.EchoHubConnection.#ctor(System.String,EchoHub.Client.Services.ApiClient)
-  name: EchoHubConnection(string, ApiClient)
-  href: api/client/EchoHub.Client.Services.EchoHubConnection.html#EchoHub_Client_Services_EchoHubConnection__ctor_System_String_EchoHub_Client_Services_ApiClient_
-  commentId: M:EchoHub.Client.Services.EchoHubConnection.#ctor(System.String,EchoHub.Client.Services.ApiClient)
-  name.vb: New(String, ApiClient)
-  fullName: EchoHub.Client.Services.EchoHubConnection.EchoHubConnection(string, EchoHub.Client.Services.ApiClient)
-  fullName.vb: EchoHub.Client.Services.EchoHubConnection.New(String, EchoHub.Client.Services.ApiClient)
-  nameWithType: EchoHubConnection.EchoHubConnection(string, ApiClient)
-  nameWithType.vb: EchoHubConnection.New(String, ApiClient)
+- uid: EchoHub.Client.Services.EchoHubConnection.#ctor(System.String,EchoHub.Client.Services.ApiClient,EchoHub.Client.Services.ClientEncryptionService)
+  name: EchoHubConnection(string, ApiClient, ClientEncryptionService)
+  href: api/client/EchoHub.Client.Services.EchoHubConnection.html#EchoHub_Client_Services_EchoHubConnection__ctor_System_String_EchoHub_Client_Services_ApiClient_EchoHub_Client_Services_ClientEncryptionService_
+  commentId: M:EchoHub.Client.Services.EchoHubConnection.#ctor(System.String,EchoHub.Client.Services.ApiClient,EchoHub.Client.Services.ClientEncryptionService)
+  name.vb: New(String, ApiClient, ClientEncryptionService)
+  fullName: EchoHub.Client.Services.EchoHubConnection.EchoHubConnection(string, EchoHub.Client.Services.ApiClient, EchoHub.Client.Services.ClientEncryptionService)
+  fullName.vb: EchoHub.Client.Services.EchoHubConnection.New(String, EchoHub.Client.Services.ApiClient, EchoHub.Client.Services.ClientEncryptionService)
+  nameWithType: EchoHubConnection.EchoHubConnection(string, ApiClient, ClientEncryptionService)
+  nameWithType.vb: EchoHubConnection.New(String, ApiClient, ClientEncryptionService)
 - uid: EchoHub.Client.Services.EchoHubConnection.#ctor*
   name: EchoHubConnection
   href: api/client/EchoHub.Client.Services.EchoHubConnection.html#EchoHub_Client_Services_EchoHubConnection__ctor_
@@ -5077,6 +5212,84 @@ references:
   commentId: Overload:EchoHub.Core.Contracts.IEchoHubClient.UserStatusChanged
   fullName: EchoHub.Core.Contracts.IEchoHubClient.UserStatusChanged
   nameWithType: IEchoHubClient.UserStatusChanged
+- uid: EchoHub.Core.Contracts.IMessageEncryptionService
+  name: IMessageEncryptionService
+  href: api/core/EchoHub.Core.Contracts.IMessageEncryptionService.html
+  commentId: T:EchoHub.Core.Contracts.IMessageEncryptionService
+  fullName: EchoHub.Core.Contracts.IMessageEncryptionService
+  nameWithType: IMessageEncryptionService
+- uid: EchoHub.Core.Contracts.IMessageEncryptionService.Decrypt(System.String)
+  name: Decrypt(string)
+  href: api/core/EchoHub.Core.Contracts.IMessageEncryptionService.html#EchoHub_Core_Contracts_IMessageEncryptionService_Decrypt_System_String_
+  commentId: M:EchoHub.Core.Contracts.IMessageEncryptionService.Decrypt(System.String)
+  name.vb: Decrypt(String)
+  fullName: EchoHub.Core.Contracts.IMessageEncryptionService.Decrypt(string)
+  fullName.vb: EchoHub.Core.Contracts.IMessageEncryptionService.Decrypt(String)
+  nameWithType: IMessageEncryptionService.Decrypt(string)
+  nameWithType.vb: IMessageEncryptionService.Decrypt(String)
+- uid: EchoHub.Core.Contracts.IMessageEncryptionService.Decrypt*
+  name: Decrypt
+  href: api/core/EchoHub.Core.Contracts.IMessageEncryptionService.html#EchoHub_Core_Contracts_IMessageEncryptionService_Decrypt_
+  commentId: Overload:EchoHub.Core.Contracts.IMessageEncryptionService.Decrypt
+  fullName: EchoHub.Core.Contracts.IMessageEncryptionService.Decrypt
+  nameWithType: IMessageEncryptionService.Decrypt
+- uid: EchoHub.Core.Contracts.IMessageEncryptionService.DecryptNullable(System.String)
+  name: DecryptNullable(string?)
+  href: api/core/EchoHub.Core.Contracts.IMessageEncryptionService.html#EchoHub_Core_Contracts_IMessageEncryptionService_DecryptNullable_System_String_
+  commentId: M:EchoHub.Core.Contracts.IMessageEncryptionService.DecryptNullable(System.String)
+  name.vb: DecryptNullable(String)
+  fullName: EchoHub.Core.Contracts.IMessageEncryptionService.DecryptNullable(string?)
+  fullName.vb: EchoHub.Core.Contracts.IMessageEncryptionService.DecryptNullable(String)
+  nameWithType: IMessageEncryptionService.DecryptNullable(string?)
+  nameWithType.vb: IMessageEncryptionService.DecryptNullable(String)
+- uid: EchoHub.Core.Contracts.IMessageEncryptionService.DecryptNullable*
+  name: DecryptNullable
+  href: api/core/EchoHub.Core.Contracts.IMessageEncryptionService.html#EchoHub_Core_Contracts_IMessageEncryptionService_DecryptNullable_
+  commentId: Overload:EchoHub.Core.Contracts.IMessageEncryptionService.DecryptNullable
+  fullName: EchoHub.Core.Contracts.IMessageEncryptionService.DecryptNullable
+  nameWithType: IMessageEncryptionService.DecryptNullable
+- uid: EchoHub.Core.Contracts.IMessageEncryptionService.Encrypt(System.String)
+  name: Encrypt(string)
+  href: api/core/EchoHub.Core.Contracts.IMessageEncryptionService.html#EchoHub_Core_Contracts_IMessageEncryptionService_Encrypt_System_String_
+  commentId: M:EchoHub.Core.Contracts.IMessageEncryptionService.Encrypt(System.String)
+  name.vb: Encrypt(String)
+  fullName: EchoHub.Core.Contracts.IMessageEncryptionService.Encrypt(string)
+  fullName.vb: EchoHub.Core.Contracts.IMessageEncryptionService.Encrypt(String)
+  nameWithType: IMessageEncryptionService.Encrypt(string)
+  nameWithType.vb: IMessageEncryptionService.Encrypt(String)
+- uid: EchoHub.Core.Contracts.IMessageEncryptionService.Encrypt*
+  name: Encrypt
+  href: api/core/EchoHub.Core.Contracts.IMessageEncryptionService.html#EchoHub_Core_Contracts_IMessageEncryptionService_Encrypt_
+  commentId: Overload:EchoHub.Core.Contracts.IMessageEncryptionService.Encrypt
+  fullName: EchoHub.Core.Contracts.IMessageEncryptionService.Encrypt
+  nameWithType: IMessageEncryptionService.Encrypt
+- uid: EchoHub.Core.Contracts.IMessageEncryptionService.EncryptDatabaseEnabled
+  name: EncryptDatabaseEnabled
+  href: api/core/EchoHub.Core.Contracts.IMessageEncryptionService.html#EchoHub_Core_Contracts_IMessageEncryptionService_EncryptDatabaseEnabled
+  commentId: P:EchoHub.Core.Contracts.IMessageEncryptionService.EncryptDatabaseEnabled
+  fullName: EchoHub.Core.Contracts.IMessageEncryptionService.EncryptDatabaseEnabled
+  nameWithType: IMessageEncryptionService.EncryptDatabaseEnabled
+- uid: EchoHub.Core.Contracts.IMessageEncryptionService.EncryptDatabaseEnabled*
+  name: EncryptDatabaseEnabled
+  href: api/core/EchoHub.Core.Contracts.IMessageEncryptionService.html#EchoHub_Core_Contracts_IMessageEncryptionService_EncryptDatabaseEnabled_
+  commentId: Overload:EchoHub.Core.Contracts.IMessageEncryptionService.EncryptDatabaseEnabled
+  fullName: EchoHub.Core.Contracts.IMessageEncryptionService.EncryptDatabaseEnabled
+  nameWithType: IMessageEncryptionService.EncryptDatabaseEnabled
+- uid: EchoHub.Core.Contracts.IMessageEncryptionService.EncryptNullable(System.String)
+  name: EncryptNullable(string?)
+  href: api/core/EchoHub.Core.Contracts.IMessageEncryptionService.html#EchoHub_Core_Contracts_IMessageEncryptionService_EncryptNullable_System_String_
+  commentId: M:EchoHub.Core.Contracts.IMessageEncryptionService.EncryptNullable(System.String)
+  name.vb: EncryptNullable(String)
+  fullName: EchoHub.Core.Contracts.IMessageEncryptionService.EncryptNullable(string?)
+  fullName.vb: EchoHub.Core.Contracts.IMessageEncryptionService.EncryptNullable(String)
+  nameWithType: IMessageEncryptionService.EncryptNullable(string?)
+  nameWithType.vb: IMessageEncryptionService.EncryptNullable(String)
+- uid: EchoHub.Core.Contracts.IMessageEncryptionService.EncryptNullable*
+  name: EncryptNullable
+  href: api/core/EchoHub.Core.Contracts.IMessageEncryptionService.html#EchoHub_Core_Contracts_IMessageEncryptionService_EncryptNullable_
+  commentId: Overload:EchoHub.Core.Contracts.IMessageEncryptionService.EncryptNullable
+  fullName: EchoHub.Core.Contracts.IMessageEncryptionService.EncryptNullable
+  nameWithType: IMessageEncryptionService.EncryptNullable
 - uid: EchoHub.Core.DTOs
   name: EchoHub.Core.DTOs
   href: api/core/EchoHub.Core.DTOs.html
@@ -6235,6 +6448,174 @@ references:
   fullName.vb: EchoHub.Core.DTOs.EmbedDto.<>
   nameWithType: EmbedDto.operator !=
   nameWithType.vb: EmbedDto.<>
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse
+  name: EncryptionKeyResponse
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html
+  commentId: T:EchoHub.Core.DTOs.EncryptionKeyResponse
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse
+  nameWithType: EncryptionKeyResponse
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.#ctor(EchoHub.Core.DTOs.EncryptionKeyResponse)
+  name: EncryptionKeyResponse(EncryptionKeyResponse)
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse__ctor_EchoHub_Core_DTOs_EncryptionKeyResponse_
+  commentId: M:EchoHub.Core.DTOs.EncryptionKeyResponse.#ctor(EchoHub.Core.DTOs.EncryptionKeyResponse)
+  name.vb: New(EncryptionKeyResponse)
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.EncryptionKeyResponse(EchoHub.Core.DTOs.EncryptionKeyResponse)
+  fullName.vb: EchoHub.Core.DTOs.EncryptionKeyResponse.New(EchoHub.Core.DTOs.EncryptionKeyResponse)
+  nameWithType: EncryptionKeyResponse.EncryptionKeyResponse(EncryptionKeyResponse)
+  nameWithType.vb: EncryptionKeyResponse.New(EncryptionKeyResponse)
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.#ctor(System.String)
+  name: EncryptionKeyResponse(string)
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse__ctor_System_String_
+  commentId: M:EchoHub.Core.DTOs.EncryptionKeyResponse.#ctor(System.String)
+  name.vb: New(String)
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.EncryptionKeyResponse(string)
+  fullName.vb: EchoHub.Core.DTOs.EncryptionKeyResponse.New(String)
+  nameWithType: EncryptionKeyResponse.EncryptionKeyResponse(string)
+  nameWithType.vb: EncryptionKeyResponse.New(String)
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.#ctor*
+  name: EncryptionKeyResponse
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse__ctor_
+  commentId: Overload:EchoHub.Core.DTOs.EncryptionKeyResponse.#ctor
+  name.vb: New
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.EncryptionKeyResponse
+  fullName.vb: EchoHub.Core.DTOs.EncryptionKeyResponse.New
+  nameWithType: EncryptionKeyResponse.EncryptionKeyResponse
+  nameWithType.vb: EncryptionKeyResponse.New
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.Deconstruct(System.String@)
+  name: Deconstruct(out string)
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse_Deconstruct_System_String__
+  commentId: M:EchoHub.Core.DTOs.EncryptionKeyResponse.Deconstruct(System.String@)
+  name.vb: Deconstruct(String)
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.Deconstruct(out string)
+  fullName.vb: EchoHub.Core.DTOs.EncryptionKeyResponse.Deconstruct(String)
+  nameWithType: EncryptionKeyResponse.Deconstruct(out string)
+  nameWithType.vb: EncryptionKeyResponse.Deconstruct(String)
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.Deconstruct*
+  name: Deconstruct
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse_Deconstruct_
+  commentId: Overload:EchoHub.Core.DTOs.EncryptionKeyResponse.Deconstruct
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.Deconstruct
+  nameWithType: EncryptionKeyResponse.Deconstruct
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.EqualityContract
+  name: EqualityContract
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse_EqualityContract
+  commentId: P:EchoHub.Core.DTOs.EncryptionKeyResponse.EqualityContract
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.EqualityContract
+  nameWithType: EncryptionKeyResponse.EqualityContract
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.EqualityContract*
+  name: EqualityContract
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse_EqualityContract_
+  commentId: Overload:EchoHub.Core.DTOs.EncryptionKeyResponse.EqualityContract
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.EqualityContract
+  nameWithType: EncryptionKeyResponse.EqualityContract
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.Equals(EchoHub.Core.DTOs.EncryptionKeyResponse)
+  name: Equals(EncryptionKeyResponse?)
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse_Equals_EchoHub_Core_DTOs_EncryptionKeyResponse_
+  commentId: M:EchoHub.Core.DTOs.EncryptionKeyResponse.Equals(EchoHub.Core.DTOs.EncryptionKeyResponse)
+  name.vb: Equals(EncryptionKeyResponse)
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.Equals(EchoHub.Core.DTOs.EncryptionKeyResponse?)
+  fullName.vb: EchoHub.Core.DTOs.EncryptionKeyResponse.Equals(EchoHub.Core.DTOs.EncryptionKeyResponse)
+  nameWithType: EncryptionKeyResponse.Equals(EncryptionKeyResponse?)
+  nameWithType.vb: EncryptionKeyResponse.Equals(EncryptionKeyResponse)
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.Equals(System.Object)
+  name: Equals(object?)
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse_Equals_System_Object_
+  commentId: M:EchoHub.Core.DTOs.EncryptionKeyResponse.Equals(System.Object)
+  name.vb: Equals(Object)
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.Equals(object?)
+  fullName.vb: EchoHub.Core.DTOs.EncryptionKeyResponse.Equals(Object)
+  nameWithType: EncryptionKeyResponse.Equals(object?)
+  nameWithType.vb: EncryptionKeyResponse.Equals(Object)
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.Equals*
+  name: Equals
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse_Equals_
+  commentId: Overload:EchoHub.Core.DTOs.EncryptionKeyResponse.Equals
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.Equals
+  nameWithType: EncryptionKeyResponse.Equals
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.GetHashCode
+  name: GetHashCode()
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse_GetHashCode
+  commentId: M:EchoHub.Core.DTOs.EncryptionKeyResponse.GetHashCode
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.GetHashCode()
+  nameWithType: EncryptionKeyResponse.GetHashCode()
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.GetHashCode*
+  name: GetHashCode
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse_GetHashCode_
+  commentId: Overload:EchoHub.Core.DTOs.EncryptionKeyResponse.GetHashCode
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.GetHashCode
+  nameWithType: EncryptionKeyResponse.GetHashCode
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.Key
+  name: Key
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse_Key
+  commentId: P:EchoHub.Core.DTOs.EncryptionKeyResponse.Key
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.Key
+  nameWithType: EncryptionKeyResponse.Key
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.Key*
+  name: Key
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse_Key_
+  commentId: Overload:EchoHub.Core.DTOs.EncryptionKeyResponse.Key
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.Key
+  nameWithType: EncryptionKeyResponse.Key
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.PrintMembers(System.Text.StringBuilder)
+  name: PrintMembers(StringBuilder)
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse_PrintMembers_System_Text_StringBuilder_
+  commentId: M:EchoHub.Core.DTOs.EncryptionKeyResponse.PrintMembers(System.Text.StringBuilder)
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.PrintMembers(System.Text.StringBuilder)
+  nameWithType: EncryptionKeyResponse.PrintMembers(StringBuilder)
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.PrintMembers*
+  name: PrintMembers
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse_PrintMembers_
+  commentId: Overload:EchoHub.Core.DTOs.EncryptionKeyResponse.PrintMembers
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.PrintMembers
+  nameWithType: EncryptionKeyResponse.PrintMembers
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.ToString
+  name: ToString()
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse_ToString
+  commentId: M:EchoHub.Core.DTOs.EncryptionKeyResponse.ToString
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.ToString()
+  nameWithType: EncryptionKeyResponse.ToString()
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.ToString*
+  name: ToString
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse_ToString_
+  commentId: Overload:EchoHub.Core.DTOs.EncryptionKeyResponse.ToString
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.ToString
+  nameWithType: EncryptionKeyResponse.ToString
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.op_Equality(EchoHub.Core.DTOs.EncryptionKeyResponse,EchoHub.Core.DTOs.EncryptionKeyResponse)
+  name: operator ==(EncryptionKeyResponse?, EncryptionKeyResponse?)
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse_op_Equality_EchoHub_Core_DTOs_EncryptionKeyResponse_EchoHub_Core_DTOs_EncryptionKeyResponse_
+  commentId: M:EchoHub.Core.DTOs.EncryptionKeyResponse.op_Equality(EchoHub.Core.DTOs.EncryptionKeyResponse,EchoHub.Core.DTOs.EncryptionKeyResponse)
+  name.vb: =(EncryptionKeyResponse, EncryptionKeyResponse)
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.operator ==(EchoHub.Core.DTOs.EncryptionKeyResponse?, EchoHub.Core.DTOs.EncryptionKeyResponse?)
+  fullName.vb: EchoHub.Core.DTOs.EncryptionKeyResponse.=(EchoHub.Core.DTOs.EncryptionKeyResponse, EchoHub.Core.DTOs.EncryptionKeyResponse)
+  nameWithType: EncryptionKeyResponse.operator ==(EncryptionKeyResponse?, EncryptionKeyResponse?)
+  nameWithType.vb: EncryptionKeyResponse.=(EncryptionKeyResponse, EncryptionKeyResponse)
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.op_Equality*
+  name: operator ==
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse_op_Equality_
+  commentId: Overload:EchoHub.Core.DTOs.EncryptionKeyResponse.op_Equality
+  name.vb: =
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.operator ==
+  fullName.vb: EchoHub.Core.DTOs.EncryptionKeyResponse.=
+  nameWithType: EncryptionKeyResponse.operator ==
+  nameWithType.vb: EncryptionKeyResponse.=
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.op_Inequality(EchoHub.Core.DTOs.EncryptionKeyResponse,EchoHub.Core.DTOs.EncryptionKeyResponse)
+  name: operator !=(EncryptionKeyResponse?, EncryptionKeyResponse?)
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse_op_Inequality_EchoHub_Core_DTOs_EncryptionKeyResponse_EchoHub_Core_DTOs_EncryptionKeyResponse_
+  commentId: M:EchoHub.Core.DTOs.EncryptionKeyResponse.op_Inequality(EchoHub.Core.DTOs.EncryptionKeyResponse,EchoHub.Core.DTOs.EncryptionKeyResponse)
+  name.vb: <>(EncryptionKeyResponse, EncryptionKeyResponse)
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.operator !=(EchoHub.Core.DTOs.EncryptionKeyResponse?, EchoHub.Core.DTOs.EncryptionKeyResponse?)
+  fullName.vb: EchoHub.Core.DTOs.EncryptionKeyResponse.<>(EchoHub.Core.DTOs.EncryptionKeyResponse, EchoHub.Core.DTOs.EncryptionKeyResponse)
+  nameWithType: EncryptionKeyResponse.operator !=(EncryptionKeyResponse?, EncryptionKeyResponse?)
+  nameWithType.vb: EncryptionKeyResponse.<>(EncryptionKeyResponse, EncryptionKeyResponse)
+- uid: EchoHub.Core.DTOs.EncryptionKeyResponse.op_Inequality*
+  name: operator !=
+  href: api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html#EchoHub_Core_DTOs_EncryptionKeyResponse_op_Inequality_
+  commentId: Overload:EchoHub.Core.DTOs.EncryptionKeyResponse.op_Inequality
+  name.vb: <>
+  fullName: EchoHub.Core.DTOs.EncryptionKeyResponse.operator !=
+  fullName.vb: EchoHub.Core.DTOs.EncryptionKeyResponse.<>
+  nameWithType: EncryptionKeyResponse.operator !=
+  nameWithType.vb: EncryptionKeyResponse.<>
 - uid: EchoHub.Core.DTOs.ErrorResponse
   name: ErrorResponse
   href: api/core/EchoHub.Core.DTOs.ErrorResponse.html
@@ -10807,15 +11188,15 @@ references:
   commentId: T:EchoHub.Server.Controllers.ChannelsController
   fullName: EchoHub.Server.Controllers.ChannelsController
   nameWithType: ChannelsController
-- uid: EchoHub.Server.Controllers.ChannelsController.#ctor(EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Services.FileStorageService,EchoHub.Server.Services.ImageToAsciiService,System.Net.Http.IHttpClientFactory,EchoHub.Core.Contracts.IChatService)
-  name: ChannelsController(EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService)
-  href: api/server/EchoHub.Server.Controllers.ChannelsController.html#EchoHub_Server_Controllers_ChannelsController__ctor_EchoHub_Server_Data_EchoHubDbContext_EchoHub_Server_Services_FileStorageService_EchoHub_Server_Services_ImageToAsciiService_System_Net_Http_IHttpClientFactory_EchoHub_Core_Contracts_IChatService_
-  commentId: M:EchoHub.Server.Controllers.ChannelsController.#ctor(EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Services.FileStorageService,EchoHub.Server.Services.ImageToAsciiService,System.Net.Http.IHttpClientFactory,EchoHub.Core.Contracts.IChatService)
-  name.vb: New(EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService)
-  fullName: EchoHub.Server.Controllers.ChannelsController.ChannelsController(EchoHub.Server.Data.EchoHubDbContext, EchoHub.Server.Services.FileStorageService, EchoHub.Server.Services.ImageToAsciiService, System.Net.Http.IHttpClientFactory, EchoHub.Core.Contracts.IChatService)
-  fullName.vb: EchoHub.Server.Controllers.ChannelsController.New(EchoHub.Server.Data.EchoHubDbContext, EchoHub.Server.Services.FileStorageService, EchoHub.Server.Services.ImageToAsciiService, System.Net.Http.IHttpClientFactory, EchoHub.Core.Contracts.IChatService)
-  nameWithType: ChannelsController.ChannelsController(EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService)
-  nameWithType.vb: ChannelsController.New(EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService)
+- uid: EchoHub.Server.Controllers.ChannelsController.#ctor(EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Services.FileStorageService,EchoHub.Server.Services.ImageToAsciiService,System.Net.Http.IHttpClientFactory,EchoHub.Core.Contracts.IChatService,EchoHub.Core.Contracts.IMessageEncryptionService)
+  name: ChannelsController(EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService)
+  href: api/server/EchoHub.Server.Controllers.ChannelsController.html#EchoHub_Server_Controllers_ChannelsController__ctor_EchoHub_Server_Data_EchoHubDbContext_EchoHub_Server_Services_FileStorageService_EchoHub_Server_Services_ImageToAsciiService_System_Net_Http_IHttpClientFactory_EchoHub_Core_Contracts_IChatService_EchoHub_Core_Contracts_IMessageEncryptionService_
+  commentId: M:EchoHub.Server.Controllers.ChannelsController.#ctor(EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Services.FileStorageService,EchoHub.Server.Services.ImageToAsciiService,System.Net.Http.IHttpClientFactory,EchoHub.Core.Contracts.IChatService,EchoHub.Core.Contracts.IMessageEncryptionService)
+  name.vb: New(EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService)
+  fullName: EchoHub.Server.Controllers.ChannelsController.ChannelsController(EchoHub.Server.Data.EchoHubDbContext, EchoHub.Server.Services.FileStorageService, EchoHub.Server.Services.ImageToAsciiService, System.Net.Http.IHttpClientFactory, EchoHub.Core.Contracts.IChatService, EchoHub.Core.Contracts.IMessageEncryptionService)
+  fullName.vb: EchoHub.Server.Controllers.ChannelsController.New(EchoHub.Server.Data.EchoHubDbContext, EchoHub.Server.Services.FileStorageService, EchoHub.Server.Services.ImageToAsciiService, System.Net.Http.IHttpClientFactory, EchoHub.Core.Contracts.IChatService, EchoHub.Core.Contracts.IMessageEncryptionService)
+  nameWithType: ChannelsController.ChannelsController(EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService)
+  nameWithType.vb: ChannelsController.New(EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService)
 - uid: EchoHub.Server.Controllers.ChannelsController.#ctor*
   name: ChannelsController
   href: api/server/EchoHub.Server.Controllers.ChannelsController.html#EchoHub_Server_Controllers_ChannelsController__ctor_
@@ -11113,6 +11494,18 @@ references:
   fullName.vb: EchoHub.Server.Controllers.ServerController.New
   nameWithType: ServerController.ServerController
   nameWithType.vb: ServerController.New
+- uid: EchoHub.Server.Controllers.ServerController.GetEncryptionKey
+  name: GetEncryptionKey()
+  href: api/server/EchoHub.Server.Controllers.ServerController.html#EchoHub_Server_Controllers_ServerController_GetEncryptionKey
+  commentId: M:EchoHub.Server.Controllers.ServerController.GetEncryptionKey
+  fullName: EchoHub.Server.Controllers.ServerController.GetEncryptionKey()
+  nameWithType: ServerController.GetEncryptionKey()
+- uid: EchoHub.Server.Controllers.ServerController.GetEncryptionKey*
+  name: GetEncryptionKey
+  href: api/server/EchoHub.Server.Controllers.ServerController.html#EchoHub_Server_Controllers_ServerController_GetEncryptionKey_
+  commentId: Overload:EchoHub.Server.Controllers.ServerController.GetEncryptionKey
+  fullName: EchoHub.Server.Controllers.ServerController.GetEncryptionKey
+  nameWithType: ServerController.GetEncryptionKey
 - uid: EchoHub.Server.Controllers.ServerController.GetInfo
   name: GetInfo()
   href: api/server/EchoHub.Server.Controllers.ServerController.html#EchoHub_Server_Controllers_ServerController_GetInfo
@@ -11428,6 +11821,66 @@ references:
   commentId: Overload:EchoHub.Server.Data.Migrations.AddChannelMembership.Up
   fullName: EchoHub.Server.Data.Migrations.AddChannelMembership.Up
   nameWithType: AddChannelMembership.Up
+- uid: EchoHub.Server.Data.Migrations.AddEncryptionSupport
+  name: AddEncryptionSupport
+  href: api/server/EchoHub.Server.Data.Migrations.AddEncryptionSupport.html
+  commentId: T:EchoHub.Server.Data.Migrations.AddEncryptionSupport
+  fullName: EchoHub.Server.Data.Migrations.AddEncryptionSupport
+  nameWithType: AddEncryptionSupport
+- uid: EchoHub.Server.Data.Migrations.AddEncryptionSupport.#ctor
+  name: AddEncryptionSupport()
+  href: api/server/EchoHub.Server.Data.Migrations.AddEncryptionSupport.html#EchoHub_Server_Data_Migrations_AddEncryptionSupport__ctor
+  commentId: M:EchoHub.Server.Data.Migrations.AddEncryptionSupport.#ctor
+  name.vb: New()
+  fullName: EchoHub.Server.Data.Migrations.AddEncryptionSupport.AddEncryptionSupport()
+  fullName.vb: EchoHub.Server.Data.Migrations.AddEncryptionSupport.New()
+  nameWithType: AddEncryptionSupport.AddEncryptionSupport()
+  nameWithType.vb: AddEncryptionSupport.New()
+- uid: EchoHub.Server.Data.Migrations.AddEncryptionSupport.#ctor*
+  name: AddEncryptionSupport
+  href: api/server/EchoHub.Server.Data.Migrations.AddEncryptionSupport.html#EchoHub_Server_Data_Migrations_AddEncryptionSupport__ctor_
+  commentId: Overload:EchoHub.Server.Data.Migrations.AddEncryptionSupport.#ctor
+  name.vb: New
+  fullName: EchoHub.Server.Data.Migrations.AddEncryptionSupport.AddEncryptionSupport
+  fullName.vb: EchoHub.Server.Data.Migrations.AddEncryptionSupport.New
+  nameWithType: AddEncryptionSupport.AddEncryptionSupport
+  nameWithType.vb: AddEncryptionSupport.New
+- uid: EchoHub.Server.Data.Migrations.AddEncryptionSupport.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)
+  name: BuildTargetModel(ModelBuilder)
+  href: api/server/EchoHub.Server.Data.Migrations.AddEncryptionSupport.html#EchoHub_Server_Data_Migrations_AddEncryptionSupport_BuildTargetModel_Microsoft_EntityFrameworkCore_ModelBuilder_
+  commentId: M:EchoHub.Server.Data.Migrations.AddEncryptionSupport.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)
+  fullName: EchoHub.Server.Data.Migrations.AddEncryptionSupport.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)
+  nameWithType: AddEncryptionSupport.BuildTargetModel(ModelBuilder)
+- uid: EchoHub.Server.Data.Migrations.AddEncryptionSupport.BuildTargetModel*
+  name: BuildTargetModel
+  href: api/server/EchoHub.Server.Data.Migrations.AddEncryptionSupport.html#EchoHub_Server_Data_Migrations_AddEncryptionSupport_BuildTargetModel_
+  commentId: Overload:EchoHub.Server.Data.Migrations.AddEncryptionSupport.BuildTargetModel
+  fullName: EchoHub.Server.Data.Migrations.AddEncryptionSupport.BuildTargetModel
+  nameWithType: AddEncryptionSupport.BuildTargetModel
+- uid: EchoHub.Server.Data.Migrations.AddEncryptionSupport.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+  name: Down(MigrationBuilder)
+  href: api/server/EchoHub.Server.Data.Migrations.AddEncryptionSupport.html#EchoHub_Server_Data_Migrations_AddEncryptionSupport_Down_Microsoft_EntityFrameworkCore_Migrations_MigrationBuilder_
+  commentId: M:EchoHub.Server.Data.Migrations.AddEncryptionSupport.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+  fullName: EchoHub.Server.Data.Migrations.AddEncryptionSupport.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+  nameWithType: AddEncryptionSupport.Down(MigrationBuilder)
+- uid: EchoHub.Server.Data.Migrations.AddEncryptionSupport.Down*
+  name: Down
+  href: api/server/EchoHub.Server.Data.Migrations.AddEncryptionSupport.html#EchoHub_Server_Data_Migrations_AddEncryptionSupport_Down_
+  commentId: Overload:EchoHub.Server.Data.Migrations.AddEncryptionSupport.Down
+  fullName: EchoHub.Server.Data.Migrations.AddEncryptionSupport.Down
+  nameWithType: AddEncryptionSupport.Down
+- uid: EchoHub.Server.Data.Migrations.AddEncryptionSupport.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+  name: Up(MigrationBuilder)
+  href: api/server/EchoHub.Server.Data.Migrations.AddEncryptionSupport.html#EchoHub_Server_Data_Migrations_AddEncryptionSupport_Up_Microsoft_EntityFrameworkCore_Migrations_MigrationBuilder_
+  commentId: M:EchoHub.Server.Data.Migrations.AddEncryptionSupport.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+  fullName: EchoHub.Server.Data.Migrations.AddEncryptionSupport.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+  nameWithType: AddEncryptionSupport.Up(MigrationBuilder)
+- uid: EchoHub.Server.Data.Migrations.AddEncryptionSupport.Up*
+  name: Up
+  href: api/server/EchoHub.Server.Data.Migrations.AddEncryptionSupport.html#EchoHub_Server_Data_Migrations_AddEncryptionSupport_Up_
+  commentId: Overload:EchoHub.Server.Data.Migrations.AddEncryptionSupport.Up
+  fullName: EchoHub.Server.Data.Migrations.AddEncryptionSupport.Up
+  nameWithType: AddEncryptionSupport.Up
 - uid: EchoHub.Server.Data.Migrations.AddMessageEmbed
   name: AddMessageEmbed
   href: api/server/EchoHub.Server.Data.Migrations.AddMessageEmbed.html
@@ -11767,15 +12220,15 @@ references:
   commentId: T:EchoHub.Server.Irc.IrcBroadcaster
   fullName: EchoHub.Server.Irc.IrcBroadcaster
   nameWithType: IrcBroadcaster
-- uid: EchoHub.Server.Irc.IrcBroadcaster.#ctor(EchoHub.Server.Irc.IrcGatewayService)
-  name: IrcBroadcaster(IrcGatewayService)
-  href: api/server-irc/EchoHub.Server.Irc.IrcBroadcaster.html#EchoHub_Server_Irc_IrcBroadcaster__ctor_EchoHub_Server_Irc_IrcGatewayService_
-  commentId: M:EchoHub.Server.Irc.IrcBroadcaster.#ctor(EchoHub.Server.Irc.IrcGatewayService)
-  name.vb: New(IrcGatewayService)
-  fullName: EchoHub.Server.Irc.IrcBroadcaster.IrcBroadcaster(EchoHub.Server.Irc.IrcGatewayService)
-  fullName.vb: EchoHub.Server.Irc.IrcBroadcaster.New(EchoHub.Server.Irc.IrcGatewayService)
-  nameWithType: IrcBroadcaster.IrcBroadcaster(IrcGatewayService)
-  nameWithType.vb: IrcBroadcaster.New(IrcGatewayService)
+- uid: EchoHub.Server.Irc.IrcBroadcaster.#ctor(EchoHub.Server.Irc.IrcGatewayService,EchoHub.Core.Contracts.IMessageEncryptionService)
+  name: IrcBroadcaster(IrcGatewayService, IMessageEncryptionService)
+  href: api/server-irc/EchoHub.Server.Irc.IrcBroadcaster.html#EchoHub_Server_Irc_IrcBroadcaster__ctor_EchoHub_Server_Irc_IrcGatewayService_EchoHub_Core_Contracts_IMessageEncryptionService_
+  commentId: M:EchoHub.Server.Irc.IrcBroadcaster.#ctor(EchoHub.Server.Irc.IrcGatewayService,EchoHub.Core.Contracts.IMessageEncryptionService)
+  name.vb: New(IrcGatewayService, IMessageEncryptionService)
+  fullName: EchoHub.Server.Irc.IrcBroadcaster.IrcBroadcaster(EchoHub.Server.Irc.IrcGatewayService, EchoHub.Core.Contracts.IMessageEncryptionService)
+  fullName.vb: EchoHub.Server.Irc.IrcBroadcaster.New(EchoHub.Server.Irc.IrcGatewayService, EchoHub.Core.Contracts.IMessageEncryptionService)
+  nameWithType: IrcBroadcaster.IrcBroadcaster(IrcGatewayService, IMessageEncryptionService)
+  nameWithType.vb: IrcBroadcaster.New(IrcGatewayService, IMessageEncryptionService)
 - uid: EchoHub.Server.Irc.IrcBroadcaster.#ctor*
   name: IrcBroadcaster
   href: api/server-irc/EchoHub.Server.Irc.IrcBroadcaster.html#EchoHub_Server_Irc_IrcBroadcaster__ctor_
@@ -12883,15 +13336,15 @@ references:
   commentId: T:EchoHub.Server.Services.ChatService
   fullName: EchoHub.Server.Services.ChatService
   nameWithType: ChatService
-- uid: EchoHub.Server.Services.ChatService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory,EchoHub.Server.Services.PresenceTracker,System.Collections.Generic.IEnumerable{EchoHub.Core.Contracts.IChatBroadcaster},EchoHub.Server.Services.LinkEmbedService,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.ChatService})
-  name: ChatService(IServiceScopeFactory, PresenceTracker, IEnumerable<IChatBroadcaster>, LinkEmbedService, ILogger<ChatService>)
-  href: api/server/EchoHub.Server.Services.ChatService.html#EchoHub_Server_Services_ChatService__ctor_Microsoft_Extensions_DependencyInjection_IServiceScopeFactory_EchoHub_Server_Services_PresenceTracker_System_Collections_Generic_IEnumerable_EchoHub_Core_Contracts_IChatBroadcaster__EchoHub_Server_Services_LinkEmbedService_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Services_ChatService__
-  commentId: M:EchoHub.Server.Services.ChatService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory,EchoHub.Server.Services.PresenceTracker,System.Collections.Generic.IEnumerable{EchoHub.Core.Contracts.IChatBroadcaster},EchoHub.Server.Services.LinkEmbedService,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.ChatService})
-  name.vb: New(IServiceScopeFactory, PresenceTracker, IEnumerable(Of IChatBroadcaster), LinkEmbedService, ILogger(Of ChatService))
-  fullName: EchoHub.Server.Services.ChatService.ChatService(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory, EchoHub.Server.Services.PresenceTracker, System.Collections.Generic.IEnumerable<EchoHub.Core.Contracts.IChatBroadcaster>, EchoHub.Server.Services.LinkEmbedService, Microsoft.Extensions.Logging.ILogger<EchoHub.Server.Services.ChatService>)
-  fullName.vb: EchoHub.Server.Services.ChatService.New(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory, EchoHub.Server.Services.PresenceTracker, System.Collections.Generic.IEnumerable(Of EchoHub.Core.Contracts.IChatBroadcaster), EchoHub.Server.Services.LinkEmbedService, Microsoft.Extensions.Logging.ILogger(Of EchoHub.Server.Services.ChatService))
-  nameWithType: ChatService.ChatService(IServiceScopeFactory, PresenceTracker, IEnumerable<IChatBroadcaster>, LinkEmbedService, ILogger<ChatService>)
-  nameWithType.vb: ChatService.New(IServiceScopeFactory, PresenceTracker, IEnumerable(Of IChatBroadcaster), LinkEmbedService, ILogger(Of ChatService))
+- uid: EchoHub.Server.Services.ChatService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory,EchoHub.Server.Services.PresenceTracker,System.Collections.Generic.IEnumerable{EchoHub.Core.Contracts.IChatBroadcaster},EchoHub.Server.Services.LinkEmbedService,EchoHub.Core.Contracts.IMessageEncryptionService,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.ChatService})
+  name: ChatService(IServiceScopeFactory, PresenceTracker, IEnumerable<IChatBroadcaster>, LinkEmbedService, IMessageEncryptionService, ILogger<ChatService>)
+  href: api/server/EchoHub.Server.Services.ChatService.html#EchoHub_Server_Services_ChatService__ctor_Microsoft_Extensions_DependencyInjection_IServiceScopeFactory_EchoHub_Server_Services_PresenceTracker_System_Collections_Generic_IEnumerable_EchoHub_Core_Contracts_IChatBroadcaster__EchoHub_Server_Services_LinkEmbedService_EchoHub_Core_Contracts_IMessageEncryptionService_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Services_ChatService__
+  commentId: M:EchoHub.Server.Services.ChatService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory,EchoHub.Server.Services.PresenceTracker,System.Collections.Generic.IEnumerable{EchoHub.Core.Contracts.IChatBroadcaster},EchoHub.Server.Services.LinkEmbedService,EchoHub.Core.Contracts.IMessageEncryptionService,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.ChatService})
+  name.vb: New(IServiceScopeFactory, PresenceTracker, IEnumerable(Of IChatBroadcaster), LinkEmbedService, IMessageEncryptionService, ILogger(Of ChatService))
+  fullName: EchoHub.Server.Services.ChatService.ChatService(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory, EchoHub.Server.Services.PresenceTracker, System.Collections.Generic.IEnumerable<EchoHub.Core.Contracts.IChatBroadcaster>, EchoHub.Server.Services.LinkEmbedService, EchoHub.Core.Contracts.IMessageEncryptionService, Microsoft.Extensions.Logging.ILogger<EchoHub.Server.Services.ChatService>)
+  fullName.vb: EchoHub.Server.Services.ChatService.New(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory, EchoHub.Server.Services.PresenceTracker, System.Collections.Generic.IEnumerable(Of EchoHub.Core.Contracts.IChatBroadcaster), EchoHub.Server.Services.LinkEmbedService, EchoHub.Core.Contracts.IMessageEncryptionService, Microsoft.Extensions.Logging.ILogger(Of EchoHub.Server.Services.ChatService))
+  nameWithType: ChatService.ChatService(IServiceScopeFactory, PresenceTracker, IEnumerable<IChatBroadcaster>, LinkEmbedService, IMessageEncryptionService, ILogger<ChatService>)
+  nameWithType.vb: ChatService.New(IServiceScopeFactory, PresenceTracker, IEnumerable(Of IChatBroadcaster), LinkEmbedService, IMessageEncryptionService, ILogger(Of ChatService))
 - uid: EchoHub.Server.Services.ChatService.#ctor*
   name: ChatService
   href: api/server/EchoHub.Server.Services.ChatService.html#EchoHub_Server_Services_ChatService__ctor_
@@ -13303,6 +13756,102 @@ references:
   commentId: Overload:EchoHub.Server.Services.LinkEmbedService.TryGetEmbedsAsync
   fullName: EchoHub.Server.Services.LinkEmbedService.TryGetEmbedsAsync
   nameWithType: LinkEmbedService.TryGetEmbedsAsync
+- uid: EchoHub.Server.Services.MessageEncryptionService
+  name: MessageEncryptionService
+  href: api/server/EchoHub.Server.Services.MessageEncryptionService.html
+  commentId: T:EchoHub.Server.Services.MessageEncryptionService
+  fullName: EchoHub.Server.Services.MessageEncryptionService
+  nameWithType: MessageEncryptionService
+- uid: EchoHub.Server.Services.MessageEncryptionService.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.MessageEncryptionService})
+  name: MessageEncryptionService(IConfiguration, ILogger<MessageEncryptionService>)
+  href: api/server/EchoHub.Server.Services.MessageEncryptionService.html#EchoHub_Server_Services_MessageEncryptionService__ctor_Microsoft_Extensions_Configuration_IConfiguration_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Services_MessageEncryptionService__
+  commentId: M:EchoHub.Server.Services.MessageEncryptionService.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.MessageEncryptionService})
+  name.vb: New(IConfiguration, ILogger(Of MessageEncryptionService))
+  fullName: EchoHub.Server.Services.MessageEncryptionService.MessageEncryptionService(Microsoft.Extensions.Configuration.IConfiguration, Microsoft.Extensions.Logging.ILogger<EchoHub.Server.Services.MessageEncryptionService>)
+  fullName.vb: EchoHub.Server.Services.MessageEncryptionService.New(Microsoft.Extensions.Configuration.IConfiguration, Microsoft.Extensions.Logging.ILogger(Of EchoHub.Server.Services.MessageEncryptionService))
+  nameWithType: MessageEncryptionService.MessageEncryptionService(IConfiguration, ILogger<MessageEncryptionService>)
+  nameWithType.vb: MessageEncryptionService.New(IConfiguration, ILogger(Of MessageEncryptionService))
+- uid: EchoHub.Server.Services.MessageEncryptionService.#ctor*
+  name: MessageEncryptionService
+  href: api/server/EchoHub.Server.Services.MessageEncryptionService.html#EchoHub_Server_Services_MessageEncryptionService__ctor_
+  commentId: Overload:EchoHub.Server.Services.MessageEncryptionService.#ctor
+  name.vb: New
+  fullName: EchoHub.Server.Services.MessageEncryptionService.MessageEncryptionService
+  fullName.vb: EchoHub.Server.Services.MessageEncryptionService.New
+  nameWithType: MessageEncryptionService.MessageEncryptionService
+  nameWithType.vb: MessageEncryptionService.New
+- uid: EchoHub.Server.Services.MessageEncryptionService.Decrypt(System.String)
+  name: Decrypt(string)
+  href: api/server/EchoHub.Server.Services.MessageEncryptionService.html#EchoHub_Server_Services_MessageEncryptionService_Decrypt_System_String_
+  commentId: M:EchoHub.Server.Services.MessageEncryptionService.Decrypt(System.String)
+  name.vb: Decrypt(String)
+  fullName: EchoHub.Server.Services.MessageEncryptionService.Decrypt(string)
+  fullName.vb: EchoHub.Server.Services.MessageEncryptionService.Decrypt(String)
+  nameWithType: MessageEncryptionService.Decrypt(string)
+  nameWithType.vb: MessageEncryptionService.Decrypt(String)
+- uid: EchoHub.Server.Services.MessageEncryptionService.Decrypt*
+  name: Decrypt
+  href: api/server/EchoHub.Server.Services.MessageEncryptionService.html#EchoHub_Server_Services_MessageEncryptionService_Decrypt_
+  commentId: Overload:EchoHub.Server.Services.MessageEncryptionService.Decrypt
+  fullName: EchoHub.Server.Services.MessageEncryptionService.Decrypt
+  nameWithType: MessageEncryptionService.Decrypt
+- uid: EchoHub.Server.Services.MessageEncryptionService.DecryptNullable(System.String)
+  name: DecryptNullable(string?)
+  href: api/server/EchoHub.Server.Services.MessageEncryptionService.html#EchoHub_Server_Services_MessageEncryptionService_DecryptNullable_System_String_
+  commentId: M:EchoHub.Server.Services.MessageEncryptionService.DecryptNullable(System.String)
+  name.vb: DecryptNullable(String)
+  fullName: EchoHub.Server.Services.MessageEncryptionService.DecryptNullable(string?)
+  fullName.vb: EchoHub.Server.Services.MessageEncryptionService.DecryptNullable(String)
+  nameWithType: MessageEncryptionService.DecryptNullable(string?)
+  nameWithType.vb: MessageEncryptionService.DecryptNullable(String)
+- uid: EchoHub.Server.Services.MessageEncryptionService.DecryptNullable*
+  name: DecryptNullable
+  href: api/server/EchoHub.Server.Services.MessageEncryptionService.html#EchoHub_Server_Services_MessageEncryptionService_DecryptNullable_
+  commentId: Overload:EchoHub.Server.Services.MessageEncryptionService.DecryptNullable
+  fullName: EchoHub.Server.Services.MessageEncryptionService.DecryptNullable
+  nameWithType: MessageEncryptionService.DecryptNullable
+- uid: EchoHub.Server.Services.MessageEncryptionService.Encrypt(System.String)
+  name: Encrypt(string)
+  href: api/server/EchoHub.Server.Services.MessageEncryptionService.html#EchoHub_Server_Services_MessageEncryptionService_Encrypt_System_String_
+  commentId: M:EchoHub.Server.Services.MessageEncryptionService.Encrypt(System.String)
+  name.vb: Encrypt(String)
+  fullName: EchoHub.Server.Services.MessageEncryptionService.Encrypt(string)
+  fullName.vb: EchoHub.Server.Services.MessageEncryptionService.Encrypt(String)
+  nameWithType: MessageEncryptionService.Encrypt(string)
+  nameWithType.vb: MessageEncryptionService.Encrypt(String)
+- uid: EchoHub.Server.Services.MessageEncryptionService.Encrypt*
+  name: Encrypt
+  href: api/server/EchoHub.Server.Services.MessageEncryptionService.html#EchoHub_Server_Services_MessageEncryptionService_Encrypt_
+  commentId: Overload:EchoHub.Server.Services.MessageEncryptionService.Encrypt
+  fullName: EchoHub.Server.Services.MessageEncryptionService.Encrypt
+  nameWithType: MessageEncryptionService.Encrypt
+- uid: EchoHub.Server.Services.MessageEncryptionService.EncryptDatabaseEnabled
+  name: EncryptDatabaseEnabled
+  href: api/server/EchoHub.Server.Services.MessageEncryptionService.html#EchoHub_Server_Services_MessageEncryptionService_EncryptDatabaseEnabled
+  commentId: P:EchoHub.Server.Services.MessageEncryptionService.EncryptDatabaseEnabled
+  fullName: EchoHub.Server.Services.MessageEncryptionService.EncryptDatabaseEnabled
+  nameWithType: MessageEncryptionService.EncryptDatabaseEnabled
+- uid: EchoHub.Server.Services.MessageEncryptionService.EncryptDatabaseEnabled*
+  name: EncryptDatabaseEnabled
+  href: api/server/EchoHub.Server.Services.MessageEncryptionService.html#EchoHub_Server_Services_MessageEncryptionService_EncryptDatabaseEnabled_
+  commentId: Overload:EchoHub.Server.Services.MessageEncryptionService.EncryptDatabaseEnabled
+  fullName: EchoHub.Server.Services.MessageEncryptionService.EncryptDatabaseEnabled
+  nameWithType: MessageEncryptionService.EncryptDatabaseEnabled
+- uid: EchoHub.Server.Services.MessageEncryptionService.EncryptNullable(System.String)
+  name: EncryptNullable(string?)
+  href: api/server/EchoHub.Server.Services.MessageEncryptionService.html#EchoHub_Server_Services_MessageEncryptionService_EncryptNullable_System_String_
+  commentId: M:EchoHub.Server.Services.MessageEncryptionService.EncryptNullable(System.String)
+  name.vb: EncryptNullable(String)
+  fullName: EchoHub.Server.Services.MessageEncryptionService.EncryptNullable(string?)
+  fullName.vb: EchoHub.Server.Services.MessageEncryptionService.EncryptNullable(String)
+  nameWithType: MessageEncryptionService.EncryptNullable(string?)
+  nameWithType.vb: MessageEncryptionService.EncryptNullable(String)
+- uid: EchoHub.Server.Services.MessageEncryptionService.EncryptNullable*
+  name: EncryptNullable
+  href: api/server/EchoHub.Server.Services.MessageEncryptionService.html#EchoHub_Server_Services_MessageEncryptionService_EncryptNullable_
+  commentId: Overload:EchoHub.Server.Services.MessageEncryptionService.EncryptNullable
+  fullName: EchoHub.Server.Services.MessageEncryptionService.EncryptNullable
+  nameWithType: MessageEncryptionService.EncryptNullable
 - uid: EchoHub.Server.Services.PresenceTracker
   name: PresenceTracker
   href: api/server/EchoHub.Server.Services.PresenceTracker.html

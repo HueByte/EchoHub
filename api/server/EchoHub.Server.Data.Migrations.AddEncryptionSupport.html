@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Class ServerController | EchoHub Documentation </title>
+      <title>Class AddEncryptionSupport | EchoHub Documentation </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Class ServerController | EchoHub Documentation ">
+      <meta name="title" content="Class AddEncryptionSupport | EchoHub Documentation ">
       
       
       <link rel="icon" href="../../images/hue_icon.svg">
@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/new/master/apiSpec/new?filename=EchoHub_Server_Controllers_ServerController.md&amp;value=---%0Auid%3A%20EchoHub.Server.Controllers.ServerController%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/new/master/apiSpec/new?filename=EchoHub_Server_Data_Migrations_AddEncryptionSupport.md&amp;value=---%0Auid%3A%20EchoHub.Server.Data.Migrations.AddEncryptionSupport%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -84,16 +84,16 @@
           <nav id="breadcrumb"></nav>
         </div>
 
-        <article data-uid="EchoHub.Server.Controllers.ServerController">
+        <article data-uid="EchoHub.Server.Data.Migrations.AddEncryptionSupport">
 
 
 
-  <h1 id="EchoHub_Server_Controllers_ServerController" data-uid="EchoHub.Server.Controllers.ServerController" class="text-break">
-Class ServerController  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/ServerController.cs"><i class="bi bi-code-slash"></i></a>
+  <h1 id="EchoHub_Server_Data_Migrations_AddEncryptionSupport" data-uid="EchoHub.Server.Data.Migrations.AddEncryptionSupport" class="text-break">
+Class AddEncryptionSupport  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Data/Migrations/20260220133627_AddEncryptionSupport.Designer.cs"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
-    <dl><dt>Namespace</dt><dd><a class="xref" href="EchoHub.html">EchoHub</a>.<a class="xref" href="EchoHub.Server.html">Server</a>.<a class="xref" href="EchoHub.Server.Controllers.html">Controllers</a></dd></dl>
+    <dl><dt>Namespace</dt><dd><a class="xref" href="EchoHub.html">EchoHub</a>.<a class="xref" href="EchoHub.Server.html">Server</a>.<a class="xref" href="EchoHub.Server.Data.html">Data</a>.<a class="xref" href="EchoHub.Server.Data.Migrations.html">Migrations</a></dd></dl>
   <dl><dt>Assembly</dt><dd>EchoHub.Server.dll</dd></dl>
   </div>
 
@@ -101,9 +101,9 @@ Class ServerController  <a class="header-action link-secondary" title="View sour
   <div class="markdown conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[ApiController]
-[Route(&quot;api/server&quot;)]
-public class ServerController : ControllerBase</code></pre>
+    <pre><code class="lang-csharp hljs">[DbContext(typeof(EchoHubDbContext))]
+[Migration(&quot;20260220133627_AddEncryptionSupport&quot;)]
+public class AddEncryptionSupport : Migration</code></pre>
   </div>
 
 
@@ -113,8 +113,8 @@ public class ServerController : ControllerBase</code></pre>
     <dt>Inheritance</dt>
     <dd>
       <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
-      <div><span class="xref">ControllerBase</span></div>
-      <div><span class="xref">ServerController</span></div>
+      <div><span class="xref">Migration</span></div>
+      <div><span class="xref">AddEncryptionSupport</span></div>
     </dd>
   </dl>
 
@@ -155,27 +155,20 @@ public class ServerController : ControllerBase</code></pre>
 </h2>
 
 
-  <a id="EchoHub_Server_Controllers_ServerController__ctor_" data-uid="EchoHub.Server.Controllers.ServerController.#ctor*"></a>
+  <a id="EchoHub_Server_Data_Migrations_AddEncryptionSupport__ctor_" data-uid="EchoHub.Server.Data.Migrations.AddEncryptionSupport.#ctor*"></a>
 
-  <h3 id="EchoHub_Server_Controllers_ServerController__ctor_EchoHub_Server_Data_EchoHubDbContext_Microsoft_Extensions_Configuration_IConfiguration_" data-uid="EchoHub.Server.Controllers.ServerController.#ctor(EchoHub.Server.Data.EchoHubDbContext,Microsoft.Extensions.Configuration.IConfiguration)">
-  ServerController(EchoHubDbContext, IConfiguration)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/ServerController.cs"><i class="bi bi-code-slash"></i></a>
+  <h3 id="EchoHub_Server_Data_Migrations_AddEncryptionSupport__ctor" data-uid="EchoHub.Server.Data.Migrations.AddEncryptionSupport.#ctor">
+  AddEncryptionSupport()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Data/Migrations/20260220133627_AddEncryptionSupport.Designer.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public ServerController(EchoHubDbContext db, IConfiguration config)</code></pre>
+    <pre><code class="lang-csharp hljs">public AddEncryptionSupport()</code></pre>
   </div>
 
-  <h4 class="section">Parameters</h4>
-  <dl class="parameters">
-    <dt><code>db</code> <a class="xref" href="EchoHub.Server.Data.EchoHubDbContext.html">EchoHubDbContext</a></dt>
-    <dd></dd>
-    <dt><code>config</code> <span class="xref">IConfiguration</span></dt>
-    <dd></dd>
-  </dl>
 
 
 
@@ -192,27 +185,23 @@ public class ServerController : ControllerBase</code></pre>
 </h2>
 
 
-  <a id="EchoHub_Server_Controllers_ServerController_GetEncryptionKey_" data-uid="EchoHub.Server.Controllers.ServerController.GetEncryptionKey*"></a>
+  <a id="EchoHub_Server_Data_Migrations_AddEncryptionSupport_BuildTargetModel_" data-uid="EchoHub.Server.Data.Migrations.AddEncryptionSupport.BuildTargetModel*"></a>
 
-  <h3 id="EchoHub_Server_Controllers_ServerController_GetEncryptionKey" data-uid="EchoHub.Server.Controllers.ServerController.GetEncryptionKey">
-  GetEncryptionKey()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/ServerController.cs"><i class="bi bi-code-slash"></i></a>
+  <h3 id="EchoHub_Server_Data_Migrations_AddEncryptionSupport_BuildTargetModel_Microsoft_EntityFrameworkCore_ModelBuilder_" data-uid="EchoHub.Server.Data.Migrations.AddEncryptionSupport.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+  BuildTargetModel(ModelBuilder)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Data/Migrations/20260220133627_AddEncryptionSupport.Designer.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[HttpGet(&quot;encryption-key&quot;)]
-[Authorize]
-[EnableRateLimiting(&quot;auth&quot;)]
-public IActionResult GetEncryptionKey()</code></pre>
+    <pre><code class="lang-csharp hljs">protected override void BuildTargetModel(ModelBuilder modelBuilder)</code></pre>
   </div>
 
-
-  <h4 class="section">Returns</h4>
+  <h4 class="section">Parameters</h4>
   <dl class="parameters">
-    <dt><span class="xref">IActionResult</span></dt>
+    <dt><code>modelBuilder</code> <span class="xref">ModelBuilder</span></dt>
     <dd></dd>
   </dl>
 
@@ -226,27 +215,58 @@ public IActionResult GetEncryptionKey()</code></pre>
 
 
 
-  <a id="EchoHub_Server_Controllers_ServerController_GetInfo_" data-uid="EchoHub.Server.Controllers.ServerController.GetInfo*"></a>
 
-  <h3 id="EchoHub_Server_Controllers_ServerController_GetInfo" data-uid="EchoHub.Server.Controllers.ServerController.GetInfo">
-  GetInfo()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/ServerController.cs"><i class="bi bi-code-slash"></i></a>
+  <a id="EchoHub_Server_Data_Migrations_AddEncryptionSupport_Down_" data-uid="EchoHub.Server.Data.Migrations.AddEncryptionSupport.Down*"></a>
+
+  <h3 id="EchoHub_Server_Data_Migrations_AddEncryptionSupport_Down_Microsoft_EntityFrameworkCore_Migrations_MigrationBuilder_" data-uid="EchoHub.Server.Data.Migrations.AddEncryptionSupport.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+  Down(MigrationBuilder)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Data/Migrations/20260220133627_AddEncryptionSupport.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[HttpGet(&quot;info&quot;)]
-public Task&lt;IActionResult&gt; GetInfo()</code></pre>
+    <pre><code class="lang-csharp hljs">protected override void Down(MigrationBuilder migrationBuilder)</code></pre>
   </div>
 
-
-  <h4 class="section">Returns</h4>
+  <h4 class="section">Parameters</h4>
   <dl class="parameters">
-    <dt><span class="xref">Task</span>&lt;<span class="xref">IActionResult</span>&gt;</dt>
+    <dt><code>migrationBuilder</code> <span class="xref">MigrationBuilder</span></dt>
     <dd></dd>
   </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Server_Data_Migrations_AddEncryptionSupport_Up_" data-uid="EchoHub.Server.Data.Migrations.AddEncryptionSupport.Up*"></a>
+
+  <h3 id="EchoHub_Server_Data_Migrations_AddEncryptionSupport_Up_Microsoft_EntityFrameworkCore_Migrations_MigrationBuilder_" data-uid="EchoHub.Server.Data.Migrations.AddEncryptionSupport.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+  Up(MigrationBuilder)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Data/Migrations/20260220133627_AddEncryptionSupport.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected override void Up(MigrationBuilder migrationBuilder)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>migrationBuilder</code> <span class="xref">MigrationBuilder</span></dt>
+    <dd></dd>
+  </dl>
+
 
 
 
@@ -262,7 +282,7 @@ public Task&lt;IActionResult&gt; GetInfo()</code></pre>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/ServerController.cs" class="edit-link">Edit this page</a>
+          <a href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Data/Migrations/20260220133627_AddEncryptionSupport.Designer.cs" class="edit-link">Edit this page</a>
         </div>
 
 

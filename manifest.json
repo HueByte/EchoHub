@@ -180,6 +180,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Services.ClientEncryptionService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Services.ClientEncryptionService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Services.ClientEncryptionService",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.Services.ClientEncryptionService.yml\" sourcestartlinenumber=\"1\">Client-side encryption service. Uses the same AES-256-GCM format as the server\nso messages are encrypted end-to-end between client and server.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/client/EchoHub.Client.Services.EchoHubConnection.yml",
       "output": {
         ".html": {
@@ -684,6 +698,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Contracts.IMessageEncryptionService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Contracts.IMessageEncryptionService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Contracts.IMessageEncryptionService",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/core/EchoHub.Core.Contracts.yml",
       "output": {
         ".html": {
@@ -778,6 +806,20 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Core.DTOs.EmbedDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.EncryptionKeyResponse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.EncryptionKeyResponse.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.EncryptionKeyResponse",
       "Summary": null
     },
     {
@@ -1482,6 +1524,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Data.Migrations.AddEncryptionSupport.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Data.Migrations.AddEncryptionSupport.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Data.Migrations.AddEncryptionSupport",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/server/EchoHub.Server.Data.Migrations.AddMessageEmbed.yml",
       "output": {
         ".html": {
@@ -1646,6 +1702,20 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Server.Services.LinkEmbedService",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.MessageEncryptionService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.MessageEncryptionService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.MessageEncryptionService",
       "Summary": null
     },
     {
@@ -1864,6 +1934,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "articles/encryption.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/encryption.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "articles/getting-started.md",
       "output": {
         ".html": {
@@ -1974,6 +2054,16 @@
       "output": {
         ".html": {
           "relative_path": "changelog/v0.2.3.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "changelog/v0.2.4.md",
+      "output": {
+        ".html": {
+          "relative_path": "changelog/v0.2.4.html"
         }
       },
       "version": ""

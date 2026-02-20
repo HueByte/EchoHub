@@ -160,8 +160,8 @@ Class IrcBroadcaster  <a class="header-action link-secondary" title="View source
 
   <a id="EchoHub_Server_Irc_IrcBroadcaster__ctor_" data-uid="EchoHub.Server.Irc.IrcBroadcaster.#ctor*"></a>
 
-  <h3 id="EchoHub_Server_Irc_IrcBroadcaster__ctor_EchoHub_Server_Irc_IrcGatewayService_" data-uid="EchoHub.Server.Irc.IrcBroadcaster.#ctor(EchoHub.Server.Irc.IrcGatewayService)">
-  IrcBroadcaster(IrcGatewayService)
+  <h3 id="EchoHub_Server_Irc_IrcBroadcaster__ctor_EchoHub_Server_Irc_IrcGatewayService_EchoHub_Core_Contracts_IMessageEncryptionService_" data-uid="EchoHub.Server.Irc.IrcBroadcaster.#ctor(EchoHub.Server.Irc.IrcGatewayService,EchoHub.Core.Contracts.IMessageEncryptionService)">
+  IrcBroadcaster(IrcGatewayService, IMessageEncryptionService)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server.Irc/IrcBroadcaster.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -169,12 +169,14 @@ Class IrcBroadcaster  <a class="header-action link-secondary" title="View source
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public IrcBroadcaster(IrcGatewayService gateway)</code></pre>
+    <pre><code class="lang-csharp hljs">public IrcBroadcaster(IrcGatewayService gateway, IMessageEncryptionService encryption)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>gateway</code> <a class="xref" href="EchoHub.Server.Irc.IrcGatewayService.html">IrcGatewayService</a></dt>
+    <dd></dd>
+    <dt><code>encryption</code> <a class="xref" href="../core/EchoHub.Core.Contracts.IMessageEncryptionService.html">IMessageEncryptionService</a></dt>
     <dd></dd>
   </dl>
 

@@ -2,18 +2,18 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Client Articles | EchoHub Documentation </title>
+      <title>v0.2.4 - E2E Message Encryption | EchoHub Documentation </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Client Articles | EchoHub Documentation ">
+      <meta name="title" content="v0.2.4 - E2E Message Encryption | EchoHub Documentation ">
       
       
-      <link rel="icon" href="../../images/hue_icon.svg">
-      <link rel="stylesheet" href="../../public/docfx.min.css">
-      <link rel="stylesheet" href="../../public/main.css">
-      <meta name="docfx:navrel" content="../../toc.html">
-      <meta name="docfx:tocrel" content="../toc.html">
+      <link rel="icon" href="../images/hue_icon.svg">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
       
-      <meta name="docfx:rel" content="../../">
+      <meta name="docfx:rel" content="../">
       
       
       <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/blob/master/docs/#L1">
@@ -30,7 +30,7 @@
       <meta name="loc:copy" content="Copy">
       <meta name="loc:downloadPdf" content="Download PDF">
 
-      <script type="module" src="./../../public/docfx.min.js"></script>
+      <script type="module" src="./../public/docfx.min.js"></script>
 
       <script>
         const theme = localStorage.getItem('theme') || 'auto'
@@ -43,8 +43,8 @@
     <header class="bg-body border-bottom">
       <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
         <div class="container-xxl flex-nowrap">
-          <a class="navbar-brand" href="../../index.html">
-            <img id="logo" class="svg" src="../../images/hue_icon.svg" alt="EchoHub">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/hue_icon.svg" alt="EchoHub">
             EchoHub
           </a>
           <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,16 +85,40 @@
         </div>
 
         <article data-uid="">
-<h1 id="client-articles">Client Articles</h1>
+<h1 id="v024---e2e-message-encryption">v0.2.4 - E2E Message Encryption</h1>
 
-<p>Articles related to the EchoHub TUI client built with Terminal.Gui v2.</p>
-<h2 id="topics">Topics</h2>
+<h2 id="features">Features</h2>
+<h3 id="e2e-message-encryption">E2E Message Encryption</h3>
 <ul>
-<li>Terminal.Gui v2 patterns and conventions</li>
-<li>Theme system and customization</li>
-<li>Command system reference</li>
-<li>Configuration management</li>
-<li><a href="../../articles/notification-sounds.html">Notification sounds</a></li>
+<li>Application-layer AES-256-GCM encryption for all message content between client and server</li>
+<li>Protects against ISPs, proxies, and any middleman reading chat messages — even if TLS is compromised</li>
+<li>256-bit encryption key auto-generated on first server startup and saved to <code>appsettings.json</code></li>
+<li>Client fetches the encryption key automatically after login via <code>GET /api/server/encryption-key</code></li>
+<li>Client encrypts messages before sending via SignalR; server decrypts for validation and processing</li>
+<li>Server broadcasts encrypted content to SignalR clients; client decrypts transparently — no user action required</li>
+<li>Optional database encryption at rest via <code>Encryption:EncryptDatabase</code> setting (disabled by default)
+<ul>
+<li>When enabled: new messages encrypted before DB storage (existing plaintext messages are not retroactively encrypted)</li>
+<li>When disabled: messages stored as plaintext, no risk of data loss from key rotation</li>
+<li>Reads handle mixed content (encrypted + plaintext) regardless of setting — safe to toggle at any time</li>
+<li>Key rotation is safe: old plaintext stays readable, new messages use the new key</li>
+</ul>
+</li>
+<li>IRC gateway automatically decrypts messages before forwarding to IRC clients (plaintext over IRC)</li>
+<li>Encrypted content format: <code>$ENC$v1${nonce}${ciphertext+tag}</code> (Base64, 12-byte nonce, 16-byte auth tag)</li>
+<li>Server strips <code>$ENC$</code> prefix from user-typed messages to prevent format spoofing</li>
+<li>Graceful fallback: if decryption fails, shows <code>[encrypted message — decryption failed, try re-logging to fetch the latest key]</code></li>
+</ul>
+<h2 id="infrastructure">Infrastructure</h2>
+<ul>
+<li><code>IMessageEncryptionService</code> interface in Core; <code>MessageEncryptionService</code> server implementation and <code>ClientEncryptionService</code> client implementation</li>
+<li><code>EncryptionKeyResponse</code> DTO and <code>GET /api/server/encryption-key</code> endpoint (authenticated, rate-limited)</li>
+<li><code>FirstRunSetup.EnsureEncryptionKey()</code> auto-generates AES-256 key on first server run</li>
+<li><code>Encryption:EncryptDatabase</code> server setting (default <code>false</code>) controls whether messages are encrypted at rest</li>
+<li>DB column max lengths increased for encrypted content: <code>Message.Content</code> 2000 → 16000, <code>Message.EmbedJson</code> 8000 → 32000</li>
+<li>EF Core migration: <code>AddEncryptionSupport</code></li>
+<li>Encryption test suite: server-side, client-side, and cross-compatibility tests (87 total)</li>
+<li>Documentation article: <code>docs/articles/encryption.md</code></li>
 </ul>
 
 </article>
