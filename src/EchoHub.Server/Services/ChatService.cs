@@ -16,6 +16,7 @@ public class ChatService : IChatService
     private readonly PresenceTracker _presenceTracker;
     private readonly IEnumerable<IChatBroadcaster> _broadcasters;
     private readonly LinkEmbedService _embedService;
+    private readonly IMessageEncryptionService _encryption;
     private readonly ILogger<ChatService> _logger;
 
     public ChatService(
@@ -23,12 +24,14 @@ public class ChatService : IChatService
         PresenceTracker presenceTracker,
         IEnumerable<IChatBroadcaster> broadcasters,
         LinkEmbedService embedService,
+        IMessageEncryptionService encryption,
         ILogger<ChatService> logger)
     {
         _scopeFactory = scopeFactory;
         _presenceTracker = presenceTracker;
         _broadcasters = broadcasters;
         _embedService = embedService;
+        _encryption = encryption;
         _logger = logger;
     }
 
@@ -142,14 +145,21 @@ public class ChatService : IChatService
         if (!ValidationConstants.ChannelNameRegex().IsMatch(channelName))
             return "Invalid channel name.";
 
-        if (string.IsNullOrWhiteSpace(content))
+        // Decrypt content (client sends encrypted; IRC sends plaintext — Decrypt handles both)
+        var plaintext = _encryption.Decrypt(content);
+
+        // Strip encryption prefix if a user typed it literally (prevents spoofing)
+        while (plaintext.StartsWith("$ENC$"))
+            plaintext = plaintext["$ENC$".Length..];
+
+        if (string.IsNullOrWhiteSpace(plaintext))
             return "Message content cannot be empty.";
 
-        if (content.Length > HubConstants.MaxMessageLength)
+        if (plaintext.Length > HubConstants.MaxMessageLength)
             return $"Message exceeds maximum length of {HubConstants.MaxMessageLength} characters.";
 
-        // Sanitize: collapse excessive newlines
-        content = SanitizeNewlines(content);
+        // Sanitize on plaintext: collapse excessive newlines
+        plaintext = SanitizeNewlines(plaintext);
 
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
@@ -175,35 +185,42 @@ public class ChatService : IChatService
             }
         }
 
-        // Attempt to fetch link embeds for URLs in the message
+        // Attempt to fetch link embeds for URLs in the plaintext message
         List<EmbedDto>? embeds = null;
         try
         {
-            embeds = await _embedService.TryGetEmbedsAsync(content);
+            embeds = await _embedService.TryGetEmbedsAsync(plaintext);
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to fetch link embeds for message in '{Channel}'", channelName);
         }
 
+        // Store in DB — encrypted at rest if enabled, plaintext otherwise
+        var embedJson = embeds is not null ? JsonSerializer.Serialize(embeds) : null;
+        var dbContent = _encryption.EncryptDatabaseEnabled ? _encryption.Encrypt(plaintext) : plaintext;
+        var dbEmbedJson = _encryption.EncryptDatabaseEnabled ? _encryption.EncryptNullable(embedJson) : embedJson;
+
         var message = new Message
         {
             Id = Guid.NewGuid(),
-            Content = content,
+            Content = dbContent,
             Type = MessageType.Text,
             SentAt = DateTimeOffset.UtcNow,
             ChannelId = channel.Id,
             SenderUserId = userId,
             SenderUsername = username,
-            EmbedJson = embeds is not null ? JsonSerializer.Serialize(embeds) : null,
+            EmbedJson = dbEmbedJson,
         };
 
         db.Messages.Add(message);
         await db.SaveChangesAsync();
 
+        // Broadcast encrypted for SignalR clients; IRC broadcaster gets plaintext
+        var encryptedContent = _encryption.Encrypt(plaintext);
         var messageDto = new MessageDto(
             message.Id,
-            message.Content,
+            encryptedContent,
             message.SenderUsername,
             sender?.NicknameColor,
             channelName,
@@ -398,7 +415,7 @@ public class ChatService : IChatService
         return string.Join('\n', result);
     }
 
-    private static async Task<List<MessageDto>> GetChannelHistoryInternalAsync(EchoHubDbContext db, string channelName, int count)
+    private async Task<List<MessageDto>> GetChannelHistoryInternalAsync(EchoHubDbContext db, string channelName, int count)
     {
         var channel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
         if (channel is null)
@@ -418,16 +435,21 @@ public class ChatService : IChatService
 
         return raw.Select(x =>
         {
+            // Decrypt DB content (handles both encrypted and plaintext via prefix detection)
+            var plaintext = _encryption.Decrypt(x.m.Content);
+            var embedJsonPlain = _encryption.DecryptNullable(x.m.EmbedJson);
+
             List<EmbedDto>? embeds = null;
-            if (x.m.EmbedJson is not null)
+            if (embedJsonPlain is not null)
             {
-                try { embeds = JsonSerializer.Deserialize<List<EmbedDto>>(x.m.EmbedJson); }
+                try { embeds = JsonSerializer.Deserialize<List<EmbedDto>>(embedJsonPlain); }
                 catch { /* ignore malformed JSON */ }
             }
 
+            // Encrypt for transport — client decrypts
             return new MessageDto(
                 x.m.Id,
-                x.m.Content,
+                _encryption.Encrypt(plaintext),
                 x.m.SenderUsername,
                 x.NicknameColor,
                 channelName,

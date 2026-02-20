@@ -1,6 +1,8 @@
 using EchoHub.Core.DTOs;
 using EchoHub.Server.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace EchoHub.Server.Controllers;
@@ -31,5 +33,18 @@ public class ServerController : ControllerBase
             channelCount);
 
         return Ok(status);
+    }
+
+    [HttpGet("encryption-key")]
+    [Authorize]
+    [EnableRateLimiting("auth")]
+    public IActionResult GetEncryptionKey()
+    {
+        var key = _config["Encryption:Key"];
+
+        if (string.IsNullOrEmpty(key))
+            return StatusCode(503, new ErrorResponse("Encryption is not configured on this server."));
+
+        return Ok(new EncryptionKeyResponse(key));
     }
 }

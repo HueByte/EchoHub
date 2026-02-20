@@ -23,19 +23,22 @@ public class ChannelsController : ControllerBase
     private readonly ImageToAsciiService _asciiService;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IChatService _chatService;
+    private readonly IMessageEncryptionService _encryption;
 
     public ChannelsController(
         EchoHubDbContext db,
         FileStorageService fileStorage,
         ImageToAsciiService asciiService,
         IHttpClientFactory httpClientFactory,
-        IChatService chatService)
+        IChatService chatService,
+        IMessageEncryptionService encryption)
     {
         _db = db;
         _fileStorage = fileStorage;
         _asciiService = asciiService;
         _httpClientFactory = httpClientFactory;
         _chatService = chatService;
+        _encryption = encryption;
     }
 
     [HttpGet]
@@ -221,11 +224,12 @@ public class ChannelsController : ControllerBase
 
         var attachmentUrl = $"/api/files/{fileId}";
         var sender = await _db.Users.FindAsync(userId);
+        var dbContent = _encryption.EncryptDatabaseEnabled ? _encryption.Encrypt(content) : content;
 
         var message = new Message
         {
             Id = Guid.NewGuid(),
-            Content = content,
+            Content = dbContent,
             Type = messageType,
             AttachmentUrl = attachmentUrl,
             AttachmentFileName = file.FileName,
@@ -238,9 +242,10 @@ public class ChannelsController : ControllerBase
         _db.Messages.Add(message);
         await _db.SaveChangesAsync();
 
+        // Encrypt for transport — clients decrypt
         var messageDto = new MessageDto(
             message.Id,
-            message.Content,
+            _encryption.Encrypt(content),
             message.SenderUsername,
             sender?.NicknameColor,
             channelName,
@@ -339,11 +344,12 @@ public class ChannelsController : ControllerBase
 
         var attachmentUrl = $"/api/files/{fileId}";
         var sender = await _db.Users.FindAsync(userId);
+        var dbContent = _encryption.EncryptDatabaseEnabled ? _encryption.Encrypt(content) : content;
 
         var message = new Message
         {
             Id = Guid.NewGuid(),
-            Content = content,
+            Content = dbContent,
             Type = MessageType.Image,
             AttachmentUrl = attachmentUrl,
             AttachmentFileName = fileName,
@@ -356,9 +362,10 @@ public class ChannelsController : ControllerBase
         _db.Messages.Add(message);
         await _db.SaveChangesAsync();
 
+        // Encrypt for transport — clients decrypt
         var messageDto = new MessageDto(
             message.Id,
-            message.Content,
+            _encryption.Encrypt(content),
             message.SenderUsername,
             sender?.NicknameColor,
             channelName,

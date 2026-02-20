@@ -128,6 +128,16 @@ public sealed class ApiClient : IDisposable
         return info;
     }
 
+    public async Task<string> GetEncryptionKeyAsync()
+    {
+        EnsureAuthenticated();
+        var response = await AuthenticatedGetAsync("/api/server/encryption-key");
+        await EnsureSuccessAsync(response);
+        var result = await response.Content.ReadFromJsonAsync<EncryptionKeyResponse>()
+            ?? throw new InvalidOperationException("Server returned empty encryption key response.");
+        return result.Key;
+    }
+
     public async Task<UserProfileDto?> GetUserProfileAsync(string username)
     {
         EnsureAuthenticated();

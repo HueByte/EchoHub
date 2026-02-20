@@ -25,6 +25,7 @@ public sealed class AppOrchestrator : IDisposable
 
     private EchoHubConnection? _connection;
     private ApiClient? _apiClient;
+    private readonly ClientEncryptionService _encryption = new();
     private ClientConfig _config;
     private UserStatus _currentStatus = UserStatus.Online;
     private string? _currentStatusMessage;
@@ -382,6 +383,19 @@ public sealed class AppOrchestrator : IDisposable
 
             _currentUsername = loginResponse.Username;
 
+            // Fetch encryption key for E2E message encryption
+            InvokeUI(() => _mainWindow.UpdateStatusBar("Fetching encryption key..."));
+            try
+            {
+                var encryptionKey = await _apiClient.GetEncryptionKeyAsync();
+                _encryption.SetKey(encryptionKey);
+                Log.Information("E2E encryption key established");
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Failed to fetch encryption key — messages will not be encrypted");
+            }
+
             InvokeUI(() =>
             {
                 _mainWindow.SetCurrentUser(loginResponse.DisplayName ?? loginResponse.Username);
@@ -391,7 +405,7 @@ public sealed class AppOrchestrator : IDisposable
             if (_connection is not null)
                 await _connection.DisposeAsync();
 
-            _connection = new EchoHubConnection(result.ServerUrl, _apiClient);
+            _connection = new EchoHubConnection(result.ServerUrl, _apiClient, _encryption);
             WireConnectionEvents(_connection);
             await _connection.ConnectAsync();
 

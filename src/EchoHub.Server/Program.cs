@@ -109,6 +109,9 @@ while (true)
         builder.Services.AddSingleton<LinkEmbedService>();
         builder.Services.AddHostedService<ServerDirectoryService>();
 
+        // ── Encryption ─────────────────────────────────────────────────────
+        builder.Services.AddSingleton<IMessageEncryptionService, MessageEncryptionService>();
+
         // ── Chat Service + Broadcasters ─────────────────────────────────────
         builder.Services.AddSingleton<IChatBroadcaster, SignalRBroadcaster>();
         builder.Services.AddSingleton<IChatService, ChatService>();

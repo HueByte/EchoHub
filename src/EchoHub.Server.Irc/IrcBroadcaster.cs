@@ -6,15 +6,19 @@ namespace EchoHub.Server.Irc;
 public class IrcBroadcaster : IChatBroadcaster
 {
     private readonly IrcGatewayService _gateway;
+    private readonly IMessageEncryptionService _encryption;
 
-    public IrcBroadcaster(IrcGatewayService gateway)
+    public IrcBroadcaster(IrcGatewayService gateway, IMessageEncryptionService encryption)
     {
         _gateway = gateway;
+        _encryption = encryption;
     }
 
     public async Task SendMessageToChannelAsync(string channelName, MessageDto message)
     {
-        var lines = IrcMessageFormatter.FormatMessage(message);
+        // Decrypt content for IRC clients (they can't handle app-layer encryption)
+        var decryptedMessage = message with { Content = _encryption.Decrypt(message.Content) };
+        var lines = IrcMessageFormatter.FormatMessage(decryptedMessage);
 
         foreach (var conn in _gateway.GetConnectionsInChannel(channelName))
         {

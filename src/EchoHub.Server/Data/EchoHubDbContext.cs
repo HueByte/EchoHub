@@ -55,11 +55,11 @@ public class EchoHubDbContext : DbContext
         {
             entity.HasKey(m => m.Id);
             entity.HasIndex(m => m.SentAt);
-            entity.Property(m => m.Content).IsRequired().HasMaxLength(2000);
+            entity.Property(m => m.Content).IsRequired().HasMaxLength(16000); // Increased for encrypted content (Base64 overhead)
             entity.Property(m => m.SenderUsername).IsRequired().HasMaxLength(50);
             entity.Property(m => m.AttachmentUrl).HasMaxLength(500);
             entity.Property(m => m.AttachmentFileName).HasMaxLength(255);
-            entity.Property(m => m.EmbedJson).HasMaxLength(8000);
+            entity.Property(m => m.EmbedJson).HasMaxLength(32000); // Increased for encrypted embed JSON
         });
 
         modelBuilder.Entity<ChannelMembership>(entity =>
