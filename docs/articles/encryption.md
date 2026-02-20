@@ -4,19 +4,23 @@ EchoHub uses application-layer AES-256-GCM encryption to protect message content
 
 ## How It Works
 
-```text
-TUI Client                          Server                           TUI Client
-    │                                  │                                  │
-    │  encrypt(plaintext)              │                                  │
-    │ ──── $ENC$v1$... ──────────────► │                                  │
-    │                                  │  decrypt → validate/sanitize     │
-    │                                  │  fetch embeds on plaintext       │
-    │                                  │  encrypt(plaintext)              │
-    │                                  │ ──── $ENC$v1$... ──────────────► │
-    │                                  │                                  │  decrypt → display
-    │                                  │                                  │
-    │                                  │  (optional) encrypt for DB       │
-    │                                  │  store to SQLite                 │
+```mermaid
+sequenceDiagram
+    participant Sender as TUI Client (Sender)
+    participant Server
+    participant Receiver as TUI Client (Receiver)
+    participant IRC as IRC Client
+
+    Sender->>Sender: encrypt(plaintext)
+    Sender->>Server: $ENC$v1$... (SignalR)
+    Server->>Server: decrypt → validate/sanitize
+    Server->>Server: fetch embeds on plaintext
+    Server->>Server: (optional) encrypt for DB storage
+    Server->>Server: encrypt(plaintext) with fresh nonce
+    Server->>Receiver: $ENC$v1$... (SignalR broadcast)
+    Receiver->>Receiver: decrypt → display
+    Server->>Server: decrypt for IRC
+    Server->>IRC: plaintext (IRC PRIVMSG)
 ```
 
 1. **Client encrypts** the message before sending it over SignalR
