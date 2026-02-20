@@ -113,6 +113,16 @@ public sealed class MainWindow : Runnable
     /// </summary>
     public event Action? OnDeleteChannelRequested;
 
+    /// <summary>
+    /// Fired when the user activates (Enter/click) an audio message. Parameters: attachmentUrl, fileName.
+    /// </summary>
+    public event Action<string, string>? OnAudioPlayRequested;
+
+    /// <summary>
+    /// Fired when the user activates (Enter/click) a file message. Parameters: attachmentUrl, fileName.
+    /// </summary>
+    public event Action<string, string>? OnFileDownloadRequested;
+
     public MainWindow(IApplication app)
     {
         _app = app;
@@ -175,6 +185,7 @@ public sealed class MainWindow : Runnable
             Height = Dim.Fill()
         };
         _messageList.Source = new ChatListSource();
+        _messageList.Accepting += OnMessageListAccepting;
         _chatFrame.Add(_messageList);
         Add(_chatFrame);
 
@@ -357,6 +368,31 @@ public sealed class MainWindow : Runnable
                 SwitchToChannel(channelName);
                 OnChannelSelected?.Invoke(channelName);
             }
+        }
+    }
+
+    private void OnMessageListAccepting(object? sender, CommandEventArgs e)
+    {
+        if (_messageList.Source is not ChatListSource source)
+            return;
+
+        var index = _messageList.SelectedItem;
+        if (!index.HasValue || index.Value < 0 || index.Value >= source.Count)
+            return;
+
+        var line = source.GetLine(index.Value);
+        if (line?.AttachmentUrl is null || line.AttachmentFileName is null)
+            return;
+
+        if (line.Type == MessageType.Audio)
+        {
+            OnAudioPlayRequested?.Invoke(line.AttachmentUrl, line.AttachmentFileName);
+            e.Handled = true;
+        }
+        else if (line.Type == MessageType.File)
+        {
+            OnFileDownloadRequested?.Invoke(line.AttachmentUrl, line.AttachmentFileName);
+            e.Handled = true;
         }
     }
 
@@ -900,10 +936,24 @@ public sealed class MainWindow : Runnable
                 }
                 break;
 
+            case MessageType.Audio:
+                var audioName = message.AttachmentFileName ?? "unknown";
+                var audioLine = BuildChatLineColored(time, senderName, senderColor,
+                    $" \u266a [Audio: {audioName}] (Enter to play)", ChatColors.AudioAttr);
+                audioLine.AttachmentUrl = message.AttachmentUrl;
+                audioLine.AttachmentFileName = audioName;
+                audioLine.Type = MessageType.Audio;
+                lines.Add(audioLine);
+                break;
+
             case MessageType.File:
                 var fileName = message.AttachmentFileName ?? "unknown";
-                var fileContent = !string.IsNullOrWhiteSpace(message.Content) ? $" {message.Content}" : "";
-                lines.Add(BuildChatLine(time, senderName, senderColor, $" [File: {fileName}]{fileContent}"));
+                var fileLine = BuildChatLineColored(time, senderName, senderColor,
+                    $" [File: {fileName}] (Enter to download)", ChatColors.FileAttr);
+                fileLine.AttachmentUrl = message.AttachmentUrl;
+                fileLine.AttachmentFileName = fileName;
+                fileLine.Type = MessageType.File;
+                lines.Add(fileLine);
                 break;
 
             case MessageType.Text:
@@ -958,6 +1008,20 @@ public sealed class MainWindow : Runnable
             new($"[{time}] ", ChatColors.TimestampAttr),
             new(senderName, senderColor),
             new(suffix, null)
+        };
+        return new ChatLine(segments);
+    }
+
+    /// <summary>
+    /// Build a chat line with a colored suffix (used for audio/file indicators).
+    /// </summary>
+    private static ChatLine BuildChatLineColored(string time, string senderName, Attribute? senderColor, string suffix, Attribute suffixColor)
+    {
+        var segments = new List<ChatSegment>
+        {
+            new($"[{time}] ", ChatColors.TimestampAttr),
+            new(senderName, senderColor),
+            new(suffix, suffixColor)
         };
         return new ChatLine(segments);
     }

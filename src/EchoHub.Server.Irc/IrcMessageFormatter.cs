@@ -48,6 +48,10 @@ public static partial class IrcMessageFormatter
             case MessageType.File:
                 lines.Add($"{prefix} PRIVMSG {ircChannel} :[File: {message.AttachmentFileName}] {message.AttachmentUrl}");
                 break;
+
+            case MessageType.Audio:
+                lines.Add($"{prefix} PRIVMSG {ircChannel} :\u266a [Audio: {message.AttachmentFileName}] {message.AttachmentUrl}");
+                break;
         }
 
         return lines;

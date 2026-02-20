@@ -22,6 +22,7 @@ public sealed class AppOrchestrator : IDisposable
     private readonly MainWindow _mainWindow;
     private readonly CommandHandler _commandHandler;
     private readonly NotificationSoundService _notificationSound;
+    private readonly AudioPlaybackService _audioPlayback = new();
 
     private EchoHubConnection? _connection;
     private ApiClient? _apiClient;
@@ -80,6 +81,8 @@ public sealed class AppOrchestrator : IDisposable
         _mainWindow.OnSavedServersRequested += HandleSavedServersRequested;
         _mainWindow.OnCreateChannelRequested += HandleCreateChannelRequested;
         _mainWindow.OnDeleteChannelRequested += HandleDeleteChannelRequested;
+        _mainWindow.OnAudioPlayRequested += HandleAudioPlayRequested;
+        _mainWindow.OnFileDownloadRequested += HandleFileDownloadRequested;
     }
 
     // ── Command Handler Wiring ─────────────────────────────────────────────
@@ -796,6 +799,40 @@ public sealed class AppOrchestrator : IDisposable
                 _mainWindow.AddSystemMessage(HubConstants.DefaultChannel, $"Channel #{channel} has been deleted.");
             });
         }, "Failed to delete channel");
+    }
+
+    private void HandleAudioPlayRequested(string attachmentUrl, string fileName)
+    {
+        if (!IsAuthenticated) return;
+
+        RunAsync(async () =>
+        {
+            InvokeUI(() => _mainWindow.AddSystemMessage(_mainWindow.CurrentChannel, $"Playing {fileName}..."));
+            var tempPath = await _apiClient!.DownloadFileToTempAsync(attachmentUrl, fileName);
+            await _audioPlayback.PlayAsync(tempPath);
+        }, "Failed to play audio");
+    }
+
+    private void HandleFileDownloadRequested(string attachmentUrl, string fileName)
+    {
+        if (!IsAuthenticated) return;
+
+        RunAsync(async () =>
+        {
+            InvokeUI(() => _mainWindow.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloading {fileName}..."));
+            var tempPath = await _apiClient!.DownloadFileToTempAsync(attachmentUrl, fileName);
+
+            try
+            {
+                var psi = new System.Diagnostics.ProcessStartInfo(tempPath) { UseShellExecute = true };
+                System.Diagnostics.Process.Start(psi);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Failed to open file with default app: {Path}", tempPath);
+                InvokeUI(() => _mainWindow.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloaded to: {tempPath}"));
+            }
+        }, "Failed to download file");
     }
 
     // ── Connection Event Wiring ────────────────────────────────────────────
