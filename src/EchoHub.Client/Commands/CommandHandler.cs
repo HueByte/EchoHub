@@ -339,7 +339,7 @@ public class CommandHandler
               /nick <name>                         - Set display name
               /color <#hex>                        - Set nickname color
               /theme <name>                        - Switch theme
-              /send <filepath or URL> [-s|-m|-l]      - Send a file or image (size: small/medium/large)
+              /send <filepath or URL> [-s|-m|-l]      - Send file/image/audio (size flag for images)
               /avatar <URL or filepath>             - Set your avatar
               /profile [username]                   - View a profile
               /servers                             - Open saved servers

@@ -202,13 +202,16 @@ public class ChannelsController : ControllerBase
         if (file.Length > HubConstants.MaxFileSizeBytes)
             return BadRequest(new ErrorResponse($"File size exceeds maximum of {HubConstants.MaxFileSizeBytes / (1024 * 1024)} MB."));
 
-        // Detect if file is an image by checking magic bytes
+        // Detect file type: image (magic bytes), audio (extension), or generic file
         using var stream = file.OpenReadStream();
         var isImage = FileValidationHelper.IsValidImage(stream);
+        var isAudio = !isImage && FileValidationHelper.IsAudioFile(file.FileName);
 
         var (fileId, filePath) = await _fileStorage.SaveFileAsync(stream, file.FileName);
 
-        var messageType = isImage ? MessageType.Image : MessageType.File;
+        var messageType = isImage ? MessageType.Image
+            : isAudio ? MessageType.Audio
+            : MessageType.File;
         string content;
 
         if (isImage)

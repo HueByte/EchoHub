@@ -196,6 +196,23 @@ public sealed class ApiClient : IDisposable
         return await response.Content.ReadFromJsonAsync<MessageDto>();
     }
 
+    public async Task<string> DownloadFileToTempAsync(string relativeUrl, string fileName)
+    {
+        EnsureAuthenticated();
+        var response = await AuthenticatedGetAsync(relativeUrl);
+        await EnsureSuccessAsync(response);
+
+        var tempDir = Path.Combine(Path.GetTempPath(), "EchoHub");
+        Directory.CreateDirectory(tempDir);
+        var tempPath = Path.Combine(tempDir, $"{Guid.NewGuid():N}_{fileName}");
+
+        await using var stream = await response.Content.ReadAsStreamAsync();
+        await using var file = File.Create(tempPath);
+        await stream.CopyToAsync(file);
+
+        return tempPath;
+    }
+
     public async Task<ChannelDto?> CreateChannelAsync(string name, string? topic = null, bool isPublic = true)
     {
         EnsureAuthenticated();

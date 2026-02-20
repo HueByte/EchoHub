@@ -52,6 +52,20 @@ public static class FileValidationHelper
         }
     }
 
+    private static readonly HashSet<string> AudioExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".mp3", ".wav", ".ogg", ".flac", ".aac", ".m4a", ".wma"
+    };
+
+    /// <summary>
+    /// Checks whether the file name has a recognized audio extension.
+    /// </summary>
+    public static bool IsAudioFile(string fileName)
+    {
+        var ext = Path.GetExtension(fileName);
+        return !string.IsNullOrEmpty(ext) && AudioExtensions.Contains(ext);
+    }
+
     private static bool StartsWith(byte[] buffer, int length, byte[] magic)
     {
         if (length < magic.Length)

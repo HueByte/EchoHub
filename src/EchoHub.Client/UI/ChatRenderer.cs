@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Specialized;
 using System.Text.RegularExpressions;
+using EchoHub.Core.Models;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.Text;
 using Terminal.Gui.Views;
@@ -22,6 +23,9 @@ public partial class ChatLine
     public int TextLength { get; }
     public Guid? MessageId { get; set; }
     public bool IsMention { get; set; }
+    public string? AttachmentUrl { get; set; }
+    public string? AttachmentFileName { get; set; }
+    public MessageType? Type { get; set; }
 
     public ChatLine(string plainText)
     {
@@ -216,6 +220,8 @@ public class ChatListSource : IListDataSource
         MaxItemLength = 0;
         RaiseCollectionChanged();
     }
+
+    public ChatLine? GetLine(int index) => index >= 0 && index < _lines.Count ? _lines[index] : null;
 
     public bool IsMarked(int item) => false;
     public void SetMark(int item, bool value) { }
@@ -465,6 +471,8 @@ public static partial class ChatColors
     public static readonly Attribute EmbedTitleAttr = new(Color.White, Color.Black);
     public static readonly Attribute EmbedDescAttr = new(new Color(160, 160, 160), Color.Black);
     public static readonly Attribute EmbedUrlAttr = new(new Color(100, 100, 100), Color.Black);
+    public static readonly Attribute AudioAttr = new(new Color(180, 100, 255), Color.Black);
+    public static readonly Attribute FileAttr = new(new Color(100, 180, 255), Color.Black);
 
     /// <summary>
     /// Split text around @mentions, giving each @word the MentionTextAttr accent color.

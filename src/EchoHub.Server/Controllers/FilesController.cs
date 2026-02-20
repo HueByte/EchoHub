@@ -36,6 +36,13 @@ public class FilesController : ControllerBase
             ".png" => "image/png",
             ".gif" => "image/gif",
             ".webp" => "image/webp",
+            ".mp3" => "audio/mpeg",
+            ".wav" => "audio/wav",
+            ".ogg" => "audio/ogg",
+            ".flac" => "audio/flac",
+            ".aac" => "audio/aac",
+            ".m4a" => "audio/mp4",
+            ".wma" => "audio/x-ms-wma",
             ".pdf" => "application/pdf",
             ".txt" => "text/plain",
             _ => "application/octet-stream"

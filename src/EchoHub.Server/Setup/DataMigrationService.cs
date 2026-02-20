@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using EchoHub.Core.Constants;
 using EchoHub.Core.DTOs;
+using EchoHub.Core.Models;
 using EchoHub.Server.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,12 +13,14 @@ public static partial class DataMigrationService
     {
         using var scope = services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
+        var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
         var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>()
             .CreateLogger("EchoHub.Server.Setup.DataMigration");
 
         await EnsureDefaultChannelsPublicAsync(db, logger);
         await MigrateAnsiMessagesAsync(db, logger);
         await MigrateEmbedJsonToArrayAsync(db, logger);
+        await EnsureConfiguredAdminsAsync(db, config, logger);
     }
 
     /// <summary>
@@ -93,6 +96,40 @@ public static partial class DataMigrationService
 
     [GeneratedRegex(@"\x1b\[(?:(0)|(?:(38;2|48;2);(\d{1,3});(\d{1,3});(\d{1,3})))m")]
     private static partial Regex AnsiColorRegex();
+
+    /// <summary>
+    /// Ensure usernames listed in Server:Admins config are at least Admin role.
+    /// Acts as a safety net in case the first registered user didn't get Owner role.
+    /// </summary>
+    private static async Task EnsureConfiguredAdminsAsync(EchoHubDbContext db, IConfiguration config, ILogger logger)
+    {
+        var adminUsernames = config.GetSection("Server:Admins").Get<string[]>();
+        if (adminUsernames is not { Length: > 0 })
+            return;
+
+        var promoted = 0;
+        foreach (var username in adminUsernames)
+        {
+            var user = await db.Users.FirstOrDefaultAsync(u => u.Username == username);
+            if (user is null)
+            {
+                logger.LogWarning("Configured admin '{Username}' not found in database (not registered yet).", username);
+                continue;
+            }
+
+            if (user.Role < ServerRole.Admin)
+            {
+                var oldRole = user.Role;
+                user.Role = ServerRole.Admin;
+                promoted++;
+                logger.LogInformation("Promoted '{Username}' from {OldRole} to Admin (configured in Server:Admins).",
+                    username, oldRole);
+            }
+        }
+
+        if (promoted > 0)
+            await db.SaveChangesAsync();
+    }
 
     /// <summary>
     /// Migrate old single-object EmbedJson ("{...}") to array format ("[{...}]").
