@@ -25,16 +25,16 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Remove submodule NuGet config
+        run: rm -f src/Terminal.Gui/nuget.config
+
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
 
-      - name: Restore dependencies
-        run: dotnet restore src/EchoHub.slnx --configfile nuget.config
-
       - name: Check formatting
-        run: dotnet format src/EchoHub.slnx --no-restore --verify-no-changes --verbosity diagnostic
+        run: dotnet format src/EchoHub.slnx --verify-no-changes --verbosity diagnostic
 
   build-and-test:
     name: Build & Test
@@ -44,6 +44,9 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
+
+      - name: Remove submodule NuGet config
+        run: rm -f src/Terminal.Gui/nuget.config
 
       - name: Check for src/ changes
         id: changes
@@ -78,7 +81,7 @@ jobs:
 
       - name: Restore dependencies
         if: steps.changes.outputs.src_changed == 'true'
-        run: dotnet restore src/EchoHub.slnx --configfile nuget.config
+        run: dotnet restore src/EchoHub.slnx
 
       - name: Build
         if: steps.changes.outputs.src_changed == 'true'
