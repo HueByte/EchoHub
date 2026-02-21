@@ -35,7 +35,7 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Check formatting
-        run: dotnet format src/EchoHub.slnx --verify-no-changes --verbosity diagnostic
+        run: dotnet format src/EchoHub.slnx --verify-no-changes --verbosity diagnostic --exclude src/Terminal.Gui/
 
   build-and-test:
     name: Build & Test
