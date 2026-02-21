@@ -12,7 +12,7 @@ public class IrcMessageFormatterTests
     {
         return new MessageDto(
             Guid.NewGuid(), content, sender, null, channel,
-            MessageType.Text, null, null, DateTimeOffset.UtcNow, embeds);
+            MessageType.Text, null, null, DateTimeOffset.UtcNow, Embeds: embeds);
     }
 
     private static MessageDto CreateImageMessage(string asciiArt, string fileName = "image.png",

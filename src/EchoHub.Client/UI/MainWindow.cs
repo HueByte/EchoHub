@@ -1022,8 +1022,9 @@ public sealed class MainWindow : Runnable
 
             case MessageType.Audio:
                 var audioName = message.AttachmentFileName ?? "unknown";
+                var audioSize = FormatFileSize(message.AttachmentFileSize);
                 var audioLine = BuildChatLineColored(time, senderName, senderColor,
-                    $" \u266a [Audio: {audioName}] (Enter to play)", ChatColors.AudioAttr);
+                    $" \u266a [Audio: {audioName}] [{audioSize}]", ChatColors.AudioAttr);
                 audioLine.AttachmentUrl = message.AttachmentUrl;
                 audioLine.AttachmentFileName = audioName;
                 audioLine.Type = MessageType.Audio;
@@ -1032,8 +1033,9 @@ public sealed class MainWindow : Runnable
 
             case MessageType.File:
                 var fileName = message.AttachmentFileName ?? "unknown";
+                var fileSize = FormatFileSize(message.AttachmentFileSize);
                 var fileLine = BuildChatLineColored(time, senderName, senderColor,
-                    $" [File: {fileName}] (Enter to download)", ChatColors.FileAttr);
+                    $" [File: {fileName}] [{fileSize}]", ChatColors.FileAttr);
                 fileLine.AttachmentUrl = message.AttachmentUrl;
                 fileLine.AttachmentFileName = fileName;
                 fileLine.Type = MessageType.File;
@@ -1202,5 +1204,19 @@ public sealed class MainWindow : Runnable
             result.Add(currentLine);
 
         return result;
+    }
+
+    private static string FormatFileSize(long? bytes)
+    {
+        if (bytes is null or 0)
+            return "?";
+
+        return bytes.Value switch
+        {
+            < 1024 => $"{bytes.Value} B",
+            < 1024 * 1024 => $"{bytes.Value / 1024.0:F1} KB",
+            < 1024 * 1024 * 1024 => $"{bytes.Value / (1024.0 * 1024.0):F1} MB",
+            _ => $"{bytes.Value / (1024.0 * 1024.0 * 1024.0):F1} GB"
+        };
     }
 }

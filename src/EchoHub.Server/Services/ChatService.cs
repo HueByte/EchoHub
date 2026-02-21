@@ -213,7 +213,7 @@ public class ChatService : IChatService
             null,
             null,
             message.SentAt,
-            embeds);
+            Embeds: embeds);
 
         await BroadcastToAllAsync(b => b.SendMessageToChannelAsync(channelName, messageDto));
 
@@ -416,6 +416,7 @@ public class ChatService : IChatService
                 x.m.AttachmentUrl,
                 x.m.AttachmentFileName,
                 x.m.SentAt,
+                x.m.AttachmentFileSize,
                 embeds);
         }).ToList();
     }

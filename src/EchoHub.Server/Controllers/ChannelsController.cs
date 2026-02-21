@@ -107,6 +107,8 @@ public class ChannelsController : ControllerBase
 
     [HttpPost("{channel}/upload")]
     [EnableRateLimiting("upload")]
+    [RequestSizeLimit(HubConstants.MaxFileSizeBytes)]
+    [RequestFormLimits(MultipartBodyLengthLimit = HubConstants.MaxFileSizeBytes)]
     public async Task<IActionResult> Upload(string channel, [FromQuery] string? size = null)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -130,16 +132,16 @@ public class ChannelsController : ControllerBase
         var file = Request.Form.Files[0];
 
         // Detect file type early so we can apply the correct size limit
-        var isAudioByExtension = FileValidationHelper.IsAudioFile(file.FileName);
-        var maxSize = isAudioByExtension ? HubConstants.MaxAudioFileSizeBytes : HubConstants.MaxFileSizeBytes;
+        using var stream = file.OpenReadStream();
+        var isImage = FileValidationHelper.IsValidImage(stream);
+        var isAudio = !isImage && FileValidationHelper.IsAudioFile(file.FileName);
+
+        var maxSize = isImage ? HubConstants.MaxImageSizeBytes
+            : isAudio ? HubConstants.MaxAudioFileSizeBytes
+            : HubConstants.MaxFileSizeBytes;
 
         if (file.Length > maxSize)
             return BadRequest(new ErrorResponse($"File size exceeds maximum of {maxSize / (1024 * 1024)} MB."));
-
-        // Detect file type: image (magic bytes), audio (extension), or generic file
-        using var stream = file.OpenReadStream();
-        var isImage = FileValidationHelper.IsValidImage(stream);
-        var isAudio = !isImage && isAudioByExtension;
 
         var (fileId, filePath) = await _fileStorage.SaveFileAsync(stream, file.FileName);
 
@@ -170,6 +172,7 @@ public class ChannelsController : ControllerBase
             Type = messageType,
             AttachmentUrl = attachmentUrl,
             AttachmentFileName = file.FileName,
+            AttachmentFileSize = file.Length,
             SentAt = DateTimeOffset.UtcNow,
             ChannelId = channelDto.Id,
             SenderUserId = userId,
@@ -189,7 +192,8 @@ public class ChannelsController : ControllerBase
             messageType,
             attachmentUrl,
             file.FileName,
-            message.SentAt);
+            message.SentAt,
+            file.Length);
 
         await _chatService.BroadcastMessageAsync(channelName, messageDto);
 
@@ -232,13 +236,13 @@ public class ChannelsController : ControllerBase
             response.EnsureSuccessStatusCode();
 
             var contentLength = response.Content.Headers.ContentLength;
-            if (contentLength > HubConstants.MaxFileSizeBytes)
-                return BadRequest(new ErrorResponse($"File size exceeds maximum of {HubConstants.MaxFileSizeBytes / (1024 * 1024)} MB."));
+            if (contentLength > HubConstants.MaxImageSizeBytes)
+                return BadRequest(new ErrorResponse($"File size exceeds maximum of {HubConstants.MaxImageSizeBytes / (1024 * 1024)} MB."));
 
             imageBytes = await response.Content.ReadAsByteArrayAsync();
 
-            if (imageBytes.Length > HubConstants.MaxFileSizeBytes)
-                return BadRequest(new ErrorResponse($"File size exceeds maximum of {HubConstants.MaxFileSizeBytes / (1024 * 1024)} MB."));
+            if (imageBytes.Length > HubConstants.MaxImageSizeBytes)
+                return BadRequest(new ErrorResponse($"File size exceeds maximum of {HubConstants.MaxImageSizeBytes / (1024 * 1024)} MB."));
 
             fileName = Path.GetFileName(uri.LocalPath);
             if (string.IsNullOrWhiteSpace(fileName) || !fileName.Contains('.'))
@@ -290,6 +294,7 @@ public class ChannelsController : ControllerBase
             Type = MessageType.Image,
             AttachmentUrl = attachmentUrl,
             AttachmentFileName = fileName,
+            AttachmentFileSize = imageBytes.Length,
             SentAt = DateTimeOffset.UtcNow,
             ChannelId = channelDto.Id,
             SenderUserId = userId,
@@ -309,7 +314,8 @@ public class ChannelsController : ControllerBase
             MessageType.Image,
             attachmentUrl,
             fileName,
-            message.SentAt);
+            message.SentAt,
+            imageBytes.Length);
 
         await _chatService.BroadcastMessageAsync(channelName, messageDto);
 
