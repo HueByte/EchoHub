@@ -103,7 +103,26 @@ public class ChatService : IChatService
 
         var channel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
         if (channel is null)
-            return ([], $"Channel '{channelName}' does not exist. Create it first via the channel list.");
+        {
+            // Auto-recreate #general if it was somehow removed
+            if (channelName == HubConstants.DefaultChannel)
+            {
+                channel = new Channel
+                {
+                    Id = Guid.NewGuid(),
+                    Name = HubConstants.DefaultChannel,
+                    Topic = "General discussion",
+                    CreatedByUserId = Guid.Empty,
+                };
+                db.Channels.Add(channel);
+                await db.SaveChangesAsync();
+                _logger.LogWarning("Default channel '{Channel}' was missing and has been recreated", HubConstants.DefaultChannel);
+            }
+            else
+            {
+                return ([], $"Channel '{channelName}' does not exist. Create it first via the channel list.");
+            }
+        }
 
         // Persist membership so the channel shows in the user's channel list
         var hasMembership = await db.ChannelMemberships

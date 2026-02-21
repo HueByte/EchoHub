@@ -52,6 +52,19 @@ public class ChannelsController : ControllerBase
         offset = Math.Max(0, offset);
         limit = Math.Clamp(limit, 1, 100);
 
+        // Ensure #general always exists
+        if (!await _db.Channels.AnyAsync(c => c.Name == HubConstants.DefaultChannel))
+        {
+            _db.Channels.Add(new Channel
+            {
+                Id = Guid.NewGuid(),
+                Name = HubConstants.DefaultChannel,
+                Topic = "General discussion",
+                CreatedByUserId = Guid.Empty,
+            });
+            await _db.SaveChangesAsync();
+        }
+
         // Public channels + private channels the user has joined
         var query = _db.Channels.Where(c =>
             c.IsPublic || _db.ChannelMemberships.Any(m => m.ChannelId == c.Id && m.UserId == userId));

@@ -238,6 +238,12 @@ public sealed class AppOrchestrator : IDisposable
             var channel = _mainWindow.CurrentChannel;
             if (string.IsNullOrEmpty(channel)) return;
 
+            if (channel == HubConstants.DefaultChannel)
+            {
+                InvokeUI(() => _mainWindow.ShowError($"You cannot leave the #{HubConstants.DefaultChannel} channel."));
+                return;
+            }
+
             try
             {
                 await _connection!.LeaveChannelAsync(channel);
@@ -367,6 +373,16 @@ public sealed class AppOrchestrator : IDisposable
 
     private void HandleConnect()
     {
+        if (IsConnected)
+        {
+            var confirm = MessageBox.Query(_app, "Already Connected",
+                "You are already connected to a server.\nDisconnect and connect to a new one?", "Yes", "Cancel");
+
+            if (confirm != 0) return;
+
+            HandleDisconnect();
+        }
+
         var result = ConnectDialog.Show(_app, _config.SavedServers);
         if (result is null) return;
 
@@ -934,7 +950,7 @@ public sealed class AppOrchestrator : IDisposable
             InvokeUI(() =>
             {
                 if (channel.IsPublic)
-                    _mainWindow.EnsureChannelInList(channel.Name);
+                    _mainWindow.EnsureChannelInList(channel.Name, channel.IsPublic);
                 _mainWindow.SetChannelTopic(channel.Name, channel.Topic);
             });
         };

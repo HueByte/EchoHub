@@ -58,9 +58,11 @@ public sealed class MainWindow : Runnable
     private readonly Dictionary<string, List<ChatLine>> _channelMessages = [];
     private readonly Dictionary<string, int> _channelUnread = [];
     private readonly Dictionary<string, string?> _channelTopics = [];
+    private readonly Dictionary<string, bool> _channelPublic = [];
     private readonly ChannelListSource _channelListSource;
     private string _currentChannel = string.Empty;
     private string _currentUser = string.Empty;
+    private string _connectionStatus = "Disconnected";
     private int _lastChatWidth;
 
     /// <summary>
@@ -234,16 +236,17 @@ public sealed class MainWindow : Runnable
         _usersFrame.Add(_usersList);
         Add(_usersFrame);
 
-        // Status bar at the very bottom
+        // Status bar at the very bottom — custom drawing for colored connection state
         _statusLabel = new Label
         {
-            Text = "Disconnected",
+            Text = "",
             X = 0,
             Y = Pos.AnchorEnd(1),
             Width = Dim.Fill(),
             Height = 1
         };
         _statusLabel.SetScheme(SchemeManager.GetScheme("Menu"));
+        _statusLabel.DrawingContent += OnStatusBarDrawContent;
         Add(_statusLabel);
 
         // Apply our custom color schemes to all views
@@ -636,10 +639,12 @@ public sealed class MainWindow : Runnable
     {
         _channelNames.Clear();
         _channelTopics.Clear();
+        _channelPublic.Clear();
         foreach (var ch in channels)
         {
             _channelNames.Add(ch.Name);
             _channelTopics[ch.Name] = ch.Topic;
+            _channelPublic[ch.Name] = ch.IsPublic;
             if (!_channelMessages.ContainsKey(ch.Name))
                 _channelMessages[ch.Name] = [];
         }
@@ -649,8 +654,11 @@ public sealed class MainWindow : Runnable
     /// <summary>
     /// Ensure a channel exists in the left panel list (used for private channels joined via /join).
     /// </summary>
-    public void EnsureChannelInList(string channelName)
+    public void EnsureChannelInList(string channelName, bool? isPublic = null)
     {
+        if (isPublic.HasValue)
+            _channelPublic[channelName] = isPublic.Value;
+
         if (_channelNames.Contains(channelName))
             return;
 
@@ -667,6 +675,7 @@ public sealed class MainWindow : Runnable
     {
         _channelNames.Remove(channelName);
         _channelTopics.Remove(channelName);
+        _channelPublic.Remove(channelName);
         RefreshChannelList();
     }
 
@@ -693,9 +702,76 @@ public sealed class MainWindow : Runnable
     /// </summary>
     public void UpdateStatusBar(string status)
     {
-        var userPart = string.IsNullOrEmpty(_currentUser) ? "" : $" \u2502 User: {_currentUser}";
-        var channelPart = string.IsNullOrEmpty(_currentChannel) ? "" : $" \u2502 #{_currentChannel}";
-        _statusLabel.Text = $" v{AppVersion} \u2502 {status}{userPart}{channelPart}";
+        _connectionStatus = status;
+        _statusLabel.SetNeedsDraw();
+    }
+
+    private static readonly Attribute StatusConnectedAttr = new(new Color(0, 200, 0), Color.Transparent);
+    private static readonly Attribute StatusDisconnectedAttr = new(new Color(220, 50, 50), Color.Transparent);
+    private static readonly Attribute StatusTransitionalAttr = new(new Color(220, 180, 0), Color.Transparent);
+    private static readonly Attribute StatusBrandAttr = new(new Color(100, 160, 255), Color.Transparent);
+
+    private void OnStatusBarDrawContent(object? sender, DrawEventArgs e)
+    {
+        var menuScheme = SchemeManager.GetScheme("Menu");
+        var normalAttr = menuScheme?.Normal ?? _statusLabel.GetAttributeForRole(VisualRole.Normal);
+        var width = _statusLabel.Viewport.Width;
+        if (width <= 0) return;
+
+        // Resolve transparent background for colored segments
+        var bg = normalAttr.Background;
+        Attribute Resolve(Attribute a) => a.Background == Color.Transparent ? a with { Background = bg } : a;
+
+        int col = 0;
+
+        void Write(string text, Attribute attr)
+        {
+            _statusLabel.SetAttribute(Resolve(attr));
+            foreach (var g in GraphemeHelper.GetGraphemes(text))
+            {
+                var cols = Math.Max(g.GetColumns(), 1);
+                if (col + cols > width) return;
+                _statusLabel.Move(col, 0);
+                _statusLabel.AddStr(g);
+                col += cols;
+            }
+        }
+
+        // EchoHub branding
+        Write(" EchoHub", Resolve(StatusBrandAttr));
+        Write($" \u2502 v{AppVersion} \u2502 ", normalAttr);
+
+        // Connection state with color
+        var statusAttr = _connectionStatus switch
+        {
+            "Connected" => StatusConnectedAttr,
+            "Disconnected" => StatusDisconnectedAttr,
+            _ => StatusTransitionalAttr // Connecting, Reconnecting, Authenticating, etc.
+        };
+        Write(_connectionStatus, Resolve(statusAttr));
+
+        // User
+        if (!string.IsNullOrEmpty(_currentUser))
+            Write($" \u2502 User: {_currentUser}", normalAttr);
+
+        // Channel + type
+        if (!string.IsNullOrEmpty(_currentChannel))
+        {
+            _channelPublic.TryGetValue(_currentChannel, out var isPublic);
+            var typeSuffix = isPublic ? "public" : "private";
+            Write($" \u2502 #{_currentChannel} - {typeSuffix}", normalAttr);
+        }
+
+        // Fill remaining space
+        _statusLabel.SetAttribute(normalAttr);
+        while (col < width)
+        {
+            _statusLabel.Move(col, 0);
+            _statusLabel.AddStr(" ");
+            col++;
+        }
+
+        e.Cancel = true;
     }
 
     /// <summary>
@@ -730,6 +806,7 @@ public sealed class MainWindow : Runnable
 
         RefreshMessages();
         UpdateTopicBar();
+        _statusLabel.SetNeedsDraw();
 
         // Update channel list selection
         var idx = _channelNames.IndexOf(channelName);
@@ -761,6 +838,7 @@ public sealed class MainWindow : Runnable
         _channelMessages.Clear();
         _channelUnread.Clear();
         _channelTopics.Clear();
+        _channelPublic.Clear();
         _currentChannel = string.Empty;
         _currentUser = string.Empty;
         _channelListSource.Update([], [], string.Empty);
