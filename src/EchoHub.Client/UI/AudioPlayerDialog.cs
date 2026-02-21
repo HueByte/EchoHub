@@ -328,16 +328,10 @@ public sealed class AudioPlayerDialog
         closeButton.Accepting += (s, e) =>
         {
             e.Handled = true;
-            Task.Run(async () =>
-            {
-                await audioService.StopAsync();
-                app.Invoke(() =>
-                {
-                    isDisposed = true;
-                    animationTimer?.Dispose();
-                    app.RequestStop();
-                });
-            });
+            isDisposed = true;
+            animationTimer?.Dispose();
+            _ = audioService.StopAsync(); // fire-and-forget
+            app.RequestStop();
         };
 
         volDownButton.Accepting += (s, e) =>
