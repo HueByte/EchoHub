@@ -18,6 +18,8 @@ public sealed class ApiClient : IDisposable
     public string? RefreshToken => _refreshToken;
     public string BaseUrl { get; }
 
+    public event Action? OnTokensRefreshed;
+
     public ApiClient(string baseUrl)
     {
         BaseUrl = baseUrl.TrimEnd('/');
@@ -66,6 +68,19 @@ public sealed class ApiClient : IDisposable
             ?? throw new InvalidOperationException("Token refresh returned empty response.");
 
         SetTokens(result);
+    }
+
+    public async Task<LoginResponse> LoginWithRefreshTokenAsync(string refreshToken)
+    {
+        var request = new RefreshRequest(refreshToken);
+        var response = await _http.PostAsJsonAsync("/api/auth/refresh", request);
+        await EnsureSuccessAsync(response);
+
+        var result = await response.Content.ReadFromJsonAsync<LoginResponse>()
+            ?? throw new InvalidOperationException("Token refresh returned empty response.");
+
+        SetTokens(result);
+        return result;
     }
 
     public async Task LogoutAsync()
@@ -313,6 +328,7 @@ public sealed class ApiClient : IDisposable
         _refreshToken = result.RefreshToken;
         _expiresAt = result.ExpiresAt;
         _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+        OnTokensRefreshed?.Invoke();
     }
 
     /// <summary>

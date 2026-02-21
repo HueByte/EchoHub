@@ -78,6 +78,7 @@ public sealed class AppOrchestrator : IDisposable
     {
         _mainWindow.OnConnectRequested += HandleConnect;
         _mainWindow.OnDisconnectRequested += HandleDisconnect;
+        _mainWindow.OnLogoutRequested += HandleLogout;
         _mainWindow.OnMessageSubmitted += HandleMessageSubmitted;
         _mainWindow.OnChannelSelected += HandleChannelSelected;
         _mainWindow.OnProfileRequested += HandleProfileRequested;
@@ -401,11 +402,54 @@ public sealed class AppOrchestrator : IDisposable
 
             InvokeUI(() => _mainWindow.UpdateStatusBar("Authenticating..."));
 
-            var loginResponse = result.IsRegister
-                ? await _apiClient.RegisterAsync(result.Username, result.Password)
-                : await _apiClient.LoginAsync(result.Username, result.Password);
+            LoginResponse loginResponse;
+
+            if (result.SavedRefreshToken is not null)
+            {
+                try
+                {
+                    loginResponse = await _apiClient.LoginWithRefreshTokenAsync(result.SavedRefreshToken);
+                    Log.Information("Authenticated via saved session for {User}", loginResponse.Username);
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, "Saved session expired or revoked");
+                    ClearSavedToken(result.ServerUrl);
+                    InvokeUI(() =>
+                    {
+                        _mainWindow.UpdateStatusBar("Disconnected");
+                        MessageBox.ErrorQuery(_app, "Session Expired",
+                            "Your saved session has expired or was revoked.\nPlease log in with your password.", "OK");
+                    });
+                    _apiClient.Dispose();
+                    _apiClient = null;
+                    return;
+                }
+            }
+            else if (result.IsRegister)
+            {
+                loginResponse = await _apiClient.RegisterAsync(result.Username, result.Password);
+            }
+            else
+            {
+                loginResponse = await _apiClient.LoginAsync(result.Username, result.Password);
+            }
 
             _currentUsername = loginResponse.Username;
+
+            // Persist rotated refresh tokens for Remember Me
+            _apiClient.OnTokensRefreshed += () =>
+            {
+                if (_apiClient?.RefreshToken is null) return;
+                var config = ConfigManager.Load();
+                var server = config.SavedServers.FirstOrDefault(s =>
+                    string.Equals(s.Url, _apiClient.BaseUrl, StringComparison.OrdinalIgnoreCase));
+                if (server is not null && server.RememberMe)
+                {
+                    server.RefreshToken = _apiClient.RefreshToken;
+                    ConfigManager.Save(config);
+                }
+            };
 
             // Fetch encryption key for E2E message encryption
             InvokeUI(() => _mainWindow.UpdateStatusBar("Fetching encryption key..."));
@@ -487,6 +531,38 @@ public sealed class AppOrchestrator : IDisposable
                 _mainWindow.UpdateStatusBar("Disconnected");
             });
         }, "Disconnect error", "Disconnect");
+    }
+
+    private void HandleLogout()
+    {
+        Log.Information("Logging out from server");
+
+        RunAsync(async () =>
+        {
+            if (_apiClient is not null)
+            {
+                var baseUrl = _apiClient.BaseUrl;
+                await _apiClient.LogoutAsync();
+                ClearSavedToken(baseUrl);
+            }
+
+            if (_connection is not null)
+            {
+                await _connection.DisconnectAsync();
+                await _connection.DisposeAsync();
+                _connection = null;
+            }
+
+            _apiClient?.Dispose();
+            _apiClient = null;
+            _joinedChannels.Clear();
+
+            InvokeUI(() =>
+            {
+                _mainWindow.ClearAll();
+                _mainWindow.UpdateStatusBar("Disconnected");
+            });
+        }, "Logout error", "Logout");
     }
 
     private void HandleMessageSubmitted(string channelName, string content)
@@ -734,7 +810,11 @@ public sealed class AppOrchestrator : IDisposable
         }
 
         var serverLines = _config.SavedServers
-            .Select(s => $"{s.Name} ({s.Url}) - {s.Username ?? "?"} - {s.LastConnected:yyyy-MM-dd}")
+            .Select(s =>
+            {
+                var session = !string.IsNullOrEmpty(s.RefreshToken) ? " [session saved]" : "";
+                return $"{s.Name} ({s.Url}) - {s.Username ?? "?"} - {s.LastConnected:yyyy-MM-dd}{session}";
+            })
             .ToList();
 
         MessageBox.Query(_app, "Saved Servers", string.Join("\n", serverLines), "OK");
@@ -1003,11 +1083,25 @@ public sealed class AppOrchestrator : IDisposable
             Name = new Uri(result.ServerUrl).Host,
             Url = result.ServerUrl,
             Username = result.Username,
-            Token = _apiClient!.Token,
+            RefreshToken = result.RememberMe ? _apiClient!.RefreshToken : null,
+            RememberMe = result.RememberMe,
             LastConnected = DateTimeOffset.Now
         };
         ConfigManager.SaveServer(savedServer);
         _config = ConfigManager.Load();
         Log.Information("Connected successfully to {Url}", result.ServerUrl);
+    }
+
+    private void ClearSavedToken(string serverUrl)
+    {
+        var config = ConfigManager.Load();
+        var server = config.SavedServers.FirstOrDefault(s =>
+            string.Equals(s.Url, serverUrl, StringComparison.OrdinalIgnoreCase));
+        if (server is not null)
+        {
+            server.RefreshToken = null;
+            ConfigManager.Save(config);
+            _config = config;
+        }
     }
 }

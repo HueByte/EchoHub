@@ -86,6 +86,11 @@ public sealed class MainWindow : Runnable
     public event Action? OnDisconnectRequested;
 
     /// <summary>
+    /// Fired when the user requests to logout (disconnect + revoke session).
+    /// </summary>
+    public event Action? OnLogoutRequested;
+
+    /// <summary>
     /// Fired when the user requests to open their profile panel.
     /// </summary>
     public event Action? OnProfileRequested;
@@ -322,6 +327,7 @@ public sealed class MainWindow : Runnable
             {
                 new MenuItem("_Connect...", "Connect to a server", () => OnConnectRequested?.Invoke(), Key.Empty),
                 new MenuItem("_Disconnect", "Disconnect from server", () => OnDisconnectRequested?.Invoke(), Key.Empty),
+                new MenuItem("_Logout", "Logout and clear session", () => OnLogoutRequested?.Invoke(), Key.Empty),
                 new Line(),
                 new MenuItem("New C_hannel...", "Create a new channel", () => OnCreateChannelRequested?.Invoke(), Key.Empty),
                 new MenuItem("_Delete Channel", "Delete the current channel", () => OnDeleteChannelRequested?.Invoke(), Key.Empty),
