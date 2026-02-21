@@ -8,6 +8,7 @@ Articles related to the EchoHub server built with ASP.NET Core.
 - SignalR hub and real-time messaging
 - IRC gateway and protocol bridging
 - ChatService and broadcaster pattern
-- File upload and validation
+- ChannelService and channel CRUD
+- File upload, validation, and cleanup
 - Rate limiting configuration
-- Database schema and migrations
+- Database schema, migrations, and DataMigrationService

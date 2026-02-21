@@ -10,11 +10,11 @@ Terminal.Gui v2 TUI application -- UI components, services, themes, and configur
 
 ### Core
 
-Shared library -- DTOs, models, constants, and contracts (`IChatService`, `IChatBroadcaster`, `IEchoHubClient`).
+Shared library -- DTOs, models, constants, and contracts (`IChatService`, `IChannelService`, `IChatBroadcaster`, `IEchoHubClient`).
 
 ### Server
 
-ASP.NET Core server -- controllers, hubs, ChatService, SignalRBroadcaster, authentication, and data access.
+ASP.NET Core server -- controllers, hubs, ChatService, ChannelService, SignalRBroadcaster, authentication, file cleanup, and data access.
 
 ### Server.Irc
 

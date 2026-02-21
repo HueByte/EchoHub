@@ -5,5 +5,5 @@ Articles related to the EchoHub.Core shared library.
 ## Topics
 
 - Data models and DTOs
-- Contract interfaces (IChatService, IChatBroadcaster, IEchoHubClient)
+- Contract interfaces (IChatService, IChannelService, IChatBroadcaster, IEchoHubClient)
 - Validation constants and shared rules

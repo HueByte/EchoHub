@@ -4,7 +4,7 @@ Release history for EchoHub.
 
 ## Releases
 
-- [v0.2.5](v0.2.5.md) - Audio Playback, File Downloads & IRC Fixes
+- [v0.2.5](v0.2.5.md) - Session Persistence, Auto-Updates, Audio & Transparent Theme
 - [v0.2.4](v0.2.4.md) - E2E Message Encryption
 - [v0.2.3](v0.2.3.md) - Moderation, Embeds & UI Overhaul
 - [v0.2.2](v0.2.2.md) - Startup & Shutdown Fixes
