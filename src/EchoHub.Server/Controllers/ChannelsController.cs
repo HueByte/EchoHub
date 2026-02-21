@@ -129,13 +129,17 @@ public class ChannelsController : ControllerBase
 
         var file = Request.Form.Files[0];
 
-        if (file.Length > HubConstants.MaxFileSizeBytes)
-            return BadRequest(new ErrorResponse($"File size exceeds maximum of {HubConstants.MaxFileSizeBytes / (1024 * 1024)} MB."));
+        // Detect file type early so we can apply the correct size limit
+        var isAudioByExtension = FileValidationHelper.IsAudioFile(file.FileName);
+        var maxSize = isAudioByExtension ? HubConstants.MaxAudioFileSizeBytes : HubConstants.MaxFileSizeBytes;
+
+        if (file.Length > maxSize)
+            return BadRequest(new ErrorResponse($"File size exceeds maximum of {maxSize / (1024 * 1024)} MB."));
 
         // Detect file type: image (magic bytes), audio (extension), or generic file
         using var stream = file.OpenReadStream();
         var isImage = FileValidationHelper.IsValidImage(stream);
-        var isAudio = !isImage && FileValidationHelper.IsAudioFile(file.FileName);
+        var isAudio = !isImage && isAudioByExtension;
 
         var (fileId, filePath) = await _fileStorage.SaveFileAsync(stream, file.FileName);
 

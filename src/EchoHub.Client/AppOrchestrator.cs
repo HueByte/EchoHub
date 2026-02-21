@@ -896,9 +896,9 @@ public sealed class AppOrchestrator : IDisposable
 
         RunAsync(async () =>
         {
-            InvokeUI(() => _mainWindow.AddSystemMessage(_mainWindow.CurrentChannel, $"Playing {fileName}..."));
+            InvokeUI(() => _mainWindow.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloading {fileName}..."));
             var tempPath = await _apiClient!.DownloadFileToTempAsync(attachmentUrl, fileName);
-            await _audioPlayback.PlayAsync(tempPath);
+            InvokeUI(() => AudioPlayerDialog.Show(_app, _audioPlayback, tempPath, fileName));
         }, "Failed to play audio");
     }
 

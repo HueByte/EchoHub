@@ -96,6 +96,15 @@ public partial class ChatLine
         if (currentSegments.Count > 0)
             results.Add(new ChatLine(currentSegments));
 
+        // Propagate attachment/type metadata to all wrapped lines so they remain clickable
+        foreach (var wrapped in results)
+        {
+            wrapped.AttachmentUrl = AttachmentUrl;
+            wrapped.AttachmentFileName = AttachmentFileName;
+            wrapped.Type = Type;
+            wrapped.MessageId = MessageId;
+        }
+
         return results;
     }
 
