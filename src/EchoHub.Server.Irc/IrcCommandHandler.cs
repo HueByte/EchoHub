@@ -12,6 +12,7 @@ public sealed class IrcCommandHandler
     private readonly IrcClientConnection _conn;
     private readonly IrcOptions _options;
     private readonly IChatService _chatService;
+    private readonly IMessageEncryptionService _encryption;
     private readonly ILogger _logger;
 
     private string ServerName => _options.ServerName;
@@ -20,11 +21,13 @@ public sealed class IrcCommandHandler
         IrcClientConnection conn,
         IrcOptions options,
         IChatService chatService,
+        IMessageEncryptionService encryption,
         ILogger logger)
     {
         _conn = conn;
         _options = options;
         _chatService = chatService;
+        _encryption = encryption;
         _logger = logger;
     }
 
@@ -319,7 +322,7 @@ public sealed class IrcCommandHandler
 
     private async Task HandleJoinAsync(IrcMessage msg)
     {
-        if (!RequireRegistered()) return;
+        if (!await RequireRegisteredAsync()) return;
 
         if (msg.Parameters.Count < 1)
         {
@@ -350,7 +353,7 @@ public sealed class IrcCommandHandler
                 continue;
             }
 
-            _conn.JoinedChannels.Add(channelName);
+            _conn.JoinChannel(channelName);
 
             // Confirm JOIN to the client
             await _conn.SendAsync($":{_conn.Hostmask} JOIN #{channelName}");
@@ -361,10 +364,11 @@ public sealed class IrcCommandHandler
             // Send NAMES list
             await SendNamesReplyAsync(channelName);
 
-            // Replay history
+            // Replay history (decrypt — history is encrypted for SignalR transport)
             foreach (var m in history)
             {
-                var lines = IrcMessageFormatter.FormatMessage(m);
+                var decrypted = m with { Content = _encryption.Decrypt(m.Content) };
+                var lines = IrcMessageFormatter.FormatMessage(decrypted);
                 foreach (var line in lines)
                     await _conn.SendAsync(line);
             }
@@ -373,7 +377,7 @@ public sealed class IrcCommandHandler
 
     private async Task HandlePartAsync(IrcMessage msg)
     {
-        if (!RequireRegistered()) return;
+        if (!await RequireRegisteredAsync()) return;
         if (msg.Parameters.Count < 1) return;
 
         var channels = msg.Parameters[0].Split(',', StringSplitOptions.RemoveEmptyEntries);
@@ -385,7 +389,7 @@ public sealed class IrcCommandHandler
             if (channelName is null) continue;
 
             await _chatService.LeaveChannelAsync(_conn.ConnectionId, _conn.Nickname!, channelName);
-            _conn.JoinedChannels.Remove(channelName);
+            _conn.LeaveChannel(channelName);
 
             await _conn.SendAsync($":{_conn.Hostmask} PART #{channelName}" +
                 (partMessage is not null ? $" :{partMessage}" : ""));
@@ -394,7 +398,7 @@ public sealed class IrcCommandHandler
 
     private async Task HandlePrivmsgAsync(IrcMessage msg)
     {
-        if (!RequireRegistered()) return;
+        if (!await RequireRegisteredAsync()) return;
 
         if (msg.Parameters.Count < 2)
         {
@@ -436,7 +440,7 @@ public sealed class IrcCommandHandler
 
     private async Task HandleNamesAsync(IrcMessage msg)
     {
-        if (!RequireRegistered()) return;
+        if (!await RequireRegisteredAsync()) return;
         if (msg.Parameters.Count < 1) return;
 
         var channelName = IrcToEchoHubChannel(msg.Parameters[0]);
@@ -458,7 +462,7 @@ public sealed class IrcCommandHandler
 
     private async Task HandleTopicAsync(IrcMessage msg)
     {
-        if (!RequireRegistered()) return;
+        if (!await RequireRegisteredAsync()) return;
         if (msg.Parameters.Count < 1) return;
 
         var channelName = IrcToEchoHubChannel(msg.Parameters[0]);
@@ -495,7 +499,7 @@ public sealed class IrcCommandHandler
 
     private async Task HandleWhoAsync(IrcMessage msg)
     {
-        if (!RequireRegistered()) return;
+        if (!await RequireRegisteredAsync()) return;
         if (msg.Parameters.Count < 1) return;
 
         var channelName = IrcToEchoHubChannel(msg.Parameters[0]);
@@ -516,7 +520,7 @@ public sealed class IrcCommandHandler
 
     private async Task HandleWhoisAsync(IrcMessage msg)
     {
-        if (!RequireRegistered()) return;
+        if (!await RequireRegisteredAsync()) return;
         if (msg.Parameters.Count < 1) return;
 
         var nick = msg.Parameters[^1].ToLowerInvariant();
@@ -559,7 +563,7 @@ public sealed class IrcCommandHandler
 
     private async Task HandleAwayAsync(IrcMessage msg)
     {
-        if (!RequireRegistered()) return;
+        if (!await RequireRegisteredAsync()) return;
 
         if (msg.Parameters.Count > 0 && !string.IsNullOrWhiteSpace(msg.Parameters[0]))
         {
@@ -581,7 +585,7 @@ public sealed class IrcCommandHandler
 
     private async Task HandleListAsync(IrcMessage msg)
     {
-        if (!RequireRegistered()) return;
+        if (!await RequireRegisteredAsync()) return;
 
         var channels = await _chatService.GetChannelListAsync();
 
@@ -597,7 +601,7 @@ public sealed class IrcCommandHandler
 
     private async Task HandleModeAsync(IrcMessage msg)
     {
-        if (!RequireRegistered()) return;
+        if (!await RequireRegisteredAsync()) return;
         if (msg.Parameters.Count < 1) return;
 
         var target = msg.Parameters[0];
@@ -621,11 +625,11 @@ public sealed class IrcCommandHandler
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
-    private bool RequireRegistered()
+    private async Task<bool> RequireRegisteredAsync()
     {
         if (_conn.IsRegistered) return true;
 
-        _ = _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_NOTREGISTERED,
+        await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_NOTREGISTERED,
             ":You have not registered");
         return false;
     }

@@ -34,7 +34,7 @@ public sealed class IrcGatewayService : BackgroundService
     public IEnumerable<IrcClientConnection> GetConnectionsInChannel(string channelName)
     {
         return _connections.Values
-            .Where(c => c.IsAuthenticated && c.JoinedChannels.Contains(channelName));
+            .Where(c => c.IsAuthenticated && c.IsInChannel(channelName));
     }
 
     public IEnumerable<IrcClientConnection> GetAllConnections()
@@ -120,8 +120,9 @@ public sealed class IrcGatewayService : BackgroundService
         try
         {
             chatService = _services.GetRequiredService<IChatService>();
+            var encryption = _services.GetRequiredService<IMessageEncryptionService>();
             var handler = new IrcCommandHandler(
-                connection, _options, chatService, _logger);
+                connection, _options, chatService, encryption, _logger);
 
             await handler.RunAsync(ct);
         }
@@ -133,7 +134,7 @@ public sealed class IrcGatewayService : BackgroundService
         {
             if (connection.IsAuthenticated)
             {
-                foreach (var ch in connection.JoinedChannels.ToList())
+                foreach (var ch in connection.GetJoinedChannels())
                 {
                     if (chatService is null) break;
                     await chatService.LeaveChannelAsync(
