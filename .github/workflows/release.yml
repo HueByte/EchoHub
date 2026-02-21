@@ -56,37 +56,41 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      - name: Restore dependencies
+        if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
+        run: dotnet restore src/EchoHub.slnx --configfile nuget.config
+
       - name: Publish Server win-x64
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
-        run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r win-x64 --self-contained true -o publish/server-win-x64
+        run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r win-x64 --self-contained true --no-restore -o publish/server-win-x64
 
       - name: Publish Server linux-x64
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
-        run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r linux-x64 --self-contained true -o publish/server-linux-x64
+        run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r linux-x64 --self-contained true --no-restore -o publish/server-linux-x64
 
       - name: Publish Server osx-x64
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
-        run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r osx-x64 --self-contained true -o publish/server-osx-x64
+        run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r osx-x64 --self-contained true --no-restore -o publish/server-osx-x64
 
       - name: Publish Server osx-arm64
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
-        run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r osx-arm64 --self-contained true -o publish/server-osx-arm64
+        run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r osx-arm64 --self-contained true --no-restore -o publish/server-osx-arm64
 
       - name: Publish Client win-x64
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
-        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r win-x64 --self-contained true -o publish/client-win-x64
+        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r win-x64 --self-contained true --no-restore -o publish/client-win-x64
 
       - name: Publish Client linux-x64
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
-        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r linux-x64 --self-contained true -o publish/client-linux-x64
+        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r linux-x64 --self-contained true --no-restore -o publish/client-linux-x64
 
       - name: Publish Client osx-x64
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
-        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r osx-x64 --self-contained true -o publish/client-osx-x64
+        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r osx-x64 --self-contained true --no-restore -o publish/client-osx-x64
 
       - name: Publish Client osx-arm64
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
-        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r osx-arm64 --self-contained true -o publish/client-osx-arm64
+        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r osx-arm64 --self-contained true --no-restore -o publish/client-osx-arm64
 
       - name: Zip artifacts
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'

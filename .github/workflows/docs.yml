@@ -34,8 +34,11 @@ jobs:
       - name: Restore .NET tools
         run: dotnet tool restore
 
+      - name: Restore dependencies
+        run: dotnet restore src/EchoHub.slnx --configfile nuget.config
+
       - name: Build solution
-        run: dotnet build src/EchoHub.slnx --configuration Release
+        run: dotnet build src/EchoHub.slnx --no-restore --configuration Release
 
       - name: Generate documentation
         run: dotnet docfx docs/docfx.json
