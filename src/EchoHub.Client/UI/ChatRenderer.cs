@@ -122,7 +122,7 @@ public partial class ChatLine
         Color? currentFg = null;
         Color? currentBg = null;
         var defaultFg = defaultAttr?.Foreground;
-        var defaultBg = defaultAttr?.Background ?? Color.Black;
+        var defaultBg = defaultAttr?.Background ?? Color.Transparent;
 
         Attribute? BuildAttr()
         {
@@ -241,8 +241,10 @@ public class ChatListSource : IListDataSource
         foreach (var segment in chatLine.Segments)
         {
             var attr = segment.Color ?? normalAttr;
+            if (attr.Background == Color.Transparent)
+                attr = attr with { Background = normalAttr.Background };
             if (mentionBg.HasValue)
-                attr = new Attribute(attr.Foreground, mentionBg.Value);
+                attr = attr with { Background = mentionBg.Value };
             listView.SetAttribute(attr);
 
             foreach (var grapheme in GraphemeHelper.GetGraphemes(segment.Text))
@@ -293,10 +295,10 @@ public class ChannelListSource : IListDataSource
     public int MaxItemLength { get; private set; }
     public bool SuspendCollectionChangedEvent { get; set; }
 
-    private static readonly Attribute ActiveAttr = new(Color.White, Color.Black);
-    private static readonly Attribute UnreadAttr = new(Color.BrightCyan, Color.Black);
-    private static readonly Attribute NormalAttr = new(Color.DarkGray, Color.Black);
-    private static readonly Attribute BadgeAttr = new(Color.BrightYellow, Color.Black);
+    private static readonly Attribute ActiveAttr = new(Color.White, Color.Transparent);
+    private static readonly Attribute UnreadAttr = new(Color.BrightCyan, Color.Transparent);
+    private static readonly Attribute NormalAttr = new(Color.DarkGray, Color.Transparent);
+    private static readonly Attribute BadgeAttr = new(Color.BrightYellow, Color.Transparent);
 
     public void Update(List<string> channels, Dictionary<string, int> unread, string activeChannel)
     {
@@ -324,10 +326,15 @@ public class ChannelListSource : IListDataSource
         _unreadCounts.TryGetValue(name, out var unread);
         var hasUnread = unread > 0;
 
+        var normalAttr = listView.GetAttributeForRole(VisualRole.Normal);
         var focusAttr = listView.GetAttributeForRole(VisualRole.Focus);
         var prefix = isActive ? "> " : "  ";
         var channelText = $"#{name}";
         var badge = hasUnread ? $" ({unread})" : "";
+
+        // Resolve Transparent backgrounds to the view's actual background
+        Attribute Resolve(Attribute attr) =>
+            attr.Background == Color.Transparent ? attr with { Background = normalAttr.Background } : attr;
 
         int drawnChars = 0;
 
@@ -338,20 +345,20 @@ public class ChannelListSource : IListDataSource
         }
         else
         {
-            listView.SetAttribute(isActive ? ActiveAttr : NormalAttr);
+            listView.SetAttribute(Resolve(isActive ? ActiveAttr : NormalAttr));
             drawnChars = RenderHelpers.WriteText(listView, prefix, drawnChars, width);
 
-            listView.SetAttribute(isActive ? ActiveAttr : hasUnread ? UnreadAttr : NormalAttr);
+            listView.SetAttribute(Resolve(isActive ? ActiveAttr : hasUnread ? UnreadAttr : NormalAttr));
             drawnChars = RenderHelpers.WriteText(listView, channelText, drawnChars, width);
 
             if (hasUnread)
             {
-                listView.SetAttribute(BadgeAttr);
+                listView.SetAttribute(Resolve(BadgeAttr));
                 drawnChars = RenderHelpers.WriteText(listView, badge, drawnChars, width);
             }
         }
 
-        var fillAttr = selected ? focusAttr : listView.GetAttributeForRole(VisualRole.Normal);
+        var fillAttr = selected ? focusAttr : normalAttr;
         listView.SetAttribute(fillAttr);
         for (int i = drawnChars; i < width; i++)
             listView.AddStr(" ");
@@ -463,16 +470,16 @@ static class RenderHelpers
 /// </summary>
 public static partial class ChatColors
 {
-    public static readonly Attribute TimestampAttr = new(Color.DarkGray, Color.Black);
-    public static readonly Attribute SystemAttr = new(new Color(0, 180, 180), Color.Black);
+    public static readonly Attribute TimestampAttr = new(Color.DarkGray, Color.Transparent);
+    public static readonly Attribute SystemAttr = new(new Color(0, 180, 180), Color.Transparent);
     public static readonly Attribute MentionHighlightAttr = new(Color.White, new Color(80, 40, 0));
-    public static readonly Attribute MentionTextAttr = new(new Color(255, 180, 50), Color.Black);
-    public static readonly Attribute EmbedBorderAttr = new(new Color(91, 155, 213), Color.Black);
-    public static readonly Attribute EmbedTitleAttr = new(Color.White, Color.Black);
-    public static readonly Attribute EmbedDescAttr = new(new Color(160, 160, 160), Color.Black);
-    public static readonly Attribute EmbedUrlAttr = new(new Color(100, 100, 100), Color.Black);
-    public static readonly Attribute AudioAttr = new(new Color(180, 100, 255), Color.Black);
-    public static readonly Attribute FileAttr = new(new Color(100, 180, 255), Color.Black);
+    public static readonly Attribute MentionTextAttr = new(new Color(255, 180, 50), Color.Transparent);
+    public static readonly Attribute EmbedBorderAttr = new(new Color(91, 155, 213), Color.Transparent);
+    public static readonly Attribute EmbedTitleAttr = new(Color.White, Color.Transparent);
+    public static readonly Attribute EmbedDescAttr = new(new Color(160, 160, 160), Color.Transparent);
+    public static readonly Attribute EmbedUrlAttr = new(new Color(100, 100, 100), Color.Transparent);
+    public static readonly Attribute AudioAttr = new(new Color(180, 100, 255), Color.Transparent);
+    public static readonly Attribute FileAttr = new(new Color(100, 180, 255), Color.Transparent);
 
     /// <summary>
     /// Split text around @mentions, giving each @word the MentionTextAttr accent color.
@@ -521,7 +528,7 @@ public static class ColorHelper
             var r = Convert.ToInt32(hex[..2], 16);
             var g = Convert.ToInt32(hex[2..4], 16);
             var b = Convert.ToInt32(hex[4..6], 16);
-            return new Attribute(new Color(r, g, b), Color.Black);
+            return new Attribute(new Color(r, g, b), Color.Transparent);
         }
         catch
         {
