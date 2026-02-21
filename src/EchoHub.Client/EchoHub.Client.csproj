@@ -11,7 +11,8 @@
     <PackageReference Include="Serilog" Version="4.3.1" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-    <PackageReference Include="Terminal.Gui" Version="2.0.0-develop.5027" />
+    <!-- Using local fork until transparent color support is merged upstream (gui-cs/Terminal.Gui#4234) -->
+    <ProjectReference Include="..\Terminal.Gui\Terminal.Gui\Terminal.Gui.csproj" />
   </ItemGroup>
 
   <ItemGroup>
