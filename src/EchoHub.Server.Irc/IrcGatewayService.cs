@@ -120,9 +120,10 @@ public sealed class IrcGatewayService : BackgroundService
         try
         {
             chatService = _services.GetRequiredService<IChatService>();
+            var channelService = _services.GetRequiredService<IChannelService>();
             var encryption = _services.GetRequiredService<IMessageEncryptionService>();
             var handler = new IrcCommandHandler(
-                connection, _options, chatService, encryption, _logger);
+                connection, _options, chatService, channelService, encryption, _logger);
 
             await handler.RunAsync(ct);
         }
