@@ -23,6 +23,7 @@ public sealed class AppOrchestrator : IDisposable
     private readonly CommandHandler _commandHandler;
     private readonly NotificationSoundService _notificationSound;
     private readonly AudioPlaybackService _audioPlayback = new();
+    private readonly UpdateChecker _updateService;
 
     private EchoHubConnection? _connection;
     private ApiClient? _apiClient;
@@ -45,9 +46,12 @@ public sealed class AppOrchestrator : IDisposable
         _mainWindow = new MainWindow(app);
         _commandHandler = new CommandHandler();
         _notificationSound = new NotificationSoundService(config.Notifications);
+        _updateService = new UpdateChecker(app);
 
         WireMainWindowEvents();
         WireCommandHandlerEvents();
+
+        _updateService.Start();
 
         _mainWindow.UpdateStatusBar("Disconnected");
     }
@@ -56,6 +60,7 @@ public sealed class AppOrchestrator : IDisposable
     {
         _connection?.DisposeAsync().AsTask().GetAwaiter().GetResult();
         _apiClient?.Dispose();
+        _updateService.Dispose();
     }
 
     // ── Convenience Helpers ────────────────────────────────────────────────
@@ -456,18 +461,6 @@ public sealed class AppOrchestrator : IDisposable
 
             FetchAndUpdateOnlineUsers();
             SaveServerToConfig(result);
-
-            // Check for newer version in the background
-            _ = Task.Run(async () =>
-            {
-                var newVersion = await UpdateChecker.CheckForUpdateAsync();
-                if (newVersion is not null)
-                {
-                    InvokeUI(() => _mainWindow.AddSystemMessage(
-                        HubConstants.DefaultChannel,
-                        $"A new version of EchoHub is available: v{newVersion} (current: v{MainWindow.AppVersion}). Visit https://github.com/HueByte/EchoHub/releases"));
-                }
-            });
         }, "Connection failed", "Connect");
     }
 
