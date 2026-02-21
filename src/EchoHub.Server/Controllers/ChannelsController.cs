@@ -8,7 +8,6 @@ using EchoHub.Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.EntityFrameworkCore;
 
 namespace EchoHub.Server.Controllers;
 
@@ -18,6 +17,7 @@ namespace EchoHub.Server.Controllers;
 [EnableRateLimiting("general")]
 public class ChannelsController : ControllerBase
 {
+    private readonly IChannelService _channelService;
     private readonly EchoHubDbContext _db;
     private readonly FileStorageService _fileStorage;
     private readonly ImageToAsciiService _asciiService;
@@ -26,6 +26,7 @@ public class ChannelsController : ControllerBase
     private readonly IMessageEncryptionService _encryption;
 
     public ChannelsController(
+        IChannelService channelService,
         EchoHubDbContext db,
         FileStorageService fileStorage,
         ImageToAsciiService asciiService,
@@ -33,6 +34,7 @@ public class ChannelsController : ControllerBase
         IChatService chatService,
         IMessageEncryptionService encryption)
     {
+        _channelService = channelService;
         _db = db;
         _fileStorage = fileStorage;
         _asciiService = asciiService;
@@ -48,87 +50,29 @@ public class ChannelsController : ControllerBase
         if (userIdClaim is null)
             return Unauthorized(new ErrorResponse("Authentication required."));
 
-        var userId = Guid.Parse(userIdClaim);
         offset = Math.Max(0, offset);
         limit = Math.Clamp(limit, 1, 100);
 
-        // Ensure #general always exists
-        if (!await _db.Channels.AnyAsync(c => c.Name == HubConstants.DefaultChannel))
-        {
-            _db.Channels.Add(new Channel
-            {
-                Id = Guid.NewGuid(),
-                Name = HubConstants.DefaultChannel,
-                Topic = "General discussion",
-                CreatedByUserId = Guid.Empty,
-            });
-            await _db.SaveChangesAsync();
-        }
-
-        // Public channels + private channels the user has joined
-        var query = _db.Channels.Where(c =>
-            c.IsPublic || _db.ChannelMemberships.Any(m => m.ChannelId == c.Id && m.UserId == userId));
-        var total = await query.CountAsync();
-
-        var channels = await query
-            .OrderBy(c => c.Name)
-            .Skip(offset)
-            .Take(limit)
-            .Select(c => new ChannelDto(
-                c.Id,
-                c.Name,
-                c.Topic,
-                c.IsPublic,
-                c.Messages.Count,
-                c.CreatedAt))
-            .ToListAsync();
-
-        return Ok(new PaginatedResponse<ChannelDto>(channels, total, offset, limit));
+        var result = await _channelService.GetChannelsAsync(Guid.Parse(userIdClaim), offset, limit);
+        return Ok(result);
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateChannel([FromBody] CreateChannelRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Name))
-            return BadRequest(new ErrorResponse("Channel name is required."));
-
-        var channelName = request.Name.ToLowerInvariant().Trim();
-
-        if (!ValidationConstants.ChannelNameRegex().IsMatch(channelName))
-            return BadRequest(new ErrorResponse("Channel name must be 2-100 characters and contain only letters, digits, underscores, or hyphens."));
-
-        if (await _db.Channels.AnyAsync(c => c.Name == channelName))
-            return Conflict(new ErrorResponse($"Channel '{channelName}' already exists."));
-
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim is null)
             return Unauthorized(new ErrorResponse("Authentication required."));
 
-        var channel = new Channel
-        {
-            Id = Guid.NewGuid(),
-            Name = channelName,
-            Topic = request.Topic?.Trim(),
-            IsPublic = request.IsPublic,
-            CreatedByUserId = Guid.Parse(userIdClaim),
-        };
+        var result = await _channelService.CreateChannelAsync(
+            Guid.Parse(userIdClaim), request.Name, request.Topic, request.IsPublic);
+        if (!result.IsSuccess)
+            return MapChannelError(result);
 
-        _db.Channels.Add(channel);
+        if (result.Channel!.IsPublic)
+            await _chatService.BroadcastChannelUpdatedAsync(result.Channel);
 
-        // Creator automatically becomes a member
-        _db.ChannelMemberships.Add(new ChannelMembership
-        {
-            UserId = Guid.Parse(userIdClaim),
-            ChannelId = channel.Id,
-        });
-
-        await _db.SaveChangesAsync();
-
-        var dto = new ChannelDto(channel.Id, channel.Name, channel.Topic, channel.IsPublic, 0, channel.CreatedAt);
-        if (channel.IsPublic)
-            await _chatService.BroadcastChannelUpdatedAsync(dto);
-
-        return Created($"/api/channels/{channelName}", dto);
+        return Created($"/api/channels/{result.Channel.Name}", result.Channel);
     }
 
     [HttpPut("{channel}/topic")]
@@ -138,26 +82,13 @@ public class ChannelsController : ControllerBase
         if (userIdClaim is null)
             return Unauthorized(new ErrorResponse("Authentication required."));
 
-        var channelName = channel.ToLowerInvariant().Trim();
-        var dbChannel = await _db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
+        var result = await _channelService.UpdateTopicAsync(
+            Guid.Parse(userIdClaim), channel, request.Topic);
+        if (!result.IsSuccess)
+            return MapChannelError(result);
 
-        if (dbChannel is null)
-            return NotFound(new ErrorResponse($"Channel '{channelName}' does not exist."));
-
-        if (dbChannel.CreatedByUserId != Guid.Parse(userIdClaim))
-            return StatusCode(403, new ErrorResponse("Only the channel creator can update the topic."));
-
-        if (request.Topic is not null && request.Topic.Length > ValidationConstants.MaxChannelTopicLength)
-            return BadRequest(new ErrorResponse($"Topic must not exceed {ValidationConstants.MaxChannelTopicLength} characters."));
-
-        dbChannel.Topic = request.Topic?.Trim();
-        await _db.SaveChangesAsync();
-
-        var messageCount = await _db.Messages.CountAsync(m => m.ChannelId == dbChannel.Id);
-        var dto = new ChannelDto(dbChannel.Id, dbChannel.Name, dbChannel.Topic, dbChannel.IsPublic, messageCount, dbChannel.CreatedAt);
-        await _chatService.BroadcastChannelUpdatedAsync(dto, channelName);
-
-        return Ok(dto);
+        await _chatService.BroadcastChannelUpdatedAsync(result.Channel!, channel.ToLowerInvariant().Trim());
+        return Ok(result.Channel);
     }
 
     [HttpDelete("{channel}")]
@@ -167,23 +98,9 @@ public class ChannelsController : ControllerBase
         if (userIdClaim is null)
             return Unauthorized(new ErrorResponse("Authentication required."));
 
-        var channelName = channel.ToLowerInvariant().Trim();
-
-        if (channelName == HubConstants.DefaultChannel)
-            return BadRequest(new ErrorResponse($"The '{HubConstants.DefaultChannel}' channel cannot be deleted."));
-
-        var dbChannel = await _db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
-
-        if (dbChannel is null)
-            return NotFound(new ErrorResponse($"Channel '{channelName}' does not exist."));
-
-        var userId = Guid.Parse(userIdClaim);
-        var caller = await _db.Users.FindAsync(userId);
-        if (dbChannel.CreatedByUserId != userId && (caller is null || caller.Role < ServerRole.Admin))
-            return StatusCode(403, new ErrorResponse("Only the channel creator or an admin can delete the channel."));
-
-        _db.Channels.Remove(dbChannel);
-        await _db.SaveChangesAsync();
+        var result = await _channelService.DeleteChannelAsync(Guid.Parse(userIdClaim), channel);
+        if (!result.IsSuccess)
+            return MapChannelError(result);
 
         return NoContent();
     }
@@ -203,8 +120,8 @@ public class ChannelsController : ControllerBase
         if (!ValidationConstants.ChannelNameRegex().IsMatch(channelName))
             return BadRequest(new ErrorResponse("Invalid channel name format."));
 
-        var dbChannel = await _db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
-        if (dbChannel is null)
+        var channelDto = await _channelService.GetChannelByNameAsync(channelName);
+        if (channelDto is null)
             return NotFound(new ErrorResponse($"Channel '{channelName}' does not exist."));
 
         if (!Request.HasFormContentType || Request.Form.Files.Count == 0)
@@ -250,7 +167,7 @@ public class ChannelsController : ControllerBase
             AttachmentUrl = attachmentUrl,
             AttachmentFileName = file.FileName,
             SentAt = DateTimeOffset.UtcNow,
-            ChannelId = dbChannel.Id,
+            ChannelId = channelDto.Id,
             SenderUserId = userId,
             SenderUsername = usernameClaim,
         };
@@ -290,8 +207,8 @@ public class ChannelsController : ControllerBase
         if (!ValidationConstants.ChannelNameRegex().IsMatch(channelName))
             return BadRequest(new ErrorResponse("Invalid channel name format."));
 
-        var dbChannel = await _db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
-        if (dbChannel is null)
+        var channelDto = await _channelService.GetChannelByNameAsync(channelName);
+        if (channelDto is null)
             return NotFound(new ErrorResponse($"Channel '{channelName}' does not exist."));
 
         if (string.IsNullOrWhiteSpace(request.Url))
@@ -370,7 +287,7 @@ public class ChannelsController : ControllerBase
             AttachmentUrl = attachmentUrl,
             AttachmentFileName = fileName,
             SentAt = DateTimeOffset.UtcNow,
-            ChannelId = dbChannel.Id,
+            ChannelId = channelDto.Id,
             SenderUserId = userId,
             SenderUsername = usernameClaim,
         };
@@ -394,4 +311,14 @@ public class ChannelsController : ControllerBase
 
         return Ok(messageDto);
     }
+
+    private IActionResult MapChannelError(ChannelOperationResult result) => result.Error switch
+    {
+        ChannelError.ValidationFailed => BadRequest(new ErrorResponse(result.ErrorMessage!)),
+        ChannelError.AlreadyExists => Conflict(new ErrorResponse(result.ErrorMessage!)),
+        ChannelError.NotFound => NotFound(new ErrorResponse(result.ErrorMessage!)),
+        ChannelError.Forbidden => StatusCode(403, new ErrorResponse(result.ErrorMessage!)),
+        ChannelError.Protected => BadRequest(new ErrorResponse(result.ErrorMessage!)),
+        _ => BadRequest(new ErrorResponse(result.ErrorMessage ?? "Unknown error.")),
+    };
 }

@@ -12,6 +12,7 @@ public sealed class IrcCommandHandler
     private readonly IrcClientConnection _conn;
     private readonly IrcOptions _options;
     private readonly IChatService _chatService;
+    private readonly IChannelService _channelService;
     private readonly IMessageEncryptionService _encryption;
     private readonly ILogger _logger;
 
@@ -21,12 +22,14 @@ public sealed class IrcCommandHandler
         IrcClientConnection conn,
         IrcOptions options,
         IChatService chatService,
+        IChannelService channelService,
         IMessageEncryptionService encryption,
         ILogger logger)
     {
         _conn = conn;
         _options = options;
         _chatService = chatService;
+        _channelService = channelService;
         _encryption = encryption;
         _logger = logger;
     }
@@ -481,7 +484,7 @@ public sealed class IrcCommandHandler
 
     private async Task SendChannelTopicAsync(string channelName)
     {
-        var (topic, exists) = await _chatService.GetChannelTopicAsync(channelName);
+        var (topic, exists) = await _channelService.GetChannelTopicAsync(channelName);
 
         if (!exists) return;
 
@@ -587,7 +590,7 @@ public sealed class IrcCommandHandler
     {
         if (!await RequireRegisteredAsync()) return;
 
-        var channels = await _chatService.GetChannelListAsync();
+        var channels = await _channelService.GetChannelListAsync();
 
         foreach (var ch in channels)
         {

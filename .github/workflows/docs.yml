@@ -19,6 +19,10 @@ jobs:
         with:
           submodules: recursive
 
+      # TEMPORARY: Terminal.Gui submodule's nuget.config breaks restore — remove until PR #4234 is merged
+      - name: Remove submodule NuGet config
+        run: rm -f src/Terminal.Gui/nuget.config
+
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
@@ -34,11 +38,8 @@ jobs:
       - name: Restore .NET tools
         run: dotnet tool restore
 
-      - name: Restore dependencies
-        run: dotnet restore src/EchoHub.slnx --configfile nuget.config
-
       - name: Build solution
-        run: dotnet build src/EchoHub.slnx --no-restore --configuration Release
+        run: dotnet build src/EchoHub.slnx --configuration Release
 
       - name: Generate documentation
         run: dotnet docfx docs/docfx.json

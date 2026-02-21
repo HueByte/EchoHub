@@ -115,6 +115,7 @@ while (true)
 
         // ── Chat Service + Broadcasters ─────────────────────────────────────
         builder.Services.AddSingleton<IChatBroadcaster, SignalRBroadcaster>();
+        builder.Services.AddSingleton<IChannelService, ChannelService>();
         builder.Services.AddSingleton<IChatService, ChatService>();
 
         // ── IRC Gateway (optional) ──────────────────────────────────────────

@@ -25,12 +25,8 @@ public interface IChatService
     Task BroadcastMessageAsync(string channelName, MessageDto message);
     Task BroadcastChannelUpdatedAsync(ChannelDto channel, string? channelName = null);
 
-    // Query operations (used by IRC gateway for WHOIS, TOPIC, LIST, AUTH)
+    // Query operations (used by IRC gateway for WHOIS, AUTH)
     Task<UserProfileDto?> GetUserProfileAsync(string username);
-    Task<(string? Topic, bool Exists)> GetChannelTopicAsync(string channelName);
-    Task<List<ChannelListItem>> GetChannelListAsync();
     Task<List<string>> GetChannelsForUserAsync(string username);
     Task<(Guid UserId, string Username)?> AuthenticateUserAsync(string username, string password);
 }
-
-public record ChannelListItem(string Name, string? Topic, int OnlineCount);

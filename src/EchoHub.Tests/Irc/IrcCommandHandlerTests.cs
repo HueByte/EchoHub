@@ -12,10 +12,11 @@ public class IrcCommandHandlerTests
 {
     private readonly IrcOptions _options = new() { ServerName = "testserver", Motd = null };
     private readonly FakeChatService _chatService = new();
+    private readonly FakeChannelService _channelService = new();
     private readonly FakeEncryptionService _encryption = new();
 
     private IrcCommandHandler CreateHandler(IrcClientConnection conn) =>
-        new(conn, _options, _chatService, _encryption, NullLogger.Instance);
+        new(conn, _options, _chatService, _channelService, _encryption, NullLogger.Instance);
 
     private async Task<List<string>> RunAndCapture(string[] inputLines,
         Action<IrcClientConnection>? setup = null)
@@ -242,7 +243,7 @@ public class IrcCommandHandlerTests
     [Fact]
     public async Task Join_ValidChannel_ConfirmsJoin()
     {
-        _chatService.TopicResult = ("Welcome!", true);
+        _channelService.TopicResult = ("Welcome!", true);
 
         var lines = await RunAuthenticated(["JOIN #general"]);
 
@@ -254,7 +255,7 @@ public class IrcCommandHandlerTests
     [Fact]
     public async Task Join_SendsTopic()
     {
-        _chatService.TopicResult = ("Welcome to general!", true);
+        _channelService.TopicResult = ("Welcome to general!", true);
 
         var lines = await RunAuthenticated(["JOIN #general"]);
 
@@ -264,7 +265,7 @@ public class IrcCommandHandlerTests
     [Fact]
     public async Task Join_NoTopic_SendsNoTopicReply()
     {
-        _chatService.TopicResult = (null, true);
+        _channelService.TopicResult = (null, true);
 
         var lines = await RunAuthenticated(["JOIN #general"]);
 
@@ -439,7 +440,7 @@ public class IrcCommandHandlerTests
     [Fact]
     public async Task Topic_Query_ReturnsTopic()
     {
-        _chatService.TopicResult = ("Chat about everything", true);
+        _channelService.TopicResult = ("Chat about everything", true);
 
         var lines = await RunAuthenticated(["TOPIC #general"]);
 
@@ -543,7 +544,7 @@ public class IrcCommandHandlerTests
     [Fact]
     public async Task List_ReturnsChannels()
     {
-        _chatService.ChannelListToReturn =
+        _channelService.ChannelListToReturn =
         [
             new("general", "General chat", 5),
             new("random", null, 2),

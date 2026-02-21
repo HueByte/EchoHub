@@ -709,7 +709,7 @@ public sealed class MainWindow : Runnable
     private static readonly Attribute StatusConnectedAttr = new(new Color(0, 200, 0), Color.Transparent);
     private static readonly Attribute StatusDisconnectedAttr = new(new Color(220, 50, 50), Color.Transparent);
     private static readonly Attribute StatusTransitionalAttr = new(new Color(220, 180, 0), Color.Transparent);
-    private static readonly Attribute StatusBrandAttr = new(new Color(100, 160, 255), Color.Transparent);
+    private static readonly Attribute StatusBrandAttr = new(new Color(218, 165, 32), Color.Transparent);
 
     private void OnStatusBarDrawContent(object? sender, DrawEventArgs e)
     {

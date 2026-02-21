@@ -158,8 +158,6 @@ internal sealed class FakeChatService : IChatService
     public string? SendMessageError { get; set; }
     public (Guid UserId, string Username)? AuthResult { get; set; }
     public UserProfileDto? ProfileToReturn { get; set; }
-    public (string? Topic, bool Exists) TopicResult { get; set; } = (null, true);
-    public List<ChannelListItem> ChannelListToReturn { get; set; } = [];
     public List<string> ChannelsForUserToReturn { get; set; } = [];
     public List<UserPresenceDto> OnlineUsersToReturn { get; set; } = [];
 
@@ -215,15 +213,48 @@ internal sealed class FakeChatService : IChatService
     public Task<UserProfileDto?> GetUserProfileAsync(string username) =>
         Task.FromResult(ProfileToReturn);
 
+    public Task<List<string>> GetChannelsForUserAsync(string username) =>
+        Task.FromResult(ChannelsForUserToReturn);
+
+    public Task<(Guid UserId, string Username)?> AuthenticateUserAsync(string username, string password) =>
+        Task.FromResult(AuthResult);
+}
+
+/// <summary>
+/// Fake channel service that records method calls and returns pre-configured results.
+/// </summary>
+internal sealed class FakeChannelService : IChannelService
+{
+    // Configurable results
+    public (string? Topic, bool Exists) TopicResult { get; set; } = (null, true);
+    public List<ChannelListItem> ChannelListToReturn { get; set; } = [];
+    public ChannelDto? ChannelByNameToReturn { get; set; }
+    public ChannelOperationResult? CreateResult { get; set; }
+    public ChannelOperationResult? UpdateTopicResult { get; set; }
+    public ChannelOperationResult? DeleteResult { get; set; }
+    public (bool Success, string? Error) MembershipResult { get; set; } = (true, null);
+
+    public Task<PaginatedResponse<ChannelDto>> GetChannelsAsync(Guid userId, int offset, int limit) =>
+        Task.FromResult(new PaginatedResponse<ChannelDto>([], 0, offset, limit));
+
+    public Task<ChannelOperationResult> CreateChannelAsync(Guid creatorUserId, string name, string? topic, bool isPublic) =>
+        Task.FromResult(CreateResult ?? ChannelOperationResult.Fail(ChannelError.ValidationFailed, "Not configured"));
+
+    public Task<ChannelOperationResult> UpdateTopicAsync(Guid callerUserId, string channelName, string? topic) =>
+        Task.FromResult(UpdateTopicResult ?? ChannelOperationResult.Fail(ChannelError.ValidationFailed, "Not configured"));
+
+    public Task<ChannelOperationResult> DeleteChannelAsync(Guid callerUserId, string channelName) =>
+        Task.FromResult(DeleteResult ?? ChannelOperationResult.Fail(ChannelError.ValidationFailed, "Not configured"));
+
     public Task<(string? Topic, bool Exists)> GetChannelTopicAsync(string channelName) =>
         Task.FromResult(TopicResult);
 
     public Task<List<ChannelListItem>> GetChannelListAsync() =>
         Task.FromResult(ChannelListToReturn);
 
-    public Task<List<string>> GetChannelsForUserAsync(string username) =>
-        Task.FromResult(ChannelsForUserToReturn);
+    public Task<ChannelDto?> GetChannelByNameAsync(string channelName) =>
+        Task.FromResult(ChannelByNameToReturn);
 
-    public Task<(Guid UserId, string Username)?> AuthenticateUserAsync(string username, string password) =>
-        Task.FromResult(AuthResult);
+    public Task<(bool Success, string? Error)> EnsureChannelMembershipAsync(Guid userId, string channelName) =>
+        Task.FromResult(MembershipResult);
 }
