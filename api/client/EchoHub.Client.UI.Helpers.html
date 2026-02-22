@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Namespace EchoHub.Client.UI | EchoHub Documentation </title>
+      <title>Namespace EchoHub.Client.UI.Helpers | EchoHub Documentation </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Namespace EchoHub.Client.UI | EchoHub Documentation ">
+      <meta name="title" content="Namespace EchoHub.Client.UI.Helpers | EchoHub Documentation ">
       
       
       <link rel="icon" href="../../images/hue_icon.svg">
@@ -84,9 +84,9 @@
           <nav id="breadcrumb"></nav>
         </div>
 
-        <article data-uid="EchoHub.Client.UI">
+        <article data-uid="EchoHub.Client.UI.Helpers">
 
-  <h1 id="EchoHub_Client_UI" data-uid="EchoHub.Client.UI" class="text-break">Namespace EchoHub.Client.UI</h1>
+  <h1 id="EchoHub_Client_UI_Helpers" data-uid="EchoHub.Client.UI.Helpers" class="text-break">Namespace EchoHub.Client.UI.Helpers</h1>
   <div class="markdown level0 summary"></div>
   <div class="markdown level0 conceptual"></div>
   <div class="markdown level0 remarks"></div>
@@ -95,8 +95,15 @@
 Classes
 </h3>
     <dl class="jumplist">
-      <dt><a class="xref" href="EchoHub.Client.UI.MainWindow.html">MainWindow</a></dt>
-      <dd><p>Main Terminal.Gui window for the EchoHub chat client.</p>
+      <dt><a class="xref" href="EchoHub.Client.UI.Helpers.EmojiHelper.html">EmojiHelper</a></dt>
+      <dd><p>Converts emoji grapheme clusters to text shortcodes for safe TUI rendering.
+Terminal width calculations for emoji are unreliable across different terminals,
+so we replace them with fixed-width ASCII shortcodes for display only.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Client.UI.Helpers.HexColorHelper.html">HexColorHelper</a></dt>
+      <dd><p>Helper to parse hex colors to Terminal.Gui Attributes.</p>
 </dd>
     </dl>
 

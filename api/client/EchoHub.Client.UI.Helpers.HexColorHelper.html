@@ -2,11 +2,11 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Class ProfileViewDialog | EchoHub Documentation </title>
+      <title>Class HexColorHelper | EchoHub Documentation </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Class ProfileViewDialog | EchoHub Documentation ">
+      <meta name="title" content="Class HexColorHelper | EchoHub Documentation ">
       
-      <meta name="description" content="Dialog for viewing a user&#39;s server profile. Shows Edit Profile / Set Status buttons when viewing own profile.">
+      <meta name="description" content="Helper to parse hex colors to Terminal.Gui Attributes.">
       <link rel="icon" href="../../images/hue_icon.svg">
       <link rel="stylesheet" href="../../public/docfx.min.css">
       <link rel="stylesheet" href="../../public/main.css">
@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/new/master/apiSpec/new?filename=EchoHub_Client_UI_ProfileViewDialog.md&amp;value=---%0Auid%3A%20EchoHub.Client.UI.ProfileViewDialog%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/new/master/apiSpec/new?filename=EchoHub_Client_UI_Helpers_HexColorHelper.md&amp;value=---%0Auid%3A%20EchoHub.Client.UI.Helpers.HexColorHelper%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -84,26 +84,25 @@
           <nav id="breadcrumb"></nav>
         </div>
 
-        <article data-uid="EchoHub.Client.UI.ProfileViewDialog">
+        <article data-uid="EchoHub.Client.UI.Helpers.HexColorHelper">
 
 
 
-  <h1 id="EchoHub_Client_UI_ProfileViewDialog" data-uid="EchoHub.Client.UI.ProfileViewDialog" class="text-break">
-Class ProfileViewDialog  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ProfileViewDialog.cs"><i class="bi bi-code-slash"></i></a>
+  <h1 id="EchoHub_Client_UI_Helpers_HexColorHelper" data-uid="EchoHub.Client.UI.Helpers.HexColorHelper" class="text-break">
+Class HexColorHelper  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Helpers/HexColorHelper.cs"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
-    <dl><dt>Namespace</dt><dd><a class="xref" href="EchoHub.html">EchoHub</a>.<a class="xref" href="EchoHub.Client.html">Client</a>.<a class="xref" href="EchoHub.Client.UI.html">UI</a></dd></dl>
+    <dl><dt>Namespace</dt><dd><a class="xref" href="EchoHub.html">EchoHub</a>.<a class="xref" href="EchoHub.Client.html">Client</a>.<a class="xref" href="EchoHub.Client.UI.html">UI</a>.<a class="xref" href="EchoHub.Client.UI.Helpers.html">Helpers</a></dd></dl>
   <dl><dt>Assembly</dt><dd>EchoHub.Client.dll</dd></dl>
   </div>
 
-  <div class="markdown summary"><p>Dialog for viewing a user's server profile.
-Shows Edit Profile / Set Status buttons when viewing own profile.</p>
+  <div class="markdown summary"><p>Helper to parse hex colors to Terminal.Gui Attributes.</p>
 </div>
   <div class="markdown conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public sealed class ProfileViewDialog</code></pre>
+    <pre><code class="lang-csharp hljs">public static class HexColorHelper</code></pre>
   </div>
 
 
@@ -113,7 +112,7 @@ Shows Edit Profile / Set Status buttons when viewing own profile.</p>
     <dt>Inheritance</dt>
     <dd>
       <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
-      <div><span class="xref">ProfileViewDialog</span></div>
+      <div><span class="xref">HexColorHelper</span></div>
     </dd>
   </dl>
 
@@ -124,6 +123,9 @@ Shows Edit Profile / Set Status buttons when viewing own profile.</p>
     <dd>
     <div>
       <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
     </div>
     <div>
       <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
@@ -147,105 +149,73 @@ Shows Edit Profile / Set Status buttons when viewing own profile.</p>
 
 
 
-  <h2 class="section" id="constructors">Constructors
+  <h2 class="section" id="methods">Methods
 </h2>
 
 
-  <a id="EchoHub_Client_UI_ProfileViewDialog__ctor_" data-uid="EchoHub.Client.UI.ProfileViewDialog.#ctor*"></a>
+  <a id="EchoHub_Client_UI_Helpers_HexColorHelper_ParseHexColor_" data-uid="EchoHub.Client.UI.Helpers.HexColorHelper.ParseHexColor*"></a>
 
-  <h3 id="EchoHub_Client_UI_ProfileViewDialog__ctor" data-uid="EchoHub.Client.UI.ProfileViewDialog.#ctor">
-  ProfileViewDialog()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ProfileViewDialog.cs"><i class="bi bi-code-slash"></i></a>
+  <h3 id="EchoHub_Client_UI_Helpers_HexColorHelper_ParseHexColor_System_String_" data-uid="EchoHub.Client.UI.Helpers.HexColorHelper.ParseHexColor(System.String)">
+  ParseHexColor(string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Helpers/HexColorHelper.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public ProfileViewDialog()</code></pre>
-  </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-  <h2 class="section" id="methods">Methods
-</h2>
-
-
-  <a id="EchoHub_Client_UI_ProfileViewDialog_Show_" data-uid="EchoHub.Client.UI.ProfileViewDialog.Show*"></a>
-
-  <h3 id="EchoHub_Client_UI_ProfileViewDialog_Show_Terminal_Gui_App_IApplication_EchoHub_Core_DTOs_UserProfileDto_" data-uid="EchoHub.Client.UI.ProfileViewDialog.Show(Terminal.Gui.App.IApplication,EchoHub.Core.DTOs.UserProfileDto)">
-  Show(IApplication, UserProfileDto?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ProfileViewDialog.cs"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Show a read-only profile view for another user.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static void Show(IApplication app, UserProfileDto? profile)</code></pre>
+    <pre><code class="lang-csharp hljs">public static Attribute? ParseHexColor(string? hex)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
-    <dt><code>app</code> <a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/App/IApplication.cs">IApplication</a></dt>
-    <dd></dd>
-    <dt><code>profile</code> <a class="xref" href="../core/EchoHub.Core.DTOs.UserProfileDto.html">UserProfileDto</a></dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
-
-
-
-
-  <a id="EchoHub_Client_UI_ProfileViewDialog_ShowOwn_" data-uid="EchoHub.Client.UI.ProfileViewDialog.ShowOwn*"></a>
-
-  <h3 id="EchoHub_Client_UI_ProfileViewDialog_ShowOwn_Terminal_Gui_App_IApplication_EchoHub_Core_DTOs_UserProfileDto_EchoHub_Core_Models_UserStatus_System_String_" data-uid="EchoHub.Client.UI.ProfileViewDialog.ShowOwn(Terminal.Gui.App.IApplication,EchoHub.Core.DTOs.UserProfileDto,EchoHub.Core.Models.UserStatus,System.String)">
-  ShowOwn(IApplication, UserProfileDto?, UserStatus, string?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ProfileViewDialog.cs"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Show the profile view for the current user with action buttons.
-Returns the action the user selected.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static ProfileAction ShowOwn(IApplication app, UserProfileDto? profile, UserStatus currentStatus, string? currentStatusMessage)</code></pre>
-  </div>
-
-  <h4 class="section">Parameters</h4>
-  <dl class="parameters">
-    <dt><code>app</code> <a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/App/IApplication.cs">IApplication</a></dt>
-    <dd></dd>
-    <dt><code>profile</code> <a class="xref" href="../core/EchoHub.Core.DTOs.UserProfileDto.html">UserProfileDto</a></dt>
-    <dd></dd>
-    <dt><code>currentStatus</code> <a class="xref" href="../core/EchoHub.Core.Models.UserStatus.html">UserStatus</a></dt>
-    <dd></dd>
-    <dt><code>currentStatusMessage</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dt><code>hex</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
-    <dt><a class="xref" href="EchoHub.Client.UI.ProfileAction.html">ProfileAction</a></dt>
+    <dt><a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Drawing/Attribute.cs">Attribute</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_Helpers_HexColorHelper_ParseHexToColor_" data-uid="EchoHub.Client.UI.Helpers.HexColorHelper.ParseHexToColor*"></a>
+
+  <h3 id="EchoHub_Client_UI_Helpers_HexColorHelper_ParseHexToColor_System_String_Terminal_Gui_Drawing_Color_" data-uid="EchoHub.Client.UI.Helpers.HexColorHelper.ParseHexToColor(System.String,Terminal.Gui.Drawing.Color)">
+  ParseHexToColor(string?, Color)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Helpers/HexColorHelper.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Parse a hex color string (with or without #) to a Terminal.Gui Color.
+Returns <code class="paramref">fallback</code> if parsing fails.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Color ParseHexToColor(string? hex, Color fallback = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>hex</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>fallback</code> <a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Drawing/Color/Color.Formatting.cs">Color</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Drawing/Color/Color.Formatting.cs">Color</a></dt>
     <dd></dd>
   </dl>
 
@@ -263,7 +233,7 @@ Returns the action the user selected.</p>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ProfileViewDialog.cs" class="edit-link">Edit this page</a>
+          <a href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Helpers/HexColorHelper.cs" class="edit-link">Edit this page</a>
         </div>
 
 

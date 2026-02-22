@@ -22,21 +22,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Client.AppOrchestrator",
-      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.AppOrchestrator.yml\" sourcestartlinenumber=\"1\">Central orchestrator for the EchoHub TUI client.\nOwns session state and wires UI events to service calls.</p>\n"
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.AsyncRunner.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/client/EchoHub.Client.AsyncRunner.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Client.AsyncRunner",
-      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.AsyncRunner.yml\" sourcestartlinenumber=\"1\">Eliminates repeated Task.Run/try/catch/app.Invoke(ShowError) boilerplate.\nRuns async work on a background thread and routes exceptions to the UI.</p>\n"
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.AppOrchestrator.yml\" sourcestartlinenumber=\"1\">Central orchestrator for the EchoHub TUI client.\nWires UI events to service calls and connection events to UI updates.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -180,6 +166,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Services.AsyncRunner.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Services.AsyncRunner.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Services.AsyncRunner",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.Services.AsyncRunner.yml\" sourcestartlinenumber=\"1\">Eliminates repeated Task.Run/try/catch/app.Invoke(ShowError) boilerplate.\nRuns async work on a background thread and routes exceptions to the UI.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/client/EchoHub.Client.Services.AudioPlaybackService.yml",
       "output": {
         ".html": {
@@ -320,171 +320,367 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.AudioPlayerDialog.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Chat.ChatColors.yml",
       "output": {
         ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.AudioPlayerDialog.html"
+          "relative_path": "api/client/EchoHub.Client.UI.Chat.ChatColors.html"
         }
       },
       "version": "",
       "Uid": null,
       "IsMRef": true,
-      "Title": "EchoHub.Client.UI.AudioPlayerDialog",
+      "Title": "EchoHub.Client.UI.Chat.ChatColors",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Chat.ChatColors.yml\" sourcestartlinenumber=\"1\">Shared color attributes for chat rendering (timestamps, system messages).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Chat.ChatLine.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Chat.ChatLine.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Chat.ChatLine",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Chat.ChatLine.yml\" sourcestartlinenumber=\"1\">A single line in the chat, composed of colored segments.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Chat.ChatListSource.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Chat.ChatListSource.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Chat.ChatListSource",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Chat.ChatListSource.yml\" sourcestartlinenumber=\"1\">Custom list data source for chat messages with per-segment coloring.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Chat.ChatMessageManager.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Chat.ChatMessageManager.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Chat.ChatMessageManager",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Chat.ChatMessageManager.yml\" sourcestartlinenumber=\"1\">Owns chat message storage, formatting, and mutation.\nFires <xref href=\"EchoHub.Client.UI.Chat.ChatMessageManager.MessagesChanged\" data-throw-if-not-resolved=\"false\"></xref> when a channel's message list is modified\nso the UI layer can refresh.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Chat.ChatSegment.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Chat.ChatSegment.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Chat.ChatSegment",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Chat.ChatSegment.yml\" sourcestartlinenumber=\"1\">A colored text segment within a chat line.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Chat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Chat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Chat",
       "Summary": null
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ChannelListSource.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.AudioPlayerDialog.yml",
       "output": {
         ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.ChannelListSource.html"
+          "relative_path": "api/client/EchoHub.Client.UI.Dialogs.AudioPlayerDialog.html"
         }
       },
       "version": "",
       "Uid": null,
       "IsMRef": true,
-      "Title": "EchoHub.Client.UI.ChannelListSource",
-      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ChannelListSource.yml\" sourcestartlinenumber=\"1\">Custom list data source for colored channel list rendering.\nActive channel gets a &gt; indicator, unread channels are bright with a count badge.</p>\n"
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ChatColors.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.ChatColors.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Client.UI.ChatColors",
-      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ChatColors.yml\" sourcestartlinenumber=\"1\">Shared color attributes for chat rendering (timestamps, system messages).</p>\n"
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ChatLine.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.ChatLine.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Client.UI.ChatLine",
-      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ChatLine.yml\" sourcestartlinenumber=\"1\">A single line in the chat, composed of colored segments.</p>\n"
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ChatListSource.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.ChatListSource.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Client.UI.ChatListSource",
-      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ChatListSource.yml\" sourcestartlinenumber=\"1\">Custom list data source for chat messages with per-segment coloring.</p>\n"
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ChatSegment.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.ChatSegment.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Client.UI.ChatSegment",
-      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ChatSegment.yml\" sourcestartlinenumber=\"1\">A colored text segment within a chat line.</p>\n"
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ColorHelper.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.ColorHelper.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Client.UI.ColorHelper",
-      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ColorHelper.yml\" sourcestartlinenumber=\"1\">Helper to parse hex colors to Terminal.Gui Attributes.</p>\n"
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ConnectDialog.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.ConnectDialog.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Client.UI.ConnectDialog",
-      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ConnectDialog.yml\" sourcestartlinenumber=\"1\">A Terminal.Gui dialog for entering server connection and authentication details.\nIncludes a saved servers selector when saved servers are available.</p>\n"
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ConnectDialogResult.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.ConnectDialogResult.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Client.UI.ConnectDialogResult",
-      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ConnectDialogResult.yml\" sourcestartlinenumber=\"1\">Result returned from the connect dialog.</p>\n"
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.CreateChannelDialog.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.CreateChannelDialog.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Client.UI.CreateChannelDialog",
+      "Title": "EchoHub.Client.UI.Dialogs.AudioPlayerDialog",
       "Summary": null
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.CreateChannelResult.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.ConnectDialog.yml",
       "output": {
         ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.CreateChannelResult.html"
+          "relative_path": "api/client/EchoHub.Client.UI.Dialogs.ConnectDialog.html"
         }
       },
       "version": "",
       "Uid": null,
       "IsMRef": true,
-      "Title": "EchoHub.Client.UI.CreateChannelResult",
+      "Title": "EchoHub.Client.UI.Dialogs.ConnectDialog",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Dialogs.ConnectDialog.yml\" sourcestartlinenumber=\"1\">A Terminal.Gui dialog for entering server connection and authentication details.\nIncludes a saved servers selector when saved servers are available.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.ConnectDialogResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Dialogs.ConnectDialogResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Dialogs.ConnectDialogResult",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Dialogs.ConnectDialogResult.yml\" sourcestartlinenumber=\"1\">Result returned from the connect dialog.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.CreateChannelDialog.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Dialogs.CreateChannelDialog.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Dialogs.CreateChannelDialog",
       "Summary": null
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.EmojiHelper.yml",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.CreateChannelResult.yml",
       "output": {
         ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.EmojiHelper.html"
+          "relative_path": "api/client/EchoHub.Client.UI.Dialogs.CreateChannelResult.html"
         }
       },
       "version": "",
       "Uid": null,
       "IsMRef": true,
-      "Title": "EchoHub.Client.UI.EmojiHelper",
-      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.EmojiHelper.yml\" sourcestartlinenumber=\"1\">Converts emoji grapheme clusters to text shortcodes for safe TUI rendering.\nTerminal width calculations for emoji are unreliable across different terminals,\nso we replace them with fixed-width ASCII shortcodes for display only.</p>\n"
+      "Title": "EchoHub.Client.UI.Dialogs.CreateChannelResult",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.ProfileAction.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Dialogs.ProfileAction.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Dialogs.ProfileAction",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Dialogs.ProfileAction.yml\" sourcestartlinenumber=\"1\">Action selected by the user in their own profile dialog.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.ProfileEditDialog.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Dialogs.ProfileEditDialog.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Dialogs.ProfileEditDialog",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Dialogs.ProfileEditDialog.yml\" sourcestartlinenumber=\"1\">A Terminal.Gui dialog for editing the user's profile (display name, bio, nickname color).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.ProfileEditResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Dialogs.ProfileEditResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Dialogs.ProfileEditResult",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Dialogs.ProfileEditResult.yml\" sourcestartlinenumber=\"1\">Result returned from the profile edit dialog.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.ProfileViewDialog.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Dialogs.ProfileViewDialog.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Dialogs.ProfileViewDialog",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Dialogs.ProfileViewDialog.yml\" sourcestartlinenumber=\"1\">Dialog for viewing a user's server profile.\nShows Edit Profile / Set Status buttons when viewing own profile.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.StatusDialog.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Dialogs.StatusDialog.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Dialogs.StatusDialog",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Dialogs.StatusDialog.yml\" sourcestartlinenumber=\"1\">A Terminal.Gui dialog for setting the user's status and status message.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.StatusDialogResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Dialogs.StatusDialogResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Dialogs.StatusDialogResult",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Dialogs.StatusDialogResult.yml\" sourcestartlinenumber=\"1\">Result returned from the status dialog.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.UpdateConfirmDialog.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Dialogs.UpdateConfirmDialog.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Dialogs.UpdateConfirmDialog",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.UpdateProgressDialog.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Dialogs.UpdateProgressDialog.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Dialogs.UpdateProgressDialog",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Dialogs.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Dialogs",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Helpers.EmojiHelper.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Helpers.EmojiHelper.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Helpers.EmojiHelper",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Helpers.EmojiHelper.yml\" sourcestartlinenumber=\"1\">Converts emoji grapheme clusters to text shortcodes for safe TUI rendering.\nTerminal width calculations for emoji are unreliable across different terminals,\nso we replace them with fixed-width ASCII shortcodes for display only.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Helpers.HexColorHelper.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Helpers.HexColorHelper.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Helpers.HexColorHelper",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Helpers.HexColorHelper.yml\" sourcestartlinenumber=\"1\">Helper to parse hex colors to Terminal.Gui Attributes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Helpers.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Helpers.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Helpers",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ListSources.ChannelListSource.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.ListSources.ChannelListSource.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.ListSources.ChannelListSource",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ListSources.ChannelListSource.yml\" sourcestartlinenumber=\"1\">Custom list data source for colored channel list rendering.\nActive channel gets a &gt; indicator, unread channels are bright with a count badge.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ListSources.UserListSource.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.ListSources.UserListSource.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.ListSources.UserListSource",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ListSources.UserListSource.yml\" sourcestartlinenumber=\"1\">Custom list data source for the online users panel with per-user nickname colors.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ListSources.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.ListSources.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.ListSources",
+      "Summary": null
     },
     {
       "type": "ManagedReference",
@@ -499,132 +695,6 @@
       "IsMRef": true,
       "Title": "EchoHub.Client.UI.MainWindow",
       "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.MainWindow.yml\" sourcestartlinenumber=\"1\">Main Terminal.Gui window for the EchoHub chat client.</p>\n"
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ProfileAction.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.ProfileAction.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Client.UI.ProfileAction",
-      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ProfileAction.yml\" sourcestartlinenumber=\"1\">Action selected by the user in their own profile dialog.</p>\n"
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ProfileEditDialog.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.ProfileEditDialog.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Client.UI.ProfileEditDialog",
-      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ProfileEditDialog.yml\" sourcestartlinenumber=\"1\">A Terminal.Gui dialog for editing the user's profile (display name, bio, nickname color).</p>\n"
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ProfileEditResult.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.ProfileEditResult.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Client.UI.ProfileEditResult",
-      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ProfileEditResult.yml\" sourcestartlinenumber=\"1\">Result returned from the profile edit dialog.</p>\n"
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ProfileViewDialog.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.ProfileViewDialog.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Client.UI.ProfileViewDialog",
-      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ProfileViewDialog.yml\" sourcestartlinenumber=\"1\">Dialog for viewing a user's server profile.\nShows Edit Profile / Set Status buttons when viewing own profile.</p>\n"
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.StatusDialog.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.StatusDialog.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Client.UI.StatusDialog",
-      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.StatusDialog.yml\" sourcestartlinenumber=\"1\">A Terminal.Gui dialog for setting the user's status and status message.</p>\n"
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.StatusDialogResult.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.StatusDialogResult.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Client.UI.StatusDialogResult",
-      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.StatusDialogResult.yml\" sourcestartlinenumber=\"1\">Result returned from the status dialog.</p>\n"
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.UpdateConfirmDialog.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.UpdateConfirmDialog.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Client.UI.UpdateConfirmDialog",
-      "Summary": null
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.UpdateProgressDialog.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.UpdateProgressDialog.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Client.UI.UpdateProgressDialog",
-      "Summary": null
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.UserListSource.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.UserListSource.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Client.UI.UserListSource",
-      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.UserListSource.yml\" sourcestartlinenumber=\"1\">Custom list data source for the online users panel with per-user nickname colors.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -2242,6 +2312,16 @@
       "output": {
         ".html": {
           "relative_path": "changelog/v0.2.5.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "changelog/v0.2.6.md",
+      "output": {
+        ".html": {
+          "relative_path": "changelog/v0.2.6.html"
         }
       },
       "version": ""

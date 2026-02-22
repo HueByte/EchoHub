@@ -2,11 +2,11 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Class EmojiHelper | EchoHub Documentation </title>
+      <title>Enum ProfileAction | EchoHub Documentation </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Class EmojiHelper | EchoHub Documentation ">
+      <meta name="title" content="Enum ProfileAction | EchoHub Documentation ">
       
-      <meta name="description" content="Converts emoji grapheme clusters to text shortcodes for safe TUI rendering. Terminal width calculations for emoji are unreliable across different terminals, so we replace them with fixed-width ASCII shortcodes for display only.">
+      <meta name="description" content="Action selected by the user in their own profile dialog.">
       <link rel="icon" href="../../images/hue_icon.svg">
       <link rel="stylesheet" href="../../public/docfx.min.css">
       <link rel="stylesheet" href="../../public/main.css">
@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/new/master/apiSpec/new?filename=EchoHub_Client_UI_EmojiHelper.md&amp;value=---%0Auid%3A%20EchoHub.Client.UI.EmojiHelper%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/new/master/apiSpec/new?filename=EchoHub_Client_UI_Dialogs_ProfileAction.md&amp;value=---%0Auid%3A%20EchoHub.Client.UI.Dialogs.ProfileAction%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -84,120 +84,56 @@
           <nav id="breadcrumb"></nav>
         </div>
 
-        <article data-uid="EchoHub.Client.UI.EmojiHelper">
+        <article data-uid="EchoHub.Client.UI.Dialogs.ProfileAction">
 
 
 
-  <h1 id="EchoHub_Client_UI_EmojiHelper" data-uid="EchoHub.Client.UI.EmojiHelper" class="text-break">
-Class EmojiHelper  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/EmojiHelper.cs"><i class="bi bi-code-slash"></i></a>
+
+  <h1 id="EchoHub_Client_UI_Dialogs_ProfileAction" data-uid="EchoHub.Client.UI.Dialogs.ProfileAction" class="text-break">
+Enum ProfileAction  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Dialogs/ProfileViewDialog.cs"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
-    <dl><dt>Namespace</dt><dd><a class="xref" href="EchoHub.html">EchoHub</a>.<a class="xref" href="EchoHub.Client.html">Client</a>.<a class="xref" href="EchoHub.Client.UI.html">UI</a></dd></dl>
+    <dl><dt>Namespace</dt><dd><a class="xref" href="EchoHub.html">EchoHub</a>.<a class="xref" href="EchoHub.Client.html">Client</a>.<a class="xref" href="EchoHub.Client.UI.html">UI</a>.<a class="xref" href="EchoHub.Client.UI.Dialogs.html">Dialogs</a></dd></dl>
   <dl><dt>Assembly</dt><dd>EchoHub.Client.dll</dd></dl>
   </div>
 
-  <div class="markdown summary"><p>Converts emoji grapheme clusters to text shortcodes for safe TUI rendering.
-Terminal width calculations for emoji are unreliable across different terminals,
-so we replace them with fixed-width ASCII shortcodes for display only.</p>
+  <div class="markdown summary"><p>Action selected by the user in their own profile dialog.</p>
 </div>
   <div class="markdown conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static class EmojiHelper</code></pre>
+    <pre><code class="lang-csharp hljs">public enum ProfileAction</code></pre>
   </div>
 
 
 
 
-  <dl class="typelist inheritance">
-    <dt>Inheritance</dt>
-    <dd>
-      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
-      <div><span class="xref">EmojiHelper</span></div>
-    </dd>
-  </dl>
-
-
-
-  <dl class="typelist inheritedMembers">
-    <dt>Inherited Members</dt>
-    <dd>
-    <div>
-      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
-    </div>
-    <div>
-      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
-    </div>
-    <div>
-      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
-    </div>
-    <div>
-      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
-    </div>
-    <div>
-      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
-    </div>
-    <div>
-      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
-    </div>
-    <div>
-      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
-    </div>
-  </dd></dl>
 
 
 
 
 
-
-  <h2 class="section" id="methods">Methods
+  <h2 id="fields">Fields
 </h2>
-
-
-  <a id="EchoHub_Client_UI_EmojiHelper_ReplaceEmoji_" data-uid="EchoHub.Client.UI.EmojiHelper.ReplaceEmoji*"></a>
-
-  <h3 id="EchoHub_Client_UI_EmojiHelper_ReplaceEmoji_System_String_" data-uid="EchoHub.Client.UI.EmojiHelper.ReplaceEmoji(System.String)">
-  ReplaceEmoji(string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/EmojiHelper.cs"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Replace emoji graphemes in the text with :shortcode: equivalents.
-Non-emoji text passes through unchanged.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static string ReplaceEmoji(string text)</code></pre>
-  </div>
-
-  <h4 class="section">Parameters</h4>
   <dl class="parameters">
-    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd></dd>
+    <dt id="EchoHub_Client_UI_Dialogs_ProfileAction_Close"><code>Close = 0</code></dt>
+  
+  <dd></dd>
+    <dt id="EchoHub_Client_UI_Dialogs_ProfileAction_EditProfile"><code>EditProfile = 1</code></dt>
+  
+  <dd></dd>
+    <dt id="EchoHub_Client_UI_Dialogs_ProfileAction_SetStatus"><code>SetStatus = 2</code></dt>
+  
+  <dd></dd>
   </dl>
-
-  <h4 class="section">Returns</h4>
-  <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
-
 
 
 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/EmojiHelper.cs" class="edit-link">Edit this page</a>
+          <a href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Dialogs/ProfileViewDialog.cs" class="edit-link">Edit this page</a>
         </div>
 
 

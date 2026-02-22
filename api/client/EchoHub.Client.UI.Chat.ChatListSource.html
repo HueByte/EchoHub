@@ -2,11 +2,11 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Class UserListSource | EchoHub Documentation </title>
+      <title>Class ChatListSource | EchoHub Documentation </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Class UserListSource | EchoHub Documentation ">
+      <meta name="title" content="Class ChatListSource | EchoHub Documentation ">
       
-      <meta name="description" content="Custom list data source for the online users panel with per-user nickname colors.">
+      <meta name="description" content="Custom list data source for chat messages with per-segment coloring.">
       <link rel="icon" href="../../images/hue_icon.svg">
       <link rel="stylesheet" href="../../public/docfx.min.css">
       <link rel="stylesheet" href="../../public/main.css">
@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/new/master/apiSpec/new?filename=EchoHub_Client_UI_UserListSource.md&amp;value=---%0Auid%3A%20EchoHub.Client.UI.UserListSource%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/new/master/apiSpec/new?filename=EchoHub_Client_UI_Chat_ChatListSource.md&amp;value=---%0Auid%3A%20EchoHub.Client.UI.Chat.ChatListSource%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -84,25 +84,25 @@
           <nav id="breadcrumb"></nav>
         </div>
 
-        <article data-uid="EchoHub.Client.UI.UserListSource">
+        <article data-uid="EchoHub.Client.UI.Chat.ChatListSource">
 
 
 
-  <h1 id="EchoHub_Client_UI_UserListSource" data-uid="EchoHub.Client.UI.UserListSource" class="text-break">
-Class UserListSource  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ChatRenderer.cs"><i class="bi bi-code-slash"></i></a>
+  <h1 id="EchoHub_Client_UI_Chat_ChatListSource" data-uid="EchoHub.Client.UI.Chat.ChatListSource" class="text-break">
+Class ChatListSource  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatListSource.cs"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
-    <dl><dt>Namespace</dt><dd><a class="xref" href="EchoHub.html">EchoHub</a>.<a class="xref" href="EchoHub.Client.html">Client</a>.<a class="xref" href="EchoHub.Client.UI.html">UI</a></dd></dl>
+    <dl><dt>Namespace</dt><dd><a class="xref" href="EchoHub.html">EchoHub</a>.<a class="xref" href="EchoHub.Client.html">Client</a>.<a class="xref" href="EchoHub.Client.UI.html">UI</a>.<a class="xref" href="EchoHub.Client.UI.Chat.html">Chat</a></dd></dl>
   <dl><dt>Assembly</dt><dd>EchoHub.Client.dll</dd></dl>
   </div>
 
-  <div class="markdown summary"><p>Custom list data source for the online users panel with per-user nickname colors.</p>
+  <div class="markdown summary"><p>Custom list data source for chat messages with per-segment coloring.</p>
 </div>
   <div class="markdown conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public class UserListSource : IListDataSource, IDisposable</code></pre>
+    <pre><code class="lang-csharp hljs">public class ChatListSource : IListDataSource, IDisposable</code></pre>
   </div>
 
 
@@ -112,7 +112,7 @@ Class UserListSource  <a class="header-action link-secondary" title="View source
     <dt>Inheritance</dt>
     <dd>
       <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
-      <div><span class="xref">UserListSource</span></div>
+      <div><span class="xref">ChatListSource</span></div>
     </dd>
   </dl>
 
@@ -160,18 +160,18 @@ Class UserListSource  <a class="header-action link-secondary" title="View source
 </h2>
 
 
-  <a id="EchoHub_Client_UI_UserListSource__ctor_" data-uid="EchoHub.Client.UI.UserListSource.#ctor*"></a>
+  <a id="EchoHub_Client_UI_Chat_ChatListSource__ctor_" data-uid="EchoHub.Client.UI.Chat.ChatListSource.#ctor*"></a>
 
-  <h3 id="EchoHub_Client_UI_UserListSource__ctor" data-uid="EchoHub.Client.UI.UserListSource.#ctor">
-  UserListSource()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ChatRenderer.cs"><i class="bi bi-code-slash"></i></a>
+  <h3 id="EchoHub_Client_UI_Chat_ChatListSource__ctor" data-uid="EchoHub.Client.UI.Chat.ChatListSource.#ctor">
+  ChatListSource()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatListSource.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public UserListSource()</code></pre>
+    <pre><code class="lang-csharp hljs">public ChatListSource()</code></pre>
   </div>
 
 
@@ -190,11 +190,11 @@ Class UserListSource  <a class="header-action link-secondary" title="View source
 </h2>
 
 
-  <a id="EchoHub_Client_UI_UserListSource_Count_" data-uid="EchoHub.Client.UI.UserListSource.Count*"></a>
+  <a id="EchoHub_Client_UI_Chat_ChatListSource_Count_" data-uid="EchoHub.Client.UI.Chat.ChatListSource.Count*"></a>
 
-  <h3 id="EchoHub_Client_UI_UserListSource_Count" data-uid="EchoHub.Client.UI.UserListSource.Count">
+  <h3 id="EchoHub_Client_UI_Chat_ChatListSource_Count" data-uid="EchoHub.Client.UI.Chat.ChatListSource.Count">
   Count
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ChatRenderer.cs"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatListSource.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the number of items in the data source.</p>
@@ -222,11 +222,11 @@ Class UserListSource  <a class="header-action link-secondary" title="View source
 
 
 
-  <a id="EchoHub_Client_UI_UserListSource_MaxItemLength_" data-uid="EchoHub.Client.UI.UserListSource.MaxItemLength*"></a>
+  <a id="EchoHub_Client_UI_Chat_ChatListSource_MaxItemLength_" data-uid="EchoHub.Client.UI.Chat.ChatListSource.MaxItemLength*"></a>
 
-  <h3 id="EchoHub_Client_UI_UserListSource_MaxItemLength" data-uid="EchoHub.Client.UI.UserListSource.MaxItemLength">
+  <h3 id="EchoHub_Client_UI_Chat_ChatListSource_MaxItemLength" data-uid="EchoHub.Client.UI.Chat.ChatListSource.MaxItemLength">
   MaxItemLength
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ChatRenderer.cs"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatListSource.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the width in columns of the widest item in the data source.</p>
@@ -250,18 +250,18 @@ Class UserListSource  <a class="header-action link-secondary" title="View source
 
 
 
-  <h4 class="section" id="EchoHub_Client_UI_UserListSource_MaxItemLength_remarks">Remarks</h4>
+  <h4 class="section" id="EchoHub_Client_UI_Chat_ChatListSource_MaxItemLength_remarks">Remarks</h4>
   <div class="markdown level1 remarks"><p><a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Commands.cs">ListView</a> uses this value to set its horizontal content size for scrolling.</p>
 </div>
 
 
 
 
-  <a id="EchoHub_Client_UI_UserListSource_SuspendCollectionChangedEvent_" data-uid="EchoHub.Client.UI.UserListSource.SuspendCollectionChangedEvent*"></a>
+  <a id="EchoHub_Client_UI_Chat_ChatListSource_SuspendCollectionChangedEvent_" data-uid="EchoHub.Client.UI.Chat.ChatListSource.SuspendCollectionChangedEvent*"></a>
 
-  <h3 id="EchoHub_Client_UI_UserListSource_SuspendCollectionChangedEvent" data-uid="EchoHub.Client.UI.UserListSource.SuspendCollectionChangedEvent">
+  <h3 id="EchoHub_Client_UI_Chat_ChatListSource_SuspendCollectionChangedEvent" data-uid="EchoHub.Client.UI.Chat.ChatListSource.SuspendCollectionChangedEvent">
   SuspendCollectionChangedEvent
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ChatRenderer.cs"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatListSource.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets whether the <a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/IListDataSource.cs">CollectionChanged</a> event should be suppressed.</p>
@@ -285,7 +285,7 @@ Class UserListSource  <a class="header-action link-secondary" title="View source
 
 
 
-  <h4 class="section" id="EchoHub_Client_UI_UserListSource_SuspendCollectionChangedEvent_remarks">Remarks</h4>
+  <h4 class="section" id="EchoHub_Client_UI_Chat_ChatListSource_SuspendCollectionChangedEvent_remarks">Remarks</h4>
   <div class="markdown level1 remarks"><p>Set to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> to prevent <a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/IListDataSource.cs">CollectionChanged</a> from being raised during bulk
 operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> to resume event notifications.</p>
 </div>
@@ -297,11 +297,99 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
 </h2>
 
 
-  <a id="EchoHub_Client_UI_UserListSource_Dispose_" data-uid="EchoHub.Client.UI.UserListSource.Dispose*"></a>
+  <a id="EchoHub_Client_UI_Chat_ChatListSource_Add_" data-uid="EchoHub.Client.UI.Chat.ChatListSource.Add*"></a>
 
-  <h3 id="EchoHub_Client_UI_UserListSource_Dispose" data-uid="EchoHub.Client.UI.UserListSource.Dispose">
+  <h3 id="EchoHub_Client_UI_Chat_ChatListSource_Add_EchoHub_Client_UI_Chat_ChatLine_" data-uid="EchoHub.Client.UI.Chat.ChatListSource.Add(EchoHub.Client.UI.Chat.ChatLine)">
+  Add(ChatLine)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatListSource.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Add(ChatLine line)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>line</code> <a class="xref" href="EchoHub.Client.UI.Chat.ChatLine.html">ChatLine</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_Chat_ChatListSource_AddRange_" data-uid="EchoHub.Client.UI.Chat.ChatListSource.AddRange*"></a>
+
+  <h3 id="EchoHub_Client_UI_Chat_ChatListSource_AddRange_System_Collections_Generic_IEnumerable_EchoHub_Client_UI_Chat_ChatLine__" data-uid="EchoHub.Client.UI.Chat.ChatListSource.AddRange(System.Collections.Generic.IEnumerable{EchoHub.Client.UI.Chat.ChatLine})">
+  AddRange(IEnumerable&lt;ChatLine&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatListSource.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void AddRange(IEnumerable&lt;ChatLine&gt; lines)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>lines</code> <span class="xref">IEnumerable</span>&lt;<a class="xref" href="EchoHub.Client.UI.Chat.ChatLine.html">ChatLine</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_Chat_ChatListSource_Clear_" data-uid="EchoHub.Client.UI.Chat.ChatListSource.Clear*"></a>
+
+  <h3 id="EchoHub_Client_UI_Chat_ChatListSource_Clear" data-uid="EchoHub.Client.UI.Chat.ChatListSource.Clear">
+  Clear()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatListSource.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Clear()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_Chat_ChatListSource_Dispose_" data-uid="EchoHub.Client.UI.Chat.ChatListSource.Dispose*"></a>
+
+  <h3 id="EchoHub_Client_UI_Chat_ChatListSource_Dispose" data-uid="EchoHub.Client.UI.Chat.ChatListSource.Dispose">
   Dispose()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ChatRenderer.cs"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatListSource.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"></div>
@@ -323,11 +411,80 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
 
 
 
-  <a id="EchoHub_Client_UI_UserListSource_IsMarked_" data-uid="EchoHub.Client.UI.UserListSource.IsMarked*"></a>
+  <a id="EchoHub_Client_UI_Chat_ChatListSource_GetLine_" data-uid="EchoHub.Client.UI.Chat.ChatListSource.GetLine*"></a>
 
-  <h3 id="EchoHub_Client_UI_UserListSource_IsMarked_System_Int32_" data-uid="EchoHub.Client.UI.UserListSource.IsMarked(System.Int32)">
+  <h3 id="EchoHub_Client_UI_Chat_ChatListSource_GetLine_System_Int32_" data-uid="EchoHub.Client.UI.Chat.ChatListSource.GetLine(System.Int32)">
+  GetLine(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatListSource.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ChatLine? GetLine(int index)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>index</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="EchoHub.Client.UI.Chat.ChatLine.html">ChatLine</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_Chat_ChatListSource_InsertRange_" data-uid="EchoHub.Client.UI.Chat.ChatListSource.InsertRange*"></a>
+
+  <h3 id="EchoHub_Client_UI_Chat_ChatListSource_InsertRange_System_Int32_System_Collections_Generic_IEnumerable_EchoHub_Client_UI_Chat_ChatLine__" data-uid="EchoHub.Client.UI.Chat.ChatListSource.InsertRange(System.Int32,System.Collections.Generic.IEnumerable{EchoHub.Client.UI.Chat.ChatLine})">
+  InsertRange(int, IEnumerable&lt;ChatLine&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatListSource.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void InsertRange(int index, IEnumerable&lt;ChatLine&gt; lines)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>index</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+    <dt><code>lines</code> <span class="xref">IEnumerable</span>&lt;<a class="xref" href="EchoHub.Client.UI.Chat.ChatLine.html">ChatLine</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_Chat_ChatListSource_IsMarked_" data-uid="EchoHub.Client.UI.Chat.ChatListSource.IsMarked*"></a>
+
+  <h3 id="EchoHub_Client_UI_Chat_ChatListSource_IsMarked_System_Int32_" data-uid="EchoHub.Client.UI.Chat.ChatListSource.IsMarked(System.Int32)">
   IsMarked(int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ChatRenderer.cs"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatListSource.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Determines whether the specified item is marked.</p>
@@ -358,7 +515,7 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
 
 
 
-  <h4 class="section" id="EchoHub_Client_UI_UserListSource_IsMarked_System_Int32__remarks">Remarks</h4>
+  <h4 class="section" id="EchoHub_Client_UI_Chat_ChatListSource_IsMarked_System_Int32__remarks">Remarks</h4>
   <div class="markdown level1 remarks"><p><a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Commands.cs">ListView</a> calls this method to determine whether to render the item with a mark indicator when
 <a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Selection.cs">ShowMarks</a> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>.</p>
 </div>
@@ -366,11 +523,11 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
 
 
 
-  <a id="EchoHub_Client_UI_UserListSource_Render_" data-uid="EchoHub.Client.UI.UserListSource.Render*"></a>
+  <a id="EchoHub_Client_UI_Chat_ChatListSource_Render_" data-uid="EchoHub.Client.UI.Chat.ChatListSource.Render*"></a>
 
-  <h3 id="EchoHub_Client_UI_UserListSource_Render_Terminal_Gui_Views_ListView_System_Boolean_System_Int32_System_Int32_System_Int32_System_Int32_System_Int32_" data-uid="EchoHub.Client.UI.UserListSource.Render(Terminal.Gui.Views.ListView,System.Boolean,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
+  <h3 id="EchoHub_Client_UI_Chat_ChatListSource_Render_Terminal_Gui_Views_ListView_System_Boolean_System_Int32_System_Int32_System_Int32_System_Int32_System_Int32_" data-uid="EchoHub.Client.UI.Chat.ChatListSource.Render(Terminal.Gui.Views.ListView,System.Boolean,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)">
   Render(ListView, bool, int, int, int, int, int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ChatRenderer.cs"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatListSource.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Renders the specified item to the <a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Commands.cs">ListView</a>.</p>
@@ -413,7 +570,7 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
 
 
 
-  <h4 class="section" id="EchoHub_Client_UI_UserListSource_Render_Terminal_Gui_Views_ListView_System_Boolean_System_Int32_System_Int32_System_Int32_System_Int32_System_Int32__remarks">Remarks</h4>
+  <h4 class="section" id="EchoHub_Client_UI_Chat_ChatListSource_Render_Terminal_Gui_Views_ListView_System_Boolean_System_Int32_System_Int32_System_Int32_System_Int32_System_Int32__remarks">Remarks</h4>
   <div class="markdown level1 remarks"><p>
     <a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Commands.cs">ListView</a> calls this method for each visible item during rendering. The color scheme will be
     set based on selection state before this method is called.
@@ -426,11 +583,11 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
 
 
 
-  <a id="EchoHub_Client_UI_UserListSource_SetMark_" data-uid="EchoHub.Client.UI.UserListSource.SetMark*"></a>
+  <a id="EchoHub_Client_UI_Chat_ChatListSource_SetMark_" data-uid="EchoHub.Client.UI.Chat.ChatListSource.SetMark*"></a>
 
-  <h3 id="EchoHub_Client_UI_UserListSource_SetMark_System_Int32_System_Boolean_" data-uid="EchoHub.Client.UI.UserListSource.SetMark(System.Int32,System.Boolean)">
+  <h3 id="EchoHub_Client_UI_Chat_ChatListSource_SetMark_System_Int32_System_Boolean_" data-uid="EchoHub.Client.UI.Chat.ChatListSource.SetMark(System.Int32,System.Boolean)">
   SetMark(int, bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ChatRenderer.cs"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatListSource.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Sets the marked state of the specified item.</p>
@@ -458,7 +615,7 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
 
 
 
-  <h4 class="section" id="EchoHub_Client_UI_UserListSource_SetMark_System_Int32_System_Boolean__remarks">Remarks</h4>
+  <h4 class="section" id="EchoHub_Client_UI_Chat_ChatListSource_SetMark_System_Int32_System_Boolean__remarks">Remarks</h4>
   <div class="markdown level1 remarks"><p><a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Commands.cs">ListView</a> calls this method when the user toggles marking (e.g., via the SPACE key) if
 <a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Selection.cs">ShowMarks</a> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>.</p>
 </div>
@@ -466,11 +623,11 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
 
 
 
-  <a id="EchoHub_Client_UI_UserListSource_ToList_" data-uid="EchoHub.Client.UI.UserListSource.ToList*"></a>
+  <a id="EchoHub_Client_UI_Chat_ChatListSource_ToList_" data-uid="EchoHub.Client.UI.Chat.ChatListSource.ToList*"></a>
 
-  <h3 id="EchoHub_Client_UI_UserListSource_ToList" data-uid="EchoHub.Client.UI.UserListSource.ToList">
+  <h3 id="EchoHub_Client_UI_Chat_ChatListSource_ToList" data-uid="EchoHub.Client.UI.Chat.ChatListSource.ToList">
   ToList()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ChatRenderer.cs"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatListSource.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns the underlying data source as an <span class="xref">System.Collections.IList</span>.</p>
@@ -495,42 +652,11 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
 
 
 
-  <h4 class="section" id="EchoHub_Client_UI_UserListSource_ToList_remarks">Remarks</h4>
+  <h4 class="section" id="EchoHub_Client_UI_Chat_ChatListSource_ToList_remarks">Remarks</h4>
   <div class="markdown level1 remarks"><p><a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Commands.cs">ListView</a> uses this method to access individual items for events like
 <a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Commands.cs">ValueChanged</a> and to enable keyboard search via
 <a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.cs">KeystrokeNavigator</a>.</p>
 </div>
-
-
-
-
-  <a id="EchoHub_Client_UI_UserListSource_Update_" data-uid="EchoHub.Client.UI.UserListSource.Update*"></a>
-
-  <h3 id="EchoHub_Client_UI_UserListSource_Update_System_Collections_Generic_List_System_ValueTuple_System_String_System_Nullable_Terminal_Gui_Drawing_Attribute____" data-uid="EchoHub.Client.UI.UserListSource.Update(System.Collections.Generic.List{System.ValueTuple{System.String,System.Nullable{Terminal.Gui.Drawing.Attribute}}})">
-  Update(List&lt;(string Text, Attribute? NameColor)&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ChatRenderer.cs"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"></div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public void Update(List&lt;(string Text, Attribute? NameColor)&gt; users)</code></pre>
-  </div>
-
-  <h4 class="section">Parameters</h4>
-  <dl class="parameters">
-    <dt><code>users</code> <span class="xref">List</span>&lt;(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.nullable-terminal.gui.drawing.attribute--.text">Text</a>, <a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Drawing/Attribute.cs">Attribute</a>? <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.nullable-terminal.gui.drawing.attribute--.namecolor">NameColor</a>)&gt;</dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
 
 
 
@@ -540,9 +666,9 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
 
 
 
-  <h3 id="EchoHub_Client_UI_UserListSource_CollectionChanged" data-uid="EchoHub.Client.UI.UserListSource.CollectionChanged">
+  <h3 id="EchoHub_Client_UI_Chat_ChatListSource_CollectionChanged" data-uid="EchoHub.Client.UI.Chat.ChatListSource.CollectionChanged">
   CollectionChanged
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ChatRenderer.cs"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatListSource.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Raised when items are added, removed, moved, or the entire collection is refreshed.</p>
@@ -566,7 +692,7 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
 
 
 
-  <h4 class="section" id="EchoHub_Client_UI_UserListSource_CollectionChanged_remarks">Remarks</h4>
+  <h4 class="section" id="EchoHub_Client_UI_Chat_ChatListSource_CollectionChanged_remarks">Remarks</h4>
   <div class="markdown level1 remarks"><p><a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Commands.cs">ListView</a> subscribes to this event to update its display and content size when the data
 changes. Implementations should raise this event whenever the underlying collection changes, unless
 <a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/IListDataSource.cs">SuspendCollectionChangedEvent</a> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>.</p>
@@ -579,7 +705,7 @@ changes. Implementations should raise this event whenever the underlying collect
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ChatRenderer.cs" class="edit-link">Edit this page</a>
+          <a href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatListSource.cs" class="edit-link">Edit this page</a>
         </div>
 
 
