@@ -12,12 +12,8 @@ services:
       # - "6697:6697"   # IRC (TLS encrypted, preferred)
     volumes:
       - echohub-data:/app/data
-    environment:
-      - Server__Name=My EchoHub Server
-      - Server__Description=A self-hosted EchoHub chat server
-      # - Server__PublicServer=true
-      # - Server__PublicHost=echohub.example.com
-      # - Irc__Enabled=true
+    env_file:
+      - .env
 
 volumes:
   echohub-data:

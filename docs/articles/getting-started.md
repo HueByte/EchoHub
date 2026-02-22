@@ -6,6 +6,17 @@
 
 Or grab a self-contained binary from [Releases](https://github.com/HueByte/EchoHub/releases) -- no runtime needed.
 
+## Docker
+
+The quickest way to host a server:
+
+```bash
+cp .env.example .env
+docker compose up -d
+```
+
+See the [Docker guide](docker.md) for configuration, pre-built images, and more.
+
 ## Run the Server
 
 ```bash

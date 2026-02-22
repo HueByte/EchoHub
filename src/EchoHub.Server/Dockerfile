@@ -23,6 +23,8 @@ RUN groupadd -r echohub && useradd -r -g echohub -d /app echohub \
     && chown -R echohub:echohub /app
 
 COPY --from=build --chown=echohub:echohub /app/publish .
+COPY --chown=echohub:echohub EchoHub.Server/docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
 
 USER echohub
 
@@ -34,4 +36,4 @@ ENV ASPNETCORE_ENVIRONMENT=Production \
 
 EXPOSE 5000 6667 6697
 
-ENTRYPOINT ["dotnet", "EchoHub.Server.dll"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
