@@ -524,9 +524,8 @@ public sealed class AppOrchestrator : IDisposable
                 if (result.DefaultHistory.Count > 0)
                     _messageManager.LoadHistory(HubConstants.DefaultChannel, result.DefaultHistory);
                 _mainWindow.FocusInput();
+                FetchAndUpdateOnlineUsers();
             });
-
-            FetchAndUpdateOnlineUsers();
             SaveServerToConfig(dialogResult);
         }, "Connection failed", "Connect");
     }
