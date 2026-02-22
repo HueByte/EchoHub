@@ -85,6 +85,7 @@ public sealed class AppOrchestrator : IDisposable
         _mainWindow.OnDeleteChannelRequested += HandleDeleteChannelRequested;
         _mainWindow.OnAudioPlayRequested += HandleAudioPlayRequested;
         _mainWindow.OnFileDownloadRequested += HandleFileDownloadRequested;
+        _mainWindow.OnCheckForUpdatesRequested += HandleCheckForUpdatesRequested;
     }
 
     // ── Command Handler Wiring ─────────────────────────────────────────────
@@ -899,6 +900,11 @@ public sealed class AppOrchestrator : IDisposable
                 InvokeUI(() => _messageManager.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloaded to: {tempPath}"));
             }
         }, "Failed to download file");
+    }
+
+    private void HandleCheckForUpdatesRequested()
+    {
+        RunAsync(_updateService.CheckNowAsync, "Failed to check for updates");
     }
 
     // ── Private Helpers ────────────────────────────────────────────────────
