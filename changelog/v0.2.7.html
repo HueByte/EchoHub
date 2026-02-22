@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>v0.2.6 | EchoHub Documentation </title>
+      <title>v0.2.7 | EchoHub Documentation </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="v0.2.6 | EchoHub Documentation ">
+      <meta name="title" content="v0.2.7 | EchoHub Documentation ">
       
       
       <link rel="icon" href="../images/hue_icon.svg">
@@ -85,28 +85,18 @@
         </div>
 
         <article data-uid="">
-<h1 id="v026">v0.2.6</h1>
+<h1 id="v027">v0.2.7</h1>
 
-<h2 id="refactoring">Refactoring</h2>
+<h2 id="bug-fixes">Bug Fixes</h2>
 <ul>
-<li>Extracted <code>ChatMessageManager</code> from <code>MainWindow</code> — message storage, formatting, and mutation logic now in a dedicated class, reducing MainWindow complexity</li>
-<li>Split <code>ChatRenderer.cs</code> (8 classes, 548 lines) into 7 individual files: <code>ChatSegment</code>, <code>ChatLine</code>, <code>ChatListSource</code>, <code>ChannelListSource</code>, <code>UserListSource</code>, <code>ChatColors</code>, <code>ColorHelper</code>, <code>RenderHelpers</code></li>
-<li>Extracted <code>ConnectionManager</code> from <code>AppOrchestrator</code> — connection lifecycle, authentication, SignalR event wiring, and channel tracking now in a dedicated service</li>
-<li>Extracted <code>AvatarHelper</code> — deduplicated avatar upload logic previously duplicated in <code>/avatar</code> command and profile edit dialog</li>
-<li>Consolidated <code>ProfileEditDialog.ParseHexToTrueColor</code> into shared <code>ColorHelper.ParseHexToColor</code></li>
-<li>Extracted <code>UserSession</code> — session state (<code>Username</code>, <code>Status</code>, <code>StatusMessage</code>) now in a dedicated class instead of scattered fields</li>
-<li>Replaced 21 inline command handler lambdas with named <code>HandleCmd*</code> methods for improved readability</li>
-<li>Extracted shared <code>CleanupConnectionAsync</code> to deduplicate disconnect/logout cleanup logic</li>
-<li>Reorganized flat <code>UI/</code> folder (19 files) into subfolders: <code>Chat/</code>, <code>Dialogs/</code>, <code>ListSources/</code>, <code>Helpers/</code> with matching namespaces</li>
-<li>Moved <code>AsyncRunner</code> from project root to <code>Services/</code> with updated namespace</li>
-<li>Renamed <code>ColorHelper</code> → <code>HexColorHelper</code> to avoid namespace collision with Terminal.Gui's <code>ColorHelper</code> NuGet dependency</li>
-<li>Moved <code>hue_icon.ico</code> to <code>Client/Assets/</code>, removed duplicate from Server (Server now references shared icon via relative path)</li>
-<li>Add hex color parsing helper and implement custom list sources for channels and users</li>
-<li>Add dialogs for connection, channel creation, profile editing, and status management</li>
+<li>Fix user list empty on initial connect — <code>FetchAndUpdateOnlineUsers</code> was called before <code>InvokeUI</code> set the current channel, causing an early return</li>
 </ul>
 <h2 id="infrastructure">Infrastructure</h2>
 <ul>
-<li>Release workflow: use <code>--notes-file</code> instead of inline <code>--notes</code> interpolation to prevent shell expansion of special characters in commit messages</li>
+<li>Switch Terminal.Gui from local fork submodule back to NuGet package (<code>2.0.0-develop.5039</code>) — transparent color PR merged upstream</li>
+<li>Remove Terminal.Gui submodule, <code>.gitmodules</code>, and root <code>nuget.config</code> workaround</li>
+<li>Remove <code>rm -f</code> submodule nuget.config steps and <code>submodules: recursive</code> from all 3 CI workflows (ci, docs, release)</li>
+<li>Remove <code>--exclude src/Terminal.Gui/</code> from format check</li>
 </ul>
 
 </article>

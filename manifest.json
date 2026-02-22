@@ -2327,6 +2327,16 @@
       "version": ""
     },
     {
+      "type": "Conceptual",
+      "source_relative_path": "changelog/v0.2.7.md",
+      "output": {
+        ".html": {
+          "relative_path": "changelog/v0.2.7.html"
+        }
+      },
+      "version": ""
+    },
+    {
       "type": "Resource",
       "source_relative_path": "images/hue_icon.svg",
       "output": {

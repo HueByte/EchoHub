@@ -120,7 +120,7 @@ Active channel gets a &gt; indicator, unread channels are bright with a count ba
   <dl class="typelist implements">
     <dt>Implements</dt>
     <dd>
-      <div><a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/IListDataSource.cs">IListDataSource</a></div>
+      <div><span class="xref">IListDataSource</span></div>
       <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
     </dd>
   </dl>
@@ -198,8 +198,7 @@ Active channel gets a &gt; indicator, unread channels are bright with a count ba
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ListSources/ChannelListSource.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the number of items in the data source.</p>
-</div>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
@@ -230,8 +229,7 @@ Active channel gets a &gt; indicator, unread channels are bright with a count ba
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ListSources/ChannelListSource.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the width in columns of the widest item in the data source.</p>
-</div>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
@@ -251,9 +249,6 @@ Active channel gets a &gt; indicator, unread channels are bright with a count ba
 
 
 
-  <h4 class="section" id="EchoHub_Client_UI_ListSources_ChannelListSource_MaxItemLength_remarks">Remarks</h4>
-  <div class="markdown level1 remarks"><p><a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Commands.cs">ListView</a> uses this value to set its horizontal content size for scrolling.</p>
-</div>
 
 
 
@@ -265,8 +260,7 @@ Active channel gets a &gt; indicator, unread channels are bright with a count ba
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ListSources/ChannelListSource.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets or sets whether the <a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/IListDataSource.cs">CollectionChanged</a> event should be suppressed.</p>
-</div>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
@@ -286,10 +280,6 @@ Active channel gets a &gt; indicator, unread channels are bright with a count ba
 
 
 
-  <h4 class="section" id="EchoHub_Client_UI_ListSources_ChannelListSource_SuspendCollectionChangedEvent_remarks">Remarks</h4>
-  <div class="markdown level1 remarks"><p>Set to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> to prevent <a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/IListDataSource.cs">CollectionChanged</a> from being raised during bulk
-operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> to resume event notifications.</p>
-</div>
 
 
 
@@ -331,8 +321,7 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ListSources/ChannelListSource.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Determines whether the specified item is marked.</p>
-</div>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
@@ -342,15 +331,13 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>item</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
-    <dd><p>The zero-based index of the item.</p>
-</dd>
+    <dd></dd>
   </dl>
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
-    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the item is marked; otherwise <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.</p>
-</dd>
+    <dd></dd>
   </dl>
 
 
@@ -359,10 +346,6 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
 
 
 
-  <h4 class="section" id="EchoHub_Client_UI_ListSources_ChannelListSource_IsMarked_System_Int32__remarks">Remarks</h4>
-  <div class="markdown level1 remarks"><p><a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Commands.cs">ListView</a> calls this method to determine whether to render the item with a mark indicator when
-<a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Selection.cs">ShowMarks</a> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>.</p>
-</div>
 
 
 
@@ -374,8 +357,7 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ListSources/ChannelListSource.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Renders the specified item to the <a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Commands.cs">ListView</a>.</p>
-</div>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
@@ -384,27 +366,20 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
-    <dt><code>listView</code> <a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Commands.cs">ListView</a></dt>
-    <dd><p>The <a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Commands.cs">ListView</a> to render to.</p>
-</dd>
+    <dt><code>listView</code> <span class="xref">ListView</span></dt>
+    <dd></dd>
     <dt><code>selected</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
-    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the item is currently selected; otherwise <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.</p>
-</dd>
+    <dd></dd>
     <dt><code>item</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
-    <dd><p>The zero-based index of the item to render.</p>
-</dd>
+    <dd></dd>
     <dt><code>col</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
-    <dd><p>The column in <code class="paramref">listView</code> Viewport where rendering starts.</p>
-</dd>
+    <dd></dd>
     <dt><code>row</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
-    <dd><p>The row in <code class="paramref">listView</code> Viewport where rendering starts.</p>
-</dd>
+    <dd></dd>
     <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
-    <dd><p>The width available for rendering.</p>
-</dd>
+    <dd></dd>
     <dt><code>viewportX</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
-    <dd><p>The horizontal scroll offset.</p>
-</dd>
+    <dd></dd>
   </dl>
 
 
@@ -414,15 +389,6 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
 
 
 
-  <h4 class="section" id="EchoHub_Client_UI_ListSources_ChannelListSource_Render_Terminal_Gui_Views_ListView_System_Boolean_System_Int32_System_Int32_System_Int32_System_Int32_System_Int32__remarks">Remarks</h4>
-  <div class="markdown level1 remarks"><p>
-    <a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Commands.cs">ListView</a> calls this method for each visible item during rendering. The color scheme will be
-    set based on selection state before this method is called.
-</p>
-<p>
-    Implementations must fill the entire <code class="paramref">width</code> to avoid rendering artifacts.
-</p>
-</div>
 
 
 
@@ -434,8 +400,7 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ListSources/ChannelListSource.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Sets the marked state of the specified item.</p>
-</div>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
@@ -445,11 +410,9 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>item</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
-    <dd><p>The zero-based index of the item.</p>
-</dd>
+    <dd></dd>
     <dt><code>value</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
-    <dd><p><a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> to mark the item; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> to unmark it.</p>
-</dd>
+    <dd></dd>
   </dl>
 
 
@@ -459,10 +422,6 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
 
 
 
-  <h4 class="section" id="EchoHub_Client_UI_ListSources_ChannelListSource_SetMark_System_Int32_System_Boolean__remarks">Remarks</h4>
-  <div class="markdown level1 remarks"><p><a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Commands.cs">ListView</a> calls this method when the user toggles marking (e.g., via the SPACE key) if
-<a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Selection.cs">ShowMarks</a> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>.</p>
-</div>
 
 
 
@@ -474,8 +433,7 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ListSources/ChannelListSource.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Returns the underlying data source as an <span class="xref">System.Collections.IList</span>.</p>
-</div>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
@@ -486,8 +444,7 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
   <h4 class="section">Returns</h4>
   <dl class="parameters">
     <dt><span class="xref">IList</span></dt>
-    <dd><p>The data source as an <span class="xref">System.Collections.IList</span>.</p>
-</dd>
+    <dd></dd>
   </dl>
 
 
@@ -496,11 +453,6 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
 
 
 
-  <h4 class="section" id="EchoHub_Client_UI_ListSources_ChannelListSource_ToList_remarks">Remarks</h4>
-  <div class="markdown level1 remarks"><p><a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Commands.cs">ListView</a> uses this method to access individual items for events like
-<a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Commands.cs">ValueChanged</a> and to enable keyboard search via
-<a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.cs">KeystrokeNavigator</a>.</p>
-</div>
 
 
 
@@ -550,8 +502,7 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ListSources/ChannelListSource.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Raised when items are added, removed, moved, or the entire collection is refreshed.</p>
-</div>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
@@ -571,11 +522,6 @@ operations. Set back to <a href="https://learn.microsoft.com/dotnet/csharp/langu
 
 
 
-  <h4 class="section" id="EchoHub_Client_UI_ListSources_ChannelListSource_CollectionChanged_remarks">Remarks</h4>
-  <div class="markdown level1 remarks"><p><a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/ListView.Commands.cs">ListView</a> subscribes to this event to update its display and content size when the data
-changes. Implementations should raise this event whenever the underlying collection changes, unless
-<a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/Views/ListView/IListDataSource.cs">SuspendCollectionChangedEvent</a> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>.</p>
-</div>
 
 
 
