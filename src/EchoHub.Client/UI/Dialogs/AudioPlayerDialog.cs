@@ -23,7 +23,7 @@ public sealed class AudioPlayerDialog
 
     public static void Show(IApplication app, AudioPlaybackService audioService, string filePath, string fileName)
     {
-        var dialog = new Dialog { Title = "Audio Player", Width = 52, Height = 14 };
+        var dialog = new Dialog { Title = "Audio Player", Width = 52, Height = 12 };
 
         // ── File name ──
         var fileLabel = new Label
@@ -61,38 +61,47 @@ public sealed class AudioPlayerDialog
         };
 
         byte currentVolume = 50;
-        var volumeBar = new ProgressBar
-        {
-            X = 14,
-            Y = 7,
-            Width = 20,
-            Height = 1,
-            Fraction = currentVolume / 100f,
-            ProgressBarStyle = ProgressBarStyle.Continuous
-        };
-
-        var volumePercentLabel = new Label
-        {
-            Text = $"{currentVolume}%",
-            X = 35,
-            Y = 7,
-            Width = 5
-        };
 
         var volDownButton = new Button
         {
             Text = "-",
             X = 10,
             Y = 7,
-            Width = 3
+            Width = 1,
+            Height = 1,
+            NoDecorations = true,
+            NoPadding = true,
+            ShadowStyle = ShadowStyle.None
+        };
+
+        var volumeBar = new ProgressBar
+        {
+            X = 12,
+            Y = 7,
+            Width = 22,
+            Height = 1,
+            Fraction = currentVolume / 100f,
+            ProgressBarStyle = ProgressBarStyle.Continuous
         };
 
         var volUpButton = new Button
         {
             Text = "+",
-            X = 41,
+            X = 35,
             Y = 7,
-            Width = 3
+            Width = 1,
+            Height = 1,
+            NoDecorations = true,
+            NoPadding = true,
+            ShadowStyle = ShadowStyle.None
+        };
+
+        var volumePercentLabel = new Label
+        {
+            Text = $"{currentVolume}%",
+            X = 37,
+            Y = 7,
+            Width = 5
         };
 
         // ── Playback controls ──
@@ -100,22 +109,25 @@ public sealed class AudioPlayerDialog
         {
             Text = "\u25b6 Play",
             X = 2,
-            Y = 10,
-            IsDefault = true
+            Y = 9,
+            IsDefault = true,
+            ShadowStyle = ShadowStyle.None
         };
 
         var stopButton = new Button
         {
             Text = "\u25a0 Stop",
-            X = Pos.Right(playButton) + 2,
-            Y = 10
+            X = Pos.Right(playButton) + 1,
+            Y = 9,
+            ShadowStyle = ShadowStyle.None
         };
 
         var closeButton = new Button
         {
             Text = "Close",
-            X = Pos.Right(stopButton) + 2,
-            Y = 10
+            X = Pos.Right(stopButton) + 1,
+            Y = 9,
+            ShadowStyle = ShadowStyle.None
         };
 
         // ── Animation state ──
@@ -128,6 +140,7 @@ public sealed class AudioPlayerDialog
 
         Timer? animationTimer = null;
         var isDisposed = false;
+        var isBusy = false;
 
         // ── Helper functions ──
         void UpdateWave(bool isActive)
@@ -278,6 +291,8 @@ public sealed class AudioPlayerDialog
         playButton.Accepting += (s, e) =>
         {
             e.Handled = true;
+            if (isBusy) return;
+            isBusy = true;
             Task.Run(async () =>
             {
                 if (audioService.IsPaused)
@@ -287,6 +302,7 @@ public sealed class AudioPlayerDialog
                     {
                         UpdateStatus();
                         StartAnimation();
+                        isBusy = false;
                     });
                 }
                 else if (audioService.IsPlaying)
@@ -296,6 +312,7 @@ public sealed class AudioPlayerDialog
                     {
                         UpdateStatus();
                         StopAnimation();
+                        isBusy = false;
                     });
                 }
                 else
@@ -306,6 +323,7 @@ public sealed class AudioPlayerDialog
                     {
                         UpdateStatus();
                         StartAnimation();
+                        isBusy = false;
                     });
                 }
             });
@@ -314,6 +332,8 @@ public sealed class AudioPlayerDialog
         stopButton.Accepting += (s, e) =>
         {
             e.Handled = true;
+            if (isBusy) return;
+            isBusy = true;
             Task.Run(async () =>
             {
                 await audioService.StopAsync();
@@ -321,6 +341,7 @@ public sealed class AudioPlayerDialog
                 {
                     UpdateStatus();
                     StopAnimation();
+                    isBusy = false;
                 });
             });
         };
@@ -337,6 +358,8 @@ public sealed class AudioPlayerDialog
         volDownButton.Accepting += (s, e) =>
         {
             e.Handled = true;
+            if (isBusy) return;
+            isBusy = true;
             var newVol = (byte)Math.Max(0, currentVolume - 10);
             Task.Run(async () =>
             {
@@ -345,6 +368,7 @@ public sealed class AudioPlayerDialog
                 {
                     volumeBar.SetNeedsDraw();
                     volumePercentLabel.SetNeedsDraw();
+                    isBusy = false;
                 });
             });
         };
@@ -352,6 +376,8 @@ public sealed class AudioPlayerDialog
         volUpButton.Accepting += (s, e) =>
         {
             e.Handled = true;
+            if (isBusy) return;
+            isBusy = true;
             var newVol = (byte)Math.Min(100, currentVolume + 10);
             Task.Run(async () =>
             {
@@ -360,6 +386,7 @@ public sealed class AudioPlayerDialog
                 {
                     volumeBar.SetNeedsDraw();
                     volumePercentLabel.SetNeedsDraw();
+                    isBusy = false;
                 });
             });
         };
