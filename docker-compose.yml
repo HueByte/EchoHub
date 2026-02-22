@@ -8,8 +8,8 @@ services:
     restart: unless-stopped
     ports:
       - "5000:5000"
-      # - "6667:6667"   # IRC gateway (enable Irc__Enabled=true first)
-      # - "6697:6697"   # IRC TLS
+      # - "6667:6667"   # IRC (plain, no encryption)
+      # - "6697:6697"   # IRC (TLS encrypted, preferred)
     volumes:
       - echohub-data:/app/data
     environment:
