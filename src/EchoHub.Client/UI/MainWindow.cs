@@ -58,9 +58,11 @@ public sealed class MainWindow : Runnable
     private readonly Dictionary<string, List<ChatLine>> _channelMessages = [];
     private readonly Dictionary<string, int> _channelUnread = [];
     private readonly Dictionary<string, string?> _channelTopics = [];
+    private readonly Dictionary<string, bool> _channelPublic = [];
     private readonly ChannelListSource _channelListSource;
     private string _currentChannel = string.Empty;
     private string _currentUser = string.Empty;
+    private string _connectionStatus = "Disconnected";
     private int _lastChatWidth;
 
     /// <summary>
@@ -82,6 +84,11 @@ public sealed class MainWindow : Runnable
     /// Fired when the user requests to disconnect via the menu.
     /// </summary>
     public event Action? OnDisconnectRequested;
+
+    /// <summary>
+    /// Fired when the user requests to logout (disconnect + revoke session).
+    /// </summary>
+    public event Action? OnLogoutRequested;
 
     /// <summary>
     /// Fired when the user requests to open their profile panel.
@@ -112,6 +119,16 @@ public sealed class MainWindow : Runnable
     /// Fired when the user requests to delete the current channel.
     /// </summary>
     public event Action? OnDeleteChannelRequested;
+
+    /// <summary>
+    /// Fired when the user activates (Enter/click) an audio message. Parameters: attachmentUrl, fileName.
+    /// </summary>
+    public event Action<string, string>? OnAudioPlayRequested;
+
+    /// <summary>
+    /// Fired when the user activates (Enter/click) a file message. Parameters: attachmentUrl, fileName.
+    /// </summary>
+    public event Action<string, string>? OnFileDownloadRequested;
 
     public MainWindow(IApplication app)
     {
@@ -175,6 +192,7 @@ public sealed class MainWindow : Runnable
             Height = Dim.Fill()
         };
         _messageList.Source = new ChatListSource();
+        _messageList.Accepting += OnMessageListAccepting;
         _chatFrame.Add(_messageList);
         Add(_chatFrame);
 
@@ -223,16 +241,17 @@ public sealed class MainWindow : Runnable
         _usersFrame.Add(_usersList);
         Add(_usersFrame);
 
-        // Status bar at the very bottom
+        // Status bar at the very bottom — custom drawing for colored connection state
         _statusLabel = new Label
         {
-            Text = "Disconnected",
+            Text = "",
             X = 0,
             Y = Pos.AnchorEnd(1),
             Width = Dim.Fill(),
             Height = 1
         };
         _statusLabel.SetScheme(SchemeManager.GetScheme("Menu"));
+        _statusLabel.DrawingContent += OnStatusBarDrawContent;
         Add(_statusLabel);
 
         // Apply our custom color schemes to all views
@@ -308,6 +327,7 @@ public sealed class MainWindow : Runnable
             {
                 new MenuItem("_Connect...", "Connect to a server", () => OnConnectRequested?.Invoke(), Key.Empty),
                 new MenuItem("_Disconnect", "Disconnect from server", () => OnDisconnectRequested?.Invoke(), Key.Empty),
+                new MenuItem("_Logout", "Logout and clear session", () => OnLogoutRequested?.Invoke(), Key.Empty),
                 new Line(),
                 new MenuItem("New C_hannel...", "Create a new channel", () => OnCreateChannelRequested?.Invoke(), Key.Empty),
                 new MenuItem("_Delete Channel", "Delete the current channel", () => OnDeleteChannelRequested?.Invoke(), Key.Empty),
@@ -357,6 +377,31 @@ public sealed class MainWindow : Runnable
                 SwitchToChannel(channelName);
                 OnChannelSelected?.Invoke(channelName);
             }
+        }
+    }
+
+    private void OnMessageListAccepting(object? sender, CommandEventArgs e)
+    {
+        if (_messageList.Source is not ChatListSource source)
+            return;
+
+        var index = _messageList.SelectedItem;
+        if (!index.HasValue || index.Value < 0 || index.Value >= source.Count)
+            return;
+
+        var line = source.GetLine(index.Value);
+        if (line?.AttachmentUrl is null || line.AttachmentFileName is null)
+            return;
+
+        if (line.Type == MessageType.Audio)
+        {
+            OnAudioPlayRequested?.Invoke(line.AttachmentUrl, line.AttachmentFileName);
+            e.Handled = true;
+        }
+        else if (line.Type == MessageType.File)
+        {
+            OnFileDownloadRequested?.Invoke(line.AttachmentUrl, line.AttachmentFileName);
+            e.Handled = true;
         }
     }
 
@@ -600,10 +645,12 @@ public sealed class MainWindow : Runnable
     {
         _channelNames.Clear();
         _channelTopics.Clear();
+        _channelPublic.Clear();
         foreach (var ch in channels)
         {
             _channelNames.Add(ch.Name);
             _channelTopics[ch.Name] = ch.Topic;
+            _channelPublic[ch.Name] = ch.IsPublic;
             if (!_channelMessages.ContainsKey(ch.Name))
                 _channelMessages[ch.Name] = [];
         }
@@ -613,8 +660,11 @@ public sealed class MainWindow : Runnable
     /// <summary>
     /// Ensure a channel exists in the left panel list (used for private channels joined via /join).
     /// </summary>
-    public void EnsureChannelInList(string channelName)
+    public void EnsureChannelInList(string channelName, bool? isPublic = null)
     {
+        if (isPublic.HasValue)
+            _channelPublic[channelName] = isPublic.Value;
+
         if (_channelNames.Contains(channelName))
             return;
 
@@ -631,6 +681,7 @@ public sealed class MainWindow : Runnable
     {
         _channelNames.Remove(channelName);
         _channelTopics.Remove(channelName);
+        _channelPublic.Remove(channelName);
         RefreshChannelList();
     }
 
@@ -657,9 +708,76 @@ public sealed class MainWindow : Runnable
     /// </summary>
     public void UpdateStatusBar(string status)
     {
-        var userPart = string.IsNullOrEmpty(_currentUser) ? "" : $" \u2502 User: {_currentUser}";
-        var channelPart = string.IsNullOrEmpty(_currentChannel) ? "" : $" \u2502 #{_currentChannel}";
-        _statusLabel.Text = $" v{AppVersion} \u2502 {status}{userPart}{channelPart}";
+        _connectionStatus = status;
+        _statusLabel.SetNeedsDraw();
+    }
+
+    private static readonly Attribute StatusConnectedAttr = new(new Color(0, 200, 0), Color.None);
+    private static readonly Attribute StatusDisconnectedAttr = new(new Color(220, 50, 50), Color.None);
+    private static readonly Attribute StatusTransitionalAttr = new(new Color(220, 180, 0), Color.None);
+    private static readonly Attribute StatusBrandAttr = new(new Color(218, 165, 32), Color.None);
+
+    private void OnStatusBarDrawContent(object? sender, DrawEventArgs e)
+    {
+        var menuScheme = SchemeManager.GetScheme("Menu");
+        var normalAttr = menuScheme?.Normal ?? _statusLabel.GetAttributeForRole(VisualRole.Normal);
+        var width = _statusLabel.Viewport.Width;
+        if (width <= 0) return;
+
+        // Resolve None background for colored segments
+        var bg = normalAttr.Background;
+        Attribute Resolve(Attribute a) => a.Background == Color.None ? a with { Background = bg } : a;
+
+        int col = 0;
+
+        void Write(string text, Attribute attr)
+        {
+            _statusLabel.SetAttribute(Resolve(attr));
+            foreach (var g in GraphemeHelper.GetGraphemes(text))
+            {
+                var cols = Math.Max(g.GetColumns(), 1);
+                if (col + cols > width) return;
+                _statusLabel.Move(col, 0);
+                _statusLabel.AddStr(g);
+                col += cols;
+            }
+        }
+
+        // EchoHub branding
+        Write(" EchoHub", Resolve(StatusBrandAttr));
+        Write($" \u2502 v{AppVersion} \u2502 ", normalAttr);
+
+        // Connection state with color
+        var statusAttr = _connectionStatus switch
+        {
+            "Connected" => StatusConnectedAttr,
+            "Disconnected" => StatusDisconnectedAttr,
+            _ => StatusTransitionalAttr // Connecting, Reconnecting, Authenticating, etc.
+        };
+        Write(_connectionStatus, Resolve(statusAttr));
+
+        // User
+        if (!string.IsNullOrEmpty(_currentUser))
+            Write($" \u2502 User: {_currentUser}", normalAttr);
+
+        // Channel + type
+        if (!string.IsNullOrEmpty(_currentChannel))
+        {
+            _channelPublic.TryGetValue(_currentChannel, out var isPublic);
+            var typeSuffix = isPublic ? "public" : "private";
+            Write($" \u2502 #{_currentChannel} - {typeSuffix}", normalAttr);
+        }
+
+        // Fill remaining space
+        _statusLabel.SetAttribute(normalAttr);
+        while (col < width)
+        {
+            _statusLabel.Move(col, 0);
+            _statusLabel.AddStr(" ");
+            col++;
+        }
+
+        e.Cancel = true;
     }
 
     /// <summary>
@@ -694,6 +812,7 @@ public sealed class MainWindow : Runnable
 
         RefreshMessages();
         UpdateTopicBar();
+        _statusLabel.SetNeedsDraw();
 
         // Update channel list selection
         var idx = _channelNames.IndexOf(channelName);
@@ -725,6 +844,7 @@ public sealed class MainWindow : Runnable
         _channelMessages.Clear();
         _channelUnread.Clear();
         _channelTopics.Clear();
+        _channelPublic.Clear();
         _currentChannel = string.Empty;
         _currentUser = string.Empty;
         _channelListSource.Update([], [], string.Empty);
@@ -900,10 +1020,26 @@ public sealed class MainWindow : Runnable
                 }
                 break;
 
+            case MessageType.Audio:
+                var audioName = message.AttachmentFileName ?? "unknown";
+                var audioSize = FormatFileSize(message.AttachmentFileSize);
+                var audioLine = BuildChatLineColored(time, senderName, senderColor,
+                    $" \u266a [Audio: {audioName}] [{audioSize}]", ChatColors.AudioAttr);
+                audioLine.AttachmentUrl = message.AttachmentUrl;
+                audioLine.AttachmentFileName = audioName;
+                audioLine.Type = MessageType.Audio;
+                lines.Add(audioLine);
+                break;
+
             case MessageType.File:
                 var fileName = message.AttachmentFileName ?? "unknown";
-                var fileContent = !string.IsNullOrWhiteSpace(message.Content) ? $" {message.Content}" : "";
-                lines.Add(BuildChatLine(time, senderName, senderColor, $" [File: {fileName}]{fileContent}"));
+                var fileSize = FormatFileSize(message.AttachmentFileSize);
+                var fileLine = BuildChatLineColored(time, senderName, senderColor,
+                    $" [File: {fileName}] [{fileSize}]", ChatColors.FileAttr);
+                fileLine.AttachmentUrl = message.AttachmentUrl;
+                fileLine.AttachmentFileName = fileName;
+                fileLine.Type = MessageType.File;
+                lines.Add(fileLine);
                 break;
 
             case MessageType.Text:
@@ -958,6 +1094,20 @@ public sealed class MainWindow : Runnable
             new($"[{time}] ", ChatColors.TimestampAttr),
             new(senderName, senderColor),
             new(suffix, null)
+        };
+        return new ChatLine(segments);
+    }
+
+    /// <summary>
+    /// Build a chat line with a colored suffix (used for audio/file indicators).
+    /// </summary>
+    private static ChatLine BuildChatLineColored(string time, string senderName, Attribute? senderColor, string suffix, Attribute suffixColor)
+    {
+        var segments = new List<ChatSegment>
+        {
+            new($"[{time}] ", ChatColors.TimestampAttr),
+            new(senderName, senderColor),
+            new(suffix, suffixColor)
         };
         return new ChatLine(segments);
     }
@@ -1054,5 +1204,19 @@ public sealed class MainWindow : Runnable
             result.Add(currentLine);
 
         return result;
+    }
+
+    private static string FormatFileSize(long? bytes)
+    {
+        if (bytes is null or 0)
+            return "?";
+
+        return bytes.Value switch
+        {
+            < 1024 => $"{bytes.Value} B",
+            < 1024 * 1024 => $"{bytes.Value / 1024.0:F1} KB",
+            < 1024 * 1024 * 1024 => $"{bytes.Value / (1024.0 * 1024.0):F1} MB",
+            _ => $"{bytes.Value / (1024.0 * 1024.0 * 1024.0):F1} GB"
+        };
     }
 }

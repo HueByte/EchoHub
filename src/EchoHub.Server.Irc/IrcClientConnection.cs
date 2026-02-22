@@ -27,13 +27,19 @@ public sealed class IrcClientConnection : IAsyncDisposable
     public bool IsSasl { get; set; }
     public bool CapNegotiating { get; set; }
 
-    // Channel state
-    public HashSet<string> JoinedChannels { get; } = new(StringComparer.OrdinalIgnoreCase);
+    // Channel state — thread-safe: written by command handler, read by broadcaster threads
+    private readonly HashSet<string> _joinedChannels = new(StringComparer.OrdinalIgnoreCase);
+    private readonly object _channelLock = new();
 
     // Away state
     public string? AwayMessage { get; set; }
 
     public string Hostmask => $"{Nickname}!{Username ?? Nickname}@echohub";
+
+    public void JoinChannel(string channel) { lock (_channelLock) _joinedChannels.Add(channel); }
+    public void LeaveChannel(string channel) { lock (_channelLock) _joinedChannels.Remove(channel); }
+    public bool IsInChannel(string channel) { lock (_channelLock) return _joinedChannels.Contains(channel); }
+    public List<string> GetJoinedChannels() { lock (_channelLock) return [.. _joinedChannels]; }
 
     public IrcClientConnection(TcpClient tcpClient, Stream stream)
     {

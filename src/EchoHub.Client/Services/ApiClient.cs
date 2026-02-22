@@ -18,6 +18,8 @@ public sealed class ApiClient : IDisposable
     public string? RefreshToken => _refreshToken;
     public string BaseUrl { get; }
 
+    public event Action? OnTokensRefreshed;
+
     public ApiClient(string baseUrl)
     {
         BaseUrl = baseUrl.TrimEnd('/');
@@ -66,6 +68,19 @@ public sealed class ApiClient : IDisposable
             ?? throw new InvalidOperationException("Token refresh returned empty response.");
 
         SetTokens(result);
+    }
+
+    public async Task<LoginResponse> LoginWithRefreshTokenAsync(string refreshToken)
+    {
+        var request = new RefreshRequest(refreshToken);
+        var response = await _http.PostAsJsonAsync("/api/auth/refresh", request);
+        await EnsureSuccessAsync(response);
+
+        var result = await response.Content.ReadFromJsonAsync<LoginResponse>()
+            ?? throw new InvalidOperationException("Token refresh returned empty response.");
+
+        SetTokens(result);
+        return result;
     }
 
     public async Task LogoutAsync()
@@ -196,6 +211,23 @@ public sealed class ApiClient : IDisposable
         return await response.Content.ReadFromJsonAsync<MessageDto>();
     }
 
+    public async Task<string> DownloadFileToTempAsync(string relativeUrl, string fileName)
+    {
+        EnsureAuthenticated();
+        var response = await AuthenticatedGetAsync(relativeUrl);
+        await EnsureSuccessAsync(response);
+
+        var tempDir = Path.Combine(Path.GetTempPath(), "EchoHub");
+        Directory.CreateDirectory(tempDir);
+        var tempPath = Path.Combine(tempDir, $"{Guid.NewGuid():N}_{fileName}");
+
+        await using var stream = await response.Content.ReadAsStreamAsync();
+        await using var file = File.Create(tempPath);
+        await stream.CopyToAsync(file);
+
+        return tempPath;
+    }
+
     public async Task<ChannelDto?> CreateChannelAsync(string name, string? topic = null, bool isPublic = true)
     {
         EnsureAuthenticated();
@@ -296,6 +328,7 @@ public sealed class ApiClient : IDisposable
         _refreshToken = result.RefreshToken;
         _expiresAt = result.ExpiresAt;
         _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+        OnTokensRefreshed?.Invoke();
     }
 
     /// <summary>

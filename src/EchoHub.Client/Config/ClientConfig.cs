@@ -20,7 +20,8 @@ public class SavedServer
     public required string Name { get; set; }
     public required string Url { get; set; }
     public string? Username { get; set; }
-    public string? Token { get; set; }
+    public string? RefreshToken { get; set; }
+    public bool RememberMe { get; set; }
     public DateTimeOffset LastConnected { get; set; }
 }
 

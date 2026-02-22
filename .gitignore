@@ -433,3 +433,6 @@ src/EchoHub.Server/uploads/*
 # DocFx generated output
 docs/_site/
 docs/_api_meta/
+
+# Diff files
+*.diff

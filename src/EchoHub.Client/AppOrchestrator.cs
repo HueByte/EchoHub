@@ -22,6 +22,8 @@ public sealed class AppOrchestrator : IDisposable
     private readonly MainWindow _mainWindow;
     private readonly CommandHandler _commandHandler;
     private readonly NotificationSoundService _notificationSound;
+    private readonly AudioPlaybackService _audioPlayback = new();
+    private readonly UpdateChecker _updateService;
 
     private EchoHubConnection? _connection;
     private ApiClient? _apiClient;
@@ -44,9 +46,12 @@ public sealed class AppOrchestrator : IDisposable
         _mainWindow = new MainWindow(app);
         _commandHandler = new CommandHandler();
         _notificationSound = new NotificationSoundService(config.Notifications);
+        _updateService = new UpdateChecker(app);
 
         WireMainWindowEvents();
         WireCommandHandlerEvents();
+
+        _updateService.Start();
 
         _mainWindow.UpdateStatusBar("Disconnected");
     }
@@ -55,6 +60,7 @@ public sealed class AppOrchestrator : IDisposable
     {
         _connection?.DisposeAsync().AsTask().GetAwaiter().GetResult();
         _apiClient?.Dispose();
+        _updateService.Dispose();
     }
 
     // ── Convenience Helpers ────────────────────────────────────────────────
@@ -72,6 +78,7 @@ public sealed class AppOrchestrator : IDisposable
     {
         _mainWindow.OnConnectRequested += HandleConnect;
         _mainWindow.OnDisconnectRequested += HandleDisconnect;
+        _mainWindow.OnLogoutRequested += HandleLogout;
         _mainWindow.OnMessageSubmitted += HandleMessageSubmitted;
         _mainWindow.OnChannelSelected += HandleChannelSelected;
         _mainWindow.OnProfileRequested += HandleProfileRequested;
@@ -80,6 +87,8 @@ public sealed class AppOrchestrator : IDisposable
         _mainWindow.OnSavedServersRequested += HandleSavedServersRequested;
         _mainWindow.OnCreateChannelRequested += HandleCreateChannelRequested;
         _mainWindow.OnDeleteChannelRequested += HandleDeleteChannelRequested;
+        _mainWindow.OnAudioPlayRequested += HandleAudioPlayRequested;
+        _mainWindow.OnFileDownloadRequested += HandleFileDownloadRequested;
     }
 
     // ── Command Handler Wiring ─────────────────────────────────────────────
@@ -235,6 +244,12 @@ public sealed class AppOrchestrator : IDisposable
             var channel = _mainWindow.CurrentChannel;
             if (string.IsNullOrEmpty(channel)) return;
 
+            if (channel == HubConstants.DefaultChannel)
+            {
+                InvokeUI(() => _mainWindow.ShowError($"You cannot leave the #{HubConstants.DefaultChannel} channel."));
+                return;
+            }
+
             try
             {
                 await _connection!.LeaveChannelAsync(channel);
@@ -364,6 +379,16 @@ public sealed class AppOrchestrator : IDisposable
 
     private void HandleConnect()
     {
+        if (IsConnected)
+        {
+            var confirm = MessageBox.Query(_app, "Already Connected",
+                "You are already connected to a server.\nDisconnect and connect to a new one?", "Yes", "Cancel");
+
+            if (confirm != 0) return;
+
+            HandleDisconnect();
+        }
+
         var result = ConnectDialog.Show(_app, _config.SavedServers);
         if (result is null) return;
 
@@ -377,11 +402,54 @@ public sealed class AppOrchestrator : IDisposable
 
             InvokeUI(() => _mainWindow.UpdateStatusBar("Authenticating..."));
 
-            var loginResponse = result.IsRegister
-                ? await _apiClient.RegisterAsync(result.Username, result.Password)
-                : await _apiClient.LoginAsync(result.Username, result.Password);
+            LoginResponse loginResponse;
+
+            if (result.SavedRefreshToken is not null)
+            {
+                try
+                {
+                    loginResponse = await _apiClient.LoginWithRefreshTokenAsync(result.SavedRefreshToken);
+                    Log.Information("Authenticated via saved session for {User}", loginResponse.Username);
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, "Saved session expired or revoked");
+                    ClearSavedToken(result.ServerUrl);
+                    InvokeUI(() =>
+                    {
+                        _mainWindow.UpdateStatusBar("Disconnected");
+                        MessageBox.ErrorQuery(_app, "Session Expired",
+                            "Your saved session has expired or was revoked.\nPlease log in with your password.", "OK");
+                    });
+                    _apiClient.Dispose();
+                    _apiClient = null;
+                    return;
+                }
+            }
+            else if (result.IsRegister)
+            {
+                loginResponse = await _apiClient.RegisterAsync(result.Username, result.Password);
+            }
+            else
+            {
+                loginResponse = await _apiClient.LoginAsync(result.Username, result.Password);
+            }
 
             _currentUsername = loginResponse.Username;
+
+            // Persist rotated refresh tokens for Remember Me
+            _apiClient.OnTokensRefreshed += () =>
+            {
+                if (_apiClient?.RefreshToken is null) return;
+                var config = ConfigManager.Load();
+                var server = config.SavedServers.FirstOrDefault(s =>
+                    string.Equals(s.Url, _apiClient.BaseUrl, StringComparison.OrdinalIgnoreCase));
+                if (server is not null && server.RememberMe)
+                {
+                    server.RefreshToken = _apiClient.RefreshToken;
+                    ConfigManager.Save(config);
+                }
+            };
 
             // Fetch encryption key for E2E message encryption
             InvokeUI(() => _mainWindow.UpdateStatusBar("Fetching encryption key..."));
@@ -437,18 +505,6 @@ public sealed class AppOrchestrator : IDisposable
 
             FetchAndUpdateOnlineUsers();
             SaveServerToConfig(result);
-
-            // Check for newer version in the background
-            _ = Task.Run(async () =>
-            {
-                var newVersion = await UpdateChecker.CheckForUpdateAsync();
-                if (newVersion is not null)
-                {
-                    InvokeUI(() => _mainWindow.AddSystemMessage(
-                        HubConstants.DefaultChannel,
-                        $"A new version of EchoHub is available: v{newVersion} (current: v{MainWindow.AppVersion}). Visit https://github.com/HueByte/EchoHub/releases"));
-                }
-            });
         }, "Connection failed", "Connect");
     }
 
@@ -475,6 +531,38 @@ public sealed class AppOrchestrator : IDisposable
                 _mainWindow.UpdateStatusBar("Disconnected");
             });
         }, "Disconnect error", "Disconnect");
+    }
+
+    private void HandleLogout()
+    {
+        Log.Information("Logging out from server");
+
+        RunAsync(async () =>
+        {
+            if (_apiClient is not null)
+            {
+                var baseUrl = _apiClient.BaseUrl;
+                await _apiClient.LogoutAsync();
+                ClearSavedToken(baseUrl);
+            }
+
+            if (_connection is not null)
+            {
+                await _connection.DisconnectAsync();
+                await _connection.DisposeAsync();
+                _connection = null;
+            }
+
+            _apiClient?.Dispose();
+            _apiClient = null;
+            _joinedChannels.Clear();
+
+            InvokeUI(() =>
+            {
+                _mainWindow.ClearAll();
+                _mainWindow.UpdateStatusBar("Disconnected");
+            });
+        }, "Logout error", "Logout");
     }
 
     private void HandleMessageSubmitted(string channelName, string content)
@@ -722,7 +810,11 @@ public sealed class AppOrchestrator : IDisposable
         }
 
         var serverLines = _config.SavedServers
-            .Select(s => $"{s.Name} ({s.Url}) - {s.Username ?? "?"} - {s.LastConnected:yyyy-MM-dd}")
+            .Select(s =>
+            {
+                var session = !string.IsNullOrEmpty(s.RefreshToken) ? " [session saved]" : "";
+                return $"{s.Name} ({s.Url}) - {s.Username ?? "?"} - {s.LastConnected:yyyy-MM-dd}{session}";
+            })
             .ToList();
 
         MessageBox.Query(_app, "Saved Servers", string.Join("\n", serverLines), "OK");
@@ -796,6 +888,40 @@ public sealed class AppOrchestrator : IDisposable
                 _mainWindow.AddSystemMessage(HubConstants.DefaultChannel, $"Channel #{channel} has been deleted.");
             });
         }, "Failed to delete channel");
+    }
+
+    private void HandleAudioPlayRequested(string attachmentUrl, string fileName)
+    {
+        if (!IsAuthenticated) return;
+
+        RunAsync(async () =>
+        {
+            InvokeUI(() => _mainWindow.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloading {fileName}..."));
+            var tempPath = await _apiClient!.DownloadFileToTempAsync(attachmentUrl, fileName);
+            InvokeUI(() => AudioPlayerDialog.Show(_app, _audioPlayback, tempPath, fileName));
+        }, "Failed to play audio");
+    }
+
+    private void HandleFileDownloadRequested(string attachmentUrl, string fileName)
+    {
+        if (!IsAuthenticated) return;
+
+        RunAsync(async () =>
+        {
+            InvokeUI(() => _mainWindow.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloading {fileName}..."));
+            var tempPath = await _apiClient!.DownloadFileToTempAsync(attachmentUrl, fileName);
+
+            try
+            {
+                var psi = new System.Diagnostics.ProcessStartInfo(tempPath) { UseShellExecute = true };
+                System.Diagnostics.Process.Start(psi);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Failed to open file with default app: {Path}", tempPath);
+                InvokeUI(() => _mainWindow.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloaded to: {tempPath}"));
+            }
+        }, "Failed to download file");
     }
 
     // ── Connection Event Wiring ────────────────────────────────────────────
@@ -897,7 +1023,7 @@ public sealed class AppOrchestrator : IDisposable
             InvokeUI(() =>
             {
                 if (channel.IsPublic)
-                    _mainWindow.EnsureChannelInList(channel.Name);
+                    _mainWindow.EnsureChannelInList(channel.Name, channel.IsPublic);
                 _mainWindow.SetChannelTopic(channel.Name, channel.Topic);
             });
         };
@@ -957,11 +1083,25 @@ public sealed class AppOrchestrator : IDisposable
             Name = new Uri(result.ServerUrl).Host,
             Url = result.ServerUrl,
             Username = result.Username,
-            Token = _apiClient!.Token,
+            RefreshToken = result.RememberMe ? _apiClient!.RefreshToken : null,
+            RememberMe = result.RememberMe,
             LastConnected = DateTimeOffset.Now
         };
         ConfigManager.SaveServer(savedServer);
         _config = ConfigManager.Load();
         Log.Information("Connected successfully to {Url}", result.ServerUrl);
+    }
+
+    private void ClearSavedToken(string serverUrl)
+    {
+        var config = ConfigManager.Load();
+        var server = config.SavedServers.FirstOrDefault(s =>
+            string.Equals(s.Url, serverUrl, StringComparison.OrdinalIgnoreCase));
+        if (server is not null)
+        {
+            server.RefreshToken = null;
+            ConfigManager.Save(config);
+            _config = config;
+        }
     }
 }

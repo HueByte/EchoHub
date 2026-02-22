@@ -1,47 +1,106 @@
-using System.Net.Http.Json;
-using System.Text.Json.Serialization;
+using AlwaysUpToDate;
+
+using EchoHub.Client.UI;
+
+using Serilog;
+
+using Terminal.Gui.App;
 
 namespace EchoHub.Client.Services;
 
-public static class UpdateChecker
+public sealed class UpdateChecker : IDisposable
 {
-    private static readonly Uri ReleaseUrl =
-        new("https://api.github.com/repos/HueByte/EchoHub/releases/latest");
+    private const string ManifestUrl = "https://echohub.voidcube.cloud/api/app/version";
 
-    /// <summary>
-    /// Checks GitHub for a newer release. Returns the new version string if one exists, or null.
-    /// Never throws — all errors are silently swallowed.
-    /// </summary>
-    public static async Task<string?> CheckForUpdateAsync()
+    private readonly Updater _updater;
+    private readonly IApplication _app;
+    private UpdateProgressDialog? _progressDialog;
+
+    public static string CurrentVersion => typeof(UpdateChecker).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
+
+    public UpdateChecker(IApplication app)
     {
-        try
-        {
-            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
-            http.DefaultRequestHeaders.UserAgent.ParseAdd("EchoHub-Client");
+        _app = app;
+        _updater = new Updater(TimeSpan.FromHours(1), ManifestUrl, false);
 
-            var release = await http.GetFromJsonAsync<GitHubRelease>(ReleaseUrl);
-            if (release?.TagName is null)
-                return null;
-
-            var tag = release.TagName.TrimStart('v', 'V');
-            if (!Version.TryParse(tag, out var latest))
-                return null;
-
-            var currentStr = typeof(UpdateChecker).Assembly.GetName().Version?.ToString(3);
-            if (currentStr is null || !Version.TryParse(currentStr, out var current))
-                return null;
-
-            return latest > current ? tag : null;
-        }
-        catch
-        {
-            return null;
-        }
+        _updater.UpdateAvailable += OnUpdateAvailable;
+        _updater.ProgressChanged += OnProgressChanged;
+        _updater.UpdateStarted += OnUpdateStarted;
+        _updater.NoUpdateAvailable += OnNoUpdateAvailable;
+        _updater.OnException += OnException;
     }
 
-    private sealed class GitHubRelease
+    public void Start()
     {
-        [JsonPropertyName("tag_name")]
-        public string? TagName { get; set; }
+#if RELEASE
+        _updater.Start();
+#endif
+    }
+
+    private async void OnUpdateAvailable(string version, string changelogUrl)
+    {
+        Log.Information("Update available: v{Version}", version);
+
+        var confirmed = false;
+        _app.Invoke(() =>
+        {
+            confirmed = UpdateConfirmDialog.Show(_app, CurrentVersion, version);
+
+
+            if (confirmed)
+            {
+                _progressDialog = new UpdateProgressDialog(_app, version);
+
+                // Start the update; progress is reported via OnProgressChanged
+                _ = Task.Run(async () =>
+                {
+                    await _updater.UpdateAsync();
+                });
+
+                _progressDialog?.Show();
+            }
+        });
+    }
+
+    private void OnProgressChanged(UpdateStep step, long itemsProcessed, long? totalItems, double? progressPercentage)
+    {
+        var fraction = progressPercentage.HasValue ? (float)(progressPercentage.Value / 100.0) : 0f;
+        var statusText = $"{step}: {itemsProcessed}/{totalItems ?? 0} ({progressPercentage ?? 0:F0}%)";
+
+        if (!progressPercentage.HasValue)
+        {
+            statusText = $"{step}...";
+        }
+
+        _progressDialog?.UpdateProgress(fraction, statusText);
+    }
+
+    private void OnUpdateStarted(string version)
+    {
+        Log.Information("Update started: v{Version}", version);
+    }
+
+    private void OnNoUpdateAvailable()
+    {
+        Log.Debug("No update available");
+    }
+
+    private void OnException(Exception exception)
+    {
+        Log.Error(exception, "Update check failed");
+        _app.Invoke(() =>
+        {
+            _progressDialog?.Close();
+            _progressDialog = null;
+        });
+    }
+
+    public void Dispose()
+    {
+        _updater.UpdateAvailable -= OnUpdateAvailable;
+        _updater.ProgressChanged -= OnProgressChanged;
+        _updater.UpdateStarted -= OnUpdateStarted;
+        _updater.NoUpdateAvailable -= OnNoUpdateAvailable;
+        _updater.OnException -= OnException;
     }
 }

@@ -17,6 +17,7 @@ public class ChatService : IChatService
     private readonly IEnumerable<IChatBroadcaster> _broadcasters;
     private readonly LinkEmbedService _embedService;
     private readonly IMessageEncryptionService _encryption;
+    private readonly IChannelService _channelService;
     private readonly ILogger<ChatService> _logger;
 
     public ChatService(
@@ -25,6 +26,7 @@ public class ChatService : IChatService
         IEnumerable<IChatBroadcaster> broadcasters,
         LinkEmbedService embedService,
         IMessageEncryptionService encryption,
+        IChannelService channelService,
         ILogger<ChatService> logger)
     {
         _scopeFactory = scopeFactory;
@@ -32,6 +34,7 @@ public class ChatService : IChatService
         _broadcasters = broadcasters;
         _embedService = embedService;
         _encryption = encryption;
+        _channelService = channelService;
         _logger = logger;
     }
 
@@ -95,28 +98,10 @@ public class ChatService : IChatService
     {
         channelName = channelName.ToLowerInvariant().Trim();
 
-        if (!ValidationConstants.ChannelNameRegex().IsMatch(channelName))
-            return ([], "Invalid channel name. Use 2-100 characters: letters, digits, underscores, or hyphens.");
-
-        using var scope = _scopeFactory.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
-
-        var channel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
-        if (channel is null)
-            return ([], $"Channel '{channelName}' does not exist. Create it first via the channel list.");
-
-        // Persist membership so the channel shows in the user's channel list
-        var hasMembership = await db.ChannelMemberships
-            .AnyAsync(m => m.UserId == userId && m.ChannelId == channel.Id);
-        if (!hasMembership)
-        {
-            db.ChannelMemberships.Add(new ChannelMembership
-            {
-                UserId = userId,
-                ChannelId = channel.Id,
-            });
-            await db.SaveChangesAsync();
-        }
+        // Delegate channel validation + membership to ChannelService
+        var (success, error) = await _channelService.EnsureChannelMembershipAsync(userId, channelName);
+        if (!success)
+            return ([], error);
 
         var isNewJoin = _presenceTracker.JoinChannel(username, channelName);
 
@@ -126,7 +111,7 @@ public class ChatService : IChatService
             _logger.LogInformation("{User} joined channel '{Channel}'", username, channelName);
         }
 
-        var history = await GetChannelHistoryInternalAsync(db, channelName, HubConstants.DefaultHistoryCount);
+        var history = await GetChannelHistoryAsync(channelName, HubConstants.DefaultHistoryCount);
         return (history, null);
     }
 
@@ -228,7 +213,7 @@ public class ChatService : IChatService
             null,
             null,
             message.SentAt,
-            embeds);
+            Embeds: embeds);
 
         await BroadcastToAllAsync(b => b.SendMessageToChannelAsync(channelName, messageDto));
 
@@ -335,32 +320,6 @@ public class ChatService : IChatService
             user.StatusMessage, user.Role, user.CreatedAt, user.LastSeenAt);
     }
 
-    public async Task<(string? Topic, bool Exists)> GetChannelTopicAsync(string channelName)
-    {
-        channelName = channelName.ToLowerInvariant().Trim();
-
-        using var scope = _scopeFactory.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
-
-        var channel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
-        if (channel is null) return (null, false);
-
-        return (channel.Topic, true);
-    }
-
-    public async Task<List<ChannelListItem>> GetChannelListAsync()
-    {
-        using var scope = _scopeFactory.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
-
-        var channels = await db.Channels.OrderBy(c => c.Name).ToListAsync();
-
-        return channels.Select(c => new ChannelListItem(
-            c.Name,
-            c.Topic,
-            _presenceTracker.GetOnlineUsersInChannel(c.Name).Count)).ToList();
-    }
-
     public Task<List<string>> GetChannelsForUserAsync(string username)
         => Task.FromResult(_presenceTracker.GetChannelsForUser(username));
 
@@ -457,6 +416,7 @@ public class ChatService : IChatService
                 x.m.AttachmentUrl,
                 x.m.AttachmentFileName,
                 x.m.SentAt,
+                x.m.AttachmentFileSize,
                 embeds);
         }).ToList();
     }

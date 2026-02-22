@@ -108,12 +108,14 @@ while (true)
         builder.Services.AddSingleton<FileStorageService>();
         builder.Services.AddSingleton<LinkEmbedService>();
         builder.Services.AddHostedService<ServerDirectoryService>();
+        builder.Services.AddHostedService<FileCleanupService>();
 
         // ── Encryption ─────────────────────────────────────────────────────
         builder.Services.AddSingleton<IMessageEncryptionService, MessageEncryptionService>();
 
         // ── Chat Service + Broadcasters ─────────────────────────────────────
         builder.Services.AddSingleton<IChatBroadcaster, SignalRBroadcaster>();
+        builder.Services.AddSingleton<IChannelService, ChannelService>();
         builder.Services.AddSingleton<IChatService, ChatService>();
 
         // ── IRC Gateway (optional) ──────────────────────────────────────────

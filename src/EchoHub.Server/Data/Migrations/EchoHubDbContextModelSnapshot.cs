@@ -79,6 +79,9 @@ namespace EchoHub.Server.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("TEXT");
 
+                    b.Property<long?>("AttachmentFileSize")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("AttachmentUrl")
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");

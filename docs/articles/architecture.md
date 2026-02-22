@@ -22,7 +22,7 @@ Shared library containing:
 
 - **Models**: `User`, `Channel`, `Message`, `RefreshToken`
 - **DTOs**: Record types for API requests/responses
-- **Contracts**: `IChatService` (protocol-agnostic chat operations), `IChatBroadcaster` (event fan-out interface), `IEchoHubClient` (SignalR client interface)
+- **Contracts**: `IChatService` (protocol-agnostic chat operations), `IChannelService` (channel CRUD and membership), `IChatBroadcaster` (event fan-out interface), `IEchoHubClient` (SignalR client interface)
 - **Constants**: `ValidationConstants` (shared regex patterns), `HubConstants`
 
 ### EchoHub.Server
@@ -33,7 +33,7 @@ ASP.NET Core web application:
 - **Hubs**: SignalR `ChatHub` -- thin adapter delegating to `IChatService`
 - **Auth**: JWT token service (15-min access tokens, 30-day refresh tokens)
 - **Data**: EF Core with SQLite
-- **Services**: `ChatService` (core business logic), `SignalRBroadcaster`, presence tracking, file storage, image-to-ASCII conversion
+- **Services**: `ChatService` (core business logic), `ChannelService` (channel CRUD and membership), `SignalRBroadcaster`, presence tracking, file storage, image-to-ASCII conversion, `FileCleanupService` (periodic removal of expired uploads), `DataMigrationService` (startup schema/data evolution)
 
 ### EchoHub.Server.Irc
 
@@ -51,9 +51,9 @@ IRC users authenticate with existing EchoHub accounts via `PASS`/`NICK`/`USER` o
 Terminal.Gui v2 TUI application:
 
 - **UI**: Main window, dialogs, chat renderer with ANSI color support
-- **Services**: API client with automatic token refresh, SignalR connection wrapper
-- **Themes**: 13 built-in color themes
-- **Config**: Client configuration management
+- **Services**: API client with automatic token refresh, SignalR connection wrapper, audio playback (NetCoreAudio), automatic update checker (AlwaysUpToDate)
+- **Themes**: 13 built-in color themes (including transparent theme with true terminal transparency)
+- **Config**: Client configuration management with session persistence ("Remember Me" refresh tokens)
 
 ## Communication
 

@@ -418,30 +418,30 @@ public static class ThemeManager
         Base = new ThemeColors
         {
             Foreground = "White",
-            Background = "Black",
+            Background = "None",
             FocusForeground = "BrightCyan",
-            FocusBackground = "Black"
+            FocusBackground = "None"
         },
         Menu = new ThemeColors
         {
             Foreground = "White",
-            Background = "Black",
+            Background = "None",
             FocusForeground = "BrightCyan",
-            FocusBackground = "Black"
+            FocusBackground = "None"
         },
         Dialog = new ThemeColors
         {
             Foreground = "White",
-            Background = "Black",
+            Background = "DarkGray",
             FocusForeground = "BrightCyan",
             FocusBackground = "Black"
         },
         Status = new ThemeColors
         {
             Foreground = "Gray",
-            Background = "Black",
+            Background = "None",
             FocusForeground = "Gray",
-            FocusBackground = "Black"
+            FocusBackground = "None"
         }
     };
 

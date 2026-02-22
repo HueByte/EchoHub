@@ -16,6 +16,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: recursive
+
+      # TEMPORARY: Terminal.Gui submodule's nuget.config breaks restore — remove until PR #4234 is merged
+      - name: Remove submodule NuGet config
+        run: rm -f src/Terminal.Gui/nuget.config
 
       - name: Check for src/ changes
         id: changes

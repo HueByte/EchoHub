@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Specialized;
 using System.Text.RegularExpressions;
+using EchoHub.Core.Models;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.Text;
 using Terminal.Gui.Views;
@@ -22,6 +23,9 @@ public partial class ChatLine
     public int TextLength { get; }
     public Guid? MessageId { get; set; }
     public bool IsMention { get; set; }
+    public string? AttachmentUrl { get; set; }
+    public string? AttachmentFileName { get; set; }
+    public MessageType? Type { get; set; }
 
     public ChatLine(string plainText)
     {
@@ -92,6 +96,15 @@ public partial class ChatLine
         if (currentSegments.Count > 0)
             results.Add(new ChatLine(currentSegments));
 
+        // Propagate attachment/type metadata to all wrapped lines so they remain clickable
+        foreach (var wrapped in results)
+        {
+            wrapped.AttachmentUrl = AttachmentUrl;
+            wrapped.AttachmentFileName = AttachmentFileName;
+            wrapped.Type = Type;
+            wrapped.MessageId = MessageId;
+        }
+
         return results;
     }
 
@@ -118,7 +131,7 @@ public partial class ChatLine
         Color? currentFg = null;
         Color? currentBg = null;
         var defaultFg = defaultAttr?.Foreground;
-        var defaultBg = defaultAttr?.Background ?? Color.Black;
+        var defaultBg = defaultAttr?.Background ?? Color.None;
 
         Attribute? BuildAttr()
         {
@@ -217,6 +230,8 @@ public class ChatListSource : IListDataSource
         RaiseCollectionChanged();
     }
 
+    public ChatLine? GetLine(int index) => index >= 0 && index < _lines.Count ? _lines[index] : null;
+
     public bool IsMarked(int item) => false;
     public void SetMark(int item, bool value) { }
     public IList ToList() => _lines.Select(l => l.ToString()).ToList();
@@ -235,8 +250,10 @@ public class ChatListSource : IListDataSource
         foreach (var segment in chatLine.Segments)
         {
             var attr = segment.Color ?? normalAttr;
+            if (attr.Background == Color.None)
+                attr = attr with { Background = normalAttr.Background };
             if (mentionBg.HasValue)
-                attr = new Attribute(attr.Foreground, mentionBg.Value);
+                attr = attr with { Background = mentionBg.Value };
             listView.SetAttribute(attr);
 
             foreach (var grapheme in GraphemeHelper.GetGraphemes(segment.Text))
@@ -287,10 +304,10 @@ public class ChannelListSource : IListDataSource
     public int MaxItemLength { get; private set; }
     public bool SuspendCollectionChangedEvent { get; set; }
 
-    private static readonly Attribute ActiveAttr = new(Color.White, Color.Black);
-    private static readonly Attribute UnreadAttr = new(Color.BrightCyan, Color.Black);
-    private static readonly Attribute NormalAttr = new(Color.DarkGray, Color.Black);
-    private static readonly Attribute BadgeAttr = new(Color.BrightYellow, Color.Black);
+    private static readonly Attribute ActiveAttr = new(Color.White, Color.None);
+    private static readonly Attribute UnreadAttr = new(Color.BrightCyan, Color.None);
+    private static readonly Attribute NormalAttr = new(Color.DarkGray, Color.None);
+    private static readonly Attribute BadgeAttr = new(Color.BrightYellow, Color.None);
 
     public void Update(List<string> channels, Dictionary<string, int> unread, string activeChannel)
     {
@@ -318,10 +335,15 @@ public class ChannelListSource : IListDataSource
         _unreadCounts.TryGetValue(name, out var unread);
         var hasUnread = unread > 0;
 
+        var normalAttr = listView.GetAttributeForRole(VisualRole.Normal);
         var focusAttr = listView.GetAttributeForRole(VisualRole.Focus);
         var prefix = isActive ? "> " : "  ";
         var channelText = $"#{name}";
         var badge = hasUnread ? $" ({unread})" : "";
+
+        // Resolve Transparent backgrounds to the view's actual background
+        Attribute Resolve(Attribute attr) =>
+            attr.Background == Color.None ? attr with { Background = normalAttr.Background } : attr;
 
         int drawnChars = 0;
 
@@ -332,20 +354,20 @@ public class ChannelListSource : IListDataSource
         }
         else
         {
-            listView.SetAttribute(isActive ? ActiveAttr : NormalAttr);
+            listView.SetAttribute(Resolve(isActive ? ActiveAttr : NormalAttr));
             drawnChars = RenderHelpers.WriteText(listView, prefix, drawnChars, width);
 
-            listView.SetAttribute(isActive ? ActiveAttr : hasUnread ? UnreadAttr : NormalAttr);
+            listView.SetAttribute(Resolve(isActive ? ActiveAttr : hasUnread ? UnreadAttr : NormalAttr));
             drawnChars = RenderHelpers.WriteText(listView, channelText, drawnChars, width);
 
             if (hasUnread)
             {
-                listView.SetAttribute(BadgeAttr);
+                listView.SetAttribute(Resolve(BadgeAttr));
                 drawnChars = RenderHelpers.WriteText(listView, badge, drawnChars, width);
             }
         }
 
-        var fillAttr = selected ? focusAttr : listView.GetAttributeForRole(VisualRole.Normal);
+        var fillAttr = selected ? focusAttr : normalAttr;
         listView.SetAttribute(fillAttr);
         for (int i = drawnChars; i < width; i++)
             listView.AddStr(" ");
@@ -457,14 +479,16 @@ static class RenderHelpers
 /// </summary>
 public static partial class ChatColors
 {
-    public static readonly Attribute TimestampAttr = new(Color.DarkGray, Color.Black);
-    public static readonly Attribute SystemAttr = new(new Color(0, 180, 180), Color.Black);
+    public static readonly Attribute TimestampAttr = new(Color.DarkGray, Color.None);
+    public static readonly Attribute SystemAttr = new(new Color(0, 180, 180), Color.None);
     public static readonly Attribute MentionHighlightAttr = new(Color.White, new Color(80, 40, 0));
-    public static readonly Attribute MentionTextAttr = new(new Color(255, 180, 50), Color.Black);
-    public static readonly Attribute EmbedBorderAttr = new(new Color(91, 155, 213), Color.Black);
-    public static readonly Attribute EmbedTitleAttr = new(Color.White, Color.Black);
-    public static readonly Attribute EmbedDescAttr = new(new Color(160, 160, 160), Color.Black);
-    public static readonly Attribute EmbedUrlAttr = new(new Color(100, 100, 100), Color.Black);
+    public static readonly Attribute MentionTextAttr = new(new Color(255, 180, 50), Color.None);
+    public static readonly Attribute EmbedBorderAttr = new(new Color(91, 155, 213), Color.None);
+    public static readonly Attribute EmbedTitleAttr = new(Color.White, Color.None);
+    public static readonly Attribute EmbedDescAttr = new(new Color(160, 160, 160), Color.None);
+    public static readonly Attribute EmbedUrlAttr = new(new Color(100, 100, 100), Color.None);
+    public static readonly Attribute AudioAttr = new(new Color(180, 100, 255), Color.None);
+    public static readonly Attribute FileAttr = new(new Color(100, 180, 255), Color.None);
 
     /// <summary>
     /// Split text around @mentions, giving each @word the MentionTextAttr accent color.
@@ -513,7 +537,7 @@ public static class ColorHelper
             var r = Convert.ToInt32(hex[..2], 16);
             var g = Convert.ToInt32(hex[2..4], 16);
             var b = Convert.ToInt32(hex[4..6], 16);
-            return new Attribute(new Color(r, g, b), Color.Black);
+            return new Attribute(new Color(r, g, b), Color.None);
         }
         catch
         {

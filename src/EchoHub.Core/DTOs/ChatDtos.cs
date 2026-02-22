@@ -12,6 +12,7 @@ public record MessageDto(
     string? AttachmentUrl,
     string? AttachmentFileName,
     DateTimeOffset SentAt,
+    long? AttachmentFileSize = null,
     List<EmbedDto>? Embeds = null);
 
 public record ChannelDto(

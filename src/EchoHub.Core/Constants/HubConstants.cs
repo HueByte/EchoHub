@@ -6,7 +6,9 @@ public static class HubConstants
     public const string DefaultChannel = "general";
     public const int DefaultHistoryCount = 100;
     public const int MaxMessageLength = 2000;
-    public const int MaxFileSizeBytes = 10 * 1024 * 1024; // 10 MB
+    public const int MaxImageSizeBytes = 10 * 1024 * 1024; // 10 MB
+    public const int MaxAudioFileSizeBytes = 10 * 1024 * 1024; // 10 MB
+    public const int MaxFileSizeBytes = 100 * 1024 * 1024; // 100 MB
     public const int MaxAvatarSizeBytes = 2 * 1024 * 1024; // 2 MB
     public const int MaxMessageNewlines = 30;
     public const int MaxConsecutiveNewlines = 1;

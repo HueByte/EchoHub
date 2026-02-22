@@ -53,4 +53,48 @@ public class FileValidationHelperTests
         FileValidationHelper.IsValidImage(stream);
         Assert.Equal(0, stream.Position);
     }
+
+    // ── IsAudioFile tests ─────────────────────────────────────────────
+
+    [Theory]
+    [InlineData("song.mp3")]
+    [InlineData("track.wav")]
+    [InlineData("audio.ogg")]
+    [InlineData("music.flac")]
+    [InlineData("clip.aac")]
+    [InlineData("podcast.m4a")]
+    [InlineData("old.wma")]
+    public void IsAudioFile_SupportedExtensions_ReturnsTrue(string fileName)
+    {
+        Assert.True(FileValidationHelper.IsAudioFile(fileName));
+    }
+
+    [Theory]
+    [InlineData("song.MP3")]
+    [InlineData("track.Wav")]
+    [InlineData("audio.OGG")]
+    [InlineData("music.FLAC")]
+    public void IsAudioFile_CaseInsensitive_ReturnsTrue(string fileName)
+    {
+        Assert.True(FileValidationHelper.IsAudioFile(fileName));
+    }
+
+    [Theory]
+    [InlineData("document.txt")]
+    [InlineData("report.pdf")]
+    [InlineData("app.exe")]
+    [InlineData("photo.jpg")]
+    [InlineData("image.png")]
+    public void IsAudioFile_NonAudioExtension_ReturnsFalse(string fileName)
+    {
+        Assert.False(FileValidationHelper.IsAudioFile(fileName));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("noextension")]
+    public void IsAudioFile_EmptyOrNoExtension_ReturnsFalse(string fileName)
+    {
+        Assert.False(FileValidationHelper.IsAudioFile(fileName));
+    }
 }
