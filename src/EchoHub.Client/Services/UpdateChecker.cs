@@ -5,6 +5,7 @@ using EchoHub.Client.UI.Dialogs;
 using Serilog;
 
 using Terminal.Gui.App;
+using Terminal.Gui.Views;
 
 namespace EchoHub.Client.Services;
 
@@ -15,6 +16,8 @@ public sealed class UpdateChecker : IDisposable
     private readonly Updater _updater;
     private readonly IApplication _app;
     private UpdateProgressDialog? _progressDialog;
+    private bool _manualCheck;
+
 
     public static string CurrentVersion => typeof(UpdateChecker).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
 
@@ -35,6 +38,20 @@ public sealed class UpdateChecker : IDisposable
 #if RELEASE
         _updater.Start();
 #endif
+    }
+
+
+    public async Task CheckNowAsync()
+    {
+        _manualCheck = true;
+        try
+        {
+            await _updater.CheckForUpdateAsync();
+        }
+        finally
+        {
+            _manualCheck = false;
+        }
     }
 
     private async void OnUpdateAvailable(string version, string changelogUrl)
@@ -83,6 +100,13 @@ public sealed class UpdateChecker : IDisposable
     private void OnNoUpdateAvailable()
     {
         Log.Debug("No update available");
+        if (_manualCheck)
+        {
+            _app.Invoke(() =>
+            {
+                MessageBox.Query(_app, "Check for Updates", $"You are already on the latest version (v{CurrentVersion}).", "OK");
+            });
+        }
     }
 
     private void OnException(Exception exception)
