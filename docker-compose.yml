@@ -1,0 +1,23 @@
+services:
+  echohub-server:
+    build:
+      context: ./src
+      dockerfile: EchoHub.Server/Dockerfile
+    # image: ghcr.io/huebyte/echohub-server:latest  # use this instead of build for pre-built images
+    container_name: echohub-server
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+      # - "6667:6667"   # IRC gateway (enable Irc__Enabled=true first)
+      # - "6697:6697"   # IRC TLS
+    volumes:
+      - echohub-data:/app/data
+    environment:
+      - Server__Name=My EchoHub Server
+      - Server__Description=A self-hosted EchoHub chat server
+      # - Server__PublicServer=true
+      # - Server__PublicHost=echohub.example.com
+      # - Irc__Enabled=true
+
+volumes:
+  echohub-data:
