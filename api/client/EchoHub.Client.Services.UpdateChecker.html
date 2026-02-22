@@ -101,7 +101,7 @@ Class UpdateChecker  <a class="header-action link-secondary" title="View source"
   <div class="markdown conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static class UpdateChecker</code></pre>
+    <pre><code class="lang-csharp hljs">public sealed class UpdateChecker : IDisposable</code></pre>
   </div>
 
 
@@ -115,6 +115,12 @@ Class UpdateChecker  <a class="header-action link-secondary" title="View source"
     </dd>
   </dl>
 
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
 
 
   <dl class="typelist inheritedMembers">
@@ -122,9 +128,6 @@ Class UpdateChecker  <a class="header-action link-secondary" title="View source"
     <dd>
     <div>
       <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
-    </div>
-    <div>
-      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
     </div>
     <div>
       <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
@@ -148,32 +151,121 @@ Class UpdateChecker  <a class="header-action link-secondary" title="View source"
 
 
 
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="EchoHub_Client_Services_UpdateChecker__ctor_" data-uid="EchoHub.Client.Services.UpdateChecker.#ctor*"></a>
+
+  <h3 id="EchoHub_Client_Services_UpdateChecker__ctor_Terminal_Gui_App_IApplication_" data-uid="EchoHub.Client.Services.UpdateChecker.#ctor(Terminal.Gui.App.IApplication)">
+  UpdateChecker(IApplication)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/UpdateChecker.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public UpdateChecker(IApplication app)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>app</code> <a class="xref" href="https://github.com/HueByte/Terminal.Gui/blob/master/Terminal.Gui/App/IApplication.cs">IApplication</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="EchoHub_Client_Services_UpdateChecker_CurrentVersion_" data-uid="EchoHub.Client.Services.UpdateChecker.CurrentVersion*"></a>
+
+  <h3 id="EchoHub_Client_Services_UpdateChecker_CurrentVersion" data-uid="EchoHub.Client.Services.UpdateChecker.CurrentVersion">
+  CurrentVersion
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/UpdateChecker.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static string CurrentVersion { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <h2 class="section" id="methods">Methods
 </h2>
 
 
-  <a id="EchoHub_Client_Services_UpdateChecker_CheckForUpdateAsync_" data-uid="EchoHub.Client.Services.UpdateChecker.CheckForUpdateAsync*"></a>
+  <a id="EchoHub_Client_Services_UpdateChecker_Dispose_" data-uid="EchoHub.Client.Services.UpdateChecker.Dispose*"></a>
 
-  <h3 id="EchoHub_Client_Services_UpdateChecker_CheckForUpdateAsync" data-uid="EchoHub.Client.Services.UpdateChecker.CheckForUpdateAsync">
-  CheckForUpdateAsync()
+  <h3 id="EchoHub_Client_Services_UpdateChecker_Dispose" data-uid="EchoHub.Client.Services.UpdateChecker.Dispose">
+  Dispose()
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/UpdateChecker.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Checks GitHub for a newer release. Returns the new version string if one exists, or null.
-Never throws — all errors are silently swallowed.</p>
-</div>
+  <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static Task&lt;string?&gt; CheckForUpdateAsync()</code></pre>
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
   </div>
 
 
-  <h4 class="section">Returns</h4>
-  <dl class="parameters">
-    <dt><span class="xref">Task</span>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
-    <dd></dd>
-  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_Services_UpdateChecker_Start_" data-uid="EchoHub.Client.Services.UpdateChecker.Start*"></a>
+
+  <h3 id="EchoHub_Client_Services_UpdateChecker_Start" data-uid="EchoHub.Client.Services.UpdateChecker.Start">
+  Start()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/UpdateChecker.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Start()</code></pre>
+  </div>
+
+
 
 
 

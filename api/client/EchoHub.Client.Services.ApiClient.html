@@ -501,6 +501,44 @@ Class ApiClient  <a class="header-action link-secondary" title="View source" hre
 
 
 
+  <a id="EchoHub_Client_Services_ApiClient_DownloadFileToTempAsync_" data-uid="EchoHub.Client.Services.ApiClient.DownloadFileToTempAsync*"></a>
+
+  <h3 id="EchoHub_Client_Services_ApiClient_DownloadFileToTempAsync_System_String_System_String_" data-uid="EchoHub.Client.Services.ApiClient.DownloadFileToTempAsync(System.String,System.String)">
+  DownloadFileToTempAsync(string, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ApiClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;string&gt; DownloadFileToTempAsync(string relativeUrl, string fileName)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>relativeUrl</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>fileName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
   <a id="EchoHub_Client_Services_ApiClient_GetChannelsAsync_" data-uid="EchoHub.Client.Services.ApiClient.GetChannelsAsync*"></a>
 
   <h3 id="EchoHub_Client_Services_ApiClient_GetChannelsAsync" data-uid="EchoHub.Client.Services.ApiClient.GetChannelsAsync">
@@ -720,6 +758,42 @@ Used by EchoHubConnection for SignalR token provider.</p>
     <dt><code>username</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>password</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/AuthDtos.cs">LoginResponse</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_Services_ApiClient_LoginWithRefreshTokenAsync_" data-uid="EchoHub.Client.Services.ApiClient.LoginWithRefreshTokenAsync*"></a>
+
+  <h3 id="EchoHub_Client_Services_ApiClient_LoginWithRefreshTokenAsync_System_String_" data-uid="EchoHub.Client.Services.ApiClient.LoginWithRefreshTokenAsync(System.String)">
+  LoginWithRefreshTokenAsync(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ApiClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;LoginResponse&gt; LoginWithRefreshTokenAsync(string refreshToken)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>refreshToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 
@@ -1176,6 +1250,40 @@ Used by EchoHubConnection for SignalR token provider.</p>
 
 
 
+
+
+
+
+
+
+
+  <h2 class="section" id="events">Events
+</h2>
+
+
+
+  <h3 id="EchoHub_Client_Services_ApiClient_OnTokensRefreshed" data-uid="EchoHub.Client.Services.ApiClient.OnTokensRefreshed">
+  OnTokensRefreshed
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ApiClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action? OnTokensRefreshed</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action">Action</a></dt>
+    <dd></dd>
+  </dl>
 
 
 

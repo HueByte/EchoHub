@@ -101,7 +101,7 @@ TUI Client ──► WebSocket ──► ChatHub ─────┘
 <ul>
 <li><strong>Models</strong>: <code>User</code>, <code>Channel</code>, <code>Message</code>, <code>RefreshToken</code></li>
 <li><strong>DTOs</strong>: Record types for API requests/responses</li>
-<li><strong>Contracts</strong>: <code>IChatService</code> (protocol-agnostic chat operations), <code>IChatBroadcaster</code> (event fan-out interface), <code>IEchoHubClient</code> (SignalR client interface)</li>
+<li><strong>Contracts</strong>: <code>IChatService</code> (protocol-agnostic chat operations), <code>IChannelService</code> (channel CRUD and membership), <code>IChatBroadcaster</code> (event fan-out interface), <code>IEchoHubClient</code> (SignalR client interface)</li>
 <li><strong>Constants</strong>: <code>ValidationConstants</code> (shared regex patterns), <code>HubConstants</code></li>
 </ul>
 <h3 id="echohubserver">EchoHub.Server</h3>
@@ -111,7 +111,7 @@ TUI Client ──► WebSocket ──► ChatHub ─────┘
 <li><strong>Hubs</strong>: SignalR <code>ChatHub</code> -- thin adapter delegating to <code>IChatService</code></li>
 <li><strong>Auth</strong>: JWT token service (15-min access tokens, 30-day refresh tokens)</li>
 <li><strong>Data</strong>: EF Core with SQLite</li>
-<li><strong>Services</strong>: <code>ChatService</code> (core business logic), <code>SignalRBroadcaster</code>, presence tracking, file storage, image-to-ASCII conversion</li>
+<li><strong>Services</strong>: <code>ChatService</code> (core business logic), <code>ChannelService</code> (channel CRUD and membership), <code>SignalRBroadcaster</code>, presence tracking, file storage, image-to-ASCII conversion, <code>FileCleanupService</code> (periodic removal of expired uploads), <code>DataMigrationService</code> (startup schema/data evolution)</li>
 </ul>
 <h3 id="echohubserverirc">EchoHub.Server.Irc</h3>
 <p>IRC protocol gateway (separate project for clean separation of concerns):</p>
@@ -126,9 +126,9 @@ TUI Client ──► WebSocket ──► ChatHub ─────┘
 <p>Terminal.Gui v2 TUI application:</p>
 <ul>
 <li><strong>UI</strong>: Main window, dialogs, chat renderer with ANSI color support</li>
-<li><strong>Services</strong>: API client with automatic token refresh, SignalR connection wrapper</li>
-<li><strong>Themes</strong>: 13 built-in color themes</li>
-<li><strong>Config</strong>: Client configuration management</li>
+<li><strong>Services</strong>: API client with automatic token refresh, SignalR connection wrapper, audio playback (NetCoreAudio), automatic update checker (AlwaysUpToDate)</li>
+<li><strong>Themes</strong>: 13 built-in color themes (including transparent theme with true terminal transparency)</li>
+<li><strong>Config</strong>: Client configuration management with session persistence (&quot;Remember Me&quot; refresh tokens)</li>
 </ul>
 <h2 id="communication">Communication</h2>
 <ul>

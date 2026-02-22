@@ -151,8 +151,8 @@ Class IrcCommandHandler  <a class="header-action link-secondary" title="View sou
 
   <a id="EchoHub_Server_Irc_IrcCommandHandler__ctor_" data-uid="EchoHub.Server.Irc.IrcCommandHandler.#ctor*"></a>
 
-  <h3 id="EchoHub_Server_Irc_IrcCommandHandler__ctor_EchoHub_Server_Irc_IrcClientConnection_EchoHub_Server_Irc_IrcOptions_EchoHub_Core_Contracts_IChatService_Microsoft_Extensions_Logging_ILogger_" data-uid="EchoHub.Server.Irc.IrcCommandHandler.#ctor(EchoHub.Server.Irc.IrcClientConnection,EchoHub.Server.Irc.IrcOptions,EchoHub.Core.Contracts.IChatService,Microsoft.Extensions.Logging.ILogger)">
-  IrcCommandHandler(IrcClientConnection, IrcOptions, IChatService, ILogger)
+  <h3 id="EchoHub_Server_Irc_IrcCommandHandler__ctor_EchoHub_Server_Irc_IrcClientConnection_EchoHub_Server_Irc_IrcOptions_EchoHub_Core_Contracts_IChatService_EchoHub_Core_Contracts_IChannelService_EchoHub_Core_Contracts_IMessageEncryptionService_Microsoft_Extensions_Logging_ILogger_" data-uid="EchoHub.Server.Irc.IrcCommandHandler.#ctor(EchoHub.Server.Irc.IrcClientConnection,EchoHub.Server.Irc.IrcOptions,EchoHub.Core.Contracts.IChatService,EchoHub.Core.Contracts.IChannelService,EchoHub.Core.Contracts.IMessageEncryptionService,Microsoft.Extensions.Logging.ILogger)">
+  IrcCommandHandler(IrcClientConnection, IrcOptions, IChatService, IChannelService, IMessageEncryptionService, ILogger)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server.Irc/IrcCommandHandler.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -160,7 +160,7 @@ Class IrcCommandHandler  <a class="header-action link-secondary" title="View sou
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public IrcCommandHandler(IrcClientConnection conn, IrcOptions options, IChatService chatService, ILogger logger)</code></pre>
+    <pre><code class="lang-csharp hljs">public IrcCommandHandler(IrcClientConnection conn, IrcOptions options, IChatService chatService, IChannelService channelService, IMessageEncryptionService encryption, ILogger logger)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -170,6 +170,10 @@ Class IrcCommandHandler  <a class="header-action link-secondary" title="View sou
     <dt><code>options</code> <a class="xref" href="EchoHub.Server.Irc.IrcOptions.html">IrcOptions</a></dt>
     <dd></dd>
     <dt><code>chatService</code> <a class="xref" href="../core/EchoHub.Core.Contracts.IChatService.html">IChatService</a></dt>
+    <dd></dd>
+    <dt><code>channelService</code> <a class="xref" href="../core/EchoHub.Core.Contracts.IChannelService.html">IChannelService</a></dt>
+    <dd></dd>
+    <dt><code>encryption</code> <a class="xref" href="../core/EchoHub.Core.Contracts.IMessageEncryptionService.html">IMessageEncryptionService</a></dt>
     <dd></dd>
     <dt><code>logger</code> <span class="xref">ILogger</span></dt>
     <dd></dd>

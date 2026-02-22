@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>v0.2.5 - Session Persistence, Auto-Updates, Audio &amp; Transparent Theme | EchoHub Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="v0.2.5 - Session Persistence, Auto-Updates, Audio &amp; Transparent Theme | EchoHub Documentation ">
+      
+      
+      <link rel="icon" href="../images/hue_icon.svg">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/blob/master/docs/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/hue_icon.svg" alt="EchoHub">
+            EchoHub
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="v025---session-persistence-auto-updates-audio--transparent-theme">v0.2.5 - Session Persistence, Auto-Updates, Audio &amp; Transparent Theme</h1>
+
+<h2 id="features">Features</h2>
+<h3 id="audio-message-support">Audio Message Support</h3>
+<ul>
+<li>New <code>Audio</code> message type — uploaded audio files (<code>.mp3</code>, <code>.wav</code>, <code>.ogg</code>, <code>.flac</code>, <code>.aac</code>, <code>.m4a</code>, <code>.wma</code>) are automatically detected and categorized</li>
+<li>TUI client renders audio messages with <code>♪ [Audio: filename] (Enter to play)</code> indicator</li>
+<li>Press Enter on an audio message to open the <strong>Audio Player dialog</strong> with animated wave visualization, play/pause/stop controls, and volume slider</li>
+<li>Per-type upload limits: <strong>10 MB</strong> images, <strong>10 MB</strong> audio, <strong>100 MB</strong> generic files (with Kestrel request size configured to match)</li>
+<li><code>AudioPlaybackService</code> enhanced with pause/resume, volume control, and playback-finished events</li>
+<li>Fixed: wrapped audio/file messages now remain clickable on all lines (attachment metadata propagated through word-wrap)</li>
+<li>IRC gateway formats audio messages as <code>♪ [Audio: filename] url</code></li>
+<li>Server detects audio files by extension via <code>FileValidationHelper.IsAudioFile()</code></li>
+</ul>
+<h3 id="file-downloads">File Downloads</h3>
+<ul>
+<li>Press Enter on a file message in the TUI client to download and open it with the system default application</li>
+<li><code>ApiClient.DownloadFileAsync()</code> streams file downloads from the server</li>
+<li>File and audio messages in the chat list now show colored indicators with interaction hints</li>
+</ul>
+<h3 id="file-cleanup-service">File Cleanup Service</h3>
+<ul>
+<li><code>FileCleanupService</code> (BackgroundService) periodically removes old uploaded files</li>
+<li>Configurable via <code>Storage:CleanupIntervalHours</code> (default 1h) and <code>Storage:RetentionDays</code> (default 30d)</li>
+</ul>
+<h3 id="data-migration-service">Data Migration Service</h3>
+<ul>
+<li><code>DataMigrationService</code> runs at startup to handle schema/data evolution</li>
+<li>Ensures <code>#general</code> channel and pre-existing channels are marked public</li>
+<li>Migrates legacy ANSI escape codes in image messages to printable color tags (<code>{F:RRGGBB}</code>, <code>{B:RRGGBB}</code>, <code>{X}</code>)</li>
+<li>Migrates legacy single-object <code>EmbedJson</code> to array format</li>
+<li>Promotes usernames listed in <code>Server:Admins</code> config to Admin role</li>
+</ul>
+<h3 id="true-transparent-background">True Transparent Background</h3>
+<ul>
+<li>Transparent theme now uses the terminal's native background instead of solid black</li>
+<li>Powered by <code>Color.None</code> (alpha=0) which emits ANSI <code>CSI 49m</code> (default background) instead of explicit RGB</li>
+<li>Terminal transparency, acrylic, wallpaper effects now show through the TUI</li>
+<li>Dialogs retain solid <code>DarkGray</code> background for readability</li>
+<li>Uses local Terminal.Gui fork (submodule) with transparent color support pending upstream merge (<a href="https://github.com/gui-cs/Terminal.Gui/pull/4234">gui-cs/Terminal.Gui#4234</a>)</li>
+</ul>
+<h3 id="enhanced-status-bar">Enhanced Status Bar</h3>
+<ul>
+<li>Status bar now shows <strong>EchoHub</strong> branding at the start</li>
+<li>Connection state is color-coded: green (Connected), red (Disconnected), yellow (transitional states like Connecting, Reconnecting, Authenticating)</li>
+<li>Current channel shows its type: <code>#channel - public</code> or <code>#channel - private</code></li>
+</ul>
+<h3 id="remember-me-session-persistence">Remember Me (Session Persistence)</h3>
+<ul>
+<li>&quot;Remember me&quot; checkbox in the connect dialog — saves a 30-day refresh token so users can reconnect without entering their password</li>
+<li>Saved servers with active sessions show <code>[session]</code> indicator in the connect dialog and saved servers list</li>
+<li>Token-based login: selecting a saved server with a session lets you click Login with an empty password</li>
+<li>Graceful expiry handling: if the saved session is expired or revoked, shows an error and prompts for password</li>
+<li>Refresh token rotation: rotated tokens are automatically persisted to config so the session stays valid across refreshes</li>
+<li>New &quot;Logout&quot; menu item (Server menu): revokes the refresh token server-side and clears the saved session</li>
+<li>Removed dead <code>SavedServer.Token</code> field (stored 15-min access token that was never read back)</li>
+</ul>
+<h3 id="automatic-update-checking">Automatic Update Checking</h3>
+<ul>
+<li><code>UpdateChecker</code> rewritten to use the <a href="https://github.com/AuriRex/AlwaysUpToDate">AlwaysUpToDate</a> library for self-updating</li>
+<li>Polls the EchoHub version manifest hourly (active only in <code>RELEASE</code> builds)</li>
+<li><code>UpdateConfirmDialog</code> shows current vs. available version with Update/Cancel buttons</li>
+<li><code>UpdateProgressDialog</code> displays real-time download progress bar</li>
+<li>Errors are logged via Serilog instead of being silently swallowed</li>
+</ul>
+<h3 id="windows-installer">Windows Installer</h3>
+<ul>
+<li>New Inno Setup script (<code>installer/Installer.iss</code>) to build a Windows installer</li>
+<li>Auto-reads product version from the built EXE</li>
+<li>User-level install by default (no admin required), with admin override option</li>
+<li>Creates desktop and quick-launch shortcuts (optional)</li>
+<li>Supports English and German languages</li>
+</ul>
+<h3 id="application-icons">Application Icons</h3>
+<ul>
+<li>New <code>hue_icon</code> branding assets (ICO, PNG, SVG) in <code>assets/</code></li>
+<li>Application icon set on both Client and Server projects</li>
+</ul>
+<h3 id="general-channel-protection">#general Channel Protection</h3>
+<ul>
+<li><code>#general</code> channel is now auto-recreated if somehow missing (both in <code>GetChannels</code> endpoint and <code>JoinChannel</code> flow)</li>
+<li>Users cannot <code>/leave</code> the #general channel (client-side guard)</li>
+<li>Connecting while already connected now prompts to disconnect first instead of silently leaking the previous connection</li>
+</ul>
+<h2 id="fixes">Fixes</h2>
+<h3 id="irc-gateway">IRC Gateway</h3>
+<ul>
+<li><strong>Fixed: IRC JOIN history replay showed encrypted gibberish</strong> — <code>IrcCommandHandler.HandleJoinAsync</code> now decrypts channel history before formatting for IRC clients (history was encrypted for SignalR transport but sent raw to IRC)</li>
+<li><strong>Fixed: <code>JoinedChannels</code> race condition</strong> — <code>IrcClientConnection.JoinedChannels</code> replaced with thread-safe methods (<code>JoinChannel</code>, <code>LeaveChannel</code>, <code>IsInChannel</code>, <code>GetJoinedChannels</code>) using lock synchronization; prevents crashes when broadcaster threads read while the command handler writes</li>
+<li><strong>Fixed: <code>RequireRegistered</code> fire-and-forget</strong> — converted from sync <code>bool</code> to <code>async Task&lt;bool&gt;</code> (<code>RequireRegisteredAsync</code>) so the error reply is properly awaited before the handler returns</li>
+</ul>
+<h3 id="channelservice-extraction">ChannelService Extraction</h3>
+<ul>
+<li>Extracted channel management logic from <code>ChannelsController</code> and <code>ChatService</code> into a dedicated <code>IChannelService</code> / <code>ChannelService</code></li>
+<li><code>ChannelsController</code> is now a thin adapter — delegates CRUD operations to <code>IChannelService</code> and maps <code>ChannelError</code> to HTTP status codes</li>
+<li><code>ChatService.JoinChannelAsync</code> delegates channel validation + membership to <code>IChannelService.EnsureChannelMembershipAsync()</code></li>
+<li>New <code>ChannelOperationResult</code> result type with <code>ChannelError</code> enum for typed error handling across service boundaries</li>
+<li>IRC gateway uses <code>IChannelService</code> for topic queries and channel listing (instead of <code>IChatService</code>)</li>
+</ul>
+<h3 id="echohub-branding">EchoHub Branding</h3>
+<ul>
+<li>Status bar &quot;EchoHub&quot; text now uses golden color (218, 165, 32)</li>
+</ul>
+<h2 id="infrastructure">Infrastructure</h2>
+<ul>
+<li>Audio MIME types in <code>FilesController</code> (mp3, wav, ogg, flac, aac, m4a, wma)</li>
+<li>CI workflows updated to handle Terminal.Gui submodule <code>nuget.config</code> workaround (<code>rm -f</code> step)</li>
+<li>Root <code>nuget.config</code> added for package source management</li>
+<li>Terminal.Gui formatting excluded from CI format checks</li>
+<li>Recursive submodule fetching enabled in CI workflows</li>
+<li><code>Server:Admins</code> config array in <code>appsettings.example.json</code> for designating admin usernames</li>
+<li><code>Storage:CleanupIntervalHours</code> and <code>Storage:RetentionDays</code> added to <code>appsettings.example.json</code></li>
+<li><code>FakeChannelService</code> test helper added for IRC unit tests</li>
+<li>Test suites: ChatLine, CommandHandler, DataMigrationService, FileValidationHelper, ImageToAsciiService, IrcMessageFormatter, JwtTokenService, LinkEmbedService</li>
+<li>IRC abstraction layer test suite: IrcMessage parsing, IrcMessageFormatter, IrcClientConnection, IrcCommandHandler, IrcBroadcaster</li>
+<li>Test helpers: <code>TestDuplexStream</code>, <code>TestIrcConnectionFactory</code>, <code>FakeChatService</code>, <code>FakeChannelService</code>, <code>FakeEncryptionService</code> for IRC unit testing without network I/O</li>
+<li>346 total tests</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/HueByte/EchoHub/blob/master/docs/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a><span class='footer-sep'>&middot;</span><span class='footer-credit'>Built with <a href='https://dotnet.github.io/docfx'>DocFX</a></span></div></div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -183,8 +183,8 @@ Class ConnectDialogResult  <a class="header-action link-secondary" title="View s
 
   <a id="EchoHub_Client_UI_ConnectDialogResult__ctor_" data-uid="EchoHub.Client.UI.ConnectDialogResult.#ctor*"></a>
 
-  <h3 id="EchoHub_Client_UI_ConnectDialogResult__ctor_System_String_System_String_System_String_System_Boolean_" data-uid="EchoHub.Client.UI.ConnectDialogResult.#ctor(System.String,System.String,System.String,System.Boolean)">
-  ConnectDialogResult(string, string, string, bool)
+  <h3 id="EchoHub_Client_UI_ConnectDialogResult__ctor_System_String_System_String_System_String_System_Boolean_System_Boolean_System_String_" data-uid="EchoHub.Client.UI.ConnectDialogResult.#ctor(System.String,System.String,System.String,System.Boolean,System.Boolean,System.String)">
+  ConnectDialogResult(string, string, string, bool, bool, string?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ConnectDialog.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -193,7 +193,7 @@ Class ConnectDialogResult  <a class="header-action link-secondary" title="View s
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public ConnectDialogResult(string ServerUrl, string Username, string Password, bool IsRegister)</code></pre>
+    <pre><code class="lang-csharp hljs">public ConnectDialogResult(string ServerUrl, string Username, string Password, bool IsRegister, bool RememberMe, string? SavedRefreshToken)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -205,6 +205,10 @@ Class ConnectDialogResult  <a class="header-action link-secondary" title="View s
     <dt><code>Password</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>IsRegister</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+    <dt><code>RememberMe</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+    <dt><code>SavedRefreshToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 
@@ -316,6 +320,68 @@ Class ConnectDialogResult  <a class="header-action link-secondary" title="View s
 
 
 
+  <a id="EchoHub_Client_UI_ConnectDialogResult_RememberMe_" data-uid="EchoHub.Client.UI.ConnectDialogResult.RememberMe*"></a>
+
+  <h3 id="EchoHub_Client_UI_ConnectDialogResult_RememberMe" data-uid="EchoHub.Client.UI.ConnectDialogResult.RememberMe">
+  RememberMe
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ConnectDialog.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool RememberMe { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_ConnectDialogResult_SavedRefreshToken_" data-uid="EchoHub.Client.UI.ConnectDialogResult.SavedRefreshToken*"></a>
+
+  <h3 id="EchoHub_Client_UI_ConnectDialogResult_SavedRefreshToken" data-uid="EchoHub.Client.UI.ConnectDialogResult.SavedRefreshToken">
+  SavedRefreshToken
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ConnectDialog.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? SavedRefreshToken { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="EchoHub_Client_UI_ConnectDialogResult_ServerUrl_" data-uid="EchoHub.Client.UI.ConnectDialogResult.ServerUrl*"></a>
 
   <h3 id="EchoHub_Client_UI_ConnectDialogResult_ServerUrl" data-uid="EchoHub.Client.UI.ConnectDialogResult.ServerUrl">
@@ -384,8 +450,8 @@ Class ConnectDialogResult  <a class="header-action link-secondary" title="View s
 
   <a id="EchoHub_Client_UI_ConnectDialogResult_Deconstruct_" data-uid="EchoHub.Client.UI.ConnectDialogResult.Deconstruct*"></a>
 
-  <h3 id="EchoHub_Client_UI_ConnectDialogResult_Deconstruct_System_String__System_String__System_String__System_Boolean__" data-uid="EchoHub.Client.UI.ConnectDialogResult.Deconstruct(System.String@,System.String@,System.String@,System.Boolean@)">
-  Deconstruct(out string, out string, out string, out bool)
+  <h3 id="EchoHub_Client_UI_ConnectDialogResult_Deconstruct_System_String__System_String__System_String__System_Boolean__System_Boolean__System_String__" data-uid="EchoHub.Client.UI.ConnectDialogResult.Deconstruct(System.String@,System.String@,System.String@,System.Boolean@,System.Boolean@,System.String@)">
+  Deconstruct(out string, out string, out string, out bool, out bool, out string?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/ConnectDialog.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -393,7 +459,7 @@ Class ConnectDialogResult  <a class="header-action link-secondary" title="View s
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public void Deconstruct(out string ServerUrl, out string Username, out string Password, out bool IsRegister)</code></pre>
+    <pre><code class="lang-csharp hljs">public void Deconstruct(out string ServerUrl, out string Username, out string Password, out bool IsRegister, out bool RememberMe, out string? SavedRefreshToken)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -405,6 +471,10 @@ Class ConnectDialogResult  <a class="header-action link-secondary" title="View s
     <dt><code>Password</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>IsRegister</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+    <dt><code>RememberMe</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+    <dt><code>SavedRefreshToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 
