@@ -22,12 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      # TEMPORARY: Terminal.Gui submodule's nuget.config breaks restore — remove until PR #4234 is merged
-      - name: Remove submodule NuGet config
-        run: rm -f src/Terminal.Gui/nuget.config
 
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
@@ -35,7 +29,7 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Check formatting
-        run: dotnet format src/EchoHub.slnx --verify-no-changes --verbosity diagnostic --exclude src/Terminal.Gui/
+        run: dotnet format src/EchoHub.slnx --verify-no-changes --verbosity diagnostic
 
   build-and-test:
     name: Build & Test
@@ -44,11 +38,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          submodules: recursive
-
-      # TEMPORARY: Terminal.Gui submodule's nuget.config breaks restore — remove until PR #4234 is merged
-      - name: Remove submodule NuGet config
-        run: rm -f src/Terminal.Gui/nuget.config
 
       - name: Check for src/ changes
         id: changes
