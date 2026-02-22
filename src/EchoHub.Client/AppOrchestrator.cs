@@ -3,6 +3,8 @@ using EchoHub.Client.Config;
 using EchoHub.Client.Services;
 using EchoHub.Client.Themes;
 using EchoHub.Client.UI;
+using EchoHub.Client.UI.Chat;
+using EchoHub.Client.UI.Dialogs;
 using EchoHub.Core.Constants;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
@@ -14,28 +16,21 @@ namespace EchoHub.Client;
 
 /// <summary>
 /// Central orchestrator for the EchoHub TUI client.
-/// Owns session state and wires UI events to service calls.
+/// Wires UI events to service calls and connection events to UI updates.
 /// </summary>
 public sealed class AppOrchestrator : IDisposable
 {
     private readonly IApplication _app;
     private readonly MainWindow _mainWindow;
+    private readonly ChatMessageManager _messageManager;
     private readonly CommandHandler _commandHandler;
     private readonly NotificationSoundService _notificationSound;
     private readonly AudioPlaybackService _audioPlayback = new();
     private readonly UpdateChecker _updateService;
+    private readonly ConnectionManager _conn = new();
 
-    private EchoHubConnection? _connection;
-    private ApiClient? _apiClient;
-    private readonly ClientEncryptionService _encryption = new();
     private ClientConfig _config;
-    private UserStatus _currentStatus = UserStatus.Online;
-    private string? _currentStatusMessage;
-    private string _currentUsername = string.Empty;
-    private readonly HashSet<string> _joinedChannels = [];
-
-    private bool IsConnected => _connection is not null && _connection.IsConnected;
-    private bool IsAuthenticated => _apiClient is not null;
+    private readonly UserSession _session = new();
 
     public MainWindow MainWindow => _mainWindow;
 
@@ -43,13 +38,15 @@ public sealed class AppOrchestrator : IDisposable
     {
         _app = app;
         _config = config;
-        _mainWindow = new MainWindow(app);
+        _messageManager = new ChatMessageManager();
+        _mainWindow = new MainWindow(app, _messageManager);
         _commandHandler = new CommandHandler();
         _notificationSound = new NotificationSoundService(config.Notifications);
         _updateService = new UpdateChecker(app);
 
         WireMainWindowEvents();
         WireCommandHandlerEvents();
+        WireConnectionManagerEvents();
 
         _updateService.Start();
 
@@ -58,8 +55,7 @@ public sealed class AppOrchestrator : IDisposable
 
     public void Dispose()
     {
-        _connection?.DisposeAsync().AsTask().GetAwaiter().GetResult();
-        _apiClient?.Dispose();
+        _conn.DisposeAsync().AsTask().GetAwaiter().GetResult();
         _updateService.Dispose();
     }
 
@@ -95,283 +91,385 @@ public sealed class AppOrchestrator : IDisposable
 
     private void WireCommandHandlerEvents()
     {
-        _commandHandler.OnSetStatus += async (status, message) =>
+        _commandHandler.OnSetStatus += HandleCmdSetStatus;
+        _commandHandler.OnSetNick += HandleCmdSetNick;
+        _commandHandler.OnSetColor += HandleCmdSetColor;
+        _commandHandler.OnSetTheme += HandleCmdSetTheme;
+        _commandHandler.OnSendFile += HandleCmdSendFile;
+        _commandHandler.OnSetAvatar += HandleCmdSetAvatar;
+        _commandHandler.OnOpenProfile += HandleCmdOpenProfile;
+        _commandHandler.OnOpenServers += HandleCmdOpenServers;
+        _commandHandler.OnJoinChannel += HandleCmdJoinChannel;
+        _commandHandler.OnLeaveChannel += HandleCmdLeaveChannel;
+        _commandHandler.OnSetTopic += HandleCmdSetTopic;
+        _commandHandler.OnListUsers += HandleCmdListUsers;
+        _commandHandler.OnKickUser += HandleCmdKickUser;
+        _commandHandler.OnBanUser += HandleCmdBanUser;
+        _commandHandler.OnUnbanUser += HandleCmdUnbanUser;
+        _commandHandler.OnMuteUser += HandleCmdMuteUser;
+        _commandHandler.OnUnmuteUser += HandleCmdUnmuteUser;
+        _commandHandler.OnAssignRole += HandleCmdAssignRole;
+        _commandHandler.OnNukeChannel += HandleCmdNukeChannel;
+        _commandHandler.OnTestSound += HandleCmdTestSound;
+        _commandHandler.OnQuit += HandleCmdQuit;
+    }
+
+    // ── Command Handlers ──────────────────────────────────────────────────
+
+    private async Task HandleCmdSetStatus(UserStatus status, string? message)
+    {
+        if (!_conn.IsConnected) return;
+
+        await _conn.UpdateStatusAsync(status, message);
+        _session.Status = status;
+        _session.StatusMessage = message;
+    }
+
+    private async Task HandleCmdSetNick(string displayName)
+    {
+        if (!_conn.IsAuthenticated) return;
+
+        await _conn.Api!.UpdateProfileAsync(new UpdateProfileRequest(DisplayName: displayName));
+        InvokeUI(() =>
         {
-            if (!IsConnected) return;
+            _mainWindow.SetCurrentUser(displayName);
+            _mainWindow.UpdateStatusBar("Connected");
+        });
+    }
 
-            await _connection!.UpdateStatusAsync(status, message);
-            _currentStatus = status;
-            _currentStatusMessage = message;
-        };
+    private async Task HandleCmdSetColor(string color)
+    {
+        if (!_conn.IsAuthenticated) return;
+        await _conn.Api!.UpdateProfileAsync(new UpdateProfileRequest(NicknameColor: color));
+    }
 
-        _commandHandler.OnSetNick += async (displayName) =>
+    private Task HandleCmdSetTheme(string name)
+    {
+        InvokeUI(() => HandleThemeSelected(name));
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleCmdSendFile(string target, string? size)
+    {
+        if (!_conn.IsAuthenticated || !_conn.IsConnected) return;
+
+        var channel = _mainWindow.CurrentChannel;
+        if (string.IsNullOrEmpty(channel)) return;
+
+        try
         {
-            if (!IsAuthenticated) return;
+            if (Uri.TryCreate(target, UriKind.Absolute, out var uri)
+                && (uri.Scheme == "http" || uri.Scheme == "https"))
+            {
+                await _conn.Api!.SendUrlAsync(channel, target, size);
+            }
+            else
+            {
+                await using var stream = File.OpenRead(target);
+                var fileName = Path.GetFileName(target);
+                await _conn.Api!.UploadFileAsync(channel, stream, fileName, size);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "File send failed for {Target}", target);
+            InvokeUI(() => _mainWindow.ShowError($"Send failed: {ex.Message}"));
+        }
+    }
 
-            await _apiClient!.UpdateProfileAsync(new UpdateProfileRequest(DisplayName: displayName));
+    private async Task HandleCmdSetAvatar(string target)
+    {
+        if (!_conn.IsAuthenticated) return;
+
+        try
+        {
+            await AvatarHelper.UploadAsync(_conn.Api!, target);
+            var channel = _mainWindow.CurrentChannel;
+            if (!string.IsNullOrEmpty(channel))
+                InvokeUI(() => _messageManager.AddSystemMessage(channel, "Avatar updated."));
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Avatar upload failed for {Target}", target);
+            InvokeUI(() => _mainWindow.ShowError($"Avatar upload failed: {ex.Message}"));
+        }
+    }
+
+    private Task HandleCmdOpenProfile(string? username)
+    {
+        InvokeUI(() => HandleViewProfile(username));
+        return Task.CompletedTask;
+    }
+
+    private Task HandleCmdOpenServers()
+    {
+        InvokeUI(HandleSavedServersRequested);
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleCmdJoinChannel(string channelName)
+    {
+        if (!_conn.IsConnected) return;
+
+        try
+        {
+            var history = await _conn.JoinChannelAsync(channelName);
             InvokeUI(() =>
             {
-                _mainWindow.SetCurrentUser(displayName);
-                _mainWindow.UpdateStatusBar("Connected");
+                _mainWindow.EnsureChannelInList(channelName);
+                _mainWindow.SwitchToChannel(channelName);
+                if (history.Count > 0)
+                    _messageManager.LoadHistory(channelName, history);
+            });
+        }
+        catch (Exception ex)
+        {
+            InvokeUI(() => _mainWindow.ShowError($"Failed to join channel: {ex.Message}"));
+        }
+    }
+
+    private async Task HandleCmdLeaveChannel()
+    {
+        if (!_conn.IsConnected) return;
+
+        var channel = _mainWindow.CurrentChannel;
+        if (string.IsNullOrEmpty(channel)) return;
+
+        if (channel == HubConstants.DefaultChannel)
+        {
+            InvokeUI(() => _mainWindow.ShowError($"You cannot leave the #{HubConstants.DefaultChannel} channel."));
+            return;
+        }
+
+        try
+        {
+            await _conn.LeaveChannelAsync(channel);
+            InvokeUI(() => _messageManager.AddSystemMessage(channel, $"You left #{channel}"));
+        }
+        catch (Exception ex)
+        {
+            InvokeUI(() => _mainWindow.ShowError($"Failed to leave channel: {ex.Message}"));
+        }
+    }
+
+    private async Task HandleCmdSetTopic(string topic)
+    {
+        if (!_conn.IsAuthenticated) return;
+
+        var channel = _mainWindow.CurrentChannel;
+        if (string.IsNullOrEmpty(channel)) return;
+
+        try
+        {
+            await _conn.Api!.UpdateChannelTopicAsync(channel, topic);
+            InvokeUI(() =>
+            {
+                _mainWindow.SetChannelTopic(channel, topic);
+                _messageManager.AddSystemMessage(channel, $"Topic set to: {topic}");
+            });
+        }
+        catch (Exception ex)
+        {
+            InvokeUI(() => _mainWindow.ShowError($"Failed to set topic: {ex.Message}"));
+        }
+    }
+
+    private async Task HandleCmdListUsers()
+    {
+        if (!_conn.IsConnected) return;
+
+        var channel = _mainWindow.CurrentChannel;
+        if (string.IsNullOrEmpty(channel)) return;
+
+        try
+        {
+            var users = await _conn.GetOnlineUsersAsync(channel);
+            InvokeUI(() =>
+            {
+                _messageManager.AddSystemMessage(channel, $"Online users in #{channel}:");
+                foreach (var user in users)
+                {
+                    var displayName = user.DisplayName ?? user.Username;
+                    var statusText = user.Status.ToString();
+                    if (!string.IsNullOrWhiteSpace(user.StatusMessage))
+                        statusText += $" - {user.StatusMessage}";
+                    _messageManager.AddSystemMessage(channel, $"  {displayName} ({statusText})");
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            InvokeUI(() => _mainWindow.ShowError($"Failed to list users: {ex.Message}"));
+        }
+    }
+
+    private async Task HandleCmdKickUser(string username, string? reason)
+    {
+        if (!_conn.IsAuthenticated) return;
+        await _conn.Api!.KickUserAsync(username, reason);
+    }
+
+    private async Task HandleCmdBanUser(string username, string? reason)
+    {
+        if (!_conn.IsAuthenticated) return;
+        await _conn.Api!.BanUserAsync(username, reason);
+    }
+
+    private async Task HandleCmdUnbanUser(string username)
+    {
+        if (!_conn.IsAuthenticated) return;
+        await _conn.Api!.UnbanUserAsync(username);
+    }
+
+    private async Task HandleCmdMuteUser(string username, int? duration)
+    {
+        if (!_conn.IsAuthenticated) return;
+        await _conn.Api!.MuteUserAsync(username, duration);
+    }
+
+    private async Task HandleCmdUnmuteUser(string username)
+    {
+        if (!_conn.IsAuthenticated) return;
+        await _conn.Api!.UnmuteUserAsync(username);
+    }
+
+    private async Task HandleCmdAssignRole(string username, string roleStr)
+    {
+        if (!_conn.IsAuthenticated) return;
+        var role = roleStr switch
+        {
+            "admin" => ServerRole.Admin,
+            "mod" => ServerRole.Mod,
+            _ => ServerRole.Member,
+        };
+        await _conn.Api!.AssignRoleAsync(username, role);
+    }
+
+    private async Task HandleCmdNukeChannel()
+    {
+        if (!_conn.IsAuthenticated) return;
+        var channel = _mainWindow.CurrentChannel;
+        if (string.IsNullOrEmpty(channel)) return;
+        await _conn.Api!.NukeChannelAsync(channel);
+    }
+
+    private async Task HandleCmdTestSound()
+    {
+        await _notificationSound.PlayTestAsync();
+    }
+
+    private Task HandleCmdQuit()
+    {
+        InvokeUI(() => _app.RequestStop());
+        return Task.CompletedTask;
+    }
+
+    // ── ConnectionManager Event Wiring ─────────────────────────────────────
+
+    private void WireConnectionManagerEvents()
+    {
+        _conn.MessageReceived += message =>
+        {
+            InvokeUI(() => _messageManager.AddMessage(message));
+
+            if (!string.IsNullOrEmpty(_session.Username)
+                && message.Content.Contains($"@{_session.Username}", StringComparison.OrdinalIgnoreCase))
+            {
+                _ = _notificationSound.PlayAsync();
+            }
+        };
+
+        _conn.UserJoined += (channelName, username) =>
+        {
+            InvokeUI(() => _messageManager.AddSystemMessage(channelName, $"{username} joined the channel"));
+            if (channelName == _mainWindow.CurrentChannel)
+                FetchAndUpdateOnlineUsers();
+        };
+
+        _conn.UserLeft += (channelName, username) =>
+        {
+            InvokeUI(() => _messageManager.AddSystemMessage(channelName, $"{username} left the channel"));
+            if (channelName == _mainWindow.CurrentChannel)
+                FetchAndUpdateOnlineUsers();
+        };
+
+        _conn.UserStatusChanged += presence =>
+        {
+            InvokeUI(() =>
+            {
+                var displayName = presence.DisplayName ?? presence.Username;
+                var statusText = presence.Status.ToString();
+                if (!string.IsNullOrWhiteSpace(presence.StatusMessage))
+                    statusText += $" - {presence.StatusMessage}";
+
+                foreach (var channelName in _mainWindow.GetChannelNames())
+                    _messageManager.AddStatusMessage(channelName, displayName, statusText);
+            });
+            FetchAndUpdateOnlineUsers();
+        };
+
+        _conn.UserKicked += (channelName, username, reason) =>
+        {
+            var reasonText = reason is not null ? $" ({reason})" : "";
+            InvokeUI(() => _messageManager.AddSystemMessage(channelName, $"{username} was kicked{reasonText}"));
+        };
+
+        _conn.UserBanned += (username, reason) =>
+        {
+            var reasonText = reason is not null ? $" ({reason})" : "";
+            InvokeUI(() =>
+            {
+                if (!username.Equals(_session.Username, StringComparison.OrdinalIgnoreCase))
+                {
+                    var channel = _mainWindow.CurrentChannel;
+                    if (!string.IsNullOrEmpty(channel))
+                        _messageManager.AddSystemMessage(channel, $"{username} was banned{reasonText}");
+                }
             });
         };
 
-        _commandHandler.OnSetColor += async (color) =>
+        _conn.ForceDisconnected += reason =>
         {
-            if (!IsAuthenticated) return;
-
-            await _apiClient!.UpdateProfileAsync(new UpdateProfileRequest(NicknameColor: color));
-        };
-
-        _commandHandler.OnSetTheme += (name) =>
-        {
-            InvokeUI(() => HandleThemeSelected(name));
-            return Task.CompletedTask;
-        };
-
-        _commandHandler.OnSendFile += async (target, size) =>
-        {
-            if (!IsAuthenticated || !IsConnected) return;
-
-            var channel = _mainWindow.CurrentChannel;
-            if (string.IsNullOrEmpty(channel)) return;
-
-            try
+            InvokeUI(() =>
             {
-                if (Uri.TryCreate(target, UriKind.Absolute, out var uri)
-                    && (uri.Scheme == "http" || uri.Scheme == "https"))
-                {
-                    await _apiClient!.SendUrlAsync(channel, target, size);
-                }
-                else
-                {
-                    await using var stream = File.OpenRead(target);
-                    var fileName = Path.GetFileName(target);
-                    await _apiClient!.UploadFileAsync(channel, stream, fileName, size);
-                }
-            }
-            catch (Exception ex)
+                _mainWindow.ShowError(reason);
+                HandleDisconnect();
+            });
+        };
+
+        _conn.MessageDeleted += (channelName, messageId) =>
+            InvokeUI(() => _messageManager.RemoveMessage(channelName, messageId));
+
+        _conn.ChannelNuked += channelName =>
+        {
+            InvokeUI(() =>
             {
-                Log.Error(ex, "File send failed for {Target}", target);
-                InvokeUI(() => _mainWindow.ShowError($"Send failed: {ex.Message}"));
-            }
+                _messageManager.ClearChannelMessages(channelName);
+                _messageManager.AddSystemMessage(channelName, "Channel history has been cleared by a moderator.");
+            });
         };
 
-        _commandHandler.OnSetAvatar += async (target) =>
+        _conn.ChannelUpdated += channel =>
         {
-            if (!IsAuthenticated) return;
-
-            try
+            InvokeUI(() =>
             {
-                Stream stream;
-                string fileName;
-
-                if (Uri.TryCreate(target, UriKind.Absolute, out var uri)
-                    && (uri.Scheme == "http" || uri.Scheme == "https"))
-                {
-                    using var http = new HttpClient();
-                    var bytes = await http.GetByteArrayAsync(uri);
-                    stream = new MemoryStream(bytes);
-                    fileName = Path.GetFileName(uri.LocalPath);
-                    if (string.IsNullOrWhiteSpace(fileName) || !fileName.Contains('.'))
-                        fileName = "avatar.png";
-                }
-                else
-                {
-                    if (!File.Exists(target))
-                    {
-                        InvokeUI(() => _mainWindow.ShowError($"File not found: {target}"));
-                        return;
-                    }
-                    stream = File.OpenRead(target);
-                    fileName = Path.GetFileName(target);
-                }
-
-                await using (stream)
-                {
-                    var ascii = await _apiClient!.UploadAvatarAsync(stream, fileName);
-                    var channel = _mainWindow.CurrentChannel;
-                    if (!string.IsNullOrEmpty(channel))
-                        InvokeUI(() => _mainWindow.AddSystemMessage(channel, "Avatar updated."));
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Avatar upload failed for {Target}", target);
-                InvokeUI(() => _mainWindow.ShowError($"Avatar upload failed: {ex.Message}"));
-            }
+                if (channel.IsPublic)
+                    _mainWindow.EnsureChannelInList(channel.Name, channel.IsPublic);
+                _mainWindow.SetChannelTopic(channel.Name, channel.Topic);
+            });
         };
 
-        _commandHandler.OnOpenProfile += (username) =>
+        _conn.Error += errorMessage =>
+            InvokeUI(() => _mainWindow.ShowError(errorMessage));
+
+        _conn.ConnectionStatusChanged += status =>
+            InvokeUI(() => _mainWindow.UpdateStatusBar(status));
+
+        _conn.Reconnected += () =>
         {
-            InvokeUI(() => HandleViewProfile(username));
-            return Task.CompletedTask;
-        };
-
-        _commandHandler.OnOpenServers += () =>
-        {
-            InvokeUI(HandleSavedServersRequested);
-            return Task.CompletedTask;
-        };
-
-        _commandHandler.OnJoinChannel += async (channelName) =>
-        {
-            if (!IsConnected) return;
-
-            try
-            {
-                _joinedChannels.Add(channelName);
-                var history = await _connection!.JoinChannelAsync(channelName);
-                InvokeUI(() =>
-                {
-                    // Add to channel list if not already there (e.g. private channels)
-                    _mainWindow.EnsureChannelInList(channelName);
-                    _mainWindow.SwitchToChannel(channelName);
-                    if (history.Count > 0)
-                        _mainWindow.LoadHistory(channelName, history);
-                });
-            }
-            catch (Exception ex)
-            {
-                InvokeUI(() => _mainWindow.ShowError($"Failed to join channel: {ex.Message}"));
-            }
-        };
-
-        _commandHandler.OnLeaveChannel += async () =>
-        {
-            if (!IsConnected) return;
-
-            var channel = _mainWindow.CurrentChannel;
-            if (string.IsNullOrEmpty(channel)) return;
-
-            if (channel == HubConstants.DefaultChannel)
-            {
-                InvokeUI(() => _mainWindow.ShowError($"You cannot leave the #{HubConstants.DefaultChannel} channel."));
-                return;
-            }
-
-            try
-            {
-                await _connection!.LeaveChannelAsync(channel);
-                _joinedChannels.Remove(channel);
-                InvokeUI(() => _mainWindow.AddSystemMessage(channel, $"You left #{channel}"));
-            }
-            catch (Exception ex)
-            {
-                InvokeUI(() => _mainWindow.ShowError($"Failed to leave channel: {ex.Message}"));
-            }
-        };
-
-        _commandHandler.OnSetTopic += async (topic) =>
-        {
-            if (!IsAuthenticated) return;
-
-            var channel = _mainWindow.CurrentChannel;
-            if (string.IsNullOrEmpty(channel)) return;
-
-            try
-            {
-                await _apiClient!.UpdateChannelTopicAsync(channel, topic);
-                InvokeUI(() =>
-                {
-                    _mainWindow.SetChannelTopic(channel, topic);
-                    _mainWindow.AddSystemMessage(channel, $"Topic set to: {topic}");
-                });
-            }
-            catch (Exception ex)
-            {
-                InvokeUI(() => _mainWindow.ShowError($"Failed to set topic: {ex.Message}"));
-            }
-        };
-
-        _commandHandler.OnListUsers += async () =>
-        {
-            if (!IsConnected) return;
-
-            var channel = _mainWindow.CurrentChannel;
-            if (string.IsNullOrEmpty(channel)) return;
-
-            try
-            {
-                var users = await _connection!.GetOnlineUsersAsync(channel);
-                InvokeUI(() =>
-                {
-                    _mainWindow.AddSystemMessage(channel, $"Online users in #{channel}:");
-                    foreach (var user in users)
-                    {
-                        var displayName = user.DisplayName ?? user.Username;
-                        var statusText = user.Status.ToString();
-                        if (!string.IsNullOrWhiteSpace(user.StatusMessage))
-                            statusText += $" - {user.StatusMessage}";
-                        _mainWindow.AddSystemMessage(channel, $"  {displayName} ({statusText})");
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                InvokeUI(() => _mainWindow.ShowError($"Failed to list users: {ex.Message}"));
-            }
-        };
-
-        _commandHandler.OnKickUser += async (username, reason) =>
-        {
-            if (!IsAuthenticated) return;
-            await _apiClient!.KickUserAsync(username, reason);
-        };
-
-        _commandHandler.OnBanUser += async (username, reason) =>
-        {
-            if (!IsAuthenticated) return;
-            await _apiClient!.BanUserAsync(username, reason);
-        };
-
-        _commandHandler.OnUnbanUser += async (username) =>
-        {
-            if (!IsAuthenticated) return;
-            await _apiClient!.UnbanUserAsync(username);
-        };
-
-        _commandHandler.OnMuteUser += async (username, duration) =>
-        {
-            if (!IsAuthenticated) return;
-            await _apiClient!.MuteUserAsync(username, duration);
-        };
-
-        _commandHandler.OnUnmuteUser += async (username) =>
-        {
-            if (!IsAuthenticated) return;
-            await _apiClient!.UnmuteUserAsync(username);
-        };
-
-        _commandHandler.OnAssignRole += async (username, roleStr) =>
-        {
-            if (!IsAuthenticated) return;
-            var role = roleStr switch
-            {
-                "admin" => ServerRole.Admin,
-                "mod" => ServerRole.Mod,
-                _ => ServerRole.Member,
-            };
-            await _apiClient!.AssignRoleAsync(username, role);
-        };
-
-        _commandHandler.OnNukeChannel += async () =>
-        {
-            if (!IsAuthenticated) return;
-            var channel = _mainWindow.CurrentChannel;
-            if (string.IsNullOrEmpty(channel)) return;
-            await _apiClient!.NukeChannelAsync(channel);
-        };
-
-        _commandHandler.OnTestSound += async () =>
-        {
-            await _notificationSound.PlayTestAsync();
-        };
-
-        _commandHandler.OnQuit += () =>
-        {
-            InvokeUI(() => _app.RequestStop());
-            return Task.CompletedTask;
+            RunAsync(
+                async () => await _conn.RejoinChannelsAsync(),
+                "Failed to rejoin channels after reconnect");
         };
     }
 
@@ -379,7 +477,7 @@ public sealed class AppOrchestrator : IDisposable
 
     private void HandleConnect()
     {
-        if (IsConnected)
+        if (_conn.IsConnected)
         {
             var confirm = MessageBox.Query(_app, "Already Connected",
                 "You are already connected to a server.\nDisconnect and connect to a new one?", "Yes", "Cancel");
@@ -389,122 +487,47 @@ public sealed class AppOrchestrator : IDisposable
             HandleDisconnect();
         }
 
-        var result = ConnectDialog.Show(_app, _config.SavedServers);
-        if (result is null) return;
+        var dialogResult = ConnectDialog.Show(_app, _config.SavedServers);
+        if (dialogResult is null) return;
 
         Log.Information("Connecting to {Url} as {User} (register={IsRegister})",
-            result.ServerUrl, result.Username, result.IsRegister);
+            dialogResult.ServerUrl, dialogResult.Username, dialogResult.IsRegister);
 
         RunAsync(async () =>
         {
-            _apiClient?.Dispose();
-            _apiClient = new ApiClient(result.ServerUrl);
-
-            InvokeUI(() => _mainWindow.UpdateStatusBar("Authenticating..."));
-
-            LoginResponse loginResponse;
-
-            if (result.SavedRefreshToken is not null)
-            {
-                try
-                {
-                    loginResponse = await _apiClient.LoginWithRefreshTokenAsync(result.SavedRefreshToken);
-                    Log.Information("Authenticated via saved session for {User}", loginResponse.Username);
-                }
-                catch (Exception ex)
-                {
-                    Log.Warning(ex, "Saved session expired or revoked");
-                    ClearSavedToken(result.ServerUrl);
-                    InvokeUI(() =>
-                    {
-                        _mainWindow.UpdateStatusBar("Disconnected");
-                        MessageBox.ErrorQuery(_app, "Session Expired",
-                            "Your saved session has expired or was revoked.\nPlease log in with your password.", "OK");
-                    });
-                    _apiClient.Dispose();
-                    _apiClient = null;
-                    return;
-                }
-            }
-            else if (result.IsRegister)
-            {
-                loginResponse = await _apiClient.RegisterAsync(result.Username, result.Password);
-            }
-            else
-            {
-                loginResponse = await _apiClient.LoginAsync(result.Username, result.Password);
-            }
-
-            _currentUsername = loginResponse.Username;
-
-            // Persist rotated refresh tokens for Remember Me
-            _apiClient.OnTokensRefreshed += () =>
-            {
-                if (_apiClient?.RefreshToken is null) return;
-                var config = ConfigManager.Load();
-                var server = config.SavedServers.FirstOrDefault(s =>
-                    string.Equals(s.Url, _apiClient.BaseUrl, StringComparison.OrdinalIgnoreCase));
-                if (server is not null && server.RememberMe)
-                {
-                    server.RefreshToken = _apiClient.RefreshToken;
-                    ConfigManager.Save(config);
-                }
-            };
-
-            // Fetch encryption key for E2E message encryption
-            InvokeUI(() => _mainWindow.UpdateStatusBar("Fetching encryption key..."));
+            ConnectResult result;
             try
             {
-                var encryptionKey = await _apiClient.GetEncryptionKeyAsync();
-                _encryption.SetKey(encryptionKey);
-                Log.Information("E2E encryption key established");
+                result = await _conn.ConnectAsync(dialogResult,
+                    status => InvokeUI(() => _mainWindow.UpdateStatusBar(status)));
             }
-            catch (Exception ex)
+            catch (Exception ex) when (dialogResult.SavedRefreshToken is not null)
             {
-                Log.Warning(ex, "Failed to fetch encryption key — messages will not be encrypted");
-            }
-
-            InvokeUI(() =>
-            {
-                _mainWindow.SetCurrentUser(loginResponse.DisplayName ?? loginResponse.Username);
-                _mainWindow.UpdateStatusBar("Authenticated, connecting...");
-            });
-
-            if (_connection is not null)
-                await _connection.DisposeAsync();
-
-            _connection = new EchoHubConnection(result.ServerUrl, _apiClient, _encryption);
-            WireConnectionEvents(_connection);
-            await _connection.ConnectAsync();
-
-            var channels = await _apiClient.GetChannelsAsync();
-            InvokeUI(() =>
-            {
-                _mainWindow.SetChannels(channels);
-                _mainWindow.UpdateStatusBar("Connected");
-            });
-
-            _joinedChannels.Clear();
-            _joinedChannels.Add(HubConstants.DefaultChannel);
-            await _connection.JoinChannelAsync(HubConstants.DefaultChannel);
-            InvokeUI(() => _mainWindow.SwitchToChannel(HubConstants.DefaultChannel));
-
-            try
-            {
-                var history = await _connection.GetHistoryAsync(HubConstants.DefaultChannel);
+                Log.Warning(ex, "Saved session expired or revoked");
+                ClearSavedToken(dialogResult.ServerUrl);
                 InvokeUI(() =>
                 {
-                    _mainWindow.LoadHistory(HubConstants.DefaultChannel, history);
-                    _mainWindow.FocusInput();
+                    _mainWindow.UpdateStatusBar("Disconnected");
+                    MessageBox.ErrorQuery(_app, "Session Expired",
+                        "Your saved session has expired or was revoked.\nPlease log in with your password.", "OK");
                 });
-            }
-            catch
-            {
-                // History might not be available
+                return;
             }
 
+            _session.Username = result.Login.Username;
+
+            InvokeUI(() =>
+            {
+                _mainWindow.SetCurrentUser(result.Login.DisplayName ?? result.Login.Username);
+                _mainWindow.SetChannels(result.Channels);
+                _mainWindow.SwitchToChannel(HubConstants.DefaultChannel);
+                if (result.DefaultHistory.Count > 0)
+                    _messageManager.LoadHistory(HubConstants.DefaultChannel, result.DefaultHistory);
+                _mainWindow.FocusInput();
+            });
+
             FetchAndUpdateOnlineUsers();
-            SaveServerToConfig(result);
+            SaveServerToConfig(dialogResult);
         }, "Connection failed", "Connect");
     }
 
@@ -514,17 +537,7 @@ public sealed class AppOrchestrator : IDisposable
 
         RunAsync(async () =>
         {
-            if (_connection is not null)
-            {
-                await _connection.DisconnectAsync();
-                await _connection.DisposeAsync();
-                _connection = null;
-            }
-
-            _apiClient?.Dispose();
-            _apiClient = null;
-            _joinedChannels.Clear();
-
+            await _conn.CleanupAsync();
             InvokeUI(() =>
             {
                 _mainWindow.ClearAll();
@@ -539,24 +552,13 @@ public sealed class AppOrchestrator : IDisposable
 
         RunAsync(async () =>
         {
-            if (_apiClient is not null)
-            {
-                var baseUrl = _apiClient.BaseUrl;
-                await _apiClient.LogoutAsync();
+            var baseUrl = _conn.Api?.BaseUrl;
+            await _conn.LogoutAsync();
+
+            if (baseUrl is not null)
                 ClearSavedToken(baseUrl);
-            }
 
-            if (_connection is not null)
-            {
-                await _connection.DisconnectAsync();
-                await _connection.DisposeAsync();
-                _connection = null;
-            }
-
-            _apiClient?.Dispose();
-            _apiClient = null;
-            _joinedChannels.Clear();
-
+            await _conn.CleanupAsync();
             InvokeUI(() =>
             {
                 _mainWindow.ClearAll();
@@ -567,7 +569,7 @@ public sealed class AppOrchestrator : IDisposable
 
     private void HandleMessageSubmitted(string channelName, string content)
     {
-        if (!IsConnected)
+        if (!_conn.IsConnected)
         {
             _mainWindow.ShowError("Not connected to a server.");
             return;
@@ -585,7 +587,7 @@ public sealed class AppOrchestrator : IDisposable
                         if (result.IsError)
                             _mainWindow.ShowError(result.Message);
                         else
-                            _mainWindow.AddSystemMessage(channelName, result.Message);
+                            _messageManager.AddSystemMessage(channelName, result.Message);
                     });
                 }
             }, "Command failed");
@@ -593,23 +595,23 @@ public sealed class AppOrchestrator : IDisposable
         }
 
         RunAsync(
-            async () => await _connection!.SendMessageAsync(channelName, content),
+            async () => await _conn.SendMessageAsync(channelName, content),
             "Send failed");
     }
 
     private void HandleChannelSelected(string channelName)
     {
-        if (!IsConnected) return;
+        if (!_conn.IsConnected) return;
 
         RunAsync(async () =>
         {
-            if (_joinedChannels.Add(channelName))
-                await _connection!.JoinChannelAsync(channelName);
+            if (_conn.TrackChannel(channelName))
+                await _conn.JoinChannelAsync(channelName);
 
             try
             {
-                var history = await _connection!.GetHistoryAsync(channelName);
-                InvokeUI(() => _mainWindow.LoadHistory(channelName, history));
+                var history = await _conn.GetHistoryAsync(channelName);
+                InvokeUI(() => _messageManager.LoadHistory(channelName, history));
             }
             catch
             {
@@ -627,20 +629,19 @@ public sealed class AppOrchestrator : IDisposable
 
     private void HandleViewProfile(string? username)
     {
-        // If no username or it's our own, show the full user panel
         var isOwnProfile = string.IsNullOrWhiteSpace(username)
-            || username.Equals(_currentUsername, StringComparison.OrdinalIgnoreCase);
+            || username.Equals(_session.Username, StringComparison.OrdinalIgnoreCase);
 
         Task.Run(async () =>
         {
             UserProfileDto? profile = null;
             try
             {
-                if (IsAuthenticated)
+                if (_conn.IsAuthenticated)
                 {
-                    var target = isOwnProfile ? _currentUsername : username!;
+                    var target = isOwnProfile ? _session.Username : username!;
                     if (!string.IsNullOrEmpty(target))
-                        profile = await _apiClient!.GetUserProfileAsync(target);
+                        profile = await _conn.Api!.GetUserProfileAsync(target);
                 }
             }
             catch (Exception ex)
@@ -655,8 +656,8 @@ public sealed class AppOrchestrator : IDisposable
                 {
                     var action = ProfileViewDialog.ShowOwn(_app,
                         profile,
-                        _currentStatus,
-                        _currentStatusMessage);
+                        _session.Status,
+                        _session.StatusMessage);
 
                     switch (action)
                     {
@@ -689,9 +690,9 @@ public sealed class AppOrchestrator : IDisposable
 
         RunAsync(async () =>
         {
-            if (!IsAuthenticated) return;
+            if (!_conn.IsAuthenticated) return;
 
-            await _apiClient!.UpdateProfileAsync(new UpdateProfileRequest(
+            await _conn.Api!.UpdateProfileAsync(new UpdateProfileRequest(
                 editResult.DisplayName,
                 editResult.Bio,
                 editResult.NicknameColor));
@@ -710,32 +711,10 @@ public sealed class AppOrchestrator : IDisposable
             {
                 try
                 {
-                    Stream stream;
-                    string fileName;
-
-                    if (Uri.TryCreate(editResult.AvatarPath, UriKind.Absolute, out var uri)
-                        && (uri.Scheme == "http" || uri.Scheme == "https"))
-                    {
-                        using var http = new HttpClient();
-                        var bytes = await http.GetByteArrayAsync(uri);
-                        stream = new MemoryStream(bytes);
-                        fileName = Path.GetFileName(uri.LocalPath);
-                        if (string.IsNullOrWhiteSpace(fileName) || !fileName.Contains('.'))
-                            fileName = "avatar.png";
-                    }
-                    else
-                    {
-                        stream = File.OpenRead(editResult.AvatarPath);
-                        fileName = Path.GetFileName(editResult.AvatarPath);
-                    }
-
-                    await using (stream)
-                    {
-                        await _apiClient!.UploadAvatarAsync(stream, fileName);
-                        var channel = _mainWindow.CurrentChannel;
-                        if (!string.IsNullOrEmpty(channel))
-                            InvokeUI(() => _mainWindow.AddSystemMessage(channel, "Avatar updated."));
-                    }
+                    await AvatarHelper.UploadAsync(_conn.Api!, editResult.AvatarPath);
+                    var channel = _mainWindow.CurrentChannel;
+                    if (!string.IsNullOrEmpty(channel))
+                        InvokeUI(() => _messageManager.AddSystemMessage(channel, "Avatar updated."));
                 }
                 catch (Exception ex)
                 {
@@ -768,16 +747,16 @@ public sealed class AppOrchestrator : IDisposable
 
     private void HandleStatusRequested()
     {
-        var result = StatusDialog.Show(_app, _currentStatus, _currentStatusMessage);
+        var result = StatusDialog.Show(_app, _session.Status, _session.StatusMessage);
         if (result is null) return;
 
-        _currentStatus = result.Status;
-        _currentStatusMessage = result.StatusMessage;
+        _session.Status = result.Status;
+        _session.StatusMessage = result.StatusMessage;
 
-        if (IsConnected)
+        if (_conn.IsConnected)
         {
             RunAsync(
-                async () => await _connection!.UpdateStatusAsync(result.Status, result.StatusMessage),
+                async () => await _conn.UpdateStatusAsync(result.Status, result.StatusMessage),
                 "Status update failed");
         }
     }
@@ -822,7 +801,7 @@ public sealed class AppOrchestrator : IDisposable
 
     private void HandleCreateChannelRequested()
     {
-        if (!IsAuthenticated || !IsConnected)
+        if (!_conn.IsAuthenticated || !_conn.IsConnected)
         {
             _mainWindow.ShowError("Not connected to a server.");
             return;
@@ -833,11 +812,10 @@ public sealed class AppOrchestrator : IDisposable
 
         RunAsync(async () =>
         {
-            var channel = await _apiClient!.CreateChannelAsync(result.Name, result.Topic, result.IsPublic);
+            var channel = await _conn.Api!.CreateChannelAsync(result.Name, result.Topic, result.IsPublic);
             if (channel is null) return;
 
-            _joinedChannels.Add(channel.Name);
-            var history = await _connection!.JoinChannelAsync(channel.Name);
+            var history = await _conn.JoinChannelAsync(channel.Name);
 
             InvokeUI(() =>
             {
@@ -845,14 +823,14 @@ public sealed class AppOrchestrator : IDisposable
                 _mainWindow.SetChannelTopic(channel.Name, channel.Topic);
                 _mainWindow.SwitchToChannel(channel.Name);
                 if (history.Count > 0)
-                    _mainWindow.LoadHistory(channel.Name, history);
+                    _messageManager.LoadHistory(channel.Name, history);
             });
         }, "Failed to create channel");
     }
 
     private void HandleDeleteChannelRequested()
     {
-        if (!IsAuthenticated || !IsConnected)
+        if (!_conn.IsAuthenticated || !_conn.IsConnected)
         {
             _mainWindow.ShowError("Not connected to a server.");
             return;
@@ -878,38 +856,38 @@ public sealed class AppOrchestrator : IDisposable
 
         RunAsync(async () =>
         {
-            await _apiClient!.DeleteChannelAsync(channel);
-            _joinedChannels.Remove(channel);
+            await _conn.Api!.DeleteChannelAsync(channel);
+            _conn.UntrackChannel(channel);
 
             InvokeUI(() =>
             {
                 _mainWindow.RemoveChannel(channel);
                 _mainWindow.SwitchToChannel(HubConstants.DefaultChannel);
-                _mainWindow.AddSystemMessage(HubConstants.DefaultChannel, $"Channel #{channel} has been deleted.");
+                _messageManager.AddSystemMessage(HubConstants.DefaultChannel, $"Channel #{channel} has been deleted.");
             });
         }, "Failed to delete channel");
     }
 
     private void HandleAudioPlayRequested(string attachmentUrl, string fileName)
     {
-        if (!IsAuthenticated) return;
+        if (!_conn.IsAuthenticated) return;
 
         RunAsync(async () =>
         {
-            InvokeUI(() => _mainWindow.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloading {fileName}..."));
-            var tempPath = await _apiClient!.DownloadFileToTempAsync(attachmentUrl, fileName);
+            InvokeUI(() => _messageManager.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloading {fileName}..."));
+            var tempPath = await _conn.Api!.DownloadFileToTempAsync(attachmentUrl, fileName);
             InvokeUI(() => AudioPlayerDialog.Show(_app, _audioPlayback, tempPath, fileName));
         }, "Failed to play audio");
     }
 
     private void HandleFileDownloadRequested(string attachmentUrl, string fileName)
     {
-        if (!IsAuthenticated) return;
+        if (!_conn.IsAuthenticated) return;
 
         RunAsync(async () =>
         {
-            InvokeUI(() => _mainWindow.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloading {fileName}..."));
-            var tempPath = await _apiClient!.DownloadFileToTempAsync(attachmentUrl, fileName);
+            InvokeUI(() => _messageManager.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloading {fileName}..."));
+            var tempPath = await _conn.Api!.DownloadFileToTempAsync(attachmentUrl, fileName);
 
             try
             {
@@ -919,140 +897,9 @@ public sealed class AppOrchestrator : IDisposable
             catch (Exception ex)
             {
                 Log.Warning(ex, "Failed to open file with default app: {Path}", tempPath);
-                InvokeUI(() => _mainWindow.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloaded to: {tempPath}"));
+                InvokeUI(() => _messageManager.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloaded to: {tempPath}"));
             }
         }, "Failed to download file");
-    }
-
-    // ── Connection Event Wiring ────────────────────────────────────────────
-
-    private void WireConnectionEvents(EchoHubConnection connection)
-    {
-        connection.OnMessageReceived += message =>
-        {
-            InvokeUI(() => _mainWindow.AddMessage(message));
-
-            if (!string.IsNullOrEmpty(_currentUsername)
-                && message.Content.Contains($"@{_currentUsername}", StringComparison.OrdinalIgnoreCase))
-            {
-                _ = _notificationSound.PlayAsync();
-            }
-        };
-
-        connection.OnUserJoined += (channelName, username) =>
-        {
-            InvokeUI(() => _mainWindow.AddSystemMessage(channelName, $"{username} joined the channel"));
-            if (channelName == _mainWindow.CurrentChannel)
-                FetchAndUpdateOnlineUsers();
-        };
-
-        connection.OnUserLeft += (channelName, username) =>
-        {
-            InvokeUI(() => _mainWindow.AddSystemMessage(channelName, $"{username} left the channel"));
-            if (channelName == _mainWindow.CurrentChannel)
-                FetchAndUpdateOnlineUsers();
-        };
-
-        connection.OnUserStatusChanged += presence =>
-        {
-            InvokeUI(() =>
-            {
-                var displayName = presence.DisplayName ?? presence.Username;
-                var statusText = presence.Status.ToString();
-                if (!string.IsNullOrWhiteSpace(presence.StatusMessage))
-                    statusText += $" - {presence.StatusMessage}";
-
-                foreach (var channelName in _mainWindow.GetChannelNames())
-                    _mainWindow.AddStatusMessage(channelName, displayName, statusText);
-            });
-            FetchAndUpdateOnlineUsers();
-        };
-
-        connection.OnUserKicked += (channelName, username, reason) =>
-        {
-            var reasonText = reason is not null ? $" ({reason})" : "";
-            InvokeUI(() =>
-            {
-                _mainWindow.AddSystemMessage(channelName, $"{username} was kicked{reasonText}");
-            });
-        };
-
-        connection.OnUserBanned += (username, reason) =>
-        {
-            var reasonText = reason is not null ? $" ({reason})" : "";
-            InvokeUI(() =>
-            {
-                // Show ban notification for other users in the channel
-                if (!username.Equals(_currentUsername, StringComparison.OrdinalIgnoreCase))
-                {
-                    var channel = _mainWindow.CurrentChannel;
-                    if (!string.IsNullOrEmpty(channel))
-                        _mainWindow.AddSystemMessage(channel, $"{username} was banned{reasonText}");
-                }
-            });
-        };
-
-        connection.OnForceDisconnect += reason =>
-        {
-            InvokeUI(() =>
-            {
-                _mainWindow.ShowError(reason);
-                HandleDisconnect();
-            });
-        };
-
-        connection.OnMessageDeleted += (channelName, messageId) =>
-        {
-            InvokeUI(() =>
-            {
-                _mainWindow.RemoveMessage(channelName, messageId);
-            });
-        };
-
-        connection.OnChannelNuked += channelName =>
-        {
-            InvokeUI(() =>
-            {
-                _mainWindow.ClearChannelMessages(channelName);
-                _mainWindow.AddSystemMessage(channelName, "Channel history has been cleared by a moderator.");
-            });
-        };
-
-        connection.OnChannelUpdated += channel =>
-        {
-            InvokeUI(() =>
-            {
-                if (channel.IsPublic)
-                    _mainWindow.EnsureChannelInList(channel.Name, channel.IsPublic);
-                _mainWindow.SetChannelTopic(channel.Name, channel.Topic);
-            });
-        };
-
-        connection.OnError += errorMessage =>
-            InvokeUI(() => _mainWindow.ShowError(errorMessage));
-
-        connection.OnConnectionStateChanged += status =>
-            InvokeUI(() => _mainWindow.UpdateStatusBar(status));
-
-        connection.OnReconnected += () =>
-        {
-            // Server-side state is lost on reconnect — rejoin all channels
-            var channels = _joinedChannels.ToList();
-            if (channels.Count == 0) return;
-
-            _joinedChannels.Clear();
-
-            RunAsync(async () =>
-            {
-                foreach (var channel in channels)
-                {
-                    _joinedChannels.Add(channel);
-                    await _connection!.JoinChannelAsync(channel);
-                }
-
-                Log.Information("Rejoined {Count} channel(s) after reconnect", channels.Count);
-            }, "Failed to rejoin channels after reconnect");
-        };
     }
 
     // ── Private Helpers ────────────────────────────────────────────────────
@@ -1060,13 +907,13 @@ public sealed class AppOrchestrator : IDisposable
     private void FetchAndUpdateOnlineUsers()
     {
         var channel = _mainWindow.CurrentChannel;
-        if (string.IsNullOrEmpty(channel) || !IsConnected) return;
+        if (string.IsNullOrEmpty(channel) || !_conn.IsConnected) return;
 
         Task.Run(async () =>
         {
             try
             {
-                var users = await _connection!.GetOnlineUsersAsync(channel);
+                var users = await _conn.GetOnlineUsersAsync(channel);
                 InvokeUI(() => _mainWindow.UpdateOnlineUsers(users));
             }
             catch (Exception ex)
@@ -1083,7 +930,7 @@ public sealed class AppOrchestrator : IDisposable
             Name = new Uri(result.ServerUrl).Host,
             Url = result.ServerUrl,
             Username = result.Username,
-            RefreshToken = result.RememberMe ? _apiClient!.RefreshToken : null,
+            RefreshToken = result.RememberMe ? _conn.Api!.RefreshToken : null,
             RememberMe = result.RememberMe,
             LastConnected = DateTimeOffset.Now
         };

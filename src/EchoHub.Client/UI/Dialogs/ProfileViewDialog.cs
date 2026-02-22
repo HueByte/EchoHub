@@ -1,12 +1,14 @@
-using Terminal.Gui.App;
-using Terminal.Gui.Views;
-using Terminal.Gui.ViewBase;
-using Terminal.Gui.Drawing;
+using EchoHub.Client.UI.Chat;
+using EchoHub.Client.UI.Helpers;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
+using Terminal.Gui.App;
+using Terminal.Gui.Drawing;
+using Terminal.Gui.ViewBase;
+using Terminal.Gui.Views;
 using Attribute = Terminal.Gui.Drawing.Attribute;
 
-namespace EchoHub.Client.UI;
+namespace EchoHub.Client.UI.Dialogs;
 
 /// <summary>
 /// Action selected by the user in their own profile dialog.
@@ -111,7 +113,7 @@ public sealed class ProfileViewDialog
         // Color
         var colorLabel = new Label { Text = "Color:", X = 1, Y = row };
         var colorValue = new Label { Text = profile.NicknameColor ?? "-", X = 14, Y = row };
-        if (ColorHelper.ParseHexColor(profile.NicknameColor) is { } colorAttr)
+        if (HexColorHelper.ParseHexColor(profile.NicknameColor) is { } colorAttr)
             colorValue.SetScheme(new Scheme { Normal = colorAttr });
         dialog.Add(colorLabel, colorValue);
         row++;
