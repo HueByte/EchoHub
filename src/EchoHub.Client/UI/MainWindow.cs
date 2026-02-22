@@ -712,10 +712,10 @@ public sealed class MainWindow : Runnable
         _statusLabel.SetNeedsDraw();
     }
 
-    private static readonly Attribute StatusConnectedAttr = new(new Color(0, 200, 0), Color.Transparent);
-    private static readonly Attribute StatusDisconnectedAttr = new(new Color(220, 50, 50), Color.Transparent);
-    private static readonly Attribute StatusTransitionalAttr = new(new Color(220, 180, 0), Color.Transparent);
-    private static readonly Attribute StatusBrandAttr = new(new Color(218, 165, 32), Color.Transparent);
+    private static readonly Attribute StatusConnectedAttr = new(new Color(0, 200, 0), Color.None);
+    private static readonly Attribute StatusDisconnectedAttr = new(new Color(220, 50, 50), Color.None);
+    private static readonly Attribute StatusTransitionalAttr = new(new Color(220, 180, 0), Color.None);
+    private static readonly Attribute StatusBrandAttr = new(new Color(218, 165, 32), Color.None);
 
     private void OnStatusBarDrawContent(object? sender, DrawEventArgs e)
     {
@@ -724,9 +724,9 @@ public sealed class MainWindow : Runnable
         var width = _statusLabel.Viewport.Width;
         if (width <= 0) return;
 
-        // Resolve transparent background for colored segments
+        // Resolve None background for colored segments
         var bg = normalAttr.Background;
-        Attribute Resolve(Attribute a) => a.Background == Color.Transparent ? a with { Background = bg } : a;
+        Attribute Resolve(Attribute a) => a.Background == Color.None ? a with { Background = bg } : a;
 
         int col = 0;
 

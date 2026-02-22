@@ -131,7 +131,7 @@ public partial class ChatLine
         Color? currentFg = null;
         Color? currentBg = null;
         var defaultFg = defaultAttr?.Foreground;
-        var defaultBg = defaultAttr?.Background ?? Color.Transparent;
+        var defaultBg = defaultAttr?.Background ?? Color.None;
 
         Attribute? BuildAttr()
         {
@@ -250,7 +250,7 @@ public class ChatListSource : IListDataSource
         foreach (var segment in chatLine.Segments)
         {
             var attr = segment.Color ?? normalAttr;
-            if (attr.Background == Color.Transparent)
+            if (attr.Background == Color.None)
                 attr = attr with { Background = normalAttr.Background };
             if (mentionBg.HasValue)
                 attr = attr with { Background = mentionBg.Value };
@@ -304,10 +304,10 @@ public class ChannelListSource : IListDataSource
     public int MaxItemLength { get; private set; }
     public bool SuspendCollectionChangedEvent { get; set; }
 
-    private static readonly Attribute ActiveAttr = new(Color.White, Color.Transparent);
-    private static readonly Attribute UnreadAttr = new(Color.BrightCyan, Color.Transparent);
-    private static readonly Attribute NormalAttr = new(Color.DarkGray, Color.Transparent);
-    private static readonly Attribute BadgeAttr = new(Color.BrightYellow, Color.Transparent);
+    private static readonly Attribute ActiveAttr = new(Color.White, Color.None);
+    private static readonly Attribute UnreadAttr = new(Color.BrightCyan, Color.None);
+    private static readonly Attribute NormalAttr = new(Color.DarkGray, Color.None);
+    private static readonly Attribute BadgeAttr = new(Color.BrightYellow, Color.None);
 
     public void Update(List<string> channels, Dictionary<string, int> unread, string activeChannel)
     {
@@ -343,7 +343,7 @@ public class ChannelListSource : IListDataSource
 
         // Resolve Transparent backgrounds to the view's actual background
         Attribute Resolve(Attribute attr) =>
-            attr.Background == Color.Transparent ? attr with { Background = normalAttr.Background } : attr;
+            attr.Background == Color.None ? attr with { Background = normalAttr.Background } : attr;
 
         int drawnChars = 0;
 
@@ -479,16 +479,16 @@ static class RenderHelpers
 /// </summary>
 public static partial class ChatColors
 {
-    public static readonly Attribute TimestampAttr = new(Color.DarkGray, Color.Transparent);
-    public static readonly Attribute SystemAttr = new(new Color(0, 180, 180), Color.Transparent);
+    public static readonly Attribute TimestampAttr = new(Color.DarkGray, Color.None);
+    public static readonly Attribute SystemAttr = new(new Color(0, 180, 180), Color.None);
     public static readonly Attribute MentionHighlightAttr = new(Color.White, new Color(80, 40, 0));
-    public static readonly Attribute MentionTextAttr = new(new Color(255, 180, 50), Color.Transparent);
-    public static readonly Attribute EmbedBorderAttr = new(new Color(91, 155, 213), Color.Transparent);
-    public static readonly Attribute EmbedTitleAttr = new(Color.White, Color.Transparent);
-    public static readonly Attribute EmbedDescAttr = new(new Color(160, 160, 160), Color.Transparent);
-    public static readonly Attribute EmbedUrlAttr = new(new Color(100, 100, 100), Color.Transparent);
-    public static readonly Attribute AudioAttr = new(new Color(180, 100, 255), Color.Transparent);
-    public static readonly Attribute FileAttr = new(new Color(100, 180, 255), Color.Transparent);
+    public static readonly Attribute MentionTextAttr = new(new Color(255, 180, 50), Color.None);
+    public static readonly Attribute EmbedBorderAttr = new(new Color(91, 155, 213), Color.None);
+    public static readonly Attribute EmbedTitleAttr = new(Color.White, Color.None);
+    public static readonly Attribute EmbedDescAttr = new(new Color(160, 160, 160), Color.None);
+    public static readonly Attribute EmbedUrlAttr = new(new Color(100, 100, 100), Color.None);
+    public static readonly Attribute AudioAttr = new(new Color(180, 100, 255), Color.None);
+    public static readonly Attribute FileAttr = new(new Color(100, 180, 255), Color.None);
 
     /// <summary>
     /// Split text around @mentions, giving each @word the MentionTextAttr accent color.
@@ -537,7 +537,7 @@ public static class ColorHelper
             var r = Convert.ToInt32(hex[..2], 16);
             var g = Convert.ToInt32(hex[2..4], 16);
             var b = Convert.ToInt32(hex[4..6], 16);
-            return new Attribute(new Color(r, g, b), Color.Transparent);
+            return new Attribute(new Color(r, g, b), Color.None);
         }
         catch
         {

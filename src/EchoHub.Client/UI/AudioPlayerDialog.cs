@@ -14,12 +14,12 @@ public sealed class AudioPlayerDialog
     private const int WaveBarCount = 24;
     private const int AnimationIntervalMs = 150;
 
-    private static readonly Attribute WaveActiveAttr = new(new Color(180, 100, 255), Color.Transparent);
-    private static readonly Attribute WaveIdleAttr = new(new Color(80, 50, 120), Color.Transparent);
-    private static readonly Attribute FileNameAttr = new(new Color(180, 100, 255), Color.Transparent);
-    private static readonly Attribute StatusPlayingAttr = new(new Color(0, 200, 0), Color.Transparent);
-    private static readonly Attribute StatusPausedAttr = new(new Color(220, 180, 0), Color.Transparent);
-    private static readonly Attribute StatusStoppedAttr = new(new Color(160, 160, 160), Color.Transparent);
+    private static readonly Attribute WaveActiveAttr = new(new Color(180, 100, 255), Color.None);
+    private static readonly Attribute WaveIdleAttr = new(new Color(80, 50, 120), Color.None);
+    private static readonly Attribute FileNameAttr = new(new Color(180, 100, 255), Color.None);
+    private static readonly Attribute StatusPlayingAttr = new(new Color(0, 200, 0), Color.None);
+    private static readonly Attribute StatusPausedAttr = new(new Color(220, 180, 0), Color.None);
+    private static readonly Attribute StatusStoppedAttr = new(new Color(160, 160, 160), Color.None);
 
     public static void Show(IApplication app, AudioPlaybackService audioService, string filePath, string fileName)
     {
@@ -213,7 +213,7 @@ public sealed class AudioPlayerDialog
         fileLabel.DrawingContent += (s, e) =>
         {
             var normalAttr = fileLabel.GetAttributeForRole(VisualRole.Normal);
-            var resolvedAttr = FileNameAttr.Background == Color.Transparent
+            var resolvedAttr = FileNameAttr.Background == Color.None
                 ? FileNameAttr with { Background = normalAttr.Background }
                 : FileNameAttr;
             fileLabel.SetAttribute(resolvedAttr);
@@ -233,7 +233,7 @@ public sealed class AudioPlayerDialog
         {
             var normalAttr = waveLabel.GetAttributeForRole(VisualRole.Normal);
             var attr = (audioService.IsPlaying && !audioService.IsPaused) ? WaveActiveAttr : WaveIdleAttr;
-            var resolvedAttr = attr.Background == Color.Transparent
+            var resolvedAttr = attr.Background == Color.None
                 ? attr with { Background = normalAttr.Background }
                 : attr;
             waveLabel.SetAttribute(resolvedAttr);
@@ -259,7 +259,7 @@ public sealed class AudioPlayerDialog
             else
                 attr = StatusStoppedAttr;
 
-            var resolvedAttr = attr.Background == Color.Transparent
+            var resolvedAttr = attr.Background == Color.None
                 ? attr with { Background = normalAttr.Background }
                 : attr;
             statusLabel.SetAttribute(resolvedAttr);
