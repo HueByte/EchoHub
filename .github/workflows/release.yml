@@ -107,7 +107,6 @@ jobs:
 
       - name: Build release notes
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
-        id: notes
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           CHANGELOG_URL="https://huebyte.github.io/EchoHub/changelog/${TAG}.html"
@@ -115,7 +114,6 @@ jobs:
           PREV_TAG=$(git tag --sort=-v:refname | grep -v "^${TAG}$" | head -n 1)
 
           {
-            echo "body<<RELEASE_EOF"
             echo "📋 **[Full Changelog](${CHANGELOG_URL})**"
             echo ""
             echo "---"
@@ -134,15 +132,14 @@ jobs:
             else
               echo "*Version diff: [${TAG}](${REPO}/commits/${TAG})*"
             fi
-            echo "RELEASE_EOF"
-          } >> "$GITHUB_OUTPUT"
+          } > release-notes.md
 
       - name: Create GitHub Release
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
         run: |
           gh release create "${{ steps.version.outputs.tag }}" \
             --title "EchoHub ${{ steps.version.outputs.tag }}" \
-            --notes "${{ steps.notes.outputs.body }}" \
+            --notes-file release-notes.md \
             EchoHub-Server-win-x64.zip \
             EchoHub-Server-linux-x64.zip \
             EchoHub-Server-osx-x64.zip \
