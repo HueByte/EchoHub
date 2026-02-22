@@ -5,7 +5,7 @@ using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 using Attribute = Terminal.Gui.Drawing.Attribute;
 
-namespace EchoHub.Client.UI;
+namespace EchoHub.Client.UI.Dialogs;
 
 public sealed class AudioPlayerDialog
 {

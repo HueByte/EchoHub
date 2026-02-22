@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text;
 
-namespace EchoHub.Client.UI;
+namespace EchoHub.Client.UI.Helpers;
 
 /// <summary>
 /// Converts emoji grapheme clusters to text shortcodes for safe TUI rendering.

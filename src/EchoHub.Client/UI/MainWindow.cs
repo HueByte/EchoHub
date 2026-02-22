@@ -1,5 +1,7 @@
-using System.Text.RegularExpressions;
 using EchoHub.Client.Themes;
+using EchoHub.Client.UI.Chat;
+using EchoHub.Client.UI.Helpers;
+using EchoHub.Client.UI.ListSources;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
 using Terminal.Gui.App;
@@ -55,13 +57,10 @@ public sealed class MainWindow : Runnable
     ];
 
     private readonly List<string> _channelNames = [];
-    private readonly Dictionary<string, List<ChatLine>> _channelMessages = [];
-    private readonly Dictionary<string, int> _channelUnread = [];
     private readonly Dictionary<string, string?> _channelTopics = [];
     private readonly Dictionary<string, bool> _channelPublic = [];
     private readonly ChannelListSource _channelListSource;
-    private string _currentChannel = string.Empty;
-    private string _currentUser = string.Empty;
+    private readonly ChatMessageManager _messageManager;
     private string _connectionStatus = "Disconnected";
     private int _lastChatWidth;
 
@@ -130,9 +129,11 @@ public sealed class MainWindow : Runnable
     /// </summary>
     public event Action<string, string>? OnFileDownloadRequested;
 
-    public MainWindow(IApplication app)
+    public MainWindow(IApplication app, ChatMessageManager messageManager)
     {
         _app = app;
+        _messageManager = messageManager;
+        _messageManager.MessagesChanged += OnMessagesChanged;
         Arrangement = ViewArrangement.Fixed;
 
         // Menu bar at the top
@@ -372,7 +373,7 @@ public sealed class MainWindow : Runnable
         if (index.HasValue && index.Value >= 0 && index.Value < _channelNames.Count)
         {
             var channelName = _channelNames[index.Value];
-            if (channelName != _currentChannel)
+            if (channelName != _messageManager.CurrentChannel)
             {
                 SwitchToChannel(channelName);
                 OnChannelSelected?.Invoke(channelName);
@@ -420,9 +421,9 @@ public sealed class MainWindow : Runnable
         else if (e.KeyCode == EnterKey.KeyCode)
         {
             var text = _inputField.Text?.Trim() ?? string.Empty;
-            if (!string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(_currentChannel))
+            if (!string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(_messageManager.CurrentChannel))
             {
-                OnMessageSubmitted?.Invoke(_currentChannel, text);
+                OnMessageSubmitted?.Invoke(_messageManager.CurrentChannel, text);
                 _inputField.Text = string.Empty;
             }
             e.Handled = true;
@@ -499,6 +500,7 @@ public sealed class MainWindow : Runnable
         if (newWidth > 0 && newWidth != _lastChatWidth)
         {
             _lastChatWidth = newWidth;
+            _messageManager.SetChatWidth(newWidth);
             RefreshMessages();
         }
     }
@@ -517,125 +519,12 @@ public sealed class MainWindow : Runnable
         }
     }
 
-    /// <summary>
-    /// Add a message to the specified channel's message list and refresh if it is the current channel.
-    /// Tracks unread count for non-active channels.
-    /// </summary>
-    public void AddMessage(MessageDto message)
+    private void OnMessagesChanged(string channelName)
     {
-        var lines = FormatMessage(message);
-        if (!_channelMessages.TryGetValue(message.ChannelName, out var messages))
-        {
-            messages = [];
-            _channelMessages[message.ChannelName] = messages;
-        }
-
-        foreach (var line in lines)
-        {
-            messages.Add(line);
-        }
-
-        if (message.ChannelName == _currentChannel)
-        {
+        if (channelName == _messageManager.CurrentChannel)
             RefreshMessages();
-        }
         else
-        {
-            // Increment unread count for non-active channels
-            _channelUnread.TryGetValue(message.ChannelName, out var count);
-            _channelUnread[message.ChannelName] = count + 1;
             RefreshChannelList();
-        }
-    }
-
-    /// <summary>
-    /// Add a system/informational message to a channel with colored styling.
-    /// </summary>
-    public void AddSystemMessage(string channelName, string text)
-    {
-        if (!_channelMessages.TryGetValue(channelName, out var messages))
-        {
-            messages = [];
-            _channelMessages[channelName] = messages;
-        }
-
-        var time = DateTimeOffset.Now.ToString("HH:mm");
-        var textLines = text.Split('\n');
-
-        // First line gets timestamp prefix
-        messages.Add(new ChatLine(
-        [
-            new($"[{time}] ", ChatColors.TimestampAttr),
-            new($"** {textLines[0].TrimEnd('\r')}", ChatColors.SystemAttr)
-        ]));
-
-        // Continuation lines are indented to align
-        var indent = new string(' ', $"[{time}] ** ".Length);
-        for (int i = 1; i < textLines.Length; i++)
-        {
-            var line = textLines[i].TrimEnd('\r');
-            if (string.IsNullOrWhiteSpace(line)) continue;
-            messages.Add(new ChatLine(
-            [
-                new($"{indent}{line}", ChatColors.SystemAttr)
-            ]));
-        }
-
-        if (channelName == _currentChannel)
-        {
-            RefreshMessages();
-        }
-    }
-
-    /// <summary>
-    /// Add a status change message to a channel with colored styling.
-    /// </summary>
-    public void AddStatusMessage(string channelName, string username, string status)
-    {
-        var time = DateTimeOffset.Now.ToString("HH:mm");
-        var segments = new List<ChatSegment>
-        {
-            new($"[{time}] ", ChatColors.TimestampAttr),
-            new($"** {username} is now {status}", ChatColors.SystemAttr)
-        };
-
-        if (!_channelMessages.TryGetValue(channelName, out var messages))
-        {
-            messages = [];
-            _channelMessages[channelName] = messages;
-        }
-        messages.Add(new ChatLine(segments));
-
-        if (channelName == _currentChannel)
-        {
-            RefreshMessages();
-        }
-    }
-
-    /// <summary>
-    /// Remove all lines associated with a specific message ID.
-    /// </summary>
-    public void RemoveMessage(string channelName, Guid messageId)
-    {
-        if (_channelMessages.TryGetValue(channelName, out var messages))
-        {
-            messages.RemoveAll(l => l.MessageId == messageId);
-            if (channelName == _currentChannel)
-                RefreshMessages();
-        }
-    }
-
-    /// <summary>
-    /// Clear all messages from a specific channel.
-    /// </summary>
-    public void ClearChannelMessages(string channelName)
-    {
-        if (_channelMessages.TryGetValue(channelName, out var messages))
-        {
-            messages.Clear();
-            if (channelName == _currentChannel)
-                RefreshMessages();
-        }
     }
 
     /// <summary>
@@ -651,8 +540,6 @@ public sealed class MainWindow : Runnable
             _channelNames.Add(ch.Name);
             _channelTopics[ch.Name] = ch.Topic;
             _channelPublic[ch.Name] = ch.IsPublic;
-            if (!_channelMessages.ContainsKey(ch.Name))
-                _channelMessages[ch.Name] = [];
         }
         RefreshChannelList();
     }
@@ -669,8 +556,6 @@ public sealed class MainWindow : Runnable
             return;
 
         _channelNames.Add(channelName);
-        if (!_channelMessages.ContainsKey(channelName))
-            _channelMessages[channelName] = [];
         RefreshChannelList();
     }
 
@@ -691,7 +576,7 @@ public sealed class MainWindow : Runnable
     public void SetChannelTopic(string channelName, string? topic)
     {
         _channelTopics[channelName] = topic;
-        if (channelName == _currentChannel)
+        if (channelName == _messageManager.CurrentChannel)
             UpdateTopicBar();
     }
 
@@ -757,15 +642,17 @@ public sealed class MainWindow : Runnable
         Write(_connectionStatus, Resolve(statusAttr));
 
         // User
-        if (!string.IsNullOrEmpty(_currentUser))
-            Write($" \u2502 User: {_currentUser}", normalAttr);
+        var currentUser = _messageManager.CurrentUser;
+        if (!string.IsNullOrEmpty(currentUser))
+            Write($" \u2502 User: {currentUser}", normalAttr);
 
         // Channel + type
-        if (!string.IsNullOrEmpty(_currentChannel))
+        var currentChannel = _messageManager.CurrentChannel;
+        if (!string.IsNullOrEmpty(currentChannel))
         {
-            _channelPublic.TryGetValue(_currentChannel, out var isPublic);
+            _channelPublic.TryGetValue(currentChannel, out var isPublic);
             var typeSuffix = isPublic ? "public" : "private";
-            Write($" \u2502 #{_currentChannel} - {typeSuffix}", normalAttr);
+            Write($" \u2502 #{currentChannel} - {typeSuffix}", normalAttr);
         }
 
         // Fill remaining space
@@ -781,17 +668,17 @@ public sealed class MainWindow : Runnable
     }
 
     /// <summary>
-    /// Set the current user name for display in the status bar.
+    /// Set the current user name (delegates to message manager for @mention detection).
     /// </summary>
     public void SetCurrentUser(string username)
     {
-        _currentUser = username;
+        _messageManager.SetCurrentUser(username);
     }
 
     /// <summary>
     /// Get the current channel name.
     /// </summary>
-    public string CurrentChannel => _currentChannel;
+    public string CurrentChannel => _messageManager.CurrentChannel;
 
     /// <summary>
     /// Get all channel names that have message buffers (for broadcasting status changes).
@@ -803,11 +690,10 @@ public sealed class MainWindow : Runnable
     /// </summary>
     public void SwitchToChannel(string channelName)
     {
-        _currentChannel = channelName;
+        _messageManager.CurrentChannel = channelName;
         _chatFrame.Title = $"#{channelName}";
 
-        // Reset unread count for this channel
-        _channelUnread[channelName] = 0;
+        _messageManager.ClearUnread(channelName);
         RefreshChannelList();
 
         RefreshMessages();
@@ -821,32 +707,14 @@ public sealed class MainWindow : Runnable
     }
 
     /// <summary>
-    /// Load historical messages into a channel, replacing any existing messages.
-    /// </summary>
-    public void LoadHistory(string channelName, List<MessageDto> messages)
-    {
-        var formatted = messages.SelectMany(FormatMessage).ToList();
-        _channelMessages[channelName] = formatted;
-
-        if (channelName == _currentChannel)
-        {
-            RefreshMessages();
-        }
-    }
-
-
-    /// <summary>
     /// Clear all messages and channels (used on disconnect).
     /// </summary>
     public void ClearAll()
     {
         _channelNames.Clear();
-        _channelMessages.Clear();
-        _channelUnread.Clear();
+        _messageManager.ClearAll();
         _channelTopics.Clear();
         _channelPublic.Clear();
-        _currentChannel = string.Empty;
-        _currentUser = string.Empty;
         _channelListSource.Update([], [], string.Empty);
         _channelList.Source = _channelListSource;
         _chatFrame.Title = "Chat";
@@ -868,7 +736,8 @@ public sealed class MainWindow : Runnable
 
     private void RefreshMessages()
     {
-        if (_channelMessages.TryGetValue(_currentChannel, out var messages))
+        var messages = _messageManager.GetMessages(_messageManager.CurrentChannel);
+        if (messages is not null)
         {
             var width = _messageList.Viewport.Width;
 
@@ -906,11 +775,11 @@ public sealed class MainWindow : Runnable
     /// </summary>
     private void RefreshChannelList()
     {
-        _channelListSource.Update(_channelNames, _channelUnread, _currentChannel);
+        _channelListSource.Update(_channelNames, _messageManager.GetUnreadCounts(), _messageManager.CurrentChannel);
         _channelList.Source = _channelListSource;
 
         // Restore selection to current channel
-        var idx = _channelNames.IndexOf(_currentChannel);
+        var idx = _channelNames.IndexOf(_messageManager.CurrentChannel);
         if (idx >= 0)
             _channelList.SelectedItem = idx;
     }
@@ -920,7 +789,7 @@ public sealed class MainWindow : Runnable
     /// </summary>
     private void UpdateTopicBar()
     {
-        _channelTopics.TryGetValue(_currentChannel, out var topic);
+        _channelTopics.TryGetValue(_messageManager.CurrentChannel, out var topic);
         if (!string.IsNullOrWhiteSpace(topic))
         {
             _topicLabel.Text = $" Topic: {topic}";
@@ -980,7 +849,7 @@ public sealed class MainWindow : Runnable
                 _ => ""
             };
             var text = $"{statusIcon} {roleTag}{name}";
-            var nameColor = ColorHelper.ParseHexColor(u.NicknameColor);
+            var nameColor = HexColorHelper.ParseHexColor(u.NicknameColor);
             return (text, nameColor);
         }).ToList();
 
@@ -989,234 +858,4 @@ public sealed class MainWindow : Runnable
         _usersFrame.Title = $"Users ({users.Count})";
     }
 
-    /// <summary>
-    /// Format a message DTO into one or more display lines based on its MessageType.
-    /// Timestamps are dimmed and sender names are colored.
-    /// </summary>
-    private List<ChatLine> FormatMessage(MessageDto message)
-    {
-        var time = message.SentAt.ToLocalTime().ToString("HH:mm");
-        var senderName = message.SenderUsername + ":";
-        var senderColor = ColorHelper.ParseHexColor(message.SenderNicknameColor);
-
-        var lines = new List<ChatLine>();
-
-        switch (message.Type)
-        {
-            case MessageType.Image:
-                lines.Add(BuildChatLine(time, senderName, senderColor, " [Image]"));
-                // Content IS the ASCII art — add each line as a separate list item
-                if (!string.IsNullOrWhiteSpace(message.Content))
-                {
-                    foreach (var artLine in message.Content.Split('\n'))
-                    {
-                        // Parse color tags from colored ASCII art
-                        var trimmed = artLine.TrimEnd('\r');
-                        if (ChatLine.HasColorTags(trimmed))
-                            lines.Add(ChatLine.FromColoredText("       " + trimmed));
-                        else
-                            lines.Add(new ChatLine($"       {trimmed}"));
-                    }
-                }
-                break;
-
-            case MessageType.Audio:
-                var audioName = message.AttachmentFileName ?? "unknown";
-                var audioSize = FormatFileSize(message.AttachmentFileSize);
-                var audioLine = BuildChatLineColored(time, senderName, senderColor,
-                    $" \u266a [Audio: {audioName}] [{audioSize}]", ChatColors.AudioAttr);
-                audioLine.AttachmentUrl = message.AttachmentUrl;
-                audioLine.AttachmentFileName = audioName;
-                audioLine.Type = MessageType.Audio;
-                lines.Add(audioLine);
-                break;
-
-            case MessageType.File:
-                var fileName = message.AttachmentFileName ?? "unknown";
-                var fileSize = FormatFileSize(message.AttachmentFileSize);
-                var fileLine = BuildChatLineColored(time, senderName, senderColor,
-                    $" [File: {fileName}] [{fileSize}]", ChatColors.FileAttr);
-                fileLine.AttachmentUrl = message.AttachmentUrl;
-                fileLine.AttachmentFileName = fileName;
-                fileLine.Type = MessageType.File;
-                lines.Add(fileLine);
-                break;
-
-            case MessageType.Text:
-            default:
-                var displayContent = EmojiHelper.ReplaceEmoji(message.Content);
-                var contentLines = displayContent.Split('\n');
-                var firstLine = contentLines[0].TrimEnd('\r');
-                lines.Add(BuildChatLineWithMentions(time, senderName, senderColor, $" {firstLine}"));
-                // Continuation lines indented to align with first line's content
-                var indent = new string(' ', $"[{time}] {senderName} ".Length);
-                for (int i = 1; i < contentLines.Length; i++)
-                {
-                    var contText = $"{indent}{contentLines[i].TrimEnd('\r')}";
-                    lines.Add(new ChatLine(ChatColors.SplitMentions(contText)));
-                }
-
-                // Render link embeds if present
-                if (message.Embeds is { Count: > 0 })
-                {
-                    var chatWidth = _lastChatWidth > 0 ? _lastChatWidth : 80;
-                    foreach (var embed in message.Embeds)
-                        lines.AddRange(FormatEmbed(embed, indent, chatWidth));
-                }
-                break;
-        }
-
-        // Tag all lines with the message ID for deletion support
-        foreach (var line in lines)
-            line.MessageId = message.Id;
-
-        // Check for @mention of current user
-        if (!string.IsNullOrEmpty(_currentUser) && message.Type == MessageType.Text)
-        {
-            var pattern = $@"@{Regex.Escape(_currentUser)}\b";
-            if (Regex.IsMatch(message.Content, pattern, RegexOptions.IgnoreCase))
-            {
-                foreach (var line in lines)
-                    line.IsMention = true;
-            }
-        }
-
-        return lines;
-    }
-
-    /// <summary>
-    /// Build a chat line with a dimmed timestamp and optionally colored sender name.
-    /// </summary>
-    private static ChatLine BuildChatLine(string time, string senderName, Attribute? senderColor, string suffix)
-    {
-        var segments = new List<ChatSegment>
-        {
-            new($"[{time}] ", ChatColors.TimestampAttr),
-            new(senderName, senderColor),
-            new(suffix, null)
-        };
-        return new ChatLine(segments);
-    }
-
-    /// <summary>
-    /// Build a chat line with a colored suffix (used for audio/file indicators).
-    /// </summary>
-    private static ChatLine BuildChatLineColored(string time, string senderName, Attribute? senderColor, string suffix, Attribute suffixColor)
-    {
-        var segments = new List<ChatSegment>
-        {
-            new($"[{time}] ", ChatColors.TimestampAttr),
-            new(senderName, senderColor),
-            new(suffix, suffixColor)
-        };
-        return new ChatLine(segments);
-    }
-
-    /// <summary>
-    /// Build a chat line with @mention highlighting in the suffix text.
-    /// </summary>
-    private static ChatLine BuildChatLineWithMentions(string time, string senderName, Attribute? senderColor, string suffix)
-    {
-        var segments = new List<ChatSegment>
-        {
-            new($"[{time}] ", ChatColors.TimestampAttr),
-            new(senderName, senderColor),
-        };
-        segments.AddRange(ChatColors.SplitMentions(suffix));
-        return new ChatLine(segments);
-    }
-
-    /// <summary>
-    /// Format a link embed as indented chat lines with a left border bar,
-    /// text at full width, and optional icon below (preview image).
-    /// Each line is pre-wrapped to fit chatWidth so ChatLine.Wrap won't break layout.
-    /// </summary>
-    private static List<ChatLine> FormatEmbed(EmbedDto embed, string indent, int chatWidth)
-    {
-        var lines = new List<ChatLine>();
-        const string border = "\u258f "; // ▏ + space
-        const int borderCols = 2;
-        int indentCols = indent.GetColumns();
-        int textWidth = chatWidth - indentCols - borderCols;
-        if (textWidth < 20) textWidth = 20;
-
-        // Helper: create a bordered text line
-        void AddTextLine(string text, Attribute? color)
-        {
-            lines.Add(new ChatLine(
-            [
-                new ChatSegment(indent, null),
-                new ChatSegment(border, ChatColors.EmbedBorderAttr),
-                new ChatSegment(text, color)
-            ]));
-        }
-
-        // Site name
-        if (!string.IsNullOrWhiteSpace(embed.SiteName))
-            AddTextLine(embed.SiteName, ChatColors.EmbedBorderAttr);
-
-        // Title
-        if (!string.IsNullOrWhiteSpace(embed.Title))
-        {
-            foreach (var wrapped in WordWrap(embed.Title, textWidth))
-                AddTextLine(wrapped, ChatColors.EmbedTitleAttr);
-        }
-
-        // Description (word-wrapped at full available width)
-        if (!string.IsNullOrWhiteSpace(embed.Description))
-        {
-            foreach (var wrapped in WordWrap(embed.Description, textWidth))
-                AddTextLine(wrapped, ChatColors.EmbedDescAttr);
-        }
-
-        return lines;
-    }
-
-    /// <summary>
-    /// Simple word-wrap: splits text into lines that fit within maxCols display columns.
-    /// </summary>
-    private static List<string> WordWrap(string text, int maxCols)
-    {
-        if (maxCols <= 0)
-            return [text];
-
-        var result = new List<string>();
-        var words = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        var currentLine = "";
-
-        foreach (var word in words)
-        {
-            var candidate = currentLine.Length == 0 ? word : currentLine + " " + word;
-            if (candidate.GetColumns() <= maxCols)
-            {
-                currentLine = candidate;
-            }
-            else
-            {
-                if (currentLine.Length > 0)
-                    result.Add(currentLine);
-                // If a single word exceeds maxCols, just add it as-is
-                currentLine = word;
-            }
-        }
-
-        if (currentLine.Length > 0)
-            result.Add(currentLine);
-
-        return result;
-    }
-
-    private static string FormatFileSize(long? bytes)
-    {
-        if (bytes is null or 0)
-            return "?";
-
-        return bytes.Value switch
-        {
-            < 1024 => $"{bytes.Value} B",
-            < 1024 * 1024 => $"{bytes.Value / 1024.0:F1} KB",
-            < 1024 * 1024 * 1024 => $"{bytes.Value / (1024.0 * 1024.0):F1} MB",
-            _ => $"{bytes.Value / (1024.0 * 1024.0 * 1024.0):F1} GB"
-        };
-    }
 }

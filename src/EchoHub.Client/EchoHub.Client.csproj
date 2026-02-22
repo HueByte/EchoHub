@@ -20,7 +20,6 @@
     <Content Include="appsettings.json" Condition="Exists('appsettings.json')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="hue_icon.ico" />
     <Content Include="Assets\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -35,7 +34,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageIcon></PackageIcon>
-    <ApplicationIcon>hue_icon.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\hue_icon.ico</ApplicationIcon>
   </PropertyGroup>
 
 </Project>

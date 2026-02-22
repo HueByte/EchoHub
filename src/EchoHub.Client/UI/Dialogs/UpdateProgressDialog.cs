@@ -2,7 +2,7 @@ using Terminal.Gui.App;
 using Terminal.Gui.Views;
 using Terminal.Gui.ViewBase;
 
-namespace EchoHub.Client.UI;
+namespace EchoHub.Client.UI.Dialogs;
 
 public sealed class UpdateProgressDialog
 {

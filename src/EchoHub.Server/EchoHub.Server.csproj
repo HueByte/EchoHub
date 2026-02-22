@@ -1,10 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
-    <Content Include="hue_icon.ico" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\EchoHub.Core\EchoHub.Core.csproj" />
     <ProjectReference Include="..\EchoHub.Server.Irc\EchoHub.Server.Irc.csproj" />
   </ItemGroup>
@@ -27,7 +23,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageIcon></PackageIcon>
-    <ApplicationIcon>hue_icon.ico</ApplicationIcon>
+    <ApplicationIcon>..\EchoHub.Client\Assets\hue_icon.ico</ApplicationIcon>
   </PropertyGroup>
 
 </Project>

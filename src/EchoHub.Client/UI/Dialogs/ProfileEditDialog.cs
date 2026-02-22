@@ -1,10 +1,11 @@
+using EchoHub.Client.UI.Helpers;
 using Terminal.Gui.App;
-using Terminal.Gui.Views;
-using Terminal.Gui.ViewBase;
 using Terminal.Gui.Drawing;
+using Terminal.Gui.ViewBase;
+using Terminal.Gui.Views;
 using Attribute = Terminal.Gui.Drawing.Attribute;
 
-namespace EchoHub.Client.UI;
+namespace EchoHub.Client.UI.Dialogs;
 
 /// <summary>
 /// Result returned from the profile edit dialog.
@@ -243,30 +244,11 @@ public sealed class ProfileEditDialog
             return;
         }
 
-        var color = ParseHexToTrueColor(hexColor.Trim());
+        var color = HexColorHelper.ParseHexToColor(hexColor.Trim(), Color.White);
         preview.SetScheme(new Scheme
         {
             Normal = new Attribute(color, Color.Blue)
         });
-    }
-
-    /// <summary>
-    /// Parses a hex color string to a Terminal.Gui TrueColor Color.
-    /// V2 supports TrueColor via new Color(r, g, b).
-    /// </summary>
-    private static Color ParseHexToTrueColor(string hex)
-    {
-        if (hex.StartsWith('#'))
-            hex = hex[1..];
-
-        if (hex.Length != 6 || !int.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out var rgb))
-            return Color.White;
-
-        int r = (rgb >> 16) & 0xFF;
-        int g = (rgb >> 8) & 0xFF;
-        int b = rgb & 0xFF;
-
-        return new Color(r, g, b);
     }
 
     private static string? NullIfEmpty(string? value) =>

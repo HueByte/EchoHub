@@ -1,7 +1,7 @@
 using Serilog;
 using Terminal.Gui.App;
 
-namespace EchoHub.Client;
+namespace EchoHub.Client.Services;
 
 /// <summary>
 /// Eliminates repeated Task.Run/try/catch/app.Invoke(ShowError) boilerplate.

@@ -1,6 +1,6 @@
 using AlwaysUpToDate;
 
-using EchoHub.Client.UI;
+using EchoHub.Client.UI.Dialogs;
 
 using Serilog;
 

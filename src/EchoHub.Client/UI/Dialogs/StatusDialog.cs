@@ -3,7 +3,7 @@ using Terminal.Gui.Views;
 using Terminal.Gui.ViewBase;
 using EchoHub.Core.Models;
 
-namespace EchoHub.Client.UI;
+namespace EchoHub.Client.UI.Dialogs;
 
 /// <summary>
 /// Result returned from the status dialog.

@@ -1,4 +1,4 @@
-using EchoHub.Client.UI;
+using EchoHub.Client.UI.Chat;
 using Xunit;
 
 namespace EchoHub.Tests;
