@@ -86,6 +86,7 @@ public sealed class AppOrchestrator : IDisposable
         _mainWindow.OnAudioPlayRequested += HandleAudioPlayRequested;
         _mainWindow.OnFileDownloadRequested += HandleFileDownloadRequested;
         _mainWindow.OnCheckForUpdatesRequested += HandleCheckForUpdatesRequested;
+        _mainWindow.OnRollbackRequested += HandleRollbackRequested;
     }
 
     // ── Command Handler Wiring ─────────────────────────────────────────────
@@ -905,6 +906,32 @@ public sealed class AppOrchestrator : IDisposable
     private void HandleCheckForUpdatesRequested()
     {
         RunAsync(_updateService.CheckNowAsync, "Failed to check for updates");
+    }
+
+    private void HandleRollbackRequested()
+    {
+        if (!UpdateBackupService.BackupExists())
+        {
+            MessageBox.ErrorQuery(_app, "No Backup", "No backup is available to restore.", "OK");
+            return;
+        }
+
+        var info = UpdateBackupService.GetBackupInfo();
+        var confirm = MessageBox.Query(_app, "Rollback Update",
+            $"Restore to version {info?.Version ?? "unknown"}?\n\nThe app will restart.", "Restore", "Cancel");
+
+        if (confirm != 0) return;
+
+        try
+        {
+            UpdateBackupService.RestoreBackup();
+            // RestoreBackup calls Environment.Exit(0)
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Rollback failed");
+            MessageBox.ErrorQuery(_app, "Rollback Failed", $"Could not restore: {ex.Message}", "OK");
+        }
     }
 
     // ── Private Helpers ────────────────────────────────────────────────────

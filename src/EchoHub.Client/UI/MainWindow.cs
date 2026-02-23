@@ -1,3 +1,4 @@
+using EchoHub.Client.Services;
 using EchoHub.Client.Themes;
 using EchoHub.Client.UI.Chat;
 using EchoHub.Client.UI.Helpers;
@@ -123,6 +124,11 @@ public sealed class MainWindow : Runnable
     /// Fired when the user requests to delete the current channel.
     /// </summary>
     public event Action? OnDeleteChannelRequested;
+
+    /// <summary>
+    /// Fired when the user requests to rollback to the previous version.
+    /// </summary>
+    public event Action? OnRollbackRequested;
 
     /// <summary>
     /// Fired when the user activates (Enter/click) an audio message. Parameters: attachmentUrl, fileName.
@@ -323,13 +329,20 @@ public sealed class MainWindow : Runnable
         };
         allUserItems.AddRange(themeItems);
 
+        var fileItems = new List<View>();
+        if (UpdateBackupService.BackupExists())
+        {
+            var info = UpdateBackupService.GetBackupInfo();
+            var label = info is not null ? $"_Rollback to v{info.Version}..." : "_Rollback Update...";
+            fileItems.Add(new MenuItem(label, "Restore previous version", () => OnRollbackRequested?.Invoke(), Key.Empty));
+            fileItems.Add(new Line());
+        }
+        fileItems.Add(new MenuItem($"_Check for Updates", "Check for new version", () => OnCheckForUpdatesRequested?.Invoke(), Key.Empty));
+        fileItems.Add(new MenuItem("_Quit", "Quit EchoHub", () => _app.RequestStop(), Key.Empty));
+
         var menuBar = new MenuBar(
         [
-            new MenuBarItem("_File",
-            [
-                new MenuItem("_Quit", "Quit EchoHub", () => _app.RequestStop(), Key.Empty),
-                new MenuItem($"_Check for Updates", "Check for new version", () => OnCheckForUpdatesRequested?.Invoke(), Key.Empty)
-            ]),
+            new MenuBarItem("_File", fileItems),
             new MenuBarItem("_Server", new View[]
             {
                 new MenuItem("_Connect...", "Connect to a server", () => OnConnectRequested?.Invoke(), Key.Empty),
