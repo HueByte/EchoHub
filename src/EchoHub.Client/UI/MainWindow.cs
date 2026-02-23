@@ -772,7 +772,7 @@ public sealed class MainWindow : Runnable
             if (width > 0)
             {
                 foreach (var line in messages)
-                    source.AddRange(line.Wrap(width));
+                    source.AddRange(line.Wrap(width, line.ContinuationIndent));
             }
             else
             {

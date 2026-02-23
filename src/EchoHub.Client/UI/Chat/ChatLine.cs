@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.RegularExpressions;
 using EchoHub.Core.Models;
 using Terminal.Gui.Drawing;
@@ -18,6 +19,8 @@ public partial class ChatLine
     public string? AttachmentUrl { get; set; }
     public string? AttachmentFileName { get; set; }
     public MessageType? Type { get; set; }
+    /// <summary>Number of spaces to prepend on continuation lines when this line is word-wrapped.</summary>
+    public int ContinuationIndent { get; set; }
 
     public ChatLine(string plainText)
     {
@@ -42,51 +45,78 @@ public partial class ChatLine
         if (width <= 0 || TextLength <= width)
             return [this];
 
-        var results = new List<ChatLine>();
-        var currentSegments = new List<ChatSegment>();
-        int col = 0;
-
+        var tokens = new List<(string grapheme, Attribute? color)>();
         foreach (var segment in Segments)
+            foreach (var g in GraphemeHelper.GetGraphemes(segment.Text))
+                tokens.Add((g, segment.Color));
+
+        var results = new List<ChatLine>();
+        int pos = 0;
+        bool firstLine = true;
+
+        while (pos < tokens.Count)
         {
-            var text = segment.Text;
-            int chunkStart = 0;
-            int charPos = 0;
+            // First line uses the full width
+            int col = firstLine ? 0 : continuationIndent;
+            int lastSpaceIdx = -1;
 
-            foreach (var grapheme in GraphemeHelper.GetGraphemes(text))
+            int i = pos;
+            for (; i < tokens.Count; i++)
             {
-                var graphemeCols = Math.Max(grapheme.GetColumns(), 1);
-
-                if (col + graphemeCols > width)
-                {
-                    if (charPos > chunkStart)
-                        currentSegments.Add(new ChatSegment(text[chunkStart..charPos], segment.Color));
-
-                    results.Add(new ChatLine(currentSegments));
-                    currentSegments = [];
-
-                    if (continuationIndent > 0)
-                    {
-                        currentSegments.Add(new ChatSegment(new string(' ', continuationIndent), null));
-                        col = continuationIndent;
-                    }
-                    else
-                    {
-                        col = 0;
-                    }
-
-                    chunkStart = charPos;
-                }
-
+                var graphemeCols = Math.Max(tokens[i].grapheme.GetColumns(), 1);
+                if (col + graphemeCols > width) break;
+                if (tokens[i].grapheme == " ") lastSpaceIdx = i;
                 col += graphemeCols;
-                charPos += grapheme.Length;
             }
 
-            if (chunkStart < text.Length)
-                currentSegments.Add(new ChatSegment(text[chunkStart..], segment.Color));
+            int lineEnd, nextPos;
+            if (i == tokens.Count)
+            {
+                // All remaining tokens fit on this line.
+                lineEnd = tokens.Count;
+                nextPos = tokens.Count;
+            }
+            else if (lastSpaceIdx >= pos)
+            {
+                // Break at the last space that fit, skip the space itself.
+                lineEnd = lastSpaceIdx;
+                nextPos = lastSpaceIdx + 1;
+            }
+            else
+            {
+                // No space found, break word.
+                lineEnd = Math.Max(i, pos + 1);
+                nextPos = lineEnd;
+            }
+
+            var segments = new List<ChatSegment>();
+            if (!firstLine && continuationIndent > 0)
+                segments.Add(new ChatSegment(new string(' ', continuationIndent), null));
+
+            // Rebuild segments by grouping consecutive same-color tokens.
+            var sb = new StringBuilder();
+            int groupStart = pos;
+            while (groupStart < lineEnd)
+            {
+                var color = tokens[groupStart].color;
+                sb.Clear();
+                int groupEnd = groupStart;
+                while (groupEnd < lineEnd && tokens[groupEnd].color == color)
+                {
+                    sb.Append(tokens[groupEnd].grapheme);
+                    groupEnd++;
+                }
+                segments.Add(new ChatSegment(sb.ToString(), color));
+                groupStart = groupEnd;
+            }
+
+            results.Add(new ChatLine(segments));
+            pos = nextPos;
+            firstLine = false;
         }
 
-        if (currentSegments.Count > 0)
-            results.Add(new ChatLine(currentSegments));
+        if (results.Count == 0)
+            return [this];
 
         // Propagate attachment/type metadata to all wrapped lines so they remain clickable
         foreach (var wrapped in results)

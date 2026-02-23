@@ -259,6 +259,9 @@ public sealed class ChatMessageManager
                     lines.Add(new ChatLine(ChatColors.SplitMentions(contText)));
                 }
 
+                foreach (var l in lines)
+                    l.ContinuationIndent = indent.Length;
+
                 if (message.Embeds is { Count: > 0 })
                 {
                     var chatWidth = _chatWidth > 0 ? _chatWidth : 80;
