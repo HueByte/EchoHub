@@ -156,8 +156,6 @@ internal sealed class FakeChatService : IChatService
     public List<MessageDto> HistoryToReturn { get; set; } = [];
     public string? JoinError { get; set; }
     public string? SendMessageError { get; set; }
-    public (Guid UserId, string Username)? AuthResult { get; set; }
-    public UserProfileDto? ProfileToReturn { get; set; }
     public List<string> ChannelsForUserToReturn { get; set; } = [];
     public List<UserPresenceDto> OnlineUsersToReturn { get; set; } = [];
 
@@ -210,14 +208,8 @@ internal sealed class FakeChatService : IChatService
     public Task BroadcastChannelUpdatedAsync(ChannelDto channel, string? channelName = null) =>
         Task.CompletedTask;
 
-    public Task<UserProfileDto?> GetUserProfileAsync(string username) =>
-        Task.FromResult(ProfileToReturn);
-
     public Task<List<string>> GetChannelsForUserAsync(string username) =>
         Task.FromResult(ChannelsForUserToReturn);
-
-    public Task<(Guid UserId, string Username)?> AuthenticateUserAsync(string username, string password) =>
-        Task.FromResult(AuthResult);
 }
 
 /// <summary>
@@ -257,4 +249,44 @@ internal sealed class FakeChannelService : IChannelService
 
     public Task<(bool Success, string? Error)> EnsureChannelMembershipAsync(Guid userId, string channelName) =>
         Task.FromResult(MembershipResult);
+}
+
+/// <summary>
+/// Fake user service that records method calls and returns pre-configured results.
+/// </summary>
+internal sealed class FakeUserService : IUserService
+{
+    // Configurable results
+    public UserOperationResult? AuthResult { get; set; }
+    public UserOperationResult? RegisterResult { get; set; }
+    public UserProfileDto? ProfileToReturn { get; set; }
+
+    /// <summary>
+    /// Helper to create a success result from a simple userId + username pair.
+    /// </summary>
+    public static UserOperationResult SuccessResult(Guid userId, string username) =>
+        UserOperationResult.Success(new UserProfileDto(
+            userId, username, null, null, null, null,
+            UserStatus.Online, null, ServerRole.Member,
+            DateTimeOffset.UtcNow, DateTimeOffset.UtcNow));
+
+    public Task<UserOperationResult> AuthenticateUserAsync(string username, string password) =>
+        Task.FromResult(AuthResult
+            ?? UserOperationResult.Fail(UserError.InvalidCredentials, "Invalid username or password."));
+
+    public Task<UserOperationResult> RegisterUserAsync(string username, string password, string? displayName = null) =>
+        Task.FromResult(RegisterResult
+            ?? UserOperationResult.Fail(UserError.AlreadyExists, "Username is already taken."));
+
+    public Task<UserProfileDto?> GetUserProfileAsync(string username) =>
+        Task.FromResult(ProfileToReturn);
+
+    public Task<UserProfileDto?> GetUserByIdAsync(Guid userId) =>
+        Task.FromResult(ProfileToReturn);
+
+    public Task<UserOperationResult> UpdateProfileAsync(Guid userId, string? displayName, string? bio, string? nicknameColor) =>
+        Task.FromResult(UserOperationResult.Fail(UserError.NotFound, "Not configured"));
+
+    public Task<UserOperationResult> SetAvatarAsync(Guid userId, string asciiArt) =>
+        Task.FromResult(UserOperationResult.Fail(UserError.NotFound, "Not configured"));
 }

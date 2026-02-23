@@ -12,11 +12,12 @@ public class IrcCommandHandlerTests
 {
     private readonly IrcOptions _options = new() { ServerName = "testserver", Motd = null };
     private readonly FakeChatService _chatService = new();
+    private readonly FakeUserService _userService = new();
     private readonly FakeChannelService _channelService = new();
     private readonly FakeEncryptionService _encryption = new();
 
     private IrcCommandHandler CreateHandler(IrcClientConnection conn) =>
-        new(conn, _options, _chatService, _channelService, _encryption, NullLogger.Instance);
+        new(conn, _options, _chatService, _userService, _channelService, _encryption, NullLogger.Instance);
 
     private async Task<List<string>> RunAndCapture(string[] inputLines,
         Action<IrcClientConnection>? setup = null)
@@ -85,7 +86,7 @@ public class IrcCommandHandlerTests
     public async Task PassNickUser_ValidCredentials_Registers()
     {
         var userId = Guid.NewGuid();
-        _chatService.AuthResult = (userId, "alice");
+        _userService.AuthResult = FakeUserService.SuccessResult(userId, "alice");
 
         var lines = await RunAndCapture([
             "PASS secret123",
@@ -112,7 +113,7 @@ public class IrcCommandHandlerTests
     [Fact]
     public async Task PassNickUser_WrongPassword_GetsAuthError()
     {
-        _chatService.AuthResult = null;
+        _userService.AuthResult = null;
 
         var lines = await RunAndCapture([
             "PASS wrongpassword",
@@ -120,7 +121,8 @@ public class IrcCommandHandlerTests
             "USER alice 0 * :Alice Smith"
         ]);
 
-        Assert.Contains(lines, l => l.Contains("464") && l.Contains("incorrect"));
+        Assert.Contains(lines, l => l.Contains("464"));
+        Assert.Contains(lines, l => l.Contains("ERROR") && l.Contains("Authentication failed"));
     }
 
     [Fact]
@@ -189,7 +191,7 @@ public class IrcCommandHandlerTests
     public async Task SaslPlain_ValidCredentials_Authenticates()
     {
         var userId = Guid.NewGuid();
-        _chatService.AuthResult = (userId, "alice");
+        _userService.AuthResult = FakeUserService.SuccessResult(userId, "alice");
 
         var saslPayload = Convert.ToBase64String(Encoding.UTF8.GetBytes("\0alice\0password123"));
 
@@ -210,7 +212,7 @@ public class IrcCommandHandlerTests
     [Fact]
     public async Task SaslPlain_InvalidCredentials_GetsError()
     {
-        _chatService.AuthResult = null;
+        _userService.AuthResult = null;
 
         var saslPayload = Convert.ToBase64String(Encoding.UTF8.GetBytes("\0alice\0wrongpwd"));
 
@@ -478,7 +480,7 @@ public class IrcCommandHandlerTests
     [Fact]
     public async Task Whois_ExistingUser_ReturnsInfo()
     {
-        _chatService.ProfileToReturn = new UserProfileDto(
+        _userService.ProfileToReturn = new UserProfileDto(
             Guid.NewGuid(), "bob", "Bob S.", "Hello!", null, null,
             UserStatus.Online, null, ServerRole.Member,
             DateTimeOffset.UtcNow.AddDays(-30), DateTimeOffset.UtcNow);
@@ -496,7 +498,7 @@ public class IrcCommandHandlerTests
     [Fact]
     public async Task Whois_NonexistentUser_GetsNoSuchNickError()
     {
-        _chatService.ProfileToReturn = null;
+        _userService.ProfileToReturn = null;
 
         var lines = await RunAuthenticated(["WHOIS ghost"]);
 
@@ -506,7 +508,7 @@ public class IrcCommandHandlerTests
     [Fact]
     public async Task Whois_AwayUser_ShowsAwayMessage()
     {
-        _chatService.ProfileToReturn = new UserProfileDto(
+        _userService.ProfileToReturn = new UserProfileDto(
             Guid.NewGuid(), "bob", null, null, null, null,
             UserStatus.Away, "Gone fishing", ServerRole.Member,
             DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow);
