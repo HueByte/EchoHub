@@ -25,9 +25,6 @@ public interface IChatService
     Task BroadcastMessageAsync(string channelName, MessageDto message);
     Task BroadcastChannelUpdatedAsync(ChannelDto channel, string? channelName = null);
 
-    // Query operations (used by IRC gateway for WHOIS, AUTH)
-    Task<UserProfileDto?> GetUserProfileAsync(string username);
+    // Query operations (used by IRC gateway for WHOIS)
     Task<List<string>> GetChannelsForUserAsync(string username);
-    Task<(Guid UserId, string Username)?> AuthenticateUserAsync(string username, string password);
-    Task<(Guid UserId, string Username)?> RegisterUserAsync(string username, string password);
 }

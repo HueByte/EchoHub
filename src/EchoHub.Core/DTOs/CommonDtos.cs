@@ -24,3 +24,20 @@ public record ChannelOperationResult(ChannelDto? Channel, ChannelError? Error, s
     public static ChannelOperationResult Success(ChannelDto channel) => new(channel, null, null);
     public static ChannelOperationResult Fail(ChannelError error, string message) => new(null, error, message);
 }
+
+public enum UserError
+{
+    ValidationFailed,
+    AlreadyExists,
+    NotFound,
+    InvalidCredentials,
+    Banned
+}
+
+public record UserOperationResult(UserProfileDto? User, UserError? Error, string? ErrorMessage)
+{
+    public bool IsSuccess => Error is null;
+
+    public static UserOperationResult Success(UserProfileDto user) => new(user, null, null);
+    public static UserOperationResult Fail(UserError error, string message) => new(null, error, message);
+}
