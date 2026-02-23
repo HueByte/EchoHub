@@ -105,6 +105,11 @@ public sealed class MainWindow : Runnable
     public event Action<string>? OnThemeSelected;
 
     /// <summary>
+    /// Fired when the user requests to check for updates.
+    /// </summary>
+    public event Action? OnCheckForUpdatesRequested;
+
+    /// <summary>
     /// Fired when the user requests to view saved servers.
     /// </summary>
     public event Action? OnSavedServersRequested;
@@ -322,7 +327,8 @@ public sealed class MainWindow : Runnable
         [
             new MenuBarItem("_File",
             [
-                new MenuItem("_Quit", "Quit EchoHub", () => _app.RequestStop(), Key.Empty)
+                new MenuItem("_Quit", "Quit EchoHub", () => _app.RequestStop(), Key.Empty),
+                new MenuItem($"_Check for Updates", "Check for new version", () => OnCheckForUpdatesRequested?.Invoke(), Key.Empty)
             ]),
             new MenuBarItem("_Server", new View[]
             {
