@@ -29,4 +29,5 @@ public interface IChatService
     Task<UserProfileDto?> GetUserProfileAsync(string username);
     Task<List<string>> GetChannelsForUserAsync(string username);
     Task<(Guid UserId, string Username)?> AuthenticateUserAsync(string username, string password);
+    Task<(Guid UserId, string Username)?> RegisterUserAsync(string username, string password);
 }

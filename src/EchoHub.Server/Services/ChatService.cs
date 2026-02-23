@@ -339,6 +339,38 @@ public class ChatService : IChatService
         return (user.Id, user.Username);
     }
 
+    public async Task<(Guid UserId, string Username)?> RegisterUserAsync(string username, string password)
+    {
+        username = username.ToLowerInvariant().Trim();
+
+        if (!ValidationConstants.UsernameRegex().IsMatch(username))
+            return null;
+
+        if (password.Length < 6 || password.Length > ValidationConstants.MaxPasswordLength)
+            return null;
+
+        using var scope = _scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
+
+        if (await db.Users.AnyAsync(u => u.Username == username))
+            return null;
+
+        var isFirstUser = !await db.Users.AnyAsync();
+
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            Username = username,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
+            Role = isFirstUser ? ServerRole.Owner : ServerRole.Member,
+        };
+
+        db.Users.Add(user);
+        await db.SaveChangesAsync();
+
+        return (user.Id, user.Username);
+    }
+
     /// <summary>
     /// Collapse consecutive newlines and cap total line count to prevent newline spam.
     /// </summary>

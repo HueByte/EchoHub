@@ -170,9 +170,13 @@ public sealed class IrcCommandHandler
 
             var result = await _chatService.AuthenticateUserAsync(username, password);
 
+            // Auth failed — try registering a new account
+            if (result is null)
+                result = await _chatService.RegisterUserAsync(username, password);
+
             if (result is null)
             {
-                _logger.LogWarning("SASL auth failed for user '{Username}' (connection {Id})",
+                _logger.LogWarning("SASL auth/register failed for user '{Username}' (connection {Id})",
                     username, _conn.ConnectionId);
                 await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_SASLFAIL,
                     ":SASL authentication failed");
@@ -286,10 +290,14 @@ public sealed class IrcCommandHandler
 
         var result = await _chatService.AuthenticateUserAsync(_conn.Nickname!, _conn.Password);
 
+        // Auth failed — try registering a new account
+        if (result is null)
+            result = await _chatService.RegisterUserAsync(_conn.Nickname!, _conn.Password);
+
         if (result is null)
         {
             await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_PASSWDMISMATCH,
-                ":Password incorrect or account not found. Register via the EchoHub client first.");
+                ":Password incorrect.");
             await _conn.SendAsync("ERROR :Authentication failed");
             return;
         }
