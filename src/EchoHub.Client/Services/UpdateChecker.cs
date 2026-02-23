@@ -58,23 +58,52 @@ public sealed class UpdateChecker : IDisposable
     {
         Log.Information("Update available: v{Version}", version);
 
-        var confirmed = false;
         _app.Invoke(() =>
         {
-            confirmed = UpdateConfirmDialog.Show(_app, CurrentVersion, version);
-
+            var confirmed = UpdateConfirmDialog.Show(_app, CurrentVersion, version);
 
             if (confirmed)
             {
                 _progressDialog = new UpdateProgressDialog(_app, version);
 
-                // Start the update; progress is reported via OnProgressChanged
                 _ = Task.Run(async () =>
                 {
+                    // Create backup before the update starts
+                    try
+                    {
+                        _app.Invoke(() => _progressDialog?.UpdateProgress(0f, "Creating backup..."));
+                        UpdateBackupService.CreateBackup();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "Failed to create pre-update backup");
+
+                        var proceed = false;
+                        _app.Invoke(() =>
+                        {
+                            proceed = MessageBox.Query(
+                                _app,
+                                "Backup Warning",
+                                $"Could not create backup: {ex.Message}\n\nContinue update without backup?",
+                                "Continue", "Cancel") == 0;
+                        });
+
+                        if (!proceed)
+                        {
+                            _app.Invoke(() =>
+                            {
+                                _progressDialog?.Close();
+                                _progressDialog = null;
+                            });
+                            return;
+                        }
+                    }
+
+                    _app.Invoke(() => _progressDialog?.UpdateProgress(0f, "Downloading update..."));
                     await _updater.UpdateAsync();
                 });
 
-                _progressDialog?.Show();
+                _progressDialog.Show();
             }
         });
     }
@@ -111,11 +140,41 @@ public sealed class UpdateChecker : IDisposable
 
     private void OnException(Exception exception)
     {
-        Log.Error(exception, "Update check failed");
+        Log.Error(exception, "Update failed");
         _app.Invoke(() =>
         {
             _progressDialog?.Close();
             _progressDialog = null;
+
+            if (UpdateBackupService.BackupExists())
+            {
+                var restore = MessageBox.Query(
+                    _app,
+                    "Update Failed",
+                    $"The update failed: {exception.Message}\n\n"
+                    + "A backup of the previous version is available.\nRestore now? (The app will restart.)",
+                    "Restore", "Cancel");
+
+                if (restore == 0)
+                {
+                    try
+                    {
+                        UpdateBackupService.RestoreBackup();
+                        // RestoreBackup calls Environment.Exit(0)
+                    }
+                    catch (Exception restoreEx)
+                    {
+                        Log.Error(restoreEx, "Backup restoration failed");
+                        MessageBox.ErrorQuery(_app, "Restore Failed",
+                            $"Could not restore backup: {restoreEx.Message}\n\nYou may need to re-download the application.", "OK");
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.ErrorQuery(_app, "Update Failed",
+                    $"The update failed: {exception.Message}\n\nYou may need to re-download the application.", "OK");
+            }
         });
     }
 
