@@ -44,6 +44,8 @@ public sealed class IrcCommandHandler
             line = line.TrimEnd('\r', '\n');
             if (string.IsNullOrWhiteSpace(line)) continue;
 
+            _logger.LogDebug("IRC < {Id}: {Line}", _conn.ConnectionId, line);
+
             var msg = IrcMessage.Parse(line);
 
             try
