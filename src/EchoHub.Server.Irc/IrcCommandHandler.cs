@@ -154,10 +154,15 @@ public sealed class IrcCommandHandler
             var username = (parts[1].Length > 0 ? parts[1] : parts[0]).ToLowerInvariant();
             var password = parts[2];
 
+            _logger.LogDebug("SASL PLAIN auth attempt for user '{Username}' (connection {Id})",
+                username, _conn.ConnectionId);
+
             var result = await _chatService.AuthenticateUserAsync(username, password);
 
             if (result is null)
             {
+                _logger.LogWarning("SASL auth failed for user '{Username}' (connection {Id})",
+                    username, _conn.ConnectionId);
                 await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_SASLFAIL,
                     ":SASL authentication failed");
                 return;
@@ -167,13 +172,17 @@ public sealed class IrcCommandHandler
             _conn.UserId = result.Value.UserId;
             _conn.IsAuthenticated = true;
 
+            _logger.LogInformation("SASL auth succeeded for user '{Username}' (connection {Id})",
+                username, _conn.ConnectionId);
+
             await _conn.SendNumericAsync(ServerName, IrcNumericReply.RPL_LOGGEDIN,
                 $"{_conn.Hostmask} {username} :You are now logged in as {username}");
             await _conn.SendNumericAsync(ServerName, IrcNumericReply.RPL_SASLSUCCESS,
                 ":SASL authentication successful");
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "SASL auth exception for connection {Id}", _conn.ConnectionId);
             await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_SASLFAIL,
                 ":SASL authentication failed");
         }
@@ -240,6 +249,10 @@ public sealed class IrcCommandHandler
 
     private async Task TryCompleteRegistrationAsync()
     {
+        _logger.LogDebug("TryCompleteRegistration: CapNeg={Cap}, Registered={Reg}, Authenticated={Auth}, Nick={Nick}, User={User}, Id={Id}",
+            _conn.CapNegotiating, _conn.IsRegistered, _conn.IsAuthenticated,
+            _conn.Nickname, _conn.Username, _conn.ConnectionId);
+
         if (_conn.CapNegotiating || _conn.IsRegistered) return;
 
         // SASL already authenticated
