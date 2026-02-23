@@ -140,6 +140,15 @@ public sealed class IrcCommandHandler
             return;
         }
 
+        // AUTHENTICATE * = client aborts SASL
+        if (msg.Parameters[0] == "*")
+        {
+            _conn.IsSasl = false;
+            await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_SASLFAIL,
+                ":SASL authentication aborted");
+            return;
+        }
+
         try
         {
             var decoded = Convert.FromBase64String(msg.Parameters[0]);
