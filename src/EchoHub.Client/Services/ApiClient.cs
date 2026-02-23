@@ -32,7 +32,7 @@ public sealed class ApiClient : IDisposable
     public async Task<LoginResponse> RegisterAsync(string username, string password, string? displayName = null)
     {
         var request = new RegisterRequest(username, password, displayName);
-        var response = await _http.PostAsJsonAsync("/api/auth/register", request);
+        using var response = await _http.PostAsJsonAsync("/api/auth/register", request);
         await EnsureSuccessAsync(response);
 
         var result = await response.Content.ReadFromJsonAsync<LoginResponse>()
@@ -45,7 +45,7 @@ public sealed class ApiClient : IDisposable
     public async Task<LoginResponse> LoginAsync(string username, string password)
     {
         var request = new LoginRequest(username, password);
-        var response = await _http.PostAsJsonAsync("/api/auth/login", request);
+        using var response = await _http.PostAsJsonAsync("/api/auth/login", request);
         await EnsureSuccessAsync(response);
 
         var result = await response.Content.ReadFromJsonAsync<LoginResponse>()
@@ -61,7 +61,7 @@ public sealed class ApiClient : IDisposable
             throw new InvalidOperationException("No refresh token available.");
 
         var request = new RefreshRequest(_refreshToken);
-        var response = await _http.PostAsJsonAsync("/api/auth/refresh", request);
+        using var response = await _http.PostAsJsonAsync("/api/auth/refresh", request);
         await EnsureSuccessAsync(response);
 
         var result = await response.Content.ReadFromJsonAsync<LoginResponse>()
@@ -73,7 +73,7 @@ public sealed class ApiClient : IDisposable
     public async Task<LoginResponse> LoginWithRefreshTokenAsync(string refreshToken)
     {
         var request = new RefreshRequest(refreshToken);
-        var response = await _http.PostAsJsonAsync("/api/auth/refresh", request);
+        using var response = await _http.PostAsJsonAsync("/api/auth/refresh", request);
         await EnsureSuccessAsync(response);
 
         var result = await response.Content.ReadFromJsonAsync<LoginResponse>()
@@ -90,7 +90,7 @@ public sealed class ApiClient : IDisposable
             try
             {
                 var request = new RefreshRequest(_refreshToken);
-                await _http.PostAsJsonAsync("/api/auth/logout", request);
+                using var response = await _http.PostAsJsonAsync("/api/auth/logout", request);
             }
             catch
             {
@@ -131,7 +131,7 @@ public sealed class ApiClient : IDisposable
     public async Task<List<ChannelDto>> GetChannelsAsync()
     {
         EnsureAuthenticated();
-        var response = await AuthenticatedGetAsync("/api/channels");
+        using var response = await AuthenticatedGetAsync("/api/channels");
         await EnsureSuccessAsync(response);
         var paginated = await response.Content.ReadFromJsonAsync<PaginatedResponse<ChannelDto>>();
         return paginated?.Items ?? [];
@@ -146,7 +146,7 @@ public sealed class ApiClient : IDisposable
     public async Task<string> GetEncryptionKeyAsync()
     {
         EnsureAuthenticated();
-        var response = await AuthenticatedGetAsync("/api/server/encryption-key");
+        using var response = await AuthenticatedGetAsync("/api/server/encryption-key");
         await EnsureSuccessAsync(response);
         var result = await response.Content.ReadFromJsonAsync<EncryptionKeyResponse>()
             ?? throw new InvalidOperationException("Server returned empty encryption key response.");
@@ -156,7 +156,7 @@ public sealed class ApiClient : IDisposable
     public async Task<UserProfileDto?> GetUserProfileAsync(string username)
     {
         EnsureAuthenticated();
-        var response = await AuthenticatedGetAsync($"/api/users/{Uri.EscapeDataString(username)}/profile");
+        using var response = await AuthenticatedGetAsync($"/api/users/{Uri.EscapeDataString(username)}/profile");
         await EnsureSuccessAsync(response);
         return await response.Content.ReadFromJsonAsync<UserProfileDto>();
     }
@@ -164,7 +164,7 @@ public sealed class ApiClient : IDisposable
     public async Task<UserProfileDto?> UpdateProfileAsync(UpdateProfileRequest request)
     {
         EnsureAuthenticated();
-        var response = await AuthenticatedRequestAsync(() =>
+        using var response = await AuthenticatedRequestAsync(() =>
             _http.PutAsJsonAsync("/api/users/profile", request));
         await EnsureSuccessAsync(response);
         return await response.Content.ReadFromJsonAsync<UserProfileDto>();
@@ -178,7 +178,7 @@ public sealed class ApiClient : IDisposable
         streamContent.Headers.ContentType = new MediaTypeHeaderValue(GetContentType(fileName));
         content.Add(streamContent, "file", fileName);
 
-        var response = await AuthenticatedRequestAsync(() =>
+        using var response = await AuthenticatedRequestAsync(() =>
             _http.PostAsync("/api/users/avatar", content));
         await EnsureSuccessAsync(response);
         var result = await response.Content.ReadFromJsonAsync<AvatarUploadResponse>();
@@ -194,7 +194,7 @@ public sealed class ApiClient : IDisposable
         content.Add(streamContent, "file", fileName);
 
         var sizeQuery = size is not null ? $"?size={size}" : "";
-        var response = await AuthenticatedRequestAsync(() =>
+        using var response = await AuthenticatedRequestAsync(() =>
             _http.PostAsync($"/api/channels/{Uri.EscapeDataString(channelName)}/upload{sizeQuery}", content));
         await EnsureSuccessAsync(response);
         return await response.Content.ReadFromJsonAsync<MessageDto>();
@@ -205,7 +205,7 @@ public sealed class ApiClient : IDisposable
         EnsureAuthenticated();
         var request = new SendUrlRequest(url);
         var sizeQuery = size is not null ? $"?size={size}" : "";
-        var response = await AuthenticatedRequestAsync(() =>
+        using var response = await AuthenticatedRequestAsync(() =>
             _http.PostAsJsonAsync($"/api/channels/{Uri.EscapeDataString(channelName)}/send-url{sizeQuery}", request));
         await EnsureSuccessAsync(response);
         return await response.Content.ReadFromJsonAsync<MessageDto>();
@@ -214,7 +214,7 @@ public sealed class ApiClient : IDisposable
     public async Task<string> DownloadFileToTempAsync(string relativeUrl, string fileName)
     {
         EnsureAuthenticated();
-        var response = await AuthenticatedGetAsync(relativeUrl);
+        using var response = await AuthenticatedGetAsync(relativeUrl);
         await EnsureSuccessAsync(response);
 
         var tempDir = Path.Combine(Path.GetTempPath(), "EchoHub");
@@ -232,7 +232,7 @@ public sealed class ApiClient : IDisposable
     {
         EnsureAuthenticated();
         var request = new CreateChannelRequest(name, topic, isPublic);
-        var response = await AuthenticatedRequestAsync(() =>
+        using var response = await AuthenticatedRequestAsync(() =>
             _http.PostAsJsonAsync("/api/channels", request));
         await EnsureSuccessAsync(response);
         return await response.Content.ReadFromJsonAsync<ChannelDto>();
@@ -242,7 +242,7 @@ public sealed class ApiClient : IDisposable
     {
         EnsureAuthenticated();
         var request = new UpdateTopicRequest(topic);
-        var response = await AuthenticatedRequestAsync(() =>
+        using var response = await AuthenticatedRequestAsync(() =>
             _http.PutAsJsonAsync($"/api/channels/{Uri.EscapeDataString(channelName)}/topic", request));
         await EnsureSuccessAsync(response);
         return await response.Content.ReadFromJsonAsync<ChannelDto>();
@@ -251,7 +251,7 @@ public sealed class ApiClient : IDisposable
     public async Task DeleteChannelAsync(string channelName)
     {
         EnsureAuthenticated();
-        var response = await AuthenticatedRequestAsync(() =>
+        using var response = await AuthenticatedRequestAsync(() =>
             _http.DeleteAsync($"/api/channels/{Uri.EscapeDataString(channelName)}"));
         await EnsureSuccessAsync(response);
     }
@@ -261,7 +261,7 @@ public sealed class ApiClient : IDisposable
     public async Task AssignRoleAsync(string username, ServerRole role)
     {
         EnsureAuthenticated();
-        var response = await AuthenticatedRequestAsync(() =>
+        using var response = await AuthenticatedRequestAsync(() =>
             _http.PostAsJsonAsync("/api/moderation/role", new AssignRoleRequest(username, role)));
         await EnsureSuccessAsync(response);
     }
@@ -269,7 +269,7 @@ public sealed class ApiClient : IDisposable
     public async Task KickUserAsync(string username, string? reason = null)
     {
         EnsureAuthenticated();
-        var response = await AuthenticatedRequestAsync(() =>
+        using var response = await AuthenticatedRequestAsync(() =>
             _http.PostAsJsonAsync($"/api/moderation/kick/{Uri.EscapeDataString(username)}", new KickRequest(reason)));
         await EnsureSuccessAsync(response);
     }
@@ -277,7 +277,7 @@ public sealed class ApiClient : IDisposable
     public async Task BanUserAsync(string username, string? reason = null)
     {
         EnsureAuthenticated();
-        var response = await AuthenticatedRequestAsync(() =>
+        using var response = await AuthenticatedRequestAsync(() =>
             _http.PostAsJsonAsync($"/api/moderation/ban/{Uri.EscapeDataString(username)}", new BanRequest(reason)));
         await EnsureSuccessAsync(response);
     }
@@ -285,7 +285,7 @@ public sealed class ApiClient : IDisposable
     public async Task UnbanUserAsync(string username)
     {
         EnsureAuthenticated();
-        var response = await AuthenticatedRequestAsync(() =>
+        using var response = await AuthenticatedRequestAsync(() =>
             _http.PostAsJsonAsync($"/api/moderation/unban/{Uri.EscapeDataString(username)}", new { }));
         await EnsureSuccessAsync(response);
     }
@@ -293,7 +293,7 @@ public sealed class ApiClient : IDisposable
     public async Task MuteUserAsync(string username, int? durationMinutes = null, string? reason = null)
     {
         EnsureAuthenticated();
-        var response = await AuthenticatedRequestAsync(() =>
+        using var response = await AuthenticatedRequestAsync(() =>
             _http.PostAsJsonAsync($"/api/moderation/mute/{Uri.EscapeDataString(username)}", new MuteRequest(reason, durationMinutes)));
         await EnsureSuccessAsync(response);
     }
@@ -301,7 +301,7 @@ public sealed class ApiClient : IDisposable
     public async Task UnmuteUserAsync(string username)
     {
         EnsureAuthenticated();
-        var response = await AuthenticatedRequestAsync(() =>
+        using var response = await AuthenticatedRequestAsync(() =>
             _http.PostAsJsonAsync($"/api/moderation/unmute/{Uri.EscapeDataString(username)}", new { }));
         await EnsureSuccessAsync(response);
     }
@@ -309,7 +309,7 @@ public sealed class ApiClient : IDisposable
     public async Task DeleteMessageAsync(Guid messageId)
     {
         EnsureAuthenticated();
-        var response = await AuthenticatedRequestAsync(() =>
+        using var response = await AuthenticatedRequestAsync(() =>
             _http.DeleteAsync($"/api/moderation/messages/{messageId}"));
         await EnsureSuccessAsync(response);
     }
@@ -317,7 +317,7 @@ public sealed class ApiClient : IDisposable
     public async Task NukeChannelAsync(string channelName)
     {
         EnsureAuthenticated();
-        var response = await AuthenticatedRequestAsync(() =>
+        using var response = await AuthenticatedRequestAsync(() =>
             _http.DeleteAsync($"/api/moderation/channels/{Uri.EscapeDataString(channelName)}/nuke"));
         await EnsureSuccessAsync(response);
     }
@@ -333,6 +333,7 @@ public sealed class ApiClient : IDisposable
 
     /// <summary>
     /// Performs a GET request with automatic token refresh on 401.
+    /// Caller is responsible for disposing the returned response.
     /// </summary>
     private async Task<HttpResponseMessage> AuthenticatedGetAsync(string url)
     {
@@ -343,7 +344,9 @@ public sealed class ApiClient : IDisposable
             try
             {
                 await RefreshTokenAsync();
-                response = await _http.GetAsync(url);
+                var retryResponse = await _http.GetAsync(url);
+                response.Dispose();
+                response = retryResponse;
             }
             catch
             {
@@ -356,6 +359,7 @@ public sealed class ApiClient : IDisposable
 
     /// <summary>
     /// Performs a request with automatic token refresh on 401.
+    /// Caller is responsible for disposing the returned response.
     /// </summary>
     private async Task<HttpResponseMessage> AuthenticatedRequestAsync(Func<Task<HttpResponseMessage>> requestFactory)
     {
@@ -366,7 +370,9 @@ public sealed class ApiClient : IDisposable
             try
             {
                 await RefreshTokenAsync();
-                response = await requestFactory();
+                var retryResponse = await requestFactory();
+                response.Dispose();
+                response = retryResponse;
             }
             catch
             {

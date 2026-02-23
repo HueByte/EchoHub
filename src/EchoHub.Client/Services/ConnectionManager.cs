@@ -60,77 +60,83 @@ internal sealed class ConnectionManager : IAsyncDisposable
         _apiClient?.Dispose();
         _apiClient = new ApiClient(info.ServerUrl);
 
-        onStatus("Authenticating...");
-
-        LoginResponse loginResponse;
-
-        if (info.SavedRefreshToken is not null)
+        try
         {
-            try
+            onStatus("Authenticating...");
+
+            LoginResponse loginResponse;
+
+            if (info.SavedRefreshToken is not null)
             {
                 loginResponse = await _apiClient.LoginWithRefreshTokenAsync(info.SavedRefreshToken);
                 Log.Information("Authenticated via saved session for {User}", loginResponse.Username);
             }
+            else if (info.IsRegister)
+            {
+                loginResponse = await _apiClient.RegisterAsync(info.Username, info.Password);
+            }
+            else
+            {
+                loginResponse = await _apiClient.LoginAsync(info.Username, info.Password);
+            }
+
+            // Auto-persist rotated refresh tokens for Remember Me
+            _apiClient.OnTokensRefreshed += HandleTokensRefreshed;
+
+            // E2E encryption key
+            onStatus("Fetching encryption key...");
+            try
+            {
+                var encryptionKey = await _apiClient.GetEncryptionKeyAsync();
+                _encryption.SetKey(encryptionKey);
+                Log.Information("E2E encryption key established");
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Failed to fetch encryption key — messages will not be encrypted");
+            }
+
+            onStatus("Authenticated, connecting...");
+
+            if (_connection is not null)
+                await _connection.DisposeAsync();
+
+            _connection = new EchoHubConnection(info.ServerUrl, _apiClient, _encryption);
+            WireConnectionEvents(_connection);
+            await _connection.ConnectAsync();
+
+            var channels = await _apiClient.GetChannelsAsync();
+            onStatus("Connected");
+
+            // Join default channel + fetch history
+            _joinedChannels.Clear();
+            _joinedChannels.Add(HubConstants.DefaultChannel);
+            await _connection.JoinChannelAsync(HubConstants.DefaultChannel);
+
+            List<MessageDto> history = [];
+            try
+            {
+                history = await _connection.GetHistoryAsync(HubConstants.DefaultChannel);
+            }
             catch
             {
-                _apiClient.Dispose();
-                _apiClient = null;
-                throw; // Caller handles saved-session expiry
+                // History might not be available
             }
-        }
-        else if (info.IsRegister)
-        {
-            loginResponse = await _apiClient.RegisterAsync(info.Username, info.Password);
-        }
-        else
-        {
-            loginResponse = await _apiClient.LoginAsync(info.Username, info.Password);
-        }
 
-        // Auto-persist rotated refresh tokens for Remember Me
-        _apiClient.OnTokensRefreshed += HandleTokensRefreshed;
-
-        // E2E encryption key
-        onStatus("Fetching encryption key...");
-        try
-        {
-            var encryptionKey = await _apiClient.GetEncryptionKeyAsync();
-            _encryption.SetKey(encryptionKey);
-            Log.Information("E2E encryption key established");
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "Failed to fetch encryption key — messages will not be encrypted");
-        }
-
-        onStatus("Authenticated, connecting...");
-
-        if (_connection is not null)
-            await _connection.DisposeAsync();
-
-        _connection = new EchoHubConnection(info.ServerUrl, _apiClient, _encryption);
-        WireConnectionEvents(_connection);
-        await _connection.ConnectAsync();
-
-        var channels = await _apiClient.GetChannelsAsync();
-        onStatus("Connected");
-
-        // Join default channel + fetch history
-        _joinedChannels.Clear();
-        _joinedChannels.Add(HubConstants.DefaultChannel);
-        await _connection.JoinChannelAsync(HubConstants.DefaultChannel);
-
-        List<MessageDto> history = [];
-        try
-        {
-            history = await _connection.GetHistoryAsync(HubConstants.DefaultChannel);
+            return new ConnectResult(loginResponse, channels, history);
         }
         catch
         {
-            // History might not be available
-        }
+            if (_connection is not null)
+            {
+                await _connection.DisposeAsync();
+                _connection = null;
+            }
 
-        return new ConnectResult(loginResponse, channels, history);
+            _apiClient.Dispose();
+            _apiClient = null;
+            throw;
+        }
     }
 
     // ── Cleanup ───────────────────────────────────────────────────────────

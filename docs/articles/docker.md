@@ -27,7 +27,7 @@ services:
 All settings are configured through the `.env` file. These are ASP.NET Core environment variables that override `appsettings.json`.
 
 | Variable | Default | Description |
-|---|---|---|
+| --- | --- | --- |
 | `Server__Name` | My EchoHub Server | Display name for your server |
 | `Server__Description` | A self-hosted EchoHub chat server | Server description |
 | `Server__PublicServer` | `false` | List on the [public directory](https://echohub.voidcube.cloud/servers) |
@@ -50,7 +50,7 @@ All settings are configured through the `.env` file. These are ASP.NET Core envi
 
 All server state lives in a single Docker volume mounted at `/app/data`:
 
-```
+```text
 /app/data/
 ├── appsettings.json   # generated config with JWT/encryption keys
 ├── echohub.db         # SQLite database

@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
 using Microsoft.IdentityModel.Tokens;
 
@@ -38,6 +39,31 @@ public class JwtTokenService
             new("username", user.Username),
             new("display_name", user.DisplayName ?? user.Username),
             new("role", user.Role.ToString()),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        ];
+
+        var token = new JwtSecurityToken(
+            issuer: _issuer,
+            audience: _audience,
+            claims: claims,
+            expires: expiresAt.UtcDateTime,
+            signingCredentials: credentials);
+
+        return (new JwtSecurityTokenHandler().WriteToken(token), expiresAt);
+    }
+
+    public (string Token, DateTimeOffset ExpiresAt) GenerateAccessToken(UserProfileDto profile)
+    {
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secret));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var expiresAt = DateTimeOffset.UtcNow.Add(AccessTokenLifetime);
+
+        Claim[] claims =
+        [
+            new(JwtRegisteredClaimNames.Sub, profile.Id.ToString()),
+            new("username", profile.Username),
+            new("display_name", profile.DisplayName ?? profile.Username),
+            new("role", profile.Role.ToString()),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         ];
 

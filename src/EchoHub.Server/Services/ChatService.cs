@@ -304,40 +304,8 @@ public class ChatService : IChatService
         }
     }
 
-    public async Task<UserProfileDto?> GetUserProfileAsync(string username)
-    {
-        username = username.ToLowerInvariant();
-
-        using var scope = _scopeFactory.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
-
-        var user = await db.Users.FirstOrDefaultAsync(u => u.Username == username);
-        if (user is null) return null;
-
-        return new UserProfileDto(
-            user.Id, user.Username, user.DisplayName, user.Bio,
-            user.NicknameColor, user.AvatarAscii, user.Status,
-            user.StatusMessage, user.Role, user.CreatedAt, user.LastSeenAt);
-    }
-
     public Task<List<string>> GetChannelsForUserAsync(string username)
         => Task.FromResult(_presenceTracker.GetChannelsForUser(username));
-
-    public async Task<(Guid UserId, string Username)?> AuthenticateUserAsync(string username, string password)
-    {
-        username = username.ToLowerInvariant();
-
-        using var scope = _scopeFactory.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
-
-        var user = await db.Users.FirstOrDefaultAsync(u => u.Username == username);
-        if (user is null) return null;
-
-        if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
-            return null;
-
-        return (user.Id, user.Username);
-    }
 
     /// <summary>
     /// Collapse consecutive newlines and cap total line count to prevent newline spam.
