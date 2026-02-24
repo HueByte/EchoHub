@@ -130,6 +130,31 @@ download() {
     fi
 }
 
+# ── PATH setup ────────────────────────────────────────────────────────────
+
+add_to_path() {
+    dir="$1"
+    export_line="export PATH=\"${dir}:\$PATH\" # Added by EchoHub"
+
+    added=0
+    for profile in "$HOME/.profile" "$HOME/.bashrc" "$HOME/.zshrc"; do
+        if [ -f "$profile" ]; then
+            if grep -q "$dir" "$profile" 2>/dev/null; then
+                continue  # Already present
+            fi
+            printf '\n%s\n' "$export_line" >> "$profile"
+            echo "  Added to PATH in $(basename "$profile")"
+            added=1
+        fi
+    done
+
+    # If no profile existed, create .profile
+    if [ "$added" -eq 0 ]; then
+        printf '\n%s\n' "$export_line" >> "$HOME/.profile"
+        echo "  Added to PATH in .profile"
+    fi
+}
+
 # ── Main ──────────────────────────────────────────────────────────────────
 
 main() {
@@ -181,18 +206,17 @@ main() {
 
     echo ""
 
-    # Verify
-    if command -v "$BINARY_NAME" >/dev/null 2>&1; then
-        echo "Installed successfully! Run 'echohub' to start."
-    else
-        echo "Installed to: ${install_dir}/${BINARY_NAME}"
+    # Ensure install directory is on PATH
+    if ! command -v "$BINARY_NAME" >/dev/null 2>&1; then
+        add_to_path "$install_dir"
+    fi
+
+    echo "Installed successfully! Run 'echohub' to start."
+    echo ""
+    if ! echo "$PATH" | tr ':' '\n' | grep -qx "$install_dir"; then
+        echo "NOTE: Restart your shell or run the following to use echohub now:"
         echo ""
-        echo "WARNING: ${install_dir} is not in your PATH."
-        echo "Add it to your shell profile:"
-        echo ""
-        echo "  echo 'export PATH=\"${install_dir}:\$PATH\"' >> ~/.bashrc"
-        echo "  # or for zsh:"
-        echo "  echo 'export PATH=\"${install_dir}:\$PATH\"' >> ~/.zshrc"
+        echo "  export PATH=\"${install_dir}:\$PATH\""
     fi
 }
 

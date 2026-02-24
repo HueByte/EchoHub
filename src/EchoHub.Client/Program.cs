@@ -77,6 +77,9 @@ Log.Logger = new LoggerConfiguration()
 
 Log.Information("EchoHub client starting");
 
+// == Ensure echohub is on PATH for convenient terminal access ============
+PathSetup.EnsureOnPath();
+
 // == Post-update detection: stale backup cleanup or flag for rollback menu ================
 if (UpdateBackupService.BackupExists())
 {
