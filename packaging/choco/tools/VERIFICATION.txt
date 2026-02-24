@@ -1,0 +1,17 @@
+VERIFICATION
+
+To verify the package contents:
+
+1. Download the official release from:
+   https://github.com/HueByte/EchoHub/releases
+
+2. Download: EchoHub-Client-win-x64.zip
+
+3. Calculate the SHA256 checksum:
+   - PowerShell: Get-FileHash EchoHub-Client-win-x64.zip -Algorithm SHA256
+   - Linux/macOS: sha256sum EchoHub-Client-win-x64.zip
+
+4. Compare with the checksum in chocolateyInstall.ps1 (checksum64 value).
+
+LICENSE: MIT License - see LICENSE.txt in this directory or
+https://github.com/HueByte/EchoHub/blob/master/LICENSE
