@@ -1,24 +1,24 @@
 # TODO
 
 - [ ] fix the chat trailing; when user scrolls up, and somebody sends a message – the chat instantly "teleports" to the very bottom
-- [ ] disable the autorun of files (maybe keep for mp4? gotta do some sec research on it)
-- [ ] when user creates a new channel, he gets moved to that channel; but the userlist does not refresh the state on that – it refreshes when user re-enters the channel again
+- [x] disable the autorun of files (maybe keep for mp4? gotta do some sec research on it)
+- [x] when user creates a new channel, he gets moved to that channel; but the userlist does not refresh the state on that – it refreshes when user re-enters the channel again
 - [ ] password protected rooms
 - [ ] better audio lib, current one (NetCoreAudio) does not support seek or other audio actions
 - [ ] Use options pattern for both client & server
   - ref: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-10.0
-- [ ] The vertical line of embeds should be the same colour as theme-color meta tag of the source
+- [x] The vertical line of embeds should be the same colour as theme-color meta tag of the source
 - [x] change text wrapping to honor the offset of the user. (Preferably wrap whole words if they fit in on line. Basically how the CSS "text-wrap-mode: wrap;" works)
-- [ ] make usernames in messages, mentions and in the user list clickable to open the user profile
+- [x] make usernames in messages, mentions and in the user list clickable to open the user profile
 - [ ] Add tags support for public servers & add filters on echohubspace for those tags in the server "browser"
 - [ ] when trying to /join a channel that doesn't exist a client side-ghost channel gets created that does not work
-- [ ] unmute timer does not seem to work
+- [x] unmute timer does not seem to work
 - [ ] add IRC network like support
   - that means basically multiple servers linked, so users can chat cross-server in this network
 - [ ] when users clicks public -> private -> public checkbox in the channel creation, it ends up creating the channel on 3rd check switch
 - [ ] add keyboard only controls | at least for most important parts and the rest might be accessible with: (down)
 - [ ] add search bar / search modal – that will allow users to instantly navigate to room / focus on app element & etc
 - [ ] Actually smart data management – cache messages, lazy load messages on scroll (currently hardcoded 100msgs fetched + new ones)
-- [ ] Another thing would be stateful userlist – basically fetch once and listen for userlist updates
-- [ ] Send to EchohubSpace only state changes, currently we send user count periodically, instead of updating it on update
-- [ ] space between mod|admin "icon" and username
+- [x] Another thing would be stateful userlist – basically fetch once and listen for userlist updates
+- [x] Send to EchohubSpace only state changes, currently we send user count periodically, instead of updating it on update
+- [x] space between mod|admin "icon" and username
