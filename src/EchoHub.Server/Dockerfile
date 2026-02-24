@@ -12,6 +12,8 @@ RUN dotnet restore EchoHub.Server/EchoHub.Server.csproj
 COPY EchoHub.Core/ EchoHub.Core/
 COPY EchoHub.Server.Irc/ EchoHub.Server.Irc/
 COPY EchoHub.Server/ EchoHub.Server/
+# Icon referenced by Server.csproj ApplicationIcon
+COPY EchoHub.Client/Assets/hue_icon.ico EchoHub.Client/Assets/hue_icon.ico
 RUN dotnet publish EchoHub.Server/EchoHub.Server.csproj -c Release -o /app/publish --no-restore
 
 # Runtime
