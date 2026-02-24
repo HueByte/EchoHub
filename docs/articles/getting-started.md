@@ -1,12 +1,33 @@
 # Getting Started
 
-## Prerequisites
+## Install the Client
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+### Windows (Chocolatey)
 
-Or grab a self-contained binary from [Releases](https://github.com/HueByte/EchoHub/releases) -- no runtime needed.
+```bash
+choco install echohub
+```
 
-## Docker
+### Linux / macOS
+
+```bash
+curl -sSfL https://raw.githubusercontent.com/HueByte/EchoHub/master/scripts/install.sh | sh
+```
+
+To install a specific version or to a custom directory:
+
+```bash
+curl -sSfL .../install.sh | sh -s -- --version 0.2.8
+curl -sSfL .../install.sh | sh -s -- --install-dir /opt/echohub
+```
+
+### Manual Download
+
+Grab a self-contained binary from [Releases](https://github.com/HueByte/EchoHub/releases) -- no runtime needed.
+
+## Host a Server
+
+### Docker
 
 The quickest way to host a server:
 
@@ -17,11 +38,13 @@ docker compose up -d
 
 See the [Docker guide](docker.md) for configuration, pre-built images, and more.
 
-## Run the Server
+### From Source
 
 ```bash
 dotnet run --project src/EchoHub.Server
 ```
+
+Requires [.NET 10 SDK](https://dotnet.microsoft.com/download).
 
 On first run, the server automatically:
 
@@ -29,12 +52,9 @@ On first run, the server automatically:
 2. Generates a secure JWT secret
 3. Creates the SQLite database with a `#general` channel
 
-## Run the Client
+## Usage
 
-```bash
-dotnet run --project src/EchoHub.Client
-```
-
+After installing the client, run `echohub` (or `dotnet run --project src/EchoHub.Client` from source).
 Connect to a server, register an account, and start chatting.
 
 ## Connect via IRC

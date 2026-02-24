@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>echohub</id>
+    <version>__VERSION__</version>
+    <title>EchoHub</title>
+    <authors>Hue</authors>
+    <owners>Hue</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://github.com/HueByte/EchoHub/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/HueByte/EchoHub</projectUrl>
+    <projectSourceUrl>https://github.com/HueByte/EchoHub</projectSourceUrl>
+    <docsUrl>https://huebyte.github.io/EchoHub</docsUrl>
+    <bugTrackerUrl>https://github.com/HueByte/EchoHub/issues</bugTrackerUrl>
+    <packageSourceUrl>https://github.com/HueByte/EchoHub/tree/master/packaging/choco</packageSourceUrl>
+    <iconUrl>https://raw.githubusercontent.com/HueByte/EchoHub/master/assets/hue_icon.png</iconUrl>
+    <description>EchoHub is a decentralized IRC-style chat application with a terminal user interface (TUI). Connect to any EchoHub server, join channels, and chat — all from your terminal. Features include SignalR real-time messaging, file sharing, custom themes, and IRC gateway compatibility.</description>
+    <summary>Decentralized terminal chat client with IRC gateway support</summary>
+    <tags>chat irc decentralized tui terminal signalr echohub</tags>
+    <releaseNotes>https://huebyte.github.io/EchoHub/changelog/v__VERSION__.html</releaseNotes>
+    <copyright>Copyright (c) 2026 Hue</copyright>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>
