@@ -15,8 +15,6 @@ public record MessageDto(
     long? AttachmentFileSize = null,
     List<EmbedDto>? Embeds = null);
 
-public record JoinChannelResult(bool Success, List<MessageDto> History, string? Error = null);
-
 public record ChannelDto(
     Guid Id,
     string Name,
