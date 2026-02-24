@@ -109,12 +109,14 @@ while (true)
         builder.Services.AddSingleton<LinkEmbedService>();
         builder.Services.AddHostedService<ServerDirectoryService>();
         builder.Services.AddHostedService<FileCleanupService>();
+        builder.Services.AddHostedService<MuteExpirationService>();
 
         // ── Encryption ─────────────────────────────────────────────────────
         builder.Services.AddSingleton<IMessageEncryptionService, MessageEncryptionService>();
 
         // ── Chat Service + Broadcasters ─────────────────────────────────────
         builder.Services.AddSingleton<IChatBroadcaster, SignalRBroadcaster>();
+        builder.Services.AddSingleton<IUserService, UserService>();
         builder.Services.AddSingleton<IChannelService, ChannelService>();
         builder.Services.AddSingleton<IChatService, ChatService>();
 

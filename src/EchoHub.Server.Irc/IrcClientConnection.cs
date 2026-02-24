@@ -44,8 +44,9 @@ public sealed class IrcClientConnection : IAsyncDisposable
     public IrcClientConnection(TcpClient tcpClient, Stream stream)
     {
         _tcpClient = tcpClient;
-        _reader = new StreamReader(stream, Encoding.UTF8);
-        _writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true, NewLine = "\r\n" };
+        var utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        _reader = new StreamReader(stream, utf8NoBom);
+        _writer = new StreamWriter(stream, utf8NoBom) { AutoFlush = true, NewLine = "\r\n" };
     }
 
     public async Task<string?> ReadLineAsync(CancellationToken ct)

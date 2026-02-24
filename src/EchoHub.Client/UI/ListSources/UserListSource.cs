@@ -12,14 +12,14 @@ namespace EchoHub.Client.UI.ListSources;
 /// </summary>
 public class UserListSource : IListDataSource
 {
-    private readonly List<(string Text, Attribute? NameColor)> _users = [];
+    private readonly List<(string Text, Attribute? NameColor, string Username)> _users = [];
 
     public event NotifyCollectionChangedEventHandler? CollectionChanged;
     public int Count => _users.Count;
     public int MaxItemLength { get; private set; }
     public bool SuspendCollectionChangedEvent { get; set; }
 
-    public void Update(List<(string Text, Attribute? NameColor)> users)
+    public void Update(List<(string Text, Attribute? NameColor, string Username)> users)
     {
         _users.Clear();
         _users.AddRange(users);
@@ -28,15 +28,18 @@ public class UserListSource : IListDataSource
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
     }
 
+    public string? GetUsername(int index) =>
+        index >= 0 && index < _users.Count ? _users[index].Username : null;
+
     public bool IsMarked(int item) => false;
     public void SetMark(int item, bool value) { }
-    public IList ToList() => _users.Select(u => u.Text).ToList();
+    public IList ToList() => _users.Select(u => (object)u.Text).ToList();
 
     public void Render(ListView listView, bool selected, int item, int col, int row, int width, int viewportX = 0)
     {
         listView.Move(Math.Max(col - viewportX, 0), row);
 
-        var (text, nameColor) = _users[item];
+        var (text, nameColor, _) = _users[item];
         var normalAttr = listView.GetAttributeForRole(selected ? VisualRole.Focus : VisualRole.Normal);
 
         // Find where the name starts (after status icon + space + optional role badge)

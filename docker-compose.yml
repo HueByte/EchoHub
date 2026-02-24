@@ -1,0 +1,19 @@
+services:
+  echohub-server:
+    build:
+      context: ./src
+      dockerfile: EchoHub.Server/Dockerfile
+    # image: ghcr.io/huebyte/echohub-server:latest  # use this instead of build for pre-built images
+    container_name: echohub-server
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+      # - "6667:6667"   # IRC (plain, no encryption)
+      # - "6697:6697"   # IRC (TLS encrypted, preferred)
+    volumes:
+      - echohub-data:/app/data
+    env_file:
+      - .env
+
+volumes:
+  echohub-data:

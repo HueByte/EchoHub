@@ -56,7 +56,7 @@ public class ChatHub : Hub<IEchoHubClient>
         }
     }
 
-    public async Task<List<MessageDto>> JoinChannel(string channelName)
+    public async Task<JoinChannelResult> JoinChannel(string channelName)
     {
         try
         {
@@ -64,19 +64,15 @@ public class ChatHub : Hub<IEchoHubClient>
                 Context.ConnectionId, CurrentUserId, CurrentUsername, channelName);
 
             if (error is not null)
-            {
-                await Clients.Caller.Error(error);
-                return [];
-            }
+                return new JoinChannelResult(false, [], error);
 
             await Groups.AddToGroupAsync(Context.ConnectionId, channelName.ToLowerInvariant().Trim());
-            return history;
+            return new JoinChannelResult(true, history);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error joining channel '{Channel}' for {User}", channelName, CurrentUsername);
-            await Clients.Caller.Error($"Failed to join channel: {ex.Message}");
-            return [];
+            return new JoinChannelResult(false, [], $"Failed to join channel: {ex.Message}");
         }
     }
 

@@ -107,7 +107,31 @@ public class ChatService : IChatService
 
         if (isNewJoin)
         {
-            await BroadcastToAllAsync(b => b.SendUserJoinedAsync(channelName, username, connectionId));
+            // Fetch presence data so clients can update their lists incrementally
+            UserPresenceDto? presence = null;
+            try
+            {
+                using var presenceScope = _scopeFactory.CreateScope();
+                var presenceDb = presenceScope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
+                var user = await presenceDb.Users.FindAsync(userId);
+                if (user is not null)
+                {
+                    presence = new UserPresenceDto(
+                        user.Username, user.DisplayName, user.NicknameColor,
+                        user.Status, user.StatusMessage, user.Role);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Failed to fetch presence for {User} on join", username);
+            }
+
+            // Don't broadcast join for invisible users — they still get history but stay hidden
+            if (presence is null || presence.Status != UserStatus.Invisible)
+            {
+                await BroadcastToAllAsync(b => b.SendUserJoinedAsync(channelName, username, presence, connectionId));
+            }
+
             _logger.LogInformation("{User} joined channel '{Channel}'", username, channelName);
         }
 
@@ -272,7 +296,7 @@ public class ChatService : IChatService
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
         return await db.Users
-            .Where(u => onlineUsernames.Contains(u.Username))
+            .Where(u => onlineUsernames.Contains(u.Username) && u.Status != UserStatus.Invisible)
             .Select(u => new UserPresenceDto(
                 u.Username,
                 u.DisplayName,
@@ -304,40 +328,8 @@ public class ChatService : IChatService
         }
     }
 
-    public async Task<UserProfileDto?> GetUserProfileAsync(string username)
-    {
-        username = username.ToLowerInvariant();
-
-        using var scope = _scopeFactory.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
-
-        var user = await db.Users.FirstOrDefaultAsync(u => u.Username == username);
-        if (user is null) return null;
-
-        return new UserProfileDto(
-            user.Id, user.Username, user.DisplayName, user.Bio,
-            user.NicknameColor, user.AvatarAscii, user.Status,
-            user.StatusMessage, user.Role, user.CreatedAt, user.LastSeenAt);
-    }
-
     public Task<List<string>> GetChannelsForUserAsync(string username)
         => Task.FromResult(_presenceTracker.GetChannelsForUser(username));
-
-    public async Task<(Guid UserId, string Username)?> AuthenticateUserAsync(string username, string password)
-    {
-        username = username.ToLowerInvariant();
-
-        using var scope = _scopeFactory.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
-
-        var user = await db.Users.FirstOrDefaultAsync(u => u.Username == username);
-        if (user is null) return null;
-
-        if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
-            return null;
-
-        return (user.Id, user.Username);
-    }
 
     /// <summary>
     /// Collapse consecutive newlines and cap total line count to prevent newline spam.

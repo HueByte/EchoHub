@@ -11,7 +11,7 @@ public sealed class EchoHubConnection : IAsyncDisposable
     private readonly ClientEncryptionService _encryption;
 
     public event Action<MessageDto>? OnMessageReceived;
-    public event Action<string, string>? OnUserJoined;
+    public event Action<string, string, UserPresenceDto?>? OnUserJoined;
     public event Action<string, string>? OnUserLeft;
     public event Action<ChannelDto>? OnChannelUpdated;
     public event Action<UserPresenceDto>? OnUserStatusChanged;
@@ -70,9 +70,9 @@ public sealed class EchoHubConnection : IAsyncDisposable
             OnMessageReceived?.Invoke(decrypted);
         });
 
-        _connection.On<string, string>(nameof(Core.Contracts.IEchoHubClient.UserJoined), (channelName, username) =>
+        _connection.On<string, string, UserPresenceDto?>(nameof(Core.Contracts.IEchoHubClient.UserJoined), (channelName, username, presence) =>
         {
-            OnUserJoined?.Invoke(channelName, username);
+            OnUserJoined?.Invoke(channelName, username, presence);
         });
 
         _connection.On<string, string>(nameof(Core.Contracts.IEchoHubClient.UserLeft), (channelName, username) =>
@@ -136,8 +136,10 @@ public sealed class EchoHubConnection : IAsyncDisposable
 
     public async Task<List<MessageDto>> JoinChannelAsync(string channelName)
     {
-        var messages = await _connection.InvokeAsync<List<MessageDto>>("JoinChannel", channelName);
-        return DecryptMessages(messages);
+        var result = await _connection.InvokeAsync<JoinChannelResult>("JoinChannel", channelName);
+        if (!result.Success)
+            throw new InvalidOperationException(result.Error ?? "Failed to join channel.");
+        return DecryptMessages(result.History);
     }
 
     public async Task LeaveChannelAsync(string channelName)

@@ -1,0 +1,12 @@
+- name: Authentication
+  href: authentication.md
+- name: Connection
+  href: connection.md
+- name: Messaging
+  href: messaging.md
+- name: Channels
+  href: channels.md
+- name: Moderation
+  href: moderation.md
+- name: Media & Services
+  href: media.md

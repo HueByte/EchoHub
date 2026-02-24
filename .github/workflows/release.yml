@@ -71,6 +71,10 @@ jobs:
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
         run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r osx-arm64 --self-contained true -o publish/server-osx-arm64
 
+      - name: Publish Server linux-arm64
+        if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
+        run: dotnet publish src/EchoHub.Server/EchoHub.Server.csproj -c Release -r linux-arm64 --self-contained true -o publish/server-linux-arm64
+
       - name: Publish Client win-x64
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
         run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r win-x64 --self-contained true -o publish/client-win-x64
@@ -87,6 +91,10 @@ jobs:
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
         run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r osx-arm64 --self-contained true -o publish/client-osx-arm64
 
+      - name: Publish Client linux-arm64
+        if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
+        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r linux-arm64 --self-contained true -o publish/client-linux-arm64
+
       - name: Zip artifacts
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
         run: |
@@ -95,10 +103,12 @@ jobs:
           zip -r ../EchoHub-Server-linux-x64.zip server-linux-x64/
           zip -r ../EchoHub-Server-osx-x64.zip server-osx-x64/
           zip -r ../EchoHub-Server-osx-arm64.zip server-osx-arm64/
+          zip -r ../EchoHub-Server-linux-arm64.zip server-linux-arm64/
           zip -r ../EchoHub-Client-win-x64.zip client-win-x64/
           zip -r ../EchoHub-Client-linux-x64.zip client-linux-x64/
           zip -r ../EchoHub-Client-osx-x64.zip client-osx-x64/
           zip -r ../EchoHub-Client-osx-arm64.zip client-osx-arm64/
+          zip -r ../EchoHub-Client-linux-arm64.zip client-linux-arm64/
 
       - name: Build release notes
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
@@ -139,9 +149,30 @@ jobs:
             EchoHub-Server-linux-x64.zip \
             EchoHub-Server-osx-x64.zip \
             EchoHub-Server-osx-arm64.zip \
+            EchoHub-Server-linux-arm64.zip \
             EchoHub-Client-win-x64.zip \
             EchoHub-Client-linux-x64.zip \
             EchoHub-Client-osx-x64.zip \
-            EchoHub-Client-osx-arm64.zip
+            EchoHub-Client-osx-arm64.zip \
+            EchoHub-Client-linux-arm64.zip
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Chocolatey package
+        if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          CHECKSUM=$(sha256sum EchoHub-Client-win-x64.zip | awk '{print $1}')
+
+          # Stamp version and checksum into package templates
+          sed -i "s/__VERSION__/$VERSION/g" packaging/choco/echohub.nuspec
+          sed -i "s/__VERSION__/$VERSION/g" packaging/choco/tools/chocolateyInstall.ps1
+          sed -i "s/__CHECKSUM64__/$CHECKSUM/g" packaging/choco/tools/chocolateyInstall.ps1
+
+          # Build and push the package
+          mkdir -p /tmp/choco-out
+          cd packaging/choco
+          choco pack echohub.nuspec --output-directory /tmp/choco-out
+          choco push /tmp/choco-out/echohub.*.nupkg --source https://push.chocolatey.org/ --api-key "$CHOCO_API_KEY"
+        env:
+          CHOCO_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}

@@ -28,6 +28,8 @@ public sealed class AppOrchestrator : IDisposable
     private readonly AudioPlaybackService _audioPlayback = new();
     private readonly UpdateChecker _updateService;
     private readonly ConnectionManager _conn = new();
+    private readonly Dictionary<string, List<UserPresenceDto>> _channelUsers = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Lock _channelUsersLock = new();
 
     private ClientConfig _config;
     private readonly UserSession _session = new();
@@ -85,6 +87,10 @@ public sealed class AppOrchestrator : IDisposable
         _mainWindow.OnDeleteChannelRequested += HandleDeleteChannelRequested;
         _mainWindow.OnAudioPlayRequested += HandleAudioPlayRequested;
         _mainWindow.OnFileDownloadRequested += HandleFileDownloadRequested;
+        _mainWindow.OnCheckForUpdatesRequested += HandleCheckForUpdatesRequested;
+        _mainWindow.OnRollbackRequested += HandleRollbackRequested;
+        _mainWindow.OnUserProfileRequested += HandleViewProfile;
+        _mainWindow.OnChannelJoinRequested += HandleChannelJoinFromMessage;
     }
 
     // ── Command Handler Wiring ─────────────────────────────────────────────
@@ -379,17 +385,48 @@ public sealed class AppOrchestrator : IDisposable
             }
         };
 
-        _conn.UserJoined += (channelName, username) =>
+        _conn.UserJoined += (channelName, username, presence) =>
         {
             InvokeUI(() => _messageManager.AddSystemMessage(channelName, $"{username} joined the channel"));
-            if (channelName == _mainWindow.CurrentChannel)
+
+            List<UserPresenceDto>? snapshot = null;
+            lock (_channelUsersLock)
+            {
+                if (presence is not null && _channelUsers.TryGetValue(channelName, out var users))
+                {
+                    if (!users.Any(u => u.Username.Equals(presence.Username, StringComparison.OrdinalIgnoreCase)))
+                        users.Add(presence);
+
+                    if (channelName.Equals(_mainWindow.CurrentChannel, StringComparison.OrdinalIgnoreCase))
+                        snapshot = [.. users];
+                }
+            }
+
+            if (snapshot is not null)
+                InvokeUI(() => _mainWindow.UpdateOnlineUsers(snapshot));
+            else if (channelName.Equals(_mainWindow.CurrentChannel, StringComparison.OrdinalIgnoreCase))
                 FetchAndUpdateOnlineUsers();
         };
 
         _conn.UserLeft += (channelName, username) =>
         {
             InvokeUI(() => _messageManager.AddSystemMessage(channelName, $"{username} left the channel"));
-            if (channelName == _mainWindow.CurrentChannel)
+
+            List<UserPresenceDto>? snapshot = null;
+            lock (_channelUsersLock)
+            {
+                if (_channelUsers.TryGetValue(channelName, out var users))
+                {
+                    users.RemoveAll(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+
+                    if (channelName.Equals(_mainWindow.CurrentChannel, StringComparison.OrdinalIgnoreCase))
+                        snapshot = [.. users];
+                }
+            }
+
+            if (snapshot is not null)
+                InvokeUI(() => _mainWindow.UpdateOnlineUsers(snapshot));
+            else if (channelName.Equals(_mainWindow.CurrentChannel, StringComparison.OrdinalIgnoreCase))
                 FetchAndUpdateOnlineUsers();
         };
 
@@ -405,18 +442,75 @@ public sealed class AppOrchestrator : IDisposable
                 foreach (var channelName in _mainWindow.GetChannelNames())
                     _messageManager.AddStatusMessage(channelName, displayName, statusText);
             });
-            FetchAndUpdateOnlineUsers();
+
+            // Update presence in all cached channel lists
+            List<UserPresenceDto>? snapshot = null;
+            lock (_channelUsersLock)
+            {
+                foreach (var (channel, users) in _channelUsers)
+                {
+                    var idx = users.FindIndex(u => u.Username.Equals(presence.Username, StringComparison.OrdinalIgnoreCase));
+                    if (idx >= 0)
+                    {
+                        if (presence.Status == UserStatus.Invisible)
+                            users.RemoveAt(idx);
+                        else
+                            users[idx] = presence;
+                    }
+                    else if (presence.Status != UserStatus.Invisible)
+                    {
+                        // User came back from invisible — re-add them
+                        users.Add(presence);
+                    }
+                }
+
+                var currentChannel = _mainWindow.CurrentChannel;
+                if (!string.IsNullOrEmpty(currentChannel) && _channelUsers.TryGetValue(currentChannel, out var currentUsers))
+                    snapshot = [.. currentUsers];
+            }
+
+            if (snapshot is not null)
+                InvokeUI(() => _mainWindow.UpdateOnlineUsers(snapshot));
         };
 
         _conn.UserKicked += (channelName, username, reason) =>
         {
             var reasonText = reason is not null ? $" ({reason})" : "";
             InvokeUI(() => _messageManager.AddSystemMessage(channelName, $"{username} was kicked{reasonText}"));
+
+            List<UserPresenceDto>? snapshot = null;
+            lock (_channelUsersLock)
+            {
+                if (_channelUsers.TryGetValue(channelName, out var users))
+                {
+                    users.RemoveAll(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+                    if (channelName.Equals(_mainWindow.CurrentChannel, StringComparison.OrdinalIgnoreCase))
+                        snapshot = [.. users];
+                }
+            }
+
+            if (snapshot is not null)
+                InvokeUI(() => _mainWindow.UpdateOnlineUsers(snapshot));
         };
 
         _conn.UserBanned += (username, reason) =>
         {
             var reasonText = reason is not null ? $" ({reason})" : "";
+
+            List<UserPresenceDto>? snapshot = null;
+            lock (_channelUsersLock)
+            {
+                // Remove banned user from all cached channel lists
+                foreach (var (channel, users) in _channelUsers)
+                {
+                    users.RemoveAll(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+                }
+
+                var currentChannel = _mainWindow.CurrentChannel;
+                if (!string.IsNullOrEmpty(currentChannel) && _channelUsers.TryGetValue(currentChannel, out var currentUsers))
+                    snapshot = [.. currentUsers];
+            }
+
             InvokeUI(() =>
             {
                 if (!username.Equals(_session.Username, StringComparison.OrdinalIgnoreCase))
@@ -424,6 +518,9 @@ public sealed class AppOrchestrator : IDisposable
                     var channel = _mainWindow.CurrentChannel;
                     if (!string.IsNullOrEmpty(channel))
                         _messageManager.AddSystemMessage(channel, $"{username} was banned{reasonText}");
+
+                    if (snapshot is not null)
+                        _mainWindow.UpdateOnlineUsers(snapshot);
                 }
             });
         };
@@ -467,6 +564,7 @@ public sealed class AppOrchestrator : IDisposable
 
         _conn.Reconnected += () =>
         {
+            lock (_channelUsersLock) _channelUsers.Clear();
             RunAsync(
                 async () => await _conn.RejoinChannelsAsync(),
                 "Failed to rejoin channels after reconnect");
@@ -533,6 +631,7 @@ public sealed class AppOrchestrator : IDisposable
     private void HandleDisconnect()
     {
         Log.Information("Disconnecting from server");
+        lock (_channelUsersLock) _channelUsers.Clear();
 
         RunAsync(async () =>
         {
@@ -619,6 +718,19 @@ public sealed class AppOrchestrator : IDisposable
 
             FetchAndUpdateOnlineUsers();
         }, "Failed to join channel");
+    }
+
+    private void HandleChannelJoinFromMessage(string channelName)
+    {
+        if (!_conn.IsConnected) return;
+
+        InvokeUI(() =>
+        {
+            _mainWindow.EnsureChannelInList(channelName);
+            _mainWindow.SwitchToChannel(channelName);
+        });
+
+        HandleChannelSelected(channelName);
     }
 
     private void HandleProfileRequested()
@@ -824,6 +936,8 @@ public sealed class AppOrchestrator : IDisposable
                 if (history.Count > 0)
                     _messageManager.LoadHistory(channel.Name, history);
             });
+
+            FetchAndUpdateOnlineUsers();
         }, "Failed to create channel");
     }
 
@@ -879,6 +993,16 @@ public sealed class AppOrchestrator : IDisposable
         }, "Failed to play audio");
     }
 
+    /// <summary>
+    /// File extensions considered safe to open with the system default application.
+    /// Everything else is downloaded only — never auto-opened via UseShellExecute.
+    /// </summary>
+    private static readonly HashSet<string> SafeOpenExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".mp4", ".webm", ".mkv", ".avi", ".mov",  // video
+        ".pdf", ".txt", ".csv", ".json", ".xml",   // documents
+    };
+
     private void HandleFileDownloadRequested(string attachmentUrl, string fileName)
     {
         if (!_conn.IsAuthenticated) return;
@@ -888,17 +1012,56 @@ public sealed class AppOrchestrator : IDisposable
             InvokeUI(() => _messageManager.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloading {fileName}..."));
             var tempPath = await _conn.Api!.DownloadFileToTempAsync(attachmentUrl, fileName);
 
-            try
+            var ext = Path.GetExtension(fileName);
+            if (SafeOpenExtensions.Contains(ext))
             {
-                var psi = new System.Diagnostics.ProcessStartInfo(tempPath) { UseShellExecute = true };
-                System.Diagnostics.Process.Start(psi);
+                try
+                {
+                    var psi = new System.Diagnostics.ProcessStartInfo(tempPath) { UseShellExecute = true };
+                    System.Diagnostics.Process.Start(psi);
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, "Failed to open file with default app: {Path}", tempPath);
+                    InvokeUI(() => _messageManager.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloaded to: {tempPath}"));
+                }
             }
-            catch (Exception ex)
+            else
             {
-                Log.Warning(ex, "Failed to open file with default app: {Path}", tempPath);
                 InvokeUI(() => _messageManager.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloaded to: {tempPath}"));
             }
         }, "Failed to download file");
+    }
+
+    private void HandleCheckForUpdatesRequested()
+    {
+        RunAsync(_updateService.CheckNowAsync, "Failed to check for updates");
+    }
+
+    private void HandleRollbackRequested()
+    {
+        if (!UpdateBackupService.BackupExists())
+        {
+            MessageBox.ErrorQuery(_app, "No Backup", "No backup is available to restore.", "OK");
+            return;
+        }
+
+        var info = UpdateBackupService.GetBackupInfo();
+        var confirm = MessageBox.Query(_app, "Rollback Update",
+            $"Restore to version {info?.Version ?? "unknown"}?\n\nThe app will restart.", "Restore", "Cancel");
+
+        if (confirm != 0) return;
+
+        try
+        {
+            UpdateBackupService.RestoreBackup();
+            // RestoreBackup calls Environment.Exit(0)
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Rollback failed");
+            MessageBox.ErrorQuery(_app, "Rollback Failed", $"Could not restore: {ex.Message}", "OK");
+        }
     }
 
     // ── Private Helpers ────────────────────────────────────────────────────
@@ -913,6 +1076,7 @@ public sealed class AppOrchestrator : IDisposable
             try
             {
                 var users = await _conn.GetOnlineUsersAsync(channel);
+                lock (_channelUsersLock) _channelUsers[channel] = users;
                 InvokeUI(() => _mainWindow.UpdateOnlineUsers(users));
             }
             catch (Exception ex)

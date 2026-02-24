@@ -1,12 +1,11 @@
 using System.Security.Claims;
 using EchoHub.Core.Constants;
+using EchoHub.Core.Contracts;
 using EchoHub.Core.DTOs;
-using EchoHub.Server.Data;
 using EchoHub.Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.EntityFrameworkCore;
 
 namespace EchoHub.Server.Controllers;
 
@@ -16,25 +15,24 @@ namespace EchoHub.Server.Controllers;
 [EnableRateLimiting("general")]
 public class UsersController : ControllerBase
 {
-    private readonly EchoHubDbContext _db;
+    private readonly IUserService _userService;
     private readonly ImageToAsciiService _asciiService;
 
-    public UsersController(EchoHubDbContext db, ImageToAsciiService asciiService)
+    public UsersController(IUserService userService, ImageToAsciiService asciiService)
     {
-        _db = db;
+        _userService = userService;
         _asciiService = asciiService;
     }
 
     [HttpGet("{username}/profile")]
     public async Task<IActionResult> GetProfile(string username)
     {
-        var normalizedUsername = username.ToLowerInvariant().Trim();
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Username == normalizedUsername);
+        var profile = await _userService.GetUserProfileAsync(username);
 
-        if (user is null)
+        if (profile is null)
             return NotFound(new ErrorResponse("User not found."));
 
-        return Ok(ToProfileDto(user));
+        return Ok(profile);
     }
 
     [HttpPut("profile")]
@@ -44,37 +42,13 @@ public class UsersController : ControllerBase
         if (userIdClaim is null)
             return Unauthorized(new ErrorResponse("Authentication required."));
 
-        var userId = Guid.Parse(userIdClaim);
-        var user = await _db.Users.FindAsync(userId);
+        var result = await _userService.UpdateProfileAsync(
+            Guid.Parse(userIdClaim), request.DisplayName, request.Bio, request.NicknameColor);
 
-        if (user is null)
-            return NotFound(new ErrorResponse("User not found."));
+        if (!result.IsSuccess)
+            return MapUserError(result);
 
-        if (request.DisplayName is not null)
-        {
-            if (request.DisplayName.Length > ValidationConstants.MaxDisplayNameLength)
-                return BadRequest(new ErrorResponse($"Display name must not exceed {ValidationConstants.MaxDisplayNameLength} characters."));
-            user.DisplayName = request.DisplayName.Trim();
-        }
-
-        if (request.Bio is not null)
-        {
-            if (request.Bio.Length > ValidationConstants.MaxBioLength)
-                return BadRequest(new ErrorResponse($"Bio must not exceed {ValidationConstants.MaxBioLength} characters."));
-            user.Bio = request.Bio.Trim();
-        }
-
-        if (request.NicknameColor is not null)
-        {
-            var color = request.NicknameColor.Trim();
-            if (color.Length > 0 && !ValidationConstants.HexColorRegex().IsMatch(color))
-                return BadRequest(new ErrorResponse("Nickname color must be a valid hex color (e.g. #FF5500)."));
-            user.NicknameColor = color.Length > 0 ? color : null;
-        }
-
-        await _db.SaveChangesAsync();
-
-        return Ok(ToProfileDto(user));
+        return Ok(result.User!);
     }
 
     [HttpPost("avatar")]
@@ -84,12 +58,6 @@ public class UsersController : ControllerBase
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userIdClaim is null)
             return Unauthorized(new ErrorResponse("Authentication required."));
-
-        var userId = Guid.Parse(userIdClaim);
-        var user = await _db.Users.FindAsync(userId);
-
-        if (user is null)
-            return NotFound(new ErrorResponse("User not found."));
 
         if (!Request.HasFormContentType || Request.Form.Files.Count == 0)
             return BadRequest(new ErrorResponse("No file uploaded."));
@@ -106,22 +74,20 @@ public class UsersController : ControllerBase
 
         var asciiArt = _asciiService.ConvertToAscii(stream);
 
-        user.AvatarAscii = asciiArt;
-        await _db.SaveChangesAsync();
+        var result = await _userService.SetAvatarAsync(Guid.Parse(userIdClaim), asciiArt);
+        if (!result.IsSuccess)
+            return MapUserError(result);
 
         return Ok(new AvatarUploadResponse(asciiArt));
     }
 
-    private static UserProfileDto ToProfileDto(Core.Models.User user) => new(
-        user.Id,
-        user.Username,
-        user.DisplayName,
-        user.Bio,
-        user.NicknameColor,
-        user.AvatarAscii,
-        user.Status,
-        user.StatusMessage,
-        user.Role,
-        user.CreatedAt,
-        user.LastSeenAt);
+    private IActionResult MapUserError(UserOperationResult result) => result.Error switch
+    {
+        UserError.ValidationFailed => BadRequest(new ErrorResponse(result.ErrorMessage!)),
+        UserError.AlreadyExists => Conflict(new ErrorResponse(result.ErrorMessage!)),
+        UserError.NotFound => NotFound(new ErrorResponse(result.ErrorMessage!)),
+        UserError.InvalidCredentials => Unauthorized(new ErrorResponse(result.ErrorMessage!)),
+        UserError.Banned => Unauthorized(new ErrorResponse(result.ErrorMessage!)),
+        _ => BadRequest(new ErrorResponse(result.ErrorMessage ?? "Unknown error.")),
+    };
 }

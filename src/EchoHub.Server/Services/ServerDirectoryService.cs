@@ -170,6 +170,9 @@ public sealed class ServerDirectoryService : BackgroundService
 
             var currentCount = _presenceTracker.GetOnlineUserCount();
 
+            if (currentCount == _lastReportedUserCount)
+                continue;
+
             try
             {
                 await connection.InvokeAsync("UpdateUserCount", currentCount, ct);

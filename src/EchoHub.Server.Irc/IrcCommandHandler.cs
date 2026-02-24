@@ -12,6 +12,7 @@ public sealed class IrcCommandHandler
     private readonly IrcClientConnection _conn;
     private readonly IrcOptions _options;
     private readonly IChatService _chatService;
+    private readonly IUserService _userService;
     private readonly IChannelService _channelService;
     private readonly IMessageEncryptionService _encryption;
     private readonly ILogger _logger;
@@ -22,6 +23,7 @@ public sealed class IrcCommandHandler
         IrcClientConnection conn,
         IrcOptions options,
         IChatService chatService,
+        IUserService userService,
         IChannelService channelService,
         IMessageEncryptionService encryption,
         ILogger logger)
@@ -29,6 +31,7 @@ public sealed class IrcCommandHandler
         _conn = conn;
         _options = options;
         _chatService = chatService;
+        _userService = userService;
         _channelService = channelService;
         _encryption = encryption;
         _logger = logger;
@@ -43,6 +46,8 @@ public sealed class IrcCommandHandler
 
             line = line.TrimEnd('\r', '\n');
             if (string.IsNullOrWhiteSpace(line)) continue;
+
+            _logger.LogDebug("IRC < {Id}: {Line}", _conn.ConnectionId, line);
 
             var msg = IrcMessage.Parse(line);
 
@@ -138,6 +143,15 @@ public sealed class IrcCommandHandler
             return;
         }
 
+        // AUTHENTICATE * = client aborts SASL
+        if (msg.Parameters[0] == "*")
+        {
+            _conn.IsSasl = false;
+            await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_SASLFAIL,
+                ":SASL authentication aborted");
+            return;
+        }
+
         try
         {
             var decoded = Convert.FromBase64String(msg.Parameters[0]);
@@ -154,26 +168,39 @@ public sealed class IrcCommandHandler
             var username = (parts[1].Length > 0 ? parts[1] : parts[0]).ToLowerInvariant();
             var password = parts[2];
 
-            var result = await _chatService.AuthenticateUserAsync(username, password);
+            _logger.LogDebug("SASL PLAIN auth attempt for user '{Username}' (connection {Id})",
+                username, _conn.ConnectionId);
 
-            if (result is null)
+            var result = await _userService.AuthenticateUserAsync(username, password);
+
+            // Auth failed — try registering a new account
+            if (!result.IsSuccess)
+                result = await _userService.RegisterUserAsync(username, password);
+
+            if (!result.IsSuccess)
             {
+                _logger.LogWarning("SASL auth/register failed for user '{Username}': {Error} (connection {Id})",
+                    username, result.ErrorMessage, _conn.ConnectionId);
                 await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_SASLFAIL,
-                    ":SASL authentication failed");
+                    $":SASL authentication failed — {result.ErrorMessage}");
                 return;
             }
 
-            _conn.Nickname = result.Value.Username;
-            _conn.UserId = result.Value.UserId;
+            _conn.Nickname = result.User!.Username;
+            _conn.UserId = result.User!.Id;
             _conn.IsAuthenticated = true;
+
+            _logger.LogInformation("SASL auth succeeded for user '{Username}' (connection {Id})",
+                username, _conn.ConnectionId);
 
             await _conn.SendNumericAsync(ServerName, IrcNumericReply.RPL_LOGGEDIN,
                 $"{_conn.Hostmask} {username} :You are now logged in as {username}");
             await _conn.SendNumericAsync(ServerName, IrcNumericReply.RPL_SASLSUCCESS,
                 ":SASL authentication successful");
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "SASL auth exception for connection {Id}", _conn.ConnectionId);
             await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_SASLFAIL,
                 ":SASL authentication failed");
         }
@@ -240,6 +267,10 @@ public sealed class IrcCommandHandler
 
     private async Task TryCompleteRegistrationAsync()
     {
+        _logger.LogDebug("TryCompleteRegistration: CapNeg={Cap}, Registered={Reg}, Authenticated={Auth}, Nick={Nick}, User={User}, Id={Id}",
+            _conn.CapNegotiating, _conn.IsRegistered, _conn.IsAuthenticated,
+            _conn.Nickname, _conn.Username, _conn.ConnectionId);
+
         if (_conn.CapNegotiating || _conn.IsRegistered) return;
 
         // SASL already authenticated
@@ -260,22 +291,26 @@ public sealed class IrcCommandHandler
             return;
         }
 
-        var result = await _chatService.AuthenticateUserAsync(_conn.Nickname!, _conn.Password);
+        var result = await _userService.AuthenticateUserAsync(_conn.Nickname!, _conn.Password);
 
-        if (result is null)
+        // Auth failed — try registering a new account
+        if (!result.IsSuccess)
+            result = await _userService.RegisterUserAsync(_conn.Nickname!, _conn.Password);
+
+        if (!result.IsSuccess)
         {
             await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_PASSWDMISMATCH,
-                ":Password incorrect or account not found. Register via the EchoHub client first.");
+                $":{result.ErrorMessage}");
             await _conn.SendAsync("ERROR :Authentication failed");
             return;
         }
 
-        _conn.UserId = result.Value.UserId;
-        _conn.Nickname = result.Value.Username;
+        _conn.UserId = result.User!.Id;
+        _conn.Nickname = result.User!.Username;
         _conn.IsAuthenticated = true;
         _conn.IsRegistered = true;
 
-        await _chatService.UserConnectedAsync(_conn.ConnectionId, result.Value.UserId, result.Value.Username);
+        await _chatService.UserConnectedAsync(_conn.ConnectionId, result.User!.Id, result.User!.Username);
         await SendWelcomeBurstAsync();
     }
 
@@ -527,7 +562,7 @@ public sealed class IrcCommandHandler
         if (msg.Parameters.Count < 1) return;
 
         var nick = msg.Parameters[^1].ToLowerInvariant();
-        var profile = await _chatService.GetUserProfileAsync(nick);
+        var profile = await _userService.GetUserProfileAsync(nick);
 
         if (profile is null)
         {
