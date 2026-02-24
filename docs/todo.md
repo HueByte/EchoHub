@@ -22,3 +22,4 @@
 - [x] Another thing would be stateful userlist – basically fetch once and listen for userlist updates
 - [x] Send to EchohubSpace only state changes, currently we send user count periodically, instead of updating it on update
 - [x] space between mod|admin "icon" and username
+- [ ] Embeds still incorrectly display colors
