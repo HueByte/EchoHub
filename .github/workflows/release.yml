@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       should_release: ${{ steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false' }}
-      src_changed: ${{ steps.changes.outputs.src_changed }}
+      release_exists: ${{ steps.check_release.outputs.exists }}
       version: ${{ steps.version.outputs.version }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
@@ -35,7 +35,6 @@ jobs:
           fi
 
       - name: Read version
-        if: steps.changes.outputs.src_changed == 'true'
         id: version
         run: |
           VERSION=$(grep -oP '(?<=<Version>)[^<]+' src/Directory.Build.props)
@@ -43,7 +42,6 @@ jobs:
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Check if release exists
-        if: steps.changes.outputs.src_changed == 'true'
         id: check_release
         run: |
           if gh release view "${{ steps.version.outputs.tag }}" &>/dev/null; then
@@ -166,17 +164,32 @@ jobs:
   choco:
     name: Publish to Chocolatey
     needs: release
-    if: needs.release.outputs.src_changed == 'true'
+    if: needs.release.outputs.release_exists == 'true' || needs.release.outputs.should_release == 'true'
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check if version already published
+        id: choco_check
+        shell: pwsh
+        run: |
+          $version = "${{ needs.release.outputs.version }}"
+          $result = choco search echohub --version $version --exact --source https://community.chocolatey.org/api/v2/ 2>&1
+          if ($result -match "echohub $version") {
+            echo "exists=true" >> $env:GITHUB_OUTPUT
+            Write-Host "Chocolatey package echohub $version already published — skipping."
+          } else {
+            echo "exists=false" >> $env:GITHUB_OUTPUT
+          }
+
       - name: Download release asset
+        if: steps.choco_check.outputs.exists == 'false'
         run: gh release download "v${{ needs.release.outputs.version }}" --pattern "EchoHub-Client-win-x64.zip"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pack and push
+        if: steps.choco_check.outputs.exists == 'false'
         shell: pwsh
         run: |
           $version = "${{ needs.release.outputs.version }}"
