@@ -136,8 +136,10 @@ public sealed class EchoHubConnection : IAsyncDisposable
 
     public async Task<List<MessageDto>> JoinChannelAsync(string channelName)
     {
-        var messages = await _connection.InvokeAsync<List<MessageDto>>("JoinChannel", channelName);
-        return DecryptMessages(messages);
+        var result = await _connection.InvokeAsync<JoinChannelResult>("JoinChannel", channelName);
+        if (!result.Success)
+            throw new InvalidOperationException(result.Error ?? "Failed to join channel.");
+        return DecryptMessages(result.History);
     }
 
     public async Task LeaveChannelAsync(string channelName)
