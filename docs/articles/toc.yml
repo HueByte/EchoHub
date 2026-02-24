@@ -1,10 +1,14 @@
-- name: Getting Started
-  href: getting-started.md
-- name: Docker
-  href: docker.md
-- name: Architecture
-  href: architecture.md
-- name: Encryption
-  href: encryption.md
-- name: Notification Sounds
-  href: notification-sounds.md
+- name: Guides
+  items:
+    - name: Getting Started
+      href: getting-started.md
+    - name: Docker
+      href: docker.md
+    - name: Architecture
+      href: architecture.md
+    - name: Encryption
+      href: encryption.md
+    - name: Notification Sounds
+      href: notification-sounds.md
+- name: Flows
+  href: ../flows/toc.yml
