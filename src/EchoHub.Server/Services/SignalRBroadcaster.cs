@@ -23,12 +23,12 @@ public class SignalRBroadcaster : IChatBroadcaster
     public Task SendMessageToChannelAsync(string channelName, MessageDto message)
         => HubContext.Clients.Group(channelName).ReceiveMessage(message);
 
-    public Task SendUserJoinedAsync(string channelName, string username, string? excludeConnectionId = null)
+    public Task SendUserJoinedAsync(string channelName, string username, UserPresenceDto? presence, string? excludeConnectionId = null)
     {
         if (excludeConnectionId is not null && !excludeConnectionId.StartsWith("irc-"))
-            return HubContext.Clients.GroupExcept(channelName, [excludeConnectionId]).UserJoined(channelName, username);
+            return HubContext.Clients.GroupExcept(channelName, [excludeConnectionId]).UserJoined(channelName, username, presence);
 
-        return HubContext.Clients.Group(channelName).UserJoined(channelName, username);
+        return HubContext.Clients.Group(channelName).UserJoined(channelName, username, presence);
     }
 
     public Task SendUserLeftAsync(string channelName, string username)

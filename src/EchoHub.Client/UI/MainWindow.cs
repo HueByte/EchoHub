@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using EchoHub.Client.Services;
 using EchoHub.Client.Themes;
 using EchoHub.Client.UI.Chat;
@@ -19,7 +20,7 @@ namespace EchoHub.Client.UI;
 /// <summary>
 /// Main Terminal.Gui window for the EchoHub chat client.
 /// </summary>
-public sealed class MainWindow : Runnable
+public sealed partial class MainWindow : Runnable
 {
     private readonly IApplication _app;
     private readonly ListView _channelList;
@@ -140,6 +141,16 @@ public sealed class MainWindow : Runnable
     /// </summary>
     public event Action<string, string>? OnFileDownloadRequested;
 
+    /// <summary>
+    /// Fired when the user activates a username (in userlist or message). Parameter is the username.
+    /// </summary>
+    public event Action<string>? OnUserProfileRequested;
+
+    /// <summary>
+    /// Fired when the user activates a #channel reference in a message. Parameter is the channel name.
+    /// </summary>
+    public event Action<string>? OnChannelJoinRequested;
+
     public MainWindow(IApplication app, ChatMessageManager messageManager)
     {
         _app = app;
@@ -250,6 +261,7 @@ public sealed class MainWindow : Runnable
         };
         _usersListSource = new UserListSource();
         _usersList.Source = _usersListSource;
+        _usersList.Accepting += OnUsersListAccepting;
         _usersFrame.Add(_usersList);
         Add(_usersFrame);
 
@@ -410,17 +422,66 @@ public sealed class MainWindow : Runnable
             return;
 
         var line = source.GetLine(index.Value);
-        if (line?.AttachmentUrl is null || line.AttachmentFileName is null)
-            return;
+        if (line is null) return;
 
-        if (line.Type == MessageType.Audio)
+        // Audio/file attachments take priority
+        if (line.AttachmentUrl is not null && line.AttachmentFileName is not null)
         {
-            OnAudioPlayRequested?.Invoke(line.AttachmentUrl, line.AttachmentFileName);
+            if (line.Type == MessageType.Audio)
+            {
+                OnAudioPlayRequested?.Invoke(line.AttachmentUrl, line.AttachmentFileName);
+                e.Handled = true;
+                return;
+            }
+
+            if (line.Type == MessageType.File)
+            {
+                OnFileDownloadRequested?.Invoke(line.AttachmentUrl, line.AttachmentFileName);
+                e.Handled = true;
+                return;
+            }
+        }
+
+        var lineText = line.ToString();
+
+        // Check for @mention — open mentioned user's profile
+        // Negative lookbehind prevents matching emails (user@domain)
+        var mentionMatch = ClickMentionRegex().Match(lineText);
+        if (mentionMatch.Success)
+        {
+            OnUserProfileRequested?.Invoke(mentionMatch.Groups[1].Value);
+            e.Handled = true;
+            return;
+        }
+
+        // Check for #channel — join/switch to that channel
+        // Require at least one letter to avoid matching hex colors (#ff0000) or issue numbers (#123)
+        var channelMatch = ClickChannelRegex().Match(lineText);
+        if (channelMatch.Success)
+        {
+            OnChannelJoinRequested?.Invoke(channelMatch.Groups[1].Value);
+            e.Handled = true;
+            return;
+        }
+
+        // Default: open sender's profile
+        if (line.SenderUsername is not null)
+        {
+            OnUserProfileRequested?.Invoke(line.SenderUsername);
             e.Handled = true;
         }
-        else if (line.Type == MessageType.File)
+    }
+
+    private void OnUsersListAccepting(object? sender, CommandEventArgs e)
+    {
+        var index = _usersList.SelectedItem;
+        if (!index.HasValue || index.Value < 0 || index.Value >= _usersListSource.Count)
+            return;
+
+        var username = _usersListSource.GetUsername(index.Value);
+        if (username is not null)
         {
-            OnFileDownloadRequested?.Invoke(line.AttachmentUrl, line.AttachmentFileName);
+            OnUserProfileRequested?.Invoke(username);
             e.Handled = true;
         }
     }
@@ -862,14 +923,14 @@ public sealed class MainWindow : Runnable
             var name = u.DisplayName ?? u.Username;
             var roleTag = u.Role switch
             {
-                ServerRole.Owner => "\u2605", // ★
-                ServerRole.Admin => "\u2666", // ♦
-                ServerRole.Mod => "\u2740",   // ❀
+                ServerRole.Owner => "\u2605 ", // ★
+                ServerRole.Admin => "\u2666 ", // ♦
+                ServerRole.Mod => "\u2740 ",   // ❀
                 _ => ""
             };
             var text = $"{statusIcon} {roleTag}{name}";
             var nameColor = HexColorHelper.ParseHexColor(u.NicknameColor);
-            return (text, nameColor);
+            return (text, nameColor, u.Username);
         }).ToList();
 
         _usersListSource.Update(displayItems);
@@ -877,4 +938,11 @@ public sealed class MainWindow : Runnable
         _usersFrame.Title = $"Users ({users.Count})";
     }
 
+    // @mention — not preceded by a word char (avoids emails)
+    [GeneratedRegex(@"(?<!\w)@([\w-]+)")]
+    private static partial Regex ClickMentionRegex();
+
+    // #channel — not preceded by a word char, must contain at least one letter (avoids hex colors / issue numbers)
+    [GeneratedRegex(@"(?<!\w)#((?=.*[a-zA-Z])[\w-]+)")]
+    private static partial Regex ClickChannelRegex();
 }

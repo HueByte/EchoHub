@@ -31,7 +31,7 @@ public class IrcBroadcaster : IChatBroadcaster
         }
     }
 
-    public async Task SendUserJoinedAsync(string channelName, string username, string? excludeConnectionId = null)
+    public async Task SendUserJoinedAsync(string channelName, string username, UserPresenceDto? presence, string? excludeConnectionId = null)
     {
         foreach (var conn in _gateway.GetConnectionsInChannel(channelName))
         {

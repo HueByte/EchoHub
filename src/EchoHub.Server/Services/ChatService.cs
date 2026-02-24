@@ -107,7 +107,31 @@ public class ChatService : IChatService
 
         if (isNewJoin)
         {
-            await BroadcastToAllAsync(b => b.SendUserJoinedAsync(channelName, username, connectionId));
+            // Fetch presence data so clients can update their lists incrementally
+            UserPresenceDto? presence = null;
+            try
+            {
+                using var presenceScope = _scopeFactory.CreateScope();
+                var presenceDb = presenceScope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
+                var user = await presenceDb.Users.FindAsync(userId);
+                if (user is not null)
+                {
+                    presence = new UserPresenceDto(
+                        user.Username, user.DisplayName, user.NicknameColor,
+                        user.Status, user.StatusMessage, user.Role);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Failed to fetch presence for {User} on join", username);
+            }
+
+            // Don't broadcast join for invisible users — they still get history but stay hidden
+            if (presence is null || presence.Status != UserStatus.Invisible)
+            {
+                await BroadcastToAllAsync(b => b.SendUserJoinedAsync(channelName, username, presence, connectionId));
+            }
+
             _logger.LogInformation("{User} joined channel '{Channel}'", username, channelName);
         }
 
@@ -272,7 +296,7 @@ public class ChatService : IChatService
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
         return await db.Users
-            .Where(u => onlineUsernames.Contains(u.Username))
+            .Where(u => onlineUsernames.Contains(u.Username) && u.Status != UserStatus.Invisible)
             .Select(u => new UserPresenceDto(
                 u.Username,
                 u.DisplayName,

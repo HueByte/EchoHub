@@ -14,6 +14,8 @@ public class PresenceTracker
     {
         _connections[connectionId] = (userId, username);
 
+        // Lock is required: ConcurrentDictionary only protects its own slots, not the HashSet values inside.
+        // It also makes the TryGetValue → add sequence atomic to prevent race conditions.
         lock (_lock)
         {
             if (!_userConnections.TryGetValue(username, out var connections))
