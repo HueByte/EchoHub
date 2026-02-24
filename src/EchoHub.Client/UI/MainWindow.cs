@@ -923,12 +923,14 @@ public sealed partial class MainWindow : Runnable
             var name = u.DisplayName ?? u.Username;
             var roleTag = u.Role switch
             {
-                ServerRole.Owner => "\u2605 ", // ★
-                ServerRole.Admin => "\u2666 ", // ♦
-                ServerRole.Mod => "\u2740 ",   // ❀
+                ServerRole.Owner => "\u2605", // ★
+                ServerRole.Admin => "\u2666", // ♦
+                ServerRole.Mod => "\u2740",   // ❀
                 _ => ""
             };
-            var text = $"{statusIcon} {roleTag} {name}";
+            var text = roleTag.Length > 0
+                ? $"{statusIcon} {roleTag} {name}"
+                : $"{statusIcon} {name}";
             var nameColor = HexColorHelper.ParseHexColor(u.NicknameColor);
             return (text, nameColor, u.Username);
         }).ToList();

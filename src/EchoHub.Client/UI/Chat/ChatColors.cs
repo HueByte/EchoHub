@@ -39,6 +39,10 @@ public static partial class ChatColors
             lastIndex = match.Index + match.Length;
         }
 
+        // Add remaining text after the last mention (or all text if no mentions found)
+        if (lastIndex < text.Length)
+            segments.Add(new ChatSegment(text[lastIndex..], defaultColor));
+
         // Second pass: highlight #channels in non-mention segments
         var mentionSegments = segments;
         segments = [];
