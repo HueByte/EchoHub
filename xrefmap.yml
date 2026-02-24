@@ -1381,6 +1381,198 @@ references:
   commentId: Overload:EchoHub.Client.Services.AudioPlaybackService.StopAsync
   fullName: EchoHub.Client.Services.AudioPlaybackService.StopAsync
   nameWithType: AudioPlaybackService.StopAsync
+- uid: EchoHub.Client.Services.BackupInfo
+  name: BackupInfo
+  href: api/client/EchoHub.Client.Services.BackupInfo.html
+  commentId: T:EchoHub.Client.Services.BackupInfo
+  fullName: EchoHub.Client.Services.BackupInfo
+  nameWithType: BackupInfo
+- uid: EchoHub.Client.Services.BackupInfo.#ctor(EchoHub.Client.Services.BackupInfo)
+  name: BackupInfo(BackupInfo)
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo__ctor_EchoHub_Client_Services_BackupInfo_
+  commentId: M:EchoHub.Client.Services.BackupInfo.#ctor(EchoHub.Client.Services.BackupInfo)
+  name.vb: New(BackupInfo)
+  fullName: EchoHub.Client.Services.BackupInfo.BackupInfo(EchoHub.Client.Services.BackupInfo)
+  fullName.vb: EchoHub.Client.Services.BackupInfo.New(EchoHub.Client.Services.BackupInfo)
+  nameWithType: BackupInfo.BackupInfo(BackupInfo)
+  nameWithType.vb: BackupInfo.New(BackupInfo)
+- uid: EchoHub.Client.Services.BackupInfo.#ctor(System.String,System.String,System.DateTimeOffset)
+  name: BackupInfo(string, string, DateTimeOffset)
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo__ctor_System_String_System_String_System_DateTimeOffset_
+  commentId: M:EchoHub.Client.Services.BackupInfo.#ctor(System.String,System.String,System.DateTimeOffset)
+  name.vb: New(String, String, DateTimeOffset)
+  fullName: EchoHub.Client.Services.BackupInfo.BackupInfo(string, string, System.DateTimeOffset)
+  fullName.vb: EchoHub.Client.Services.BackupInfo.New(String, String, System.DateTimeOffset)
+  nameWithType: BackupInfo.BackupInfo(string, string, DateTimeOffset)
+  nameWithType.vb: BackupInfo.New(String, String, DateTimeOffset)
+- uid: EchoHub.Client.Services.BackupInfo.#ctor*
+  name: BackupInfo
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo__ctor_
+  commentId: Overload:EchoHub.Client.Services.BackupInfo.#ctor
+  name.vb: New
+  fullName: EchoHub.Client.Services.BackupInfo.BackupInfo
+  fullName.vb: EchoHub.Client.Services.BackupInfo.New
+  nameWithType: BackupInfo.BackupInfo
+  nameWithType.vb: BackupInfo.New
+- uid: EchoHub.Client.Services.BackupInfo.AppDirectory
+  name: AppDirectory
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_AppDirectory
+  commentId: P:EchoHub.Client.Services.BackupInfo.AppDirectory
+  fullName: EchoHub.Client.Services.BackupInfo.AppDirectory
+  nameWithType: BackupInfo.AppDirectory
+- uid: EchoHub.Client.Services.BackupInfo.AppDirectory*
+  name: AppDirectory
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_AppDirectory_
+  commentId: Overload:EchoHub.Client.Services.BackupInfo.AppDirectory
+  fullName: EchoHub.Client.Services.BackupInfo.AppDirectory
+  nameWithType: BackupInfo.AppDirectory
+- uid: EchoHub.Client.Services.BackupInfo.CreatedAt
+  name: CreatedAt
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_CreatedAt
+  commentId: P:EchoHub.Client.Services.BackupInfo.CreatedAt
+  fullName: EchoHub.Client.Services.BackupInfo.CreatedAt
+  nameWithType: BackupInfo.CreatedAt
+- uid: EchoHub.Client.Services.BackupInfo.CreatedAt*
+  name: CreatedAt
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_CreatedAt_
+  commentId: Overload:EchoHub.Client.Services.BackupInfo.CreatedAt
+  fullName: EchoHub.Client.Services.BackupInfo.CreatedAt
+  nameWithType: BackupInfo.CreatedAt
+- uid: EchoHub.Client.Services.BackupInfo.Deconstruct(System.String@,System.String@,System.DateTimeOffset@)
+  name: Deconstruct(out string, out string, out DateTimeOffset)
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_Deconstruct_System_String__System_String__System_DateTimeOffset__
+  commentId: M:EchoHub.Client.Services.BackupInfo.Deconstruct(System.String@,System.String@,System.DateTimeOffset@)
+  name.vb: Deconstruct(String, String, DateTimeOffset)
+  fullName: EchoHub.Client.Services.BackupInfo.Deconstruct(out string, out string, out System.DateTimeOffset)
+  fullName.vb: EchoHub.Client.Services.BackupInfo.Deconstruct(String, String, System.DateTimeOffset)
+  nameWithType: BackupInfo.Deconstruct(out string, out string, out DateTimeOffset)
+  nameWithType.vb: BackupInfo.Deconstruct(String, String, DateTimeOffset)
+- uid: EchoHub.Client.Services.BackupInfo.Deconstruct*
+  name: Deconstruct
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_Deconstruct_
+  commentId: Overload:EchoHub.Client.Services.BackupInfo.Deconstruct
+  fullName: EchoHub.Client.Services.BackupInfo.Deconstruct
+  nameWithType: BackupInfo.Deconstruct
+- uid: EchoHub.Client.Services.BackupInfo.EqualityContract
+  name: EqualityContract
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_EqualityContract
+  commentId: P:EchoHub.Client.Services.BackupInfo.EqualityContract
+  fullName: EchoHub.Client.Services.BackupInfo.EqualityContract
+  nameWithType: BackupInfo.EqualityContract
+- uid: EchoHub.Client.Services.BackupInfo.EqualityContract*
+  name: EqualityContract
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_EqualityContract_
+  commentId: Overload:EchoHub.Client.Services.BackupInfo.EqualityContract
+  fullName: EchoHub.Client.Services.BackupInfo.EqualityContract
+  nameWithType: BackupInfo.EqualityContract
+- uid: EchoHub.Client.Services.BackupInfo.Equals(EchoHub.Client.Services.BackupInfo)
+  name: Equals(BackupInfo?)
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_Equals_EchoHub_Client_Services_BackupInfo_
+  commentId: M:EchoHub.Client.Services.BackupInfo.Equals(EchoHub.Client.Services.BackupInfo)
+  name.vb: Equals(BackupInfo)
+  fullName: EchoHub.Client.Services.BackupInfo.Equals(EchoHub.Client.Services.BackupInfo?)
+  fullName.vb: EchoHub.Client.Services.BackupInfo.Equals(EchoHub.Client.Services.BackupInfo)
+  nameWithType: BackupInfo.Equals(BackupInfo?)
+  nameWithType.vb: BackupInfo.Equals(BackupInfo)
+- uid: EchoHub.Client.Services.BackupInfo.Equals(System.Object)
+  name: Equals(object?)
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_Equals_System_Object_
+  commentId: M:EchoHub.Client.Services.BackupInfo.Equals(System.Object)
+  name.vb: Equals(Object)
+  fullName: EchoHub.Client.Services.BackupInfo.Equals(object?)
+  fullName.vb: EchoHub.Client.Services.BackupInfo.Equals(Object)
+  nameWithType: BackupInfo.Equals(object?)
+  nameWithType.vb: BackupInfo.Equals(Object)
+- uid: EchoHub.Client.Services.BackupInfo.Equals*
+  name: Equals
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_Equals_
+  commentId: Overload:EchoHub.Client.Services.BackupInfo.Equals
+  fullName: EchoHub.Client.Services.BackupInfo.Equals
+  nameWithType: BackupInfo.Equals
+- uid: EchoHub.Client.Services.BackupInfo.GetHashCode
+  name: GetHashCode()
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_GetHashCode
+  commentId: M:EchoHub.Client.Services.BackupInfo.GetHashCode
+  fullName: EchoHub.Client.Services.BackupInfo.GetHashCode()
+  nameWithType: BackupInfo.GetHashCode()
+- uid: EchoHub.Client.Services.BackupInfo.GetHashCode*
+  name: GetHashCode
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_GetHashCode_
+  commentId: Overload:EchoHub.Client.Services.BackupInfo.GetHashCode
+  fullName: EchoHub.Client.Services.BackupInfo.GetHashCode
+  nameWithType: BackupInfo.GetHashCode
+- uid: EchoHub.Client.Services.BackupInfo.PrintMembers(System.Text.StringBuilder)
+  name: PrintMembers(StringBuilder)
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_PrintMembers_System_Text_StringBuilder_
+  commentId: M:EchoHub.Client.Services.BackupInfo.PrintMembers(System.Text.StringBuilder)
+  fullName: EchoHub.Client.Services.BackupInfo.PrintMembers(System.Text.StringBuilder)
+  nameWithType: BackupInfo.PrintMembers(StringBuilder)
+- uid: EchoHub.Client.Services.BackupInfo.PrintMembers*
+  name: PrintMembers
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_PrintMembers_
+  commentId: Overload:EchoHub.Client.Services.BackupInfo.PrintMembers
+  fullName: EchoHub.Client.Services.BackupInfo.PrintMembers
+  nameWithType: BackupInfo.PrintMembers
+- uid: EchoHub.Client.Services.BackupInfo.ToString
+  name: ToString()
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_ToString
+  commentId: M:EchoHub.Client.Services.BackupInfo.ToString
+  fullName: EchoHub.Client.Services.BackupInfo.ToString()
+  nameWithType: BackupInfo.ToString()
+- uid: EchoHub.Client.Services.BackupInfo.ToString*
+  name: ToString
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_ToString_
+  commentId: Overload:EchoHub.Client.Services.BackupInfo.ToString
+  fullName: EchoHub.Client.Services.BackupInfo.ToString
+  nameWithType: BackupInfo.ToString
+- uid: EchoHub.Client.Services.BackupInfo.Version
+  name: Version
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_Version
+  commentId: P:EchoHub.Client.Services.BackupInfo.Version
+  fullName: EchoHub.Client.Services.BackupInfo.Version
+  nameWithType: BackupInfo.Version
+- uid: EchoHub.Client.Services.BackupInfo.Version*
+  name: Version
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_Version_
+  commentId: Overload:EchoHub.Client.Services.BackupInfo.Version
+  fullName: EchoHub.Client.Services.BackupInfo.Version
+  nameWithType: BackupInfo.Version
+- uid: EchoHub.Client.Services.BackupInfo.op_Equality(EchoHub.Client.Services.BackupInfo,EchoHub.Client.Services.BackupInfo)
+  name: operator ==(BackupInfo?, BackupInfo?)
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_op_Equality_EchoHub_Client_Services_BackupInfo_EchoHub_Client_Services_BackupInfo_
+  commentId: M:EchoHub.Client.Services.BackupInfo.op_Equality(EchoHub.Client.Services.BackupInfo,EchoHub.Client.Services.BackupInfo)
+  name.vb: =(BackupInfo, BackupInfo)
+  fullName: EchoHub.Client.Services.BackupInfo.operator ==(EchoHub.Client.Services.BackupInfo?, EchoHub.Client.Services.BackupInfo?)
+  fullName.vb: EchoHub.Client.Services.BackupInfo.=(EchoHub.Client.Services.BackupInfo, EchoHub.Client.Services.BackupInfo)
+  nameWithType: BackupInfo.operator ==(BackupInfo?, BackupInfo?)
+  nameWithType.vb: BackupInfo.=(BackupInfo, BackupInfo)
+- uid: EchoHub.Client.Services.BackupInfo.op_Equality*
+  name: operator ==
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_op_Equality_
+  commentId: Overload:EchoHub.Client.Services.BackupInfo.op_Equality
+  name.vb: =
+  fullName: EchoHub.Client.Services.BackupInfo.operator ==
+  fullName.vb: EchoHub.Client.Services.BackupInfo.=
+  nameWithType: BackupInfo.operator ==
+  nameWithType.vb: BackupInfo.=
+- uid: EchoHub.Client.Services.BackupInfo.op_Inequality(EchoHub.Client.Services.BackupInfo,EchoHub.Client.Services.BackupInfo)
+  name: operator !=(BackupInfo?, BackupInfo?)
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_op_Inequality_EchoHub_Client_Services_BackupInfo_EchoHub_Client_Services_BackupInfo_
+  commentId: M:EchoHub.Client.Services.BackupInfo.op_Inequality(EchoHub.Client.Services.BackupInfo,EchoHub.Client.Services.BackupInfo)
+  name.vb: <>(BackupInfo, BackupInfo)
+  fullName: EchoHub.Client.Services.BackupInfo.operator !=(EchoHub.Client.Services.BackupInfo?, EchoHub.Client.Services.BackupInfo?)
+  fullName.vb: EchoHub.Client.Services.BackupInfo.<>(EchoHub.Client.Services.BackupInfo, EchoHub.Client.Services.BackupInfo)
+  nameWithType: BackupInfo.operator !=(BackupInfo?, BackupInfo?)
+  nameWithType.vb: BackupInfo.<>(BackupInfo, BackupInfo)
+- uid: EchoHub.Client.Services.BackupInfo.op_Inequality*
+  name: operator !=
+  href: api/client/EchoHub.Client.Services.BackupInfo.html#EchoHub_Client_Services_BackupInfo_op_Inequality_
+  commentId: Overload:EchoHub.Client.Services.BackupInfo.op_Inequality
+  name.vb: <>
+  fullName: EchoHub.Client.Services.BackupInfo.operator !=
+  fullName.vb: EchoHub.Client.Services.BackupInfo.<>
+  nameWithType: BackupInfo.operator !=
+  nameWithType.vb: BackupInfo.<>
 - uid: EchoHub.Client.Services.ClientEncryptionService
   name: ClientEncryptionService
   href: api/client/EchoHub.Client.Services.ClientEncryptionService.html
@@ -1822,6 +2014,102 @@ references:
   commentId: Overload:EchoHub.Client.Services.NotificationSoundService.SetVolume
   fullName: EchoHub.Client.Services.NotificationSoundService.SetVolume
   nameWithType: NotificationSoundService.SetVolume
+- uid: EchoHub.Client.Services.PathSetup
+  name: PathSetup
+  href: api/client/EchoHub.Client.Services.PathSetup.html
+  commentId: T:EchoHub.Client.Services.PathSetup
+  fullName: EchoHub.Client.Services.PathSetup
+  nameWithType: PathSetup
+- uid: EchoHub.Client.Services.PathSetup.EnsureOnPath
+  name: EnsureOnPath()
+  href: api/client/EchoHub.Client.Services.PathSetup.html#EchoHub_Client_Services_PathSetup_EnsureOnPath
+  commentId: M:EchoHub.Client.Services.PathSetup.EnsureOnPath
+  fullName: EchoHub.Client.Services.PathSetup.EnsureOnPath()
+  nameWithType: PathSetup.EnsureOnPath()
+- uid: EchoHub.Client.Services.PathSetup.EnsureOnPath*
+  name: EnsureOnPath
+  href: api/client/EchoHub.Client.Services.PathSetup.html#EchoHub_Client_Services_PathSetup_EnsureOnPath_
+  commentId: Overload:EchoHub.Client.Services.PathSetup.EnsureOnPath
+  fullName: EchoHub.Client.Services.PathSetup.EnsureOnPath
+  nameWithType: PathSetup.EnsureOnPath
+- uid: EchoHub.Client.Services.UpdateBackupService
+  name: UpdateBackupService
+  href: api/client/EchoHub.Client.Services.UpdateBackupService.html
+  commentId: T:EchoHub.Client.Services.UpdateBackupService
+  fullName: EchoHub.Client.Services.UpdateBackupService
+  nameWithType: UpdateBackupService
+- uid: EchoHub.Client.Services.UpdateBackupService.BackupExists
+  name: BackupExists()
+  href: api/client/EchoHub.Client.Services.UpdateBackupService.html#EchoHub_Client_Services_UpdateBackupService_BackupExists
+  commentId: M:EchoHub.Client.Services.UpdateBackupService.BackupExists
+  fullName: EchoHub.Client.Services.UpdateBackupService.BackupExists()
+  nameWithType: UpdateBackupService.BackupExists()
+- uid: EchoHub.Client.Services.UpdateBackupService.BackupExists*
+  name: BackupExists
+  href: api/client/EchoHub.Client.Services.UpdateBackupService.html#EchoHub_Client_Services_UpdateBackupService_BackupExists_
+  commentId: Overload:EchoHub.Client.Services.UpdateBackupService.BackupExists
+  fullName: EchoHub.Client.Services.UpdateBackupService.BackupExists
+  nameWithType: UpdateBackupService.BackupExists
+- uid: EchoHub.Client.Services.UpdateBackupService.CreateBackup
+  name: CreateBackup()
+  href: api/client/EchoHub.Client.Services.UpdateBackupService.html#EchoHub_Client_Services_UpdateBackupService_CreateBackup
+  commentId: M:EchoHub.Client.Services.UpdateBackupService.CreateBackup
+  fullName: EchoHub.Client.Services.UpdateBackupService.CreateBackup()
+  nameWithType: UpdateBackupService.CreateBackup()
+- uid: EchoHub.Client.Services.UpdateBackupService.CreateBackup*
+  name: CreateBackup
+  href: api/client/EchoHub.Client.Services.UpdateBackupService.html#EchoHub_Client_Services_UpdateBackupService_CreateBackup_
+  commentId: Overload:EchoHub.Client.Services.UpdateBackupService.CreateBackup
+  fullName: EchoHub.Client.Services.UpdateBackupService.CreateBackup
+  nameWithType: UpdateBackupService.CreateBackup
+- uid: EchoHub.Client.Services.UpdateBackupService.DeleteBackup
+  name: DeleteBackup()
+  href: api/client/EchoHub.Client.Services.UpdateBackupService.html#EchoHub_Client_Services_UpdateBackupService_DeleteBackup
+  commentId: M:EchoHub.Client.Services.UpdateBackupService.DeleteBackup
+  fullName: EchoHub.Client.Services.UpdateBackupService.DeleteBackup()
+  nameWithType: UpdateBackupService.DeleteBackup()
+- uid: EchoHub.Client.Services.UpdateBackupService.DeleteBackup*
+  name: DeleteBackup
+  href: api/client/EchoHub.Client.Services.UpdateBackupService.html#EchoHub_Client_Services_UpdateBackupService_DeleteBackup_
+  commentId: Overload:EchoHub.Client.Services.UpdateBackupService.DeleteBackup
+  fullName: EchoHub.Client.Services.UpdateBackupService.DeleteBackup
+  nameWithType: UpdateBackupService.DeleteBackup
+- uid: EchoHub.Client.Services.UpdateBackupService.GetBackupInfo
+  name: GetBackupInfo()
+  href: api/client/EchoHub.Client.Services.UpdateBackupService.html#EchoHub_Client_Services_UpdateBackupService_GetBackupInfo
+  commentId: M:EchoHub.Client.Services.UpdateBackupService.GetBackupInfo
+  fullName: EchoHub.Client.Services.UpdateBackupService.GetBackupInfo()
+  nameWithType: UpdateBackupService.GetBackupInfo()
+- uid: EchoHub.Client.Services.UpdateBackupService.GetBackupInfo*
+  name: GetBackupInfo
+  href: api/client/EchoHub.Client.Services.UpdateBackupService.html#EchoHub_Client_Services_UpdateBackupService_GetBackupInfo_
+  commentId: Overload:EchoHub.Client.Services.UpdateBackupService.GetBackupInfo
+  fullName: EchoHub.Client.Services.UpdateBackupService.GetBackupInfo
+  nameWithType: UpdateBackupService.GetBackupInfo
+- uid: EchoHub.Client.Services.UpdateBackupService.IsPostUpdate
+  name: IsPostUpdate
+  href: api/client/EchoHub.Client.Services.UpdateBackupService.html#EchoHub_Client_Services_UpdateBackupService_IsPostUpdate
+  commentId: P:EchoHub.Client.Services.UpdateBackupService.IsPostUpdate
+  fullName: EchoHub.Client.Services.UpdateBackupService.IsPostUpdate
+  nameWithType: UpdateBackupService.IsPostUpdate
+- uid: EchoHub.Client.Services.UpdateBackupService.IsPostUpdate*
+  name: IsPostUpdate
+  href: api/client/EchoHub.Client.Services.UpdateBackupService.html#EchoHub_Client_Services_UpdateBackupService_IsPostUpdate_
+  commentId: Overload:EchoHub.Client.Services.UpdateBackupService.IsPostUpdate
+  fullName: EchoHub.Client.Services.UpdateBackupService.IsPostUpdate
+  nameWithType: UpdateBackupService.IsPostUpdate
+- uid: EchoHub.Client.Services.UpdateBackupService.RestoreBackup
+  name: RestoreBackup()
+  href: api/client/EchoHub.Client.Services.UpdateBackupService.html#EchoHub_Client_Services_UpdateBackupService_RestoreBackup
+  commentId: M:EchoHub.Client.Services.UpdateBackupService.RestoreBackup
+  fullName: EchoHub.Client.Services.UpdateBackupService.RestoreBackup()
+  nameWithType: UpdateBackupService.RestoreBackup()
+- uid: EchoHub.Client.Services.UpdateBackupService.RestoreBackup*
+  name: RestoreBackup
+  href: api/client/EchoHub.Client.Services.UpdateBackupService.html#EchoHub_Client_Services_UpdateBackupService_RestoreBackup_
+  commentId: Overload:EchoHub.Client.Services.UpdateBackupService.RestoreBackup
+  fullName: EchoHub.Client.Services.UpdateBackupService.RestoreBackup
+  nameWithType: UpdateBackupService.RestoreBackup
 - uid: EchoHub.Client.Services.UpdateChecker
   name: UpdateChecker
   href: api/client/EchoHub.Client.Services.UpdateChecker.html
@@ -1846,6 +2134,18 @@ references:
   fullName.vb: EchoHub.Client.Services.UpdateChecker.New
   nameWithType: UpdateChecker.UpdateChecker
   nameWithType.vb: UpdateChecker.New
+- uid: EchoHub.Client.Services.UpdateChecker.CheckNowAsync
+  name: CheckNowAsync()
+  href: api/client/EchoHub.Client.Services.UpdateChecker.html#EchoHub_Client_Services_UpdateChecker_CheckNowAsync
+  commentId: M:EchoHub.Client.Services.UpdateChecker.CheckNowAsync
+  fullName: EchoHub.Client.Services.UpdateChecker.CheckNowAsync()
+  nameWithType: UpdateChecker.CheckNowAsync()
+- uid: EchoHub.Client.Services.UpdateChecker.CheckNowAsync*
+  name: CheckNowAsync
+  href: api/client/EchoHub.Client.Services.UpdateChecker.html#EchoHub_Client_Services_UpdateChecker_CheckNowAsync_
+  commentId: Overload:EchoHub.Client.Services.UpdateChecker.CheckNowAsync
+  fullName: EchoHub.Client.Services.UpdateChecker.CheckNowAsync
+  nameWithType: UpdateChecker.CheckNowAsync
 - uid: EchoHub.Client.Services.UpdateChecker.CurrentVersion
   name: CurrentVersion
   href: api/client/EchoHub.Client.Services.UpdateChecker.html#EchoHub_Client_Services_UpdateChecker_CurrentVersion
@@ -2125,6 +2425,12 @@ references:
   commentId: F:EchoHub.Client.UI.Chat.ChatColors.AudioAttr
   fullName: EchoHub.Client.UI.Chat.ChatColors.AudioAttr
   nameWithType: ChatColors.AudioAttr
+- uid: EchoHub.Client.UI.Chat.ChatColors.ChannelRefAttr
+  name: ChannelRefAttr
+  href: api/client/EchoHub.Client.UI.Chat.ChatColors.html#EchoHub_Client_UI_Chat_ChatColors_ChannelRefAttr
+  commentId: F:EchoHub.Client.UI.Chat.ChatColors.ChannelRefAttr
+  fullName: EchoHub.Client.UI.Chat.ChatColors.ChannelRefAttr
+  nameWithType: ChatColors.ChannelRefAttr
 - uid: EchoHub.Client.UI.Chat.ChatColors.EmbedBorderAttr
   name: EmbedBorderAttr
   href: api/client/EchoHub.Client.UI.Chat.ChatColors.html#EchoHub_Client_UI_Chat_ChatColors_EmbedBorderAttr
@@ -2251,6 +2557,18 @@ references:
   commentId: Overload:EchoHub.Client.UI.Chat.ChatLine.AttachmentUrl
   fullName: EchoHub.Client.UI.Chat.ChatLine.AttachmentUrl
   nameWithType: ChatLine.AttachmentUrl
+- uid: EchoHub.Client.UI.Chat.ChatLine.ContinuationIndent
+  name: ContinuationIndent
+  href: api/client/EchoHub.Client.UI.Chat.ChatLine.html#EchoHub_Client_UI_Chat_ChatLine_ContinuationIndent
+  commentId: P:EchoHub.Client.UI.Chat.ChatLine.ContinuationIndent
+  fullName: EchoHub.Client.UI.Chat.ChatLine.ContinuationIndent
+  nameWithType: ChatLine.ContinuationIndent
+- uid: EchoHub.Client.UI.Chat.ChatLine.ContinuationIndent*
+  name: ContinuationIndent
+  href: api/client/EchoHub.Client.UI.Chat.ChatLine.html#EchoHub_Client_UI_Chat_ChatLine_ContinuationIndent_
+  commentId: Overload:EchoHub.Client.UI.Chat.ChatLine.ContinuationIndent
+  fullName: EchoHub.Client.UI.Chat.ChatLine.ContinuationIndent
+  nameWithType: ChatLine.ContinuationIndent
 - uid: EchoHub.Client.UI.Chat.ChatLine.FromColoredText(System.String,System.Nullable{Terminal.Gui.Drawing.Attribute})
   name: FromColoredText(string, Attribute?)
   href: api/client/EchoHub.Client.UI.Chat.ChatLine.html#EchoHub_Client_UI_Chat_ChatLine_FromColoredText_System_String_System_Nullable_Terminal_Gui_Drawing_Attribute__
@@ -2317,6 +2635,18 @@ references:
   commentId: Overload:EchoHub.Client.UI.Chat.ChatLine.Segments
   fullName: EchoHub.Client.UI.Chat.ChatLine.Segments
   nameWithType: ChatLine.Segments
+- uid: EchoHub.Client.UI.Chat.ChatLine.SenderUsername
+  name: SenderUsername
+  href: api/client/EchoHub.Client.UI.Chat.ChatLine.html#EchoHub_Client_UI_Chat_ChatLine_SenderUsername
+  commentId: P:EchoHub.Client.UI.Chat.ChatLine.SenderUsername
+  fullName: EchoHub.Client.UI.Chat.ChatLine.SenderUsername
+  nameWithType: ChatLine.SenderUsername
+- uid: EchoHub.Client.UI.Chat.ChatLine.SenderUsername*
+  name: SenderUsername
+  href: api/client/EchoHub.Client.UI.Chat.ChatLine.html#EchoHub_Client_UI_Chat_ChatLine_SenderUsername_
+  commentId: Overload:EchoHub.Client.UI.Chat.ChatLine.SenderUsername
+  fullName: EchoHub.Client.UI.Chat.ChatLine.SenderUsername
+  nameWithType: ChatLine.SenderUsername
 - uid: EchoHub.Client.UI.Chat.ChatLine.StripColorTags(System.String)
   name: StripColorTags(string)
   href: api/client/EchoHub.Client.UI.Chat.ChatLine.html#EchoHub_Client_UI_Chat_ChatLine_StripColorTags_System_String_
@@ -4474,6 +4804,21 @@ references:
   commentId: Overload:EchoHub.Client.UI.ListSources.UserListSource.Dispose
   fullName: EchoHub.Client.UI.ListSources.UserListSource.Dispose
   nameWithType: UserListSource.Dispose
+- uid: EchoHub.Client.UI.ListSources.UserListSource.GetUsername(System.Int32)
+  name: GetUsername(int)
+  href: api/client/EchoHub.Client.UI.ListSources.UserListSource.html#EchoHub_Client_UI_ListSources_UserListSource_GetUsername_System_Int32_
+  commentId: M:EchoHub.Client.UI.ListSources.UserListSource.GetUsername(System.Int32)
+  name.vb: GetUsername(Integer)
+  fullName: EchoHub.Client.UI.ListSources.UserListSource.GetUsername(int)
+  fullName.vb: EchoHub.Client.UI.ListSources.UserListSource.GetUsername(Integer)
+  nameWithType: UserListSource.GetUsername(int)
+  nameWithType.vb: UserListSource.GetUsername(Integer)
+- uid: EchoHub.Client.UI.ListSources.UserListSource.GetUsername*
+  name: GetUsername
+  href: api/client/EchoHub.Client.UI.ListSources.UserListSource.html#EchoHub_Client_UI_ListSources_UserListSource_GetUsername_
+  commentId: Overload:EchoHub.Client.UI.ListSources.UserListSource.GetUsername
+  fullName: EchoHub.Client.UI.ListSources.UserListSource.GetUsername
+  nameWithType: UserListSource.GetUsername
 - uid: EchoHub.Client.UI.ListSources.UserListSource.IsMarked(System.Int32)
   name: IsMarked(int)
   href: api/client/EchoHub.Client.UI.ListSources.UserListSource.html#EchoHub_Client_UI_ListSources_UserListSource_IsMarked_System_Int32_
@@ -4555,15 +4900,15 @@ references:
   commentId: Overload:EchoHub.Client.UI.ListSources.UserListSource.ToList
   fullName: EchoHub.Client.UI.ListSources.UserListSource.ToList
   nameWithType: UserListSource.ToList
-- uid: EchoHub.Client.UI.ListSources.UserListSource.Update(System.Collections.Generic.List{System.ValueTuple{System.String,System.Nullable{Terminal.Gui.Drawing.Attribute}}})
-  name: Update(List<(string Text, Attribute? NameColor)>)
-  href: api/client/EchoHub.Client.UI.ListSources.UserListSource.html#EchoHub_Client_UI_ListSources_UserListSource_Update_System_Collections_Generic_List_System_ValueTuple_System_String_System_Nullable_Terminal_Gui_Drawing_Attribute____
-  commentId: M:EchoHub.Client.UI.ListSources.UserListSource.Update(System.Collections.Generic.List{System.ValueTuple{System.String,System.Nullable{Terminal.Gui.Drawing.Attribute}}})
-  name.vb: Update(List(Of (Text As String, NameColor As Attribute?)))
-  fullName: EchoHub.Client.UI.ListSources.UserListSource.Update(System.Collections.Generic.List<(string Text, Terminal.Gui.Drawing.Attribute? NameColor)>)
-  fullName.vb: EchoHub.Client.UI.ListSources.UserListSource.Update(System.Collections.Generic.List(Of (Text As String, NameColor As Terminal.Gui.Drawing.Attribute?)))
-  nameWithType: UserListSource.Update(List<(string Text, Attribute? NameColor)>)
-  nameWithType.vb: UserListSource.Update(List(Of (Text As String, NameColor As Attribute?)))
+- uid: EchoHub.Client.UI.ListSources.UserListSource.Update(System.Collections.Generic.List{System.ValueTuple{System.String,System.Nullable{Terminal.Gui.Drawing.Attribute},System.String}})
+  name: Update(List<(string Text, Attribute? NameColor, string Username)>)
+  href: api/client/EchoHub.Client.UI.ListSources.UserListSource.html#EchoHub_Client_UI_ListSources_UserListSource_Update_System_Collections_Generic_List_System_ValueTuple_System_String_System_Nullable_Terminal_Gui_Drawing_Attribute__System_String___
+  commentId: M:EchoHub.Client.UI.ListSources.UserListSource.Update(System.Collections.Generic.List{System.ValueTuple{System.String,System.Nullable{Terminal.Gui.Drawing.Attribute},System.String}})
+  name.vb: Update(List(Of (Text As String, NameColor As Attribute?, Username As String)))
+  fullName: EchoHub.Client.UI.ListSources.UserListSource.Update(System.Collections.Generic.List<(string Text, Terminal.Gui.Drawing.Attribute? NameColor, string Username)>)
+  fullName.vb: EchoHub.Client.UI.ListSources.UserListSource.Update(System.Collections.Generic.List(Of (Text As String, NameColor As Terminal.Gui.Drawing.Attribute?, Username As String)))
+  nameWithType: UserListSource.Update(List<(string Text, Attribute? NameColor, string Username)>)
+  nameWithType.vb: UserListSource.Update(List(Of (Text As String, NameColor As Attribute?, Username As String)))
 - uid: EchoHub.Client.UI.ListSources.UserListSource.Update*
   name: Update
   href: api/client/EchoHub.Client.UI.ListSources.UserListSource.html#EchoHub_Client_UI_ListSources_UserListSource_Update_
@@ -4675,12 +5020,24 @@ references:
   commentId: E:EchoHub.Client.UI.MainWindow.OnAudioPlayRequested
   fullName: EchoHub.Client.UI.MainWindow.OnAudioPlayRequested
   nameWithType: MainWindow.OnAudioPlayRequested
+- uid: EchoHub.Client.UI.MainWindow.OnChannelJoinRequested
+  name: OnChannelJoinRequested
+  href: api/client/EchoHub.Client.UI.MainWindow.html#EchoHub_Client_UI_MainWindow_OnChannelJoinRequested
+  commentId: E:EchoHub.Client.UI.MainWindow.OnChannelJoinRequested
+  fullName: EchoHub.Client.UI.MainWindow.OnChannelJoinRequested
+  nameWithType: MainWindow.OnChannelJoinRequested
 - uid: EchoHub.Client.UI.MainWindow.OnChannelSelected
   name: OnChannelSelected
   href: api/client/EchoHub.Client.UI.MainWindow.html#EchoHub_Client_UI_MainWindow_OnChannelSelected
   commentId: E:EchoHub.Client.UI.MainWindow.OnChannelSelected
   fullName: EchoHub.Client.UI.MainWindow.OnChannelSelected
   nameWithType: MainWindow.OnChannelSelected
+- uid: EchoHub.Client.UI.MainWindow.OnCheckForUpdatesRequested
+  name: OnCheckForUpdatesRequested
+  href: api/client/EchoHub.Client.UI.MainWindow.html#EchoHub_Client_UI_MainWindow_OnCheckForUpdatesRequested
+  commentId: E:EchoHub.Client.UI.MainWindow.OnCheckForUpdatesRequested
+  fullName: EchoHub.Client.UI.MainWindow.OnCheckForUpdatesRequested
+  nameWithType: MainWindow.OnCheckForUpdatesRequested
 - uid: EchoHub.Client.UI.MainWindow.OnConnectRequested
   name: OnConnectRequested
   href: api/client/EchoHub.Client.UI.MainWindow.html#EchoHub_Client_UI_MainWindow_OnConnectRequested
@@ -4729,6 +5086,12 @@ references:
   commentId: E:EchoHub.Client.UI.MainWindow.OnProfileRequested
   fullName: EchoHub.Client.UI.MainWindow.OnProfileRequested
   nameWithType: MainWindow.OnProfileRequested
+- uid: EchoHub.Client.UI.MainWindow.OnRollbackRequested
+  name: OnRollbackRequested
+  href: api/client/EchoHub.Client.UI.MainWindow.html#EchoHub_Client_UI_MainWindow_OnRollbackRequested
+  commentId: E:EchoHub.Client.UI.MainWindow.OnRollbackRequested
+  fullName: EchoHub.Client.UI.MainWindow.OnRollbackRequested
+  nameWithType: MainWindow.OnRollbackRequested
 - uid: EchoHub.Client.UI.MainWindow.OnSavedServersRequested
   name: OnSavedServersRequested
   href: api/client/EchoHub.Client.UI.MainWindow.html#EchoHub_Client_UI_MainWindow_OnSavedServersRequested
@@ -4747,6 +5110,12 @@ references:
   commentId: E:EchoHub.Client.UI.MainWindow.OnThemeSelected
   fullName: EchoHub.Client.UI.MainWindow.OnThemeSelected
   nameWithType: MainWindow.OnThemeSelected
+- uid: EchoHub.Client.UI.MainWindow.OnUserProfileRequested
+  name: OnUserProfileRequested
+  href: api/client/EchoHub.Client.UI.MainWindow.html#EchoHub_Client_UI_MainWindow_OnUserProfileRequested
+  commentId: E:EchoHub.Client.UI.MainWindow.OnUserProfileRequested
+  fullName: EchoHub.Client.UI.MainWindow.OnUserProfileRequested
+  nameWithType: MainWindow.OnUserProfileRequested
 - uid: EchoHub.Client.UI.MainWindow.RefreshMenuBar
   name: RefreshMenuBar()
   href: api/client/EchoHub.Client.UI.MainWindow.html#EchoHub_Client_UI_MainWindow_RefreshMenuBar
@@ -5533,15 +5902,15 @@ references:
   commentId: Overload:EchoHub.Core.Contracts.IChatBroadcaster.SendUserBannedAsync
   fullName: EchoHub.Core.Contracts.IChatBroadcaster.SendUserBannedAsync
   nameWithType: IChatBroadcaster.SendUserBannedAsync
-- uid: EchoHub.Core.Contracts.IChatBroadcaster.SendUserJoinedAsync(System.String,System.String,System.String)
-  name: SendUserJoinedAsync(string, string, string?)
-  href: api/core/EchoHub.Core.Contracts.IChatBroadcaster.html#EchoHub_Core_Contracts_IChatBroadcaster_SendUserJoinedAsync_System_String_System_String_System_String_
-  commentId: M:EchoHub.Core.Contracts.IChatBroadcaster.SendUserJoinedAsync(System.String,System.String,System.String)
-  name.vb: SendUserJoinedAsync(String, String, String)
-  fullName: EchoHub.Core.Contracts.IChatBroadcaster.SendUserJoinedAsync(string, string, string?)
-  fullName.vb: EchoHub.Core.Contracts.IChatBroadcaster.SendUserJoinedAsync(String, String, String)
-  nameWithType: IChatBroadcaster.SendUserJoinedAsync(string, string, string?)
-  nameWithType.vb: IChatBroadcaster.SendUserJoinedAsync(String, String, String)
+- uid: EchoHub.Core.Contracts.IChatBroadcaster.SendUserJoinedAsync(System.String,System.String,EchoHub.Core.DTOs.UserPresenceDto,System.String)
+  name: SendUserJoinedAsync(string, string, UserPresenceDto?, string?)
+  href: api/core/EchoHub.Core.Contracts.IChatBroadcaster.html#EchoHub_Core_Contracts_IChatBroadcaster_SendUserJoinedAsync_System_String_System_String_EchoHub_Core_DTOs_UserPresenceDto_System_String_
+  commentId: M:EchoHub.Core.Contracts.IChatBroadcaster.SendUserJoinedAsync(System.String,System.String,EchoHub.Core.DTOs.UserPresenceDto,System.String)
+  name.vb: SendUserJoinedAsync(String, String, UserPresenceDto, String)
+  fullName: EchoHub.Core.Contracts.IChatBroadcaster.SendUserJoinedAsync(string, string, EchoHub.Core.DTOs.UserPresenceDto?, string?)
+  fullName.vb: EchoHub.Core.Contracts.IChatBroadcaster.SendUserJoinedAsync(String, String, EchoHub.Core.DTOs.UserPresenceDto, String)
+  nameWithType: IChatBroadcaster.SendUserJoinedAsync(string, string, UserPresenceDto?, string?)
+  nameWithType.vb: IChatBroadcaster.SendUserJoinedAsync(String, String, UserPresenceDto, String)
 - uid: EchoHub.Core.Contracts.IChatBroadcaster.SendUserJoinedAsync*
   name: SendUserJoinedAsync
   href: api/core/EchoHub.Core.Contracts.IChatBroadcaster.html#EchoHub_Core_Contracts_IChatBroadcaster_SendUserJoinedAsync_
@@ -5599,21 +5968,6 @@ references:
   commentId: T:EchoHub.Core.Contracts.IChatService
   fullName: EchoHub.Core.Contracts.IChatService
   nameWithType: IChatService
-- uid: EchoHub.Core.Contracts.IChatService.AuthenticateUserAsync(System.String,System.String)
-  name: AuthenticateUserAsync(string, string)
-  href: api/core/EchoHub.Core.Contracts.IChatService.html#EchoHub_Core_Contracts_IChatService_AuthenticateUserAsync_System_String_System_String_
-  commentId: M:EchoHub.Core.Contracts.IChatService.AuthenticateUserAsync(System.String,System.String)
-  name.vb: AuthenticateUserAsync(String, String)
-  fullName: EchoHub.Core.Contracts.IChatService.AuthenticateUserAsync(string, string)
-  fullName.vb: EchoHub.Core.Contracts.IChatService.AuthenticateUserAsync(String, String)
-  nameWithType: IChatService.AuthenticateUserAsync(string, string)
-  nameWithType.vb: IChatService.AuthenticateUserAsync(String, String)
-- uid: EchoHub.Core.Contracts.IChatService.AuthenticateUserAsync*
-  name: AuthenticateUserAsync
-  href: api/core/EchoHub.Core.Contracts.IChatService.html#EchoHub_Core_Contracts_IChatService_AuthenticateUserAsync_
-  commentId: Overload:EchoHub.Core.Contracts.IChatService.AuthenticateUserAsync
-  fullName: EchoHub.Core.Contracts.IChatService.AuthenticateUserAsync
-  nameWithType: IChatService.AuthenticateUserAsync
 - uid: EchoHub.Core.Contracts.IChatService.BroadcastChannelUpdatedAsync(EchoHub.Core.DTOs.ChannelDto,System.String)
   name: BroadcastChannelUpdatedAsync(ChannelDto, string?)
   href: api/core/EchoHub.Core.Contracts.IChatService.html#EchoHub_Core_Contracts_IChatService_BroadcastChannelUpdatedAsync_EchoHub_Core_DTOs_ChannelDto_System_String_
@@ -5689,21 +6043,6 @@ references:
   commentId: Overload:EchoHub.Core.Contracts.IChatService.GetOnlineUsersAsync
   fullName: EchoHub.Core.Contracts.IChatService.GetOnlineUsersAsync
   nameWithType: IChatService.GetOnlineUsersAsync
-- uid: EchoHub.Core.Contracts.IChatService.GetUserProfileAsync(System.String)
-  name: GetUserProfileAsync(string)
-  href: api/core/EchoHub.Core.Contracts.IChatService.html#EchoHub_Core_Contracts_IChatService_GetUserProfileAsync_System_String_
-  commentId: M:EchoHub.Core.Contracts.IChatService.GetUserProfileAsync(System.String)
-  name.vb: GetUserProfileAsync(String)
-  fullName: EchoHub.Core.Contracts.IChatService.GetUserProfileAsync(string)
-  fullName.vb: EchoHub.Core.Contracts.IChatService.GetUserProfileAsync(String)
-  nameWithType: IChatService.GetUserProfileAsync(string)
-  nameWithType.vb: IChatService.GetUserProfileAsync(String)
-- uid: EchoHub.Core.Contracts.IChatService.GetUserProfileAsync*
-  name: GetUserProfileAsync
-  href: api/core/EchoHub.Core.Contracts.IChatService.html#EchoHub_Core_Contracts_IChatService_GetUserProfileAsync_
-  commentId: Overload:EchoHub.Core.Contracts.IChatService.GetUserProfileAsync
-  fullName: EchoHub.Core.Contracts.IChatService.GetUserProfileAsync
-  nameWithType: IChatService.GetUserProfileAsync
 - uid: EchoHub.Core.Contracts.IChatService.JoinChannelAsync(System.String,System.Guid,System.String,System.String)
   name: JoinChannelAsync(string, Guid, string, string)
   href: api/core/EchoHub.Core.Contracts.IChatService.html#EchoHub_Core_Contracts_IChatService_JoinChannelAsync_System_String_System_Guid_System_String_System_String_
@@ -5899,15 +6238,15 @@ references:
   commentId: Overload:EchoHub.Core.Contracts.IEchoHubClient.UserBanned
   fullName: EchoHub.Core.Contracts.IEchoHubClient.UserBanned
   nameWithType: IEchoHubClient.UserBanned
-- uid: EchoHub.Core.Contracts.IEchoHubClient.UserJoined(System.String,System.String)
-  name: UserJoined(string, string)
-  href: api/core/EchoHub.Core.Contracts.IEchoHubClient.html#EchoHub_Core_Contracts_IEchoHubClient_UserJoined_System_String_System_String_
-  commentId: M:EchoHub.Core.Contracts.IEchoHubClient.UserJoined(System.String,System.String)
-  name.vb: UserJoined(String, String)
-  fullName: EchoHub.Core.Contracts.IEchoHubClient.UserJoined(string, string)
-  fullName.vb: EchoHub.Core.Contracts.IEchoHubClient.UserJoined(String, String)
-  nameWithType: IEchoHubClient.UserJoined(string, string)
-  nameWithType.vb: IEchoHubClient.UserJoined(String, String)
+- uid: EchoHub.Core.Contracts.IEchoHubClient.UserJoined(System.String,System.String,EchoHub.Core.DTOs.UserPresenceDto)
+  name: UserJoined(string, string, UserPresenceDto?)
+  href: api/core/EchoHub.Core.Contracts.IEchoHubClient.html#EchoHub_Core_Contracts_IEchoHubClient_UserJoined_System_String_System_String_EchoHub_Core_DTOs_UserPresenceDto_
+  commentId: M:EchoHub.Core.Contracts.IEchoHubClient.UserJoined(System.String,System.String,EchoHub.Core.DTOs.UserPresenceDto)
+  name.vb: UserJoined(String, String, UserPresenceDto)
+  fullName: EchoHub.Core.Contracts.IEchoHubClient.UserJoined(string, string, EchoHub.Core.DTOs.UserPresenceDto?)
+  fullName.vb: EchoHub.Core.Contracts.IEchoHubClient.UserJoined(String, String, EchoHub.Core.DTOs.UserPresenceDto)
+  nameWithType: IEchoHubClient.UserJoined(string, string, UserPresenceDto?)
+  nameWithType.vb: IEchoHubClient.UserJoined(String, String, UserPresenceDto)
 - uid: EchoHub.Core.Contracts.IEchoHubClient.UserJoined*
   name: UserJoined
   href: api/core/EchoHub.Core.Contracts.IEchoHubClient.html#EchoHub_Core_Contracts_IEchoHubClient_UserJoined_
@@ -6034,6 +6373,99 @@ references:
   commentId: Overload:EchoHub.Core.Contracts.IMessageEncryptionService.EncryptNullable
   fullName: EchoHub.Core.Contracts.IMessageEncryptionService.EncryptNullable
   nameWithType: IMessageEncryptionService.EncryptNullable
+- uid: EchoHub.Core.Contracts.IUserService
+  name: IUserService
+  href: api/core/EchoHub.Core.Contracts.IUserService.html
+  commentId: T:EchoHub.Core.Contracts.IUserService
+  fullName: EchoHub.Core.Contracts.IUserService
+  nameWithType: IUserService
+- uid: EchoHub.Core.Contracts.IUserService.AuthenticateUserAsync(System.String,System.String)
+  name: AuthenticateUserAsync(string, string)
+  href: api/core/EchoHub.Core.Contracts.IUserService.html#EchoHub_Core_Contracts_IUserService_AuthenticateUserAsync_System_String_System_String_
+  commentId: M:EchoHub.Core.Contracts.IUserService.AuthenticateUserAsync(System.String,System.String)
+  name.vb: AuthenticateUserAsync(String, String)
+  fullName: EchoHub.Core.Contracts.IUserService.AuthenticateUserAsync(string, string)
+  fullName.vb: EchoHub.Core.Contracts.IUserService.AuthenticateUserAsync(String, String)
+  nameWithType: IUserService.AuthenticateUserAsync(string, string)
+  nameWithType.vb: IUserService.AuthenticateUserAsync(String, String)
+- uid: EchoHub.Core.Contracts.IUserService.AuthenticateUserAsync*
+  name: AuthenticateUserAsync
+  href: api/core/EchoHub.Core.Contracts.IUserService.html#EchoHub_Core_Contracts_IUserService_AuthenticateUserAsync_
+  commentId: Overload:EchoHub.Core.Contracts.IUserService.AuthenticateUserAsync
+  fullName: EchoHub.Core.Contracts.IUserService.AuthenticateUserAsync
+  nameWithType: IUserService.AuthenticateUserAsync
+- uid: EchoHub.Core.Contracts.IUserService.GetUserByIdAsync(System.Guid)
+  name: GetUserByIdAsync(Guid)
+  href: api/core/EchoHub.Core.Contracts.IUserService.html#EchoHub_Core_Contracts_IUserService_GetUserByIdAsync_System_Guid_
+  commentId: M:EchoHub.Core.Contracts.IUserService.GetUserByIdAsync(System.Guid)
+  fullName: EchoHub.Core.Contracts.IUserService.GetUserByIdAsync(System.Guid)
+  nameWithType: IUserService.GetUserByIdAsync(Guid)
+- uid: EchoHub.Core.Contracts.IUserService.GetUserByIdAsync*
+  name: GetUserByIdAsync
+  href: api/core/EchoHub.Core.Contracts.IUserService.html#EchoHub_Core_Contracts_IUserService_GetUserByIdAsync_
+  commentId: Overload:EchoHub.Core.Contracts.IUserService.GetUserByIdAsync
+  fullName: EchoHub.Core.Contracts.IUserService.GetUserByIdAsync
+  nameWithType: IUserService.GetUserByIdAsync
+- uid: EchoHub.Core.Contracts.IUserService.GetUserProfileAsync(System.String)
+  name: GetUserProfileAsync(string)
+  href: api/core/EchoHub.Core.Contracts.IUserService.html#EchoHub_Core_Contracts_IUserService_GetUserProfileAsync_System_String_
+  commentId: M:EchoHub.Core.Contracts.IUserService.GetUserProfileAsync(System.String)
+  name.vb: GetUserProfileAsync(String)
+  fullName: EchoHub.Core.Contracts.IUserService.GetUserProfileAsync(string)
+  fullName.vb: EchoHub.Core.Contracts.IUserService.GetUserProfileAsync(String)
+  nameWithType: IUserService.GetUserProfileAsync(string)
+  nameWithType.vb: IUserService.GetUserProfileAsync(String)
+- uid: EchoHub.Core.Contracts.IUserService.GetUserProfileAsync*
+  name: GetUserProfileAsync
+  href: api/core/EchoHub.Core.Contracts.IUserService.html#EchoHub_Core_Contracts_IUserService_GetUserProfileAsync_
+  commentId: Overload:EchoHub.Core.Contracts.IUserService.GetUserProfileAsync
+  fullName: EchoHub.Core.Contracts.IUserService.GetUserProfileAsync
+  nameWithType: IUserService.GetUserProfileAsync
+- uid: EchoHub.Core.Contracts.IUserService.RegisterUserAsync(System.String,System.String,System.String)
+  name: RegisterUserAsync(string, string, string?)
+  href: api/core/EchoHub.Core.Contracts.IUserService.html#EchoHub_Core_Contracts_IUserService_RegisterUserAsync_System_String_System_String_System_String_
+  commentId: M:EchoHub.Core.Contracts.IUserService.RegisterUserAsync(System.String,System.String,System.String)
+  name.vb: RegisterUserAsync(String, String, String)
+  fullName: EchoHub.Core.Contracts.IUserService.RegisterUserAsync(string, string, string?)
+  fullName.vb: EchoHub.Core.Contracts.IUserService.RegisterUserAsync(String, String, String)
+  nameWithType: IUserService.RegisterUserAsync(string, string, string?)
+  nameWithType.vb: IUserService.RegisterUserAsync(String, String, String)
+- uid: EchoHub.Core.Contracts.IUserService.RegisterUserAsync*
+  name: RegisterUserAsync
+  href: api/core/EchoHub.Core.Contracts.IUserService.html#EchoHub_Core_Contracts_IUserService_RegisterUserAsync_
+  commentId: Overload:EchoHub.Core.Contracts.IUserService.RegisterUserAsync
+  fullName: EchoHub.Core.Contracts.IUserService.RegisterUserAsync
+  nameWithType: IUserService.RegisterUserAsync
+- uid: EchoHub.Core.Contracts.IUserService.SetAvatarAsync(System.Guid,System.String)
+  name: SetAvatarAsync(Guid, string)
+  href: api/core/EchoHub.Core.Contracts.IUserService.html#EchoHub_Core_Contracts_IUserService_SetAvatarAsync_System_Guid_System_String_
+  commentId: M:EchoHub.Core.Contracts.IUserService.SetAvatarAsync(System.Guid,System.String)
+  name.vb: SetAvatarAsync(Guid, String)
+  fullName: EchoHub.Core.Contracts.IUserService.SetAvatarAsync(System.Guid, string)
+  fullName.vb: EchoHub.Core.Contracts.IUserService.SetAvatarAsync(System.Guid, String)
+  nameWithType: IUserService.SetAvatarAsync(Guid, string)
+  nameWithType.vb: IUserService.SetAvatarAsync(Guid, String)
+- uid: EchoHub.Core.Contracts.IUserService.SetAvatarAsync*
+  name: SetAvatarAsync
+  href: api/core/EchoHub.Core.Contracts.IUserService.html#EchoHub_Core_Contracts_IUserService_SetAvatarAsync_
+  commentId: Overload:EchoHub.Core.Contracts.IUserService.SetAvatarAsync
+  fullName: EchoHub.Core.Contracts.IUserService.SetAvatarAsync
+  nameWithType: IUserService.SetAvatarAsync
+- uid: EchoHub.Core.Contracts.IUserService.UpdateProfileAsync(System.Guid,System.String,System.String,System.String)
+  name: UpdateProfileAsync(Guid, string?, string?, string?)
+  href: api/core/EchoHub.Core.Contracts.IUserService.html#EchoHub_Core_Contracts_IUserService_UpdateProfileAsync_System_Guid_System_String_System_String_System_String_
+  commentId: M:EchoHub.Core.Contracts.IUserService.UpdateProfileAsync(System.Guid,System.String,System.String,System.String)
+  name.vb: UpdateProfileAsync(Guid, String, String, String)
+  fullName: EchoHub.Core.Contracts.IUserService.UpdateProfileAsync(System.Guid, string?, string?, string?)
+  fullName.vb: EchoHub.Core.Contracts.IUserService.UpdateProfileAsync(System.Guid, String, String, String)
+  nameWithType: IUserService.UpdateProfileAsync(Guid, string?, string?, string?)
+  nameWithType.vb: IUserService.UpdateProfileAsync(Guid, String, String, String)
+- uid: EchoHub.Core.Contracts.IUserService.UpdateProfileAsync*
+  name: UpdateProfileAsync
+  href: api/core/EchoHub.Core.Contracts.IUserService.html#EchoHub_Core_Contracts_IUserService_UpdateProfileAsync_
+  commentId: Overload:EchoHub.Core.Contracts.IUserService.UpdateProfileAsync
+  fullName: EchoHub.Core.Contracts.IUserService.UpdateProfileAsync
+  nameWithType: IUserService.UpdateProfileAsync
 - uid: EchoHub.Core.DTOs
   name: EchoHub.Core.DTOs
   href: api/core/EchoHub.Core.DTOs.html
@@ -7693,15 +8125,15 @@ references:
   fullName.vb: EchoHub.Core.DTOs.EmbedDto.New(EchoHub.Core.DTOs.EmbedDto)
   nameWithType: EmbedDto.EmbedDto(EmbedDto)
   nameWithType.vb: EmbedDto.New(EmbedDto)
-- uid: EchoHub.Core.DTOs.EmbedDto.#ctor(System.String,System.String,System.String,System.String,System.String)
-  name: EmbedDto(string?, string?, string?, string?, string)
-  href: api/core/EchoHub.Core.DTOs.EmbedDto.html#EchoHub_Core_DTOs_EmbedDto__ctor_System_String_System_String_System_String_System_String_System_String_
-  commentId: M:EchoHub.Core.DTOs.EmbedDto.#ctor(System.String,System.String,System.String,System.String,System.String)
-  name.vb: New(String, String, String, String, String)
-  fullName: EchoHub.Core.DTOs.EmbedDto.EmbedDto(string?, string?, string?, string?, string)
-  fullName.vb: EchoHub.Core.DTOs.EmbedDto.New(String, String, String, String, String)
-  nameWithType: EmbedDto.EmbedDto(string?, string?, string?, string?, string)
-  nameWithType.vb: EmbedDto.New(String, String, String, String, String)
+- uid: EchoHub.Core.DTOs.EmbedDto.#ctor(System.String,System.String,System.String,System.String,System.String,System.String)
+  name: EmbedDto(string?, string?, string?, string?, string, string?)
+  href: api/core/EchoHub.Core.DTOs.EmbedDto.html#EchoHub_Core_DTOs_EmbedDto__ctor_System_String_System_String_System_String_System_String_System_String_System_String_
+  commentId: M:EchoHub.Core.DTOs.EmbedDto.#ctor(System.String,System.String,System.String,System.String,System.String,System.String)
+  name.vb: New(String, String, String, String, String, String)
+  fullName: EchoHub.Core.DTOs.EmbedDto.EmbedDto(string?, string?, string?, string?, string, string?)
+  fullName.vb: EchoHub.Core.DTOs.EmbedDto.New(String, String, String, String, String, String)
+  nameWithType: EmbedDto.EmbedDto(string?, string?, string?, string?, string, string?)
+  nameWithType.vb: EmbedDto.New(String, String, String, String, String, String)
 - uid: EchoHub.Core.DTOs.EmbedDto.#ctor*
   name: EmbedDto
   href: api/core/EchoHub.Core.DTOs.EmbedDto.html#EchoHub_Core_DTOs_EmbedDto__ctor_
@@ -7711,15 +8143,15 @@ references:
   fullName.vb: EchoHub.Core.DTOs.EmbedDto.New
   nameWithType: EmbedDto.EmbedDto
   nameWithType.vb: EmbedDto.New
-- uid: EchoHub.Core.DTOs.EmbedDto.Deconstruct(System.String@,System.String@,System.String@,System.String@,System.String@)
-  name: Deconstruct(out string?, out string?, out string?, out string?, out string)
-  href: api/core/EchoHub.Core.DTOs.EmbedDto.html#EchoHub_Core_DTOs_EmbedDto_Deconstruct_System_String__System_String__System_String__System_String__System_String__
-  commentId: M:EchoHub.Core.DTOs.EmbedDto.Deconstruct(System.String@,System.String@,System.String@,System.String@,System.String@)
-  name.vb: Deconstruct(String, String, String, String, String)
-  fullName: EchoHub.Core.DTOs.EmbedDto.Deconstruct(out string?, out string?, out string?, out string?, out string)
-  fullName.vb: EchoHub.Core.DTOs.EmbedDto.Deconstruct(String, String, String, String, String)
-  nameWithType: EmbedDto.Deconstruct(out string?, out string?, out string?, out string?, out string)
-  nameWithType.vb: EmbedDto.Deconstruct(String, String, String, String, String)
+- uid: EchoHub.Core.DTOs.EmbedDto.Deconstruct(System.String@,System.String@,System.String@,System.String@,System.String@,System.String@)
+  name: Deconstruct(out string?, out string?, out string?, out string?, out string, out string?)
+  href: api/core/EchoHub.Core.DTOs.EmbedDto.html#EchoHub_Core_DTOs_EmbedDto_Deconstruct_System_String__System_String__System_String__System_String__System_String__System_String__
+  commentId: M:EchoHub.Core.DTOs.EmbedDto.Deconstruct(System.String@,System.String@,System.String@,System.String@,System.String@,System.String@)
+  name.vb: Deconstruct(String, String, String, String, String, String)
+  fullName: EchoHub.Core.DTOs.EmbedDto.Deconstruct(out string?, out string?, out string?, out string?, out string, out string?)
+  fullName.vb: EchoHub.Core.DTOs.EmbedDto.Deconstruct(String, String, String, String, String, String)
+  nameWithType: EmbedDto.Deconstruct(out string?, out string?, out string?, out string?, out string, out string?)
+  nameWithType.vb: EmbedDto.Deconstruct(String, String, String, String, String, String)
 - uid: EchoHub.Core.DTOs.EmbedDto.Deconstruct*
   name: Deconstruct
   href: api/core/EchoHub.Core.DTOs.EmbedDto.html#EchoHub_Core_DTOs_EmbedDto_Deconstruct_
@@ -7822,6 +8254,18 @@ references:
   commentId: Overload:EchoHub.Core.DTOs.EmbedDto.SiteName
   fullName: EchoHub.Core.DTOs.EmbedDto.SiteName
   nameWithType: EmbedDto.SiteName
+- uid: EchoHub.Core.DTOs.EmbedDto.ThemeColor
+  name: ThemeColor
+  href: api/core/EchoHub.Core.DTOs.EmbedDto.html#EchoHub_Core_DTOs_EmbedDto_ThemeColor
+  commentId: P:EchoHub.Core.DTOs.EmbedDto.ThemeColor
+  fullName: EchoHub.Core.DTOs.EmbedDto.ThemeColor
+  nameWithType: EmbedDto.ThemeColor
+- uid: EchoHub.Core.DTOs.EmbedDto.ThemeColor*
+  name: ThemeColor
+  href: api/core/EchoHub.Core.DTOs.EmbedDto.html#EchoHub_Core_DTOs_EmbedDto_ThemeColor_
+  commentId: Overload:EchoHub.Core.DTOs.EmbedDto.ThemeColor
+  fullName: EchoHub.Core.DTOs.EmbedDto.ThemeColor
+  nameWithType: EmbedDto.ThemeColor
 - uid: EchoHub.Core.DTOs.EmbedDto.Title
   name: Title
   href: api/core/EchoHub.Core.DTOs.EmbedDto.html#EchoHub_Core_DTOs_EmbedDto_Title
@@ -8242,6 +8686,198 @@ references:
   fullName.vb: EchoHub.Core.DTOs.ErrorResponse.<>
   nameWithType: ErrorResponse.operator !=
   nameWithType.vb: ErrorResponse.<>
+- uid: EchoHub.Core.DTOs.JoinChannelResult
+  name: JoinChannelResult
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html
+  commentId: T:EchoHub.Core.DTOs.JoinChannelResult
+  fullName: EchoHub.Core.DTOs.JoinChannelResult
+  nameWithType: JoinChannelResult
+- uid: EchoHub.Core.DTOs.JoinChannelResult.#ctor(EchoHub.Core.DTOs.JoinChannelResult)
+  name: JoinChannelResult(JoinChannelResult)
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult__ctor_EchoHub_Core_DTOs_JoinChannelResult_
+  commentId: M:EchoHub.Core.DTOs.JoinChannelResult.#ctor(EchoHub.Core.DTOs.JoinChannelResult)
+  name.vb: New(JoinChannelResult)
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.JoinChannelResult(EchoHub.Core.DTOs.JoinChannelResult)
+  fullName.vb: EchoHub.Core.DTOs.JoinChannelResult.New(EchoHub.Core.DTOs.JoinChannelResult)
+  nameWithType: JoinChannelResult.JoinChannelResult(JoinChannelResult)
+  nameWithType.vb: JoinChannelResult.New(JoinChannelResult)
+- uid: EchoHub.Core.DTOs.JoinChannelResult.#ctor(System.Boolean,System.Collections.Generic.List{EchoHub.Core.DTOs.MessageDto},System.String)
+  name: JoinChannelResult(bool, List<MessageDto>, string?)
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult__ctor_System_Boolean_System_Collections_Generic_List_EchoHub_Core_DTOs_MessageDto__System_String_
+  commentId: M:EchoHub.Core.DTOs.JoinChannelResult.#ctor(System.Boolean,System.Collections.Generic.List{EchoHub.Core.DTOs.MessageDto},System.String)
+  name.vb: New(Boolean, List(Of MessageDto), String)
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.JoinChannelResult(bool, System.Collections.Generic.List<EchoHub.Core.DTOs.MessageDto>, string?)
+  fullName.vb: EchoHub.Core.DTOs.JoinChannelResult.New(Boolean, System.Collections.Generic.List(Of EchoHub.Core.DTOs.MessageDto), String)
+  nameWithType: JoinChannelResult.JoinChannelResult(bool, List<MessageDto>, string?)
+  nameWithType.vb: JoinChannelResult.New(Boolean, List(Of MessageDto), String)
+- uid: EchoHub.Core.DTOs.JoinChannelResult.#ctor*
+  name: JoinChannelResult
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult__ctor_
+  commentId: Overload:EchoHub.Core.DTOs.JoinChannelResult.#ctor
+  name.vb: New
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.JoinChannelResult
+  fullName.vb: EchoHub.Core.DTOs.JoinChannelResult.New
+  nameWithType: JoinChannelResult.JoinChannelResult
+  nameWithType.vb: JoinChannelResult.New
+- uid: EchoHub.Core.DTOs.JoinChannelResult.Deconstruct(System.Boolean@,System.Collections.Generic.List{EchoHub.Core.DTOs.MessageDto}@,System.String@)
+  name: Deconstruct(out bool, out List<MessageDto>, out string?)
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_Deconstruct_System_Boolean__System_Collections_Generic_List_EchoHub_Core_DTOs_MessageDto___System_String__
+  commentId: M:EchoHub.Core.DTOs.JoinChannelResult.Deconstruct(System.Boolean@,System.Collections.Generic.List{EchoHub.Core.DTOs.MessageDto}@,System.String@)
+  name.vb: Deconstruct(Boolean, List(Of MessageDto), String)
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.Deconstruct(out bool, out System.Collections.Generic.List<EchoHub.Core.DTOs.MessageDto>, out string?)
+  fullName.vb: EchoHub.Core.DTOs.JoinChannelResult.Deconstruct(Boolean, System.Collections.Generic.List(Of EchoHub.Core.DTOs.MessageDto), String)
+  nameWithType: JoinChannelResult.Deconstruct(out bool, out List<MessageDto>, out string?)
+  nameWithType.vb: JoinChannelResult.Deconstruct(Boolean, List(Of MessageDto), String)
+- uid: EchoHub.Core.DTOs.JoinChannelResult.Deconstruct*
+  name: Deconstruct
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_Deconstruct_
+  commentId: Overload:EchoHub.Core.DTOs.JoinChannelResult.Deconstruct
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.Deconstruct
+  nameWithType: JoinChannelResult.Deconstruct
+- uid: EchoHub.Core.DTOs.JoinChannelResult.EqualityContract
+  name: EqualityContract
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_EqualityContract
+  commentId: P:EchoHub.Core.DTOs.JoinChannelResult.EqualityContract
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.EqualityContract
+  nameWithType: JoinChannelResult.EqualityContract
+- uid: EchoHub.Core.DTOs.JoinChannelResult.EqualityContract*
+  name: EqualityContract
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_EqualityContract_
+  commentId: Overload:EchoHub.Core.DTOs.JoinChannelResult.EqualityContract
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.EqualityContract
+  nameWithType: JoinChannelResult.EqualityContract
+- uid: EchoHub.Core.DTOs.JoinChannelResult.Equals(EchoHub.Core.DTOs.JoinChannelResult)
+  name: Equals(JoinChannelResult?)
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_Equals_EchoHub_Core_DTOs_JoinChannelResult_
+  commentId: M:EchoHub.Core.DTOs.JoinChannelResult.Equals(EchoHub.Core.DTOs.JoinChannelResult)
+  name.vb: Equals(JoinChannelResult)
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.Equals(EchoHub.Core.DTOs.JoinChannelResult?)
+  fullName.vb: EchoHub.Core.DTOs.JoinChannelResult.Equals(EchoHub.Core.DTOs.JoinChannelResult)
+  nameWithType: JoinChannelResult.Equals(JoinChannelResult?)
+  nameWithType.vb: JoinChannelResult.Equals(JoinChannelResult)
+- uid: EchoHub.Core.DTOs.JoinChannelResult.Equals(System.Object)
+  name: Equals(object?)
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_Equals_System_Object_
+  commentId: M:EchoHub.Core.DTOs.JoinChannelResult.Equals(System.Object)
+  name.vb: Equals(Object)
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.Equals(object?)
+  fullName.vb: EchoHub.Core.DTOs.JoinChannelResult.Equals(Object)
+  nameWithType: JoinChannelResult.Equals(object?)
+  nameWithType.vb: JoinChannelResult.Equals(Object)
+- uid: EchoHub.Core.DTOs.JoinChannelResult.Equals*
+  name: Equals
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_Equals_
+  commentId: Overload:EchoHub.Core.DTOs.JoinChannelResult.Equals
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.Equals
+  nameWithType: JoinChannelResult.Equals
+- uid: EchoHub.Core.DTOs.JoinChannelResult.Error
+  name: Error
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_Error
+  commentId: P:EchoHub.Core.DTOs.JoinChannelResult.Error
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.Error
+  nameWithType: JoinChannelResult.Error
+- uid: EchoHub.Core.DTOs.JoinChannelResult.Error*
+  name: Error
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_Error_
+  commentId: Overload:EchoHub.Core.DTOs.JoinChannelResult.Error
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.Error
+  nameWithType: JoinChannelResult.Error
+- uid: EchoHub.Core.DTOs.JoinChannelResult.GetHashCode
+  name: GetHashCode()
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_GetHashCode
+  commentId: M:EchoHub.Core.DTOs.JoinChannelResult.GetHashCode
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.GetHashCode()
+  nameWithType: JoinChannelResult.GetHashCode()
+- uid: EchoHub.Core.DTOs.JoinChannelResult.GetHashCode*
+  name: GetHashCode
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_GetHashCode_
+  commentId: Overload:EchoHub.Core.DTOs.JoinChannelResult.GetHashCode
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.GetHashCode
+  nameWithType: JoinChannelResult.GetHashCode
+- uid: EchoHub.Core.DTOs.JoinChannelResult.History
+  name: History
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_History
+  commentId: P:EchoHub.Core.DTOs.JoinChannelResult.History
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.History
+  nameWithType: JoinChannelResult.History
+- uid: EchoHub.Core.DTOs.JoinChannelResult.History*
+  name: History
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_History_
+  commentId: Overload:EchoHub.Core.DTOs.JoinChannelResult.History
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.History
+  nameWithType: JoinChannelResult.History
+- uid: EchoHub.Core.DTOs.JoinChannelResult.PrintMembers(System.Text.StringBuilder)
+  name: PrintMembers(StringBuilder)
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_PrintMembers_System_Text_StringBuilder_
+  commentId: M:EchoHub.Core.DTOs.JoinChannelResult.PrintMembers(System.Text.StringBuilder)
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.PrintMembers(System.Text.StringBuilder)
+  nameWithType: JoinChannelResult.PrintMembers(StringBuilder)
+- uid: EchoHub.Core.DTOs.JoinChannelResult.PrintMembers*
+  name: PrintMembers
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_PrintMembers_
+  commentId: Overload:EchoHub.Core.DTOs.JoinChannelResult.PrintMembers
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.PrintMembers
+  nameWithType: JoinChannelResult.PrintMembers
+- uid: EchoHub.Core.DTOs.JoinChannelResult.Success
+  name: Success
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_Success
+  commentId: P:EchoHub.Core.DTOs.JoinChannelResult.Success
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.Success
+  nameWithType: JoinChannelResult.Success
+- uid: EchoHub.Core.DTOs.JoinChannelResult.Success*
+  name: Success
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_Success_
+  commentId: Overload:EchoHub.Core.DTOs.JoinChannelResult.Success
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.Success
+  nameWithType: JoinChannelResult.Success
+- uid: EchoHub.Core.DTOs.JoinChannelResult.ToString
+  name: ToString()
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_ToString
+  commentId: M:EchoHub.Core.DTOs.JoinChannelResult.ToString
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.ToString()
+  nameWithType: JoinChannelResult.ToString()
+- uid: EchoHub.Core.DTOs.JoinChannelResult.ToString*
+  name: ToString
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_ToString_
+  commentId: Overload:EchoHub.Core.DTOs.JoinChannelResult.ToString
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.ToString
+  nameWithType: JoinChannelResult.ToString
+- uid: EchoHub.Core.DTOs.JoinChannelResult.op_Equality(EchoHub.Core.DTOs.JoinChannelResult,EchoHub.Core.DTOs.JoinChannelResult)
+  name: operator ==(JoinChannelResult?, JoinChannelResult?)
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_op_Equality_EchoHub_Core_DTOs_JoinChannelResult_EchoHub_Core_DTOs_JoinChannelResult_
+  commentId: M:EchoHub.Core.DTOs.JoinChannelResult.op_Equality(EchoHub.Core.DTOs.JoinChannelResult,EchoHub.Core.DTOs.JoinChannelResult)
+  name.vb: =(JoinChannelResult, JoinChannelResult)
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.operator ==(EchoHub.Core.DTOs.JoinChannelResult?, EchoHub.Core.DTOs.JoinChannelResult?)
+  fullName.vb: EchoHub.Core.DTOs.JoinChannelResult.=(EchoHub.Core.DTOs.JoinChannelResult, EchoHub.Core.DTOs.JoinChannelResult)
+  nameWithType: JoinChannelResult.operator ==(JoinChannelResult?, JoinChannelResult?)
+  nameWithType.vb: JoinChannelResult.=(JoinChannelResult, JoinChannelResult)
+- uid: EchoHub.Core.DTOs.JoinChannelResult.op_Equality*
+  name: operator ==
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_op_Equality_
+  commentId: Overload:EchoHub.Core.DTOs.JoinChannelResult.op_Equality
+  name.vb: =
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.operator ==
+  fullName.vb: EchoHub.Core.DTOs.JoinChannelResult.=
+  nameWithType: JoinChannelResult.operator ==
+  nameWithType.vb: JoinChannelResult.=
+- uid: EchoHub.Core.DTOs.JoinChannelResult.op_Inequality(EchoHub.Core.DTOs.JoinChannelResult,EchoHub.Core.DTOs.JoinChannelResult)
+  name: operator !=(JoinChannelResult?, JoinChannelResult?)
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_op_Inequality_EchoHub_Core_DTOs_JoinChannelResult_EchoHub_Core_DTOs_JoinChannelResult_
+  commentId: M:EchoHub.Core.DTOs.JoinChannelResult.op_Inequality(EchoHub.Core.DTOs.JoinChannelResult,EchoHub.Core.DTOs.JoinChannelResult)
+  name.vb: <>(JoinChannelResult, JoinChannelResult)
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.operator !=(EchoHub.Core.DTOs.JoinChannelResult?, EchoHub.Core.DTOs.JoinChannelResult?)
+  fullName.vb: EchoHub.Core.DTOs.JoinChannelResult.<>(EchoHub.Core.DTOs.JoinChannelResult, EchoHub.Core.DTOs.JoinChannelResult)
+  nameWithType: JoinChannelResult.operator !=(JoinChannelResult?, JoinChannelResult?)
+  nameWithType.vb: JoinChannelResult.<>(JoinChannelResult, JoinChannelResult)
+- uid: EchoHub.Core.DTOs.JoinChannelResult.op_Inequality*
+  name: operator !=
+  href: api/core/EchoHub.Core.DTOs.JoinChannelResult.html#EchoHub_Core_DTOs_JoinChannelResult_op_Inequality_
+  commentId: Overload:EchoHub.Core.DTOs.JoinChannelResult.op_Inequality
+  name.vb: <>
+  fullName: EchoHub.Core.DTOs.JoinChannelResult.operator !=
+  fullName.vb: EchoHub.Core.DTOs.JoinChannelResult.<>
+  nameWithType: JoinChannelResult.operator !=
+  nameWithType.vb: JoinChannelResult.<>
 - uid: EchoHub.Core.DTOs.KickRequest
   name: KickRequest
   href: api/core/EchoHub.Core.DTOs.KickRequest.html
@@ -11209,6 +11845,273 @@ references:
   fullName.vb: EchoHub.Core.DTOs.UserDto.<>
   nameWithType: UserDto.operator !=
   nameWithType.vb: UserDto.<>
+- uid: EchoHub.Core.DTOs.UserError
+  name: UserError
+  href: api/core/EchoHub.Core.DTOs.UserError.html
+  commentId: T:EchoHub.Core.DTOs.UserError
+  fullName: EchoHub.Core.DTOs.UserError
+  nameWithType: UserError
+- uid: EchoHub.Core.DTOs.UserError.AlreadyExists
+  name: AlreadyExists
+  href: api/core/EchoHub.Core.DTOs.UserError.html#EchoHub_Core_DTOs_UserError_AlreadyExists
+  commentId: F:EchoHub.Core.DTOs.UserError.AlreadyExists
+  fullName: EchoHub.Core.DTOs.UserError.AlreadyExists
+  nameWithType: UserError.AlreadyExists
+- uid: EchoHub.Core.DTOs.UserError.Banned
+  name: Banned
+  href: api/core/EchoHub.Core.DTOs.UserError.html#EchoHub_Core_DTOs_UserError_Banned
+  commentId: F:EchoHub.Core.DTOs.UserError.Banned
+  fullName: EchoHub.Core.DTOs.UserError.Banned
+  nameWithType: UserError.Banned
+- uid: EchoHub.Core.DTOs.UserError.InvalidCredentials
+  name: InvalidCredentials
+  href: api/core/EchoHub.Core.DTOs.UserError.html#EchoHub_Core_DTOs_UserError_InvalidCredentials
+  commentId: F:EchoHub.Core.DTOs.UserError.InvalidCredentials
+  fullName: EchoHub.Core.DTOs.UserError.InvalidCredentials
+  nameWithType: UserError.InvalidCredentials
+- uid: EchoHub.Core.DTOs.UserError.NotFound
+  name: NotFound
+  href: api/core/EchoHub.Core.DTOs.UserError.html#EchoHub_Core_DTOs_UserError_NotFound
+  commentId: F:EchoHub.Core.DTOs.UserError.NotFound
+  fullName: EchoHub.Core.DTOs.UserError.NotFound
+  nameWithType: UserError.NotFound
+- uid: EchoHub.Core.DTOs.UserError.ValidationFailed
+  name: ValidationFailed
+  href: api/core/EchoHub.Core.DTOs.UserError.html#EchoHub_Core_DTOs_UserError_ValidationFailed
+  commentId: F:EchoHub.Core.DTOs.UserError.ValidationFailed
+  fullName: EchoHub.Core.DTOs.UserError.ValidationFailed
+  nameWithType: UserError.ValidationFailed
+- uid: EchoHub.Core.DTOs.UserOperationResult
+  name: UserOperationResult
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html
+  commentId: T:EchoHub.Core.DTOs.UserOperationResult
+  fullName: EchoHub.Core.DTOs.UserOperationResult
+  nameWithType: UserOperationResult
+- uid: EchoHub.Core.DTOs.UserOperationResult.#ctor(EchoHub.Core.DTOs.UserOperationResult)
+  name: UserOperationResult(UserOperationResult)
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult__ctor_EchoHub_Core_DTOs_UserOperationResult_
+  commentId: M:EchoHub.Core.DTOs.UserOperationResult.#ctor(EchoHub.Core.DTOs.UserOperationResult)
+  name.vb: New(UserOperationResult)
+  fullName: EchoHub.Core.DTOs.UserOperationResult.UserOperationResult(EchoHub.Core.DTOs.UserOperationResult)
+  fullName.vb: EchoHub.Core.DTOs.UserOperationResult.New(EchoHub.Core.DTOs.UserOperationResult)
+  nameWithType: UserOperationResult.UserOperationResult(UserOperationResult)
+  nameWithType.vb: UserOperationResult.New(UserOperationResult)
+- uid: EchoHub.Core.DTOs.UserOperationResult.#ctor(EchoHub.Core.DTOs.UserProfileDto,System.Nullable{EchoHub.Core.DTOs.UserError},System.String)
+  name: UserOperationResult(UserProfileDto?, UserError?, string?)
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult__ctor_EchoHub_Core_DTOs_UserProfileDto_System_Nullable_EchoHub_Core_DTOs_UserError__System_String_
+  commentId: M:EchoHub.Core.DTOs.UserOperationResult.#ctor(EchoHub.Core.DTOs.UserProfileDto,System.Nullable{EchoHub.Core.DTOs.UserError},System.String)
+  name.vb: New(UserProfileDto, UserError?, String)
+  fullName: EchoHub.Core.DTOs.UserOperationResult.UserOperationResult(EchoHub.Core.DTOs.UserProfileDto?, EchoHub.Core.DTOs.UserError?, string?)
+  fullName.vb: EchoHub.Core.DTOs.UserOperationResult.New(EchoHub.Core.DTOs.UserProfileDto, EchoHub.Core.DTOs.UserError?, String)
+  nameWithType: UserOperationResult.UserOperationResult(UserProfileDto?, UserError?, string?)
+  nameWithType.vb: UserOperationResult.New(UserProfileDto, UserError?, String)
+- uid: EchoHub.Core.DTOs.UserOperationResult.#ctor*
+  name: UserOperationResult
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult__ctor_
+  commentId: Overload:EchoHub.Core.DTOs.UserOperationResult.#ctor
+  name.vb: New
+  fullName: EchoHub.Core.DTOs.UserOperationResult.UserOperationResult
+  fullName.vb: EchoHub.Core.DTOs.UserOperationResult.New
+  nameWithType: UserOperationResult.UserOperationResult
+  nameWithType.vb: UserOperationResult.New
+- uid: EchoHub.Core.DTOs.UserOperationResult.Deconstruct(EchoHub.Core.DTOs.UserProfileDto@,System.Nullable{EchoHub.Core.DTOs.UserError}@,System.String@)
+  name: Deconstruct(out UserProfileDto?, out UserError?, out string?)
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_Deconstruct_EchoHub_Core_DTOs_UserProfileDto__System_Nullable_EchoHub_Core_DTOs_UserError___System_String__
+  commentId: M:EchoHub.Core.DTOs.UserOperationResult.Deconstruct(EchoHub.Core.DTOs.UserProfileDto@,System.Nullable{EchoHub.Core.DTOs.UserError}@,System.String@)
+  name.vb: Deconstruct(UserProfileDto, UserError?, String)
+  fullName: EchoHub.Core.DTOs.UserOperationResult.Deconstruct(out EchoHub.Core.DTOs.UserProfileDto?, out EchoHub.Core.DTOs.UserError?, out string?)
+  fullName.vb: EchoHub.Core.DTOs.UserOperationResult.Deconstruct(EchoHub.Core.DTOs.UserProfileDto, EchoHub.Core.DTOs.UserError?, String)
+  nameWithType: UserOperationResult.Deconstruct(out UserProfileDto?, out UserError?, out string?)
+  nameWithType.vb: UserOperationResult.Deconstruct(UserProfileDto, UserError?, String)
+- uid: EchoHub.Core.DTOs.UserOperationResult.Deconstruct*
+  name: Deconstruct
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_Deconstruct_
+  commentId: Overload:EchoHub.Core.DTOs.UserOperationResult.Deconstruct
+  fullName: EchoHub.Core.DTOs.UserOperationResult.Deconstruct
+  nameWithType: UserOperationResult.Deconstruct
+- uid: EchoHub.Core.DTOs.UserOperationResult.EqualityContract
+  name: EqualityContract
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_EqualityContract
+  commentId: P:EchoHub.Core.DTOs.UserOperationResult.EqualityContract
+  fullName: EchoHub.Core.DTOs.UserOperationResult.EqualityContract
+  nameWithType: UserOperationResult.EqualityContract
+- uid: EchoHub.Core.DTOs.UserOperationResult.EqualityContract*
+  name: EqualityContract
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_EqualityContract_
+  commentId: Overload:EchoHub.Core.DTOs.UserOperationResult.EqualityContract
+  fullName: EchoHub.Core.DTOs.UserOperationResult.EqualityContract
+  nameWithType: UserOperationResult.EqualityContract
+- uid: EchoHub.Core.DTOs.UserOperationResult.Equals(EchoHub.Core.DTOs.UserOperationResult)
+  name: Equals(UserOperationResult?)
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_Equals_EchoHub_Core_DTOs_UserOperationResult_
+  commentId: M:EchoHub.Core.DTOs.UserOperationResult.Equals(EchoHub.Core.DTOs.UserOperationResult)
+  name.vb: Equals(UserOperationResult)
+  fullName: EchoHub.Core.DTOs.UserOperationResult.Equals(EchoHub.Core.DTOs.UserOperationResult?)
+  fullName.vb: EchoHub.Core.DTOs.UserOperationResult.Equals(EchoHub.Core.DTOs.UserOperationResult)
+  nameWithType: UserOperationResult.Equals(UserOperationResult?)
+  nameWithType.vb: UserOperationResult.Equals(UserOperationResult)
+- uid: EchoHub.Core.DTOs.UserOperationResult.Equals(System.Object)
+  name: Equals(object?)
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_Equals_System_Object_
+  commentId: M:EchoHub.Core.DTOs.UserOperationResult.Equals(System.Object)
+  name.vb: Equals(Object)
+  fullName: EchoHub.Core.DTOs.UserOperationResult.Equals(object?)
+  fullName.vb: EchoHub.Core.DTOs.UserOperationResult.Equals(Object)
+  nameWithType: UserOperationResult.Equals(object?)
+  nameWithType.vb: UserOperationResult.Equals(Object)
+- uid: EchoHub.Core.DTOs.UserOperationResult.Equals*
+  name: Equals
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_Equals_
+  commentId: Overload:EchoHub.Core.DTOs.UserOperationResult.Equals
+  fullName: EchoHub.Core.DTOs.UserOperationResult.Equals
+  nameWithType: UserOperationResult.Equals
+- uid: EchoHub.Core.DTOs.UserOperationResult.Error
+  name: Error
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_Error
+  commentId: P:EchoHub.Core.DTOs.UserOperationResult.Error
+  fullName: EchoHub.Core.DTOs.UserOperationResult.Error
+  nameWithType: UserOperationResult.Error
+- uid: EchoHub.Core.DTOs.UserOperationResult.Error*
+  name: Error
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_Error_
+  commentId: Overload:EchoHub.Core.DTOs.UserOperationResult.Error
+  fullName: EchoHub.Core.DTOs.UserOperationResult.Error
+  nameWithType: UserOperationResult.Error
+- uid: EchoHub.Core.DTOs.UserOperationResult.ErrorMessage
+  name: ErrorMessage
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_ErrorMessage
+  commentId: P:EchoHub.Core.DTOs.UserOperationResult.ErrorMessage
+  fullName: EchoHub.Core.DTOs.UserOperationResult.ErrorMessage
+  nameWithType: UserOperationResult.ErrorMessage
+- uid: EchoHub.Core.DTOs.UserOperationResult.ErrorMessage*
+  name: ErrorMessage
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_ErrorMessage_
+  commentId: Overload:EchoHub.Core.DTOs.UserOperationResult.ErrorMessage
+  fullName: EchoHub.Core.DTOs.UserOperationResult.ErrorMessage
+  nameWithType: UserOperationResult.ErrorMessage
+- uid: EchoHub.Core.DTOs.UserOperationResult.Fail(EchoHub.Core.DTOs.UserError,System.String)
+  name: Fail(UserError, string)
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_Fail_EchoHub_Core_DTOs_UserError_System_String_
+  commentId: M:EchoHub.Core.DTOs.UserOperationResult.Fail(EchoHub.Core.DTOs.UserError,System.String)
+  name.vb: Fail(UserError, String)
+  fullName: EchoHub.Core.DTOs.UserOperationResult.Fail(EchoHub.Core.DTOs.UserError, string)
+  fullName.vb: EchoHub.Core.DTOs.UserOperationResult.Fail(EchoHub.Core.DTOs.UserError, String)
+  nameWithType: UserOperationResult.Fail(UserError, string)
+  nameWithType.vb: UserOperationResult.Fail(UserError, String)
+- uid: EchoHub.Core.DTOs.UserOperationResult.Fail*
+  name: Fail
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_Fail_
+  commentId: Overload:EchoHub.Core.DTOs.UserOperationResult.Fail
+  fullName: EchoHub.Core.DTOs.UserOperationResult.Fail
+  nameWithType: UserOperationResult.Fail
+- uid: EchoHub.Core.DTOs.UserOperationResult.GetHashCode
+  name: GetHashCode()
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_GetHashCode
+  commentId: M:EchoHub.Core.DTOs.UserOperationResult.GetHashCode
+  fullName: EchoHub.Core.DTOs.UserOperationResult.GetHashCode()
+  nameWithType: UserOperationResult.GetHashCode()
+- uid: EchoHub.Core.DTOs.UserOperationResult.GetHashCode*
+  name: GetHashCode
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_GetHashCode_
+  commentId: Overload:EchoHub.Core.DTOs.UserOperationResult.GetHashCode
+  fullName: EchoHub.Core.DTOs.UserOperationResult.GetHashCode
+  nameWithType: UserOperationResult.GetHashCode
+- uid: EchoHub.Core.DTOs.UserOperationResult.IsSuccess
+  name: IsSuccess
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_IsSuccess
+  commentId: P:EchoHub.Core.DTOs.UserOperationResult.IsSuccess
+  fullName: EchoHub.Core.DTOs.UserOperationResult.IsSuccess
+  nameWithType: UserOperationResult.IsSuccess
+- uid: EchoHub.Core.DTOs.UserOperationResult.IsSuccess*
+  name: IsSuccess
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_IsSuccess_
+  commentId: Overload:EchoHub.Core.DTOs.UserOperationResult.IsSuccess
+  fullName: EchoHub.Core.DTOs.UserOperationResult.IsSuccess
+  nameWithType: UserOperationResult.IsSuccess
+- uid: EchoHub.Core.DTOs.UserOperationResult.PrintMembers(System.Text.StringBuilder)
+  name: PrintMembers(StringBuilder)
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_PrintMembers_System_Text_StringBuilder_
+  commentId: M:EchoHub.Core.DTOs.UserOperationResult.PrintMembers(System.Text.StringBuilder)
+  fullName: EchoHub.Core.DTOs.UserOperationResult.PrintMembers(System.Text.StringBuilder)
+  nameWithType: UserOperationResult.PrintMembers(StringBuilder)
+- uid: EchoHub.Core.DTOs.UserOperationResult.PrintMembers*
+  name: PrintMembers
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_PrintMembers_
+  commentId: Overload:EchoHub.Core.DTOs.UserOperationResult.PrintMembers
+  fullName: EchoHub.Core.DTOs.UserOperationResult.PrintMembers
+  nameWithType: UserOperationResult.PrintMembers
+- uid: EchoHub.Core.DTOs.UserOperationResult.Success(EchoHub.Core.DTOs.UserProfileDto)
+  name: Success(UserProfileDto)
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_Success_EchoHub_Core_DTOs_UserProfileDto_
+  commentId: M:EchoHub.Core.DTOs.UserOperationResult.Success(EchoHub.Core.DTOs.UserProfileDto)
+  fullName: EchoHub.Core.DTOs.UserOperationResult.Success(EchoHub.Core.DTOs.UserProfileDto)
+  nameWithType: UserOperationResult.Success(UserProfileDto)
+- uid: EchoHub.Core.DTOs.UserOperationResult.Success*
+  name: Success
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_Success_
+  commentId: Overload:EchoHub.Core.DTOs.UserOperationResult.Success
+  fullName: EchoHub.Core.DTOs.UserOperationResult.Success
+  nameWithType: UserOperationResult.Success
+- uid: EchoHub.Core.DTOs.UserOperationResult.ToString
+  name: ToString()
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_ToString
+  commentId: M:EchoHub.Core.DTOs.UserOperationResult.ToString
+  fullName: EchoHub.Core.DTOs.UserOperationResult.ToString()
+  nameWithType: UserOperationResult.ToString()
+- uid: EchoHub.Core.DTOs.UserOperationResult.ToString*
+  name: ToString
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_ToString_
+  commentId: Overload:EchoHub.Core.DTOs.UserOperationResult.ToString
+  fullName: EchoHub.Core.DTOs.UserOperationResult.ToString
+  nameWithType: UserOperationResult.ToString
+- uid: EchoHub.Core.DTOs.UserOperationResult.User
+  name: User
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_User
+  commentId: P:EchoHub.Core.DTOs.UserOperationResult.User
+  fullName: EchoHub.Core.DTOs.UserOperationResult.User
+  nameWithType: UserOperationResult.User
+- uid: EchoHub.Core.DTOs.UserOperationResult.User*
+  name: User
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_User_
+  commentId: Overload:EchoHub.Core.DTOs.UserOperationResult.User
+  fullName: EchoHub.Core.DTOs.UserOperationResult.User
+  nameWithType: UserOperationResult.User
+- uid: EchoHub.Core.DTOs.UserOperationResult.op_Equality(EchoHub.Core.DTOs.UserOperationResult,EchoHub.Core.DTOs.UserOperationResult)
+  name: operator ==(UserOperationResult?, UserOperationResult?)
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_op_Equality_EchoHub_Core_DTOs_UserOperationResult_EchoHub_Core_DTOs_UserOperationResult_
+  commentId: M:EchoHub.Core.DTOs.UserOperationResult.op_Equality(EchoHub.Core.DTOs.UserOperationResult,EchoHub.Core.DTOs.UserOperationResult)
+  name.vb: =(UserOperationResult, UserOperationResult)
+  fullName: EchoHub.Core.DTOs.UserOperationResult.operator ==(EchoHub.Core.DTOs.UserOperationResult?, EchoHub.Core.DTOs.UserOperationResult?)
+  fullName.vb: EchoHub.Core.DTOs.UserOperationResult.=(EchoHub.Core.DTOs.UserOperationResult, EchoHub.Core.DTOs.UserOperationResult)
+  nameWithType: UserOperationResult.operator ==(UserOperationResult?, UserOperationResult?)
+  nameWithType.vb: UserOperationResult.=(UserOperationResult, UserOperationResult)
+- uid: EchoHub.Core.DTOs.UserOperationResult.op_Equality*
+  name: operator ==
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_op_Equality_
+  commentId: Overload:EchoHub.Core.DTOs.UserOperationResult.op_Equality
+  name.vb: =
+  fullName: EchoHub.Core.DTOs.UserOperationResult.operator ==
+  fullName.vb: EchoHub.Core.DTOs.UserOperationResult.=
+  nameWithType: UserOperationResult.operator ==
+  nameWithType.vb: UserOperationResult.=
+- uid: EchoHub.Core.DTOs.UserOperationResult.op_Inequality(EchoHub.Core.DTOs.UserOperationResult,EchoHub.Core.DTOs.UserOperationResult)
+  name: operator !=(UserOperationResult?, UserOperationResult?)
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_op_Inequality_EchoHub_Core_DTOs_UserOperationResult_EchoHub_Core_DTOs_UserOperationResult_
+  commentId: M:EchoHub.Core.DTOs.UserOperationResult.op_Inequality(EchoHub.Core.DTOs.UserOperationResult,EchoHub.Core.DTOs.UserOperationResult)
+  name.vb: <>(UserOperationResult, UserOperationResult)
+  fullName: EchoHub.Core.DTOs.UserOperationResult.operator !=(EchoHub.Core.DTOs.UserOperationResult?, EchoHub.Core.DTOs.UserOperationResult?)
+  fullName.vb: EchoHub.Core.DTOs.UserOperationResult.<>(EchoHub.Core.DTOs.UserOperationResult, EchoHub.Core.DTOs.UserOperationResult)
+  nameWithType: UserOperationResult.operator !=(UserOperationResult?, UserOperationResult?)
+  nameWithType.vb: UserOperationResult.<>(UserOperationResult, UserOperationResult)
+- uid: EchoHub.Core.DTOs.UserOperationResult.op_Inequality*
+  name: operator !=
+  href: api/core/EchoHub.Core.DTOs.UserOperationResult.html#EchoHub_Core_DTOs_UserOperationResult_op_Inequality_
+  commentId: Overload:EchoHub.Core.DTOs.UserOperationResult.op_Inequality
+  name.vb: <>
+  fullName: EchoHub.Core.DTOs.UserOperationResult.operator !=
+  fullName.vb: EchoHub.Core.DTOs.UserOperationResult.<>
+  nameWithType: UserOperationResult.operator !=
+  nameWithType.vb: UserOperationResult.<>
 - uid: EchoHub.Core.DTOs.UserPresenceDto
   name: UserPresenceDto
   href: api/core/EchoHub.Core.DTOs.UserPresenceDto.html
@@ -12535,6 +13438,12 @@ references:
   fullName.vb: EchoHub.Server.Auth.JwtTokenService.New
   nameWithType: JwtTokenService.JwtTokenService
   nameWithType.vb: JwtTokenService.New
+- uid: EchoHub.Server.Auth.JwtTokenService.GenerateAccessToken(EchoHub.Core.DTOs.UserProfileDto)
+  name: GenerateAccessToken(UserProfileDto)
+  href: api/server/EchoHub.Server.Auth.JwtTokenService.html#EchoHub_Server_Auth_JwtTokenService_GenerateAccessToken_EchoHub_Core_DTOs_UserProfileDto_
+  commentId: M:EchoHub.Server.Auth.JwtTokenService.GenerateAccessToken(EchoHub.Core.DTOs.UserProfileDto)
+  fullName: EchoHub.Server.Auth.JwtTokenService.GenerateAccessToken(EchoHub.Core.DTOs.UserProfileDto)
+  nameWithType: JwtTokenService.GenerateAccessToken(UserProfileDto)
 - uid: EchoHub.Server.Auth.JwtTokenService.GenerateAccessToken(EchoHub.Core.Models.User)
   name: GenerateAccessToken(User)
   href: api/server/EchoHub.Server.Auth.JwtTokenService.html#EchoHub_Server_Auth_JwtTokenService_GenerateAccessToken_EchoHub_Core_Models_User_
@@ -12592,15 +13501,15 @@ references:
   commentId: T:EchoHub.Server.Controllers.AuthController
   fullName: EchoHub.Server.Controllers.AuthController
   nameWithType: AuthController
-- uid: EchoHub.Server.Controllers.AuthController.#ctor(EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Auth.JwtTokenService)
-  name: AuthController(EchoHubDbContext, JwtTokenService)
-  href: api/server/EchoHub.Server.Controllers.AuthController.html#EchoHub_Server_Controllers_AuthController__ctor_EchoHub_Server_Data_EchoHubDbContext_EchoHub_Server_Auth_JwtTokenService_
-  commentId: M:EchoHub.Server.Controllers.AuthController.#ctor(EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Auth.JwtTokenService)
-  name.vb: New(EchoHubDbContext, JwtTokenService)
-  fullName: EchoHub.Server.Controllers.AuthController.AuthController(EchoHub.Server.Data.EchoHubDbContext, EchoHub.Server.Auth.JwtTokenService)
-  fullName.vb: EchoHub.Server.Controllers.AuthController.New(EchoHub.Server.Data.EchoHubDbContext, EchoHub.Server.Auth.JwtTokenService)
-  nameWithType: AuthController.AuthController(EchoHubDbContext, JwtTokenService)
-  nameWithType.vb: AuthController.New(EchoHubDbContext, JwtTokenService)
+- uid: EchoHub.Server.Controllers.AuthController.#ctor(EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Auth.JwtTokenService,EchoHub.Core.Contracts.IUserService)
+  name: AuthController(EchoHubDbContext, JwtTokenService, IUserService)
+  href: api/server/EchoHub.Server.Controllers.AuthController.html#EchoHub_Server_Controllers_AuthController__ctor_EchoHub_Server_Data_EchoHubDbContext_EchoHub_Server_Auth_JwtTokenService_EchoHub_Core_Contracts_IUserService_
+  commentId: M:EchoHub.Server.Controllers.AuthController.#ctor(EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Auth.JwtTokenService,EchoHub.Core.Contracts.IUserService)
+  name.vb: New(EchoHubDbContext, JwtTokenService, IUserService)
+  fullName: EchoHub.Server.Controllers.AuthController.AuthController(EchoHub.Server.Data.EchoHubDbContext, EchoHub.Server.Auth.JwtTokenService, EchoHub.Core.Contracts.IUserService)
+  fullName.vb: EchoHub.Server.Controllers.AuthController.New(EchoHub.Server.Data.EchoHubDbContext, EchoHub.Server.Auth.JwtTokenService, EchoHub.Core.Contracts.IUserService)
+  nameWithType: AuthController.AuthController(EchoHubDbContext, JwtTokenService, IUserService)
+  nameWithType.vb: AuthController.New(EchoHubDbContext, JwtTokenService, IUserService)
 - uid: EchoHub.Server.Controllers.AuthController.#ctor*
   name: AuthController
   href: api/server/EchoHub.Server.Controllers.AuthController.html#EchoHub_Server_Controllers_AuthController__ctor_
@@ -13000,15 +13909,15 @@ references:
   commentId: T:EchoHub.Server.Controllers.UsersController
   fullName: EchoHub.Server.Controllers.UsersController
   nameWithType: UsersController
-- uid: EchoHub.Server.Controllers.UsersController.#ctor(EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Services.ImageToAsciiService)
-  name: UsersController(EchoHubDbContext, ImageToAsciiService)
-  href: api/server/EchoHub.Server.Controllers.UsersController.html#EchoHub_Server_Controllers_UsersController__ctor_EchoHub_Server_Data_EchoHubDbContext_EchoHub_Server_Services_ImageToAsciiService_
-  commentId: M:EchoHub.Server.Controllers.UsersController.#ctor(EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Services.ImageToAsciiService)
-  name.vb: New(EchoHubDbContext, ImageToAsciiService)
-  fullName: EchoHub.Server.Controllers.UsersController.UsersController(EchoHub.Server.Data.EchoHubDbContext, EchoHub.Server.Services.ImageToAsciiService)
-  fullName.vb: EchoHub.Server.Controllers.UsersController.New(EchoHub.Server.Data.EchoHubDbContext, EchoHub.Server.Services.ImageToAsciiService)
-  nameWithType: UsersController.UsersController(EchoHubDbContext, ImageToAsciiService)
-  nameWithType.vb: UsersController.New(EchoHubDbContext, ImageToAsciiService)
+- uid: EchoHub.Server.Controllers.UsersController.#ctor(EchoHub.Core.Contracts.IUserService,EchoHub.Server.Services.ImageToAsciiService)
+  name: UsersController(IUserService, ImageToAsciiService)
+  href: api/server/EchoHub.Server.Controllers.UsersController.html#EchoHub_Server_Controllers_UsersController__ctor_EchoHub_Core_Contracts_IUserService_EchoHub_Server_Services_ImageToAsciiService_
+  commentId: M:EchoHub.Server.Controllers.UsersController.#ctor(EchoHub.Core.Contracts.IUserService,EchoHub.Server.Services.ImageToAsciiService)
+  name.vb: New(IUserService, ImageToAsciiService)
+  fullName: EchoHub.Server.Controllers.UsersController.UsersController(EchoHub.Core.Contracts.IUserService, EchoHub.Server.Services.ImageToAsciiService)
+  fullName.vb: EchoHub.Server.Controllers.UsersController.New(EchoHub.Core.Contracts.IUserService, EchoHub.Server.Services.ImageToAsciiService)
+  nameWithType: UsersController.UsersController(IUserService, ImageToAsciiService)
+  nameWithType.vb: UsersController.New(IUserService, ImageToAsciiService)
 - uid: EchoHub.Server.Controllers.UsersController.#ctor*
   name: UsersController
   href: api/server/EchoHub.Server.Controllers.UsersController.html#EchoHub_Server_Controllers_UsersController__ctor_
@@ -13879,15 +14788,15 @@ references:
   commentId: Overload:EchoHub.Server.Irc.IrcBroadcaster.SendUserBannedAsync
   fullName: EchoHub.Server.Irc.IrcBroadcaster.SendUserBannedAsync
   nameWithType: IrcBroadcaster.SendUserBannedAsync
-- uid: EchoHub.Server.Irc.IrcBroadcaster.SendUserJoinedAsync(System.String,System.String,System.String)
-  name: SendUserJoinedAsync(string, string, string?)
-  href: api/server-irc/EchoHub.Server.Irc.IrcBroadcaster.html#EchoHub_Server_Irc_IrcBroadcaster_SendUserJoinedAsync_System_String_System_String_System_String_
-  commentId: M:EchoHub.Server.Irc.IrcBroadcaster.SendUserJoinedAsync(System.String,System.String,System.String)
-  name.vb: SendUserJoinedAsync(String, String, String)
-  fullName: EchoHub.Server.Irc.IrcBroadcaster.SendUserJoinedAsync(string, string, string?)
-  fullName.vb: EchoHub.Server.Irc.IrcBroadcaster.SendUserJoinedAsync(String, String, String)
-  nameWithType: IrcBroadcaster.SendUserJoinedAsync(string, string, string?)
-  nameWithType.vb: IrcBroadcaster.SendUserJoinedAsync(String, String, String)
+- uid: EchoHub.Server.Irc.IrcBroadcaster.SendUserJoinedAsync(System.String,System.String,EchoHub.Core.DTOs.UserPresenceDto,System.String)
+  name: SendUserJoinedAsync(string, string, UserPresenceDto?, string?)
+  href: api/server-irc/EchoHub.Server.Irc.IrcBroadcaster.html#EchoHub_Server_Irc_IrcBroadcaster_SendUserJoinedAsync_System_String_System_String_EchoHub_Core_DTOs_UserPresenceDto_System_String_
+  commentId: M:EchoHub.Server.Irc.IrcBroadcaster.SendUserJoinedAsync(System.String,System.String,EchoHub.Core.DTOs.UserPresenceDto,System.String)
+  name.vb: SendUserJoinedAsync(String, String, UserPresenceDto, String)
+  fullName: EchoHub.Server.Irc.IrcBroadcaster.SendUserJoinedAsync(string, string, EchoHub.Core.DTOs.UserPresenceDto?, string?)
+  fullName.vb: EchoHub.Server.Irc.IrcBroadcaster.SendUserJoinedAsync(String, String, EchoHub.Core.DTOs.UserPresenceDto, String)
+  nameWithType: IrcBroadcaster.SendUserJoinedAsync(string, string, UserPresenceDto?, string?)
+  nameWithType.vb: IrcBroadcaster.SendUserJoinedAsync(String, String, UserPresenceDto, String)
 - uid: EchoHub.Server.Irc.IrcBroadcaster.SendUserJoinedAsync*
   name: SendUserJoinedAsync
   href: api/server-irc/EchoHub.Server.Irc.IrcBroadcaster.html#EchoHub_Server_Irc_IrcBroadcaster_SendUserJoinedAsync_
@@ -14233,15 +15142,15 @@ references:
   commentId: T:EchoHub.Server.Irc.IrcCommandHandler
   fullName: EchoHub.Server.Irc.IrcCommandHandler
   nameWithType: IrcCommandHandler
-- uid: EchoHub.Server.Irc.IrcCommandHandler.#ctor(EchoHub.Server.Irc.IrcClientConnection,EchoHub.Server.Irc.IrcOptions,EchoHub.Core.Contracts.IChatService,EchoHub.Core.Contracts.IChannelService,EchoHub.Core.Contracts.IMessageEncryptionService,Microsoft.Extensions.Logging.ILogger)
-  name: IrcCommandHandler(IrcClientConnection, IrcOptions, IChatService, IChannelService, IMessageEncryptionService, ILogger)
-  href: api/server-irc/EchoHub.Server.Irc.IrcCommandHandler.html#EchoHub_Server_Irc_IrcCommandHandler__ctor_EchoHub_Server_Irc_IrcClientConnection_EchoHub_Server_Irc_IrcOptions_EchoHub_Core_Contracts_IChatService_EchoHub_Core_Contracts_IChannelService_EchoHub_Core_Contracts_IMessageEncryptionService_Microsoft_Extensions_Logging_ILogger_
-  commentId: M:EchoHub.Server.Irc.IrcCommandHandler.#ctor(EchoHub.Server.Irc.IrcClientConnection,EchoHub.Server.Irc.IrcOptions,EchoHub.Core.Contracts.IChatService,EchoHub.Core.Contracts.IChannelService,EchoHub.Core.Contracts.IMessageEncryptionService,Microsoft.Extensions.Logging.ILogger)
-  name.vb: New(IrcClientConnection, IrcOptions, IChatService, IChannelService, IMessageEncryptionService, ILogger)
-  fullName: EchoHub.Server.Irc.IrcCommandHandler.IrcCommandHandler(EchoHub.Server.Irc.IrcClientConnection, EchoHub.Server.Irc.IrcOptions, EchoHub.Core.Contracts.IChatService, EchoHub.Core.Contracts.IChannelService, EchoHub.Core.Contracts.IMessageEncryptionService, Microsoft.Extensions.Logging.ILogger)
-  fullName.vb: EchoHub.Server.Irc.IrcCommandHandler.New(EchoHub.Server.Irc.IrcClientConnection, EchoHub.Server.Irc.IrcOptions, EchoHub.Core.Contracts.IChatService, EchoHub.Core.Contracts.IChannelService, EchoHub.Core.Contracts.IMessageEncryptionService, Microsoft.Extensions.Logging.ILogger)
-  nameWithType: IrcCommandHandler.IrcCommandHandler(IrcClientConnection, IrcOptions, IChatService, IChannelService, IMessageEncryptionService, ILogger)
-  nameWithType.vb: IrcCommandHandler.New(IrcClientConnection, IrcOptions, IChatService, IChannelService, IMessageEncryptionService, ILogger)
+- uid: EchoHub.Server.Irc.IrcCommandHandler.#ctor(EchoHub.Server.Irc.IrcClientConnection,EchoHub.Server.Irc.IrcOptions,EchoHub.Core.Contracts.IChatService,EchoHub.Core.Contracts.IUserService,EchoHub.Core.Contracts.IChannelService,EchoHub.Core.Contracts.IMessageEncryptionService,Microsoft.Extensions.Logging.ILogger)
+  name: IrcCommandHandler(IrcClientConnection, IrcOptions, IChatService, IUserService, IChannelService, IMessageEncryptionService, ILogger)
+  href: api/server-irc/EchoHub.Server.Irc.IrcCommandHandler.html#EchoHub_Server_Irc_IrcCommandHandler__ctor_EchoHub_Server_Irc_IrcClientConnection_EchoHub_Server_Irc_IrcOptions_EchoHub_Core_Contracts_IChatService_EchoHub_Core_Contracts_IUserService_EchoHub_Core_Contracts_IChannelService_EchoHub_Core_Contracts_IMessageEncryptionService_Microsoft_Extensions_Logging_ILogger_
+  commentId: M:EchoHub.Server.Irc.IrcCommandHandler.#ctor(EchoHub.Server.Irc.IrcClientConnection,EchoHub.Server.Irc.IrcOptions,EchoHub.Core.Contracts.IChatService,EchoHub.Core.Contracts.IUserService,EchoHub.Core.Contracts.IChannelService,EchoHub.Core.Contracts.IMessageEncryptionService,Microsoft.Extensions.Logging.ILogger)
+  name.vb: New(IrcClientConnection, IrcOptions, IChatService, IUserService, IChannelService, IMessageEncryptionService, ILogger)
+  fullName: EchoHub.Server.Irc.IrcCommandHandler.IrcCommandHandler(EchoHub.Server.Irc.IrcClientConnection, EchoHub.Server.Irc.IrcOptions, EchoHub.Core.Contracts.IChatService, EchoHub.Core.Contracts.IUserService, EchoHub.Core.Contracts.IChannelService, EchoHub.Core.Contracts.IMessageEncryptionService, Microsoft.Extensions.Logging.ILogger)
+  fullName.vb: EchoHub.Server.Irc.IrcCommandHandler.New(EchoHub.Server.Irc.IrcClientConnection, EchoHub.Server.Irc.IrcOptions, EchoHub.Core.Contracts.IChatService, EchoHub.Core.Contracts.IUserService, EchoHub.Core.Contracts.IChannelService, EchoHub.Core.Contracts.IMessageEncryptionService, Microsoft.Extensions.Logging.ILogger)
+  nameWithType: IrcCommandHandler.IrcCommandHandler(IrcClientConnection, IrcOptions, IChatService, IUserService, IChannelService, IMessageEncryptionService, ILogger)
+  nameWithType.vb: IrcCommandHandler.New(IrcClientConnection, IrcOptions, IChatService, IUserService, IChannelService, IMessageEncryptionService, ILogger)
 - uid: EchoHub.Server.Irc.IrcCommandHandler.#ctor*
   name: IrcCommandHandler
   href: api/server-irc/EchoHub.Server.Irc.IrcCommandHandler.html#EchoHub_Server_Irc_IrcCommandHandler__ctor_
@@ -15076,21 +15985,6 @@ references:
   fullName.vb: EchoHub.Server.Services.ChatService.New
   nameWithType: ChatService.ChatService
   nameWithType.vb: ChatService.New
-- uid: EchoHub.Server.Services.ChatService.AuthenticateUserAsync(System.String,System.String)
-  name: AuthenticateUserAsync(string, string)
-  href: api/server/EchoHub.Server.Services.ChatService.html#EchoHub_Server_Services_ChatService_AuthenticateUserAsync_System_String_System_String_
-  commentId: M:EchoHub.Server.Services.ChatService.AuthenticateUserAsync(System.String,System.String)
-  name.vb: AuthenticateUserAsync(String, String)
-  fullName: EchoHub.Server.Services.ChatService.AuthenticateUserAsync(string, string)
-  fullName.vb: EchoHub.Server.Services.ChatService.AuthenticateUserAsync(String, String)
-  nameWithType: ChatService.AuthenticateUserAsync(string, string)
-  nameWithType.vb: ChatService.AuthenticateUserAsync(String, String)
-- uid: EchoHub.Server.Services.ChatService.AuthenticateUserAsync*
-  name: AuthenticateUserAsync
-  href: api/server/EchoHub.Server.Services.ChatService.html#EchoHub_Server_Services_ChatService_AuthenticateUserAsync_
-  commentId: Overload:EchoHub.Server.Services.ChatService.AuthenticateUserAsync
-  fullName: EchoHub.Server.Services.ChatService.AuthenticateUserAsync
-  nameWithType: ChatService.AuthenticateUserAsync
 - uid: EchoHub.Server.Services.ChatService.BroadcastChannelUpdatedAsync(EchoHub.Core.DTOs.ChannelDto,System.String)
   name: BroadcastChannelUpdatedAsync(ChannelDto, string?)
   href: api/server/EchoHub.Server.Services.ChatService.html#EchoHub_Server_Services_ChatService_BroadcastChannelUpdatedAsync_EchoHub_Core_DTOs_ChannelDto_System_String_
@@ -15166,21 +16060,6 @@ references:
   commentId: Overload:EchoHub.Server.Services.ChatService.GetOnlineUsersAsync
   fullName: EchoHub.Server.Services.ChatService.GetOnlineUsersAsync
   nameWithType: ChatService.GetOnlineUsersAsync
-- uid: EchoHub.Server.Services.ChatService.GetUserProfileAsync(System.String)
-  name: GetUserProfileAsync(string)
-  href: api/server/EchoHub.Server.Services.ChatService.html#EchoHub_Server_Services_ChatService_GetUserProfileAsync_System_String_
-  commentId: M:EchoHub.Server.Services.ChatService.GetUserProfileAsync(System.String)
-  name.vb: GetUserProfileAsync(String)
-  fullName: EchoHub.Server.Services.ChatService.GetUserProfileAsync(string)
-  fullName.vb: EchoHub.Server.Services.ChatService.GetUserProfileAsync(String)
-  nameWithType: ChatService.GetUserProfileAsync(string)
-  nameWithType.vb: ChatService.GetUserProfileAsync(String)
-- uid: EchoHub.Server.Services.ChatService.GetUserProfileAsync*
-  name: GetUserProfileAsync
-  href: api/server/EchoHub.Server.Services.ChatService.html#EchoHub_Server_Services_ChatService_GetUserProfileAsync_
-  commentId: Overload:EchoHub.Server.Services.ChatService.GetUserProfileAsync
-  fullName: EchoHub.Server.Services.ChatService.GetUserProfileAsync
-  nameWithType: ChatService.GetUserProfileAsync
 - uid: EchoHub.Server.Services.ChatService.JoinChannelAsync(System.String,System.Guid,System.String,System.String)
   name: JoinChannelAsync(string, Guid, string, string)
   href: api/server/EchoHub.Server.Services.ChatService.html#EchoHub_Server_Services_ChatService_JoinChannelAsync_System_String_System_Guid_System_String_System_String_
@@ -15598,6 +16477,42 @@ references:
   commentId: Overload:EchoHub.Server.Services.MessageEncryptionService.EncryptNullable
   fullName: EchoHub.Server.Services.MessageEncryptionService.EncryptNullable
   nameWithType: MessageEncryptionService.EncryptNullable
+- uid: EchoHub.Server.Services.MuteExpirationService
+  name: MuteExpirationService
+  href: api/server/EchoHub.Server.Services.MuteExpirationService.html
+  commentId: T:EchoHub.Server.Services.MuteExpirationService
+  fullName: EchoHub.Server.Services.MuteExpirationService
+  nameWithType: MuteExpirationService
+- uid: EchoHub.Server.Services.MuteExpirationService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.MuteExpirationService})
+  name: MuteExpirationService(IServiceScopeFactory, ILogger<MuteExpirationService>)
+  href: api/server/EchoHub.Server.Services.MuteExpirationService.html#EchoHub_Server_Services_MuteExpirationService__ctor_Microsoft_Extensions_DependencyInjection_IServiceScopeFactory_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Services_MuteExpirationService__
+  commentId: M:EchoHub.Server.Services.MuteExpirationService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.MuteExpirationService})
+  name.vb: New(IServiceScopeFactory, ILogger(Of MuteExpirationService))
+  fullName: EchoHub.Server.Services.MuteExpirationService.MuteExpirationService(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory, Microsoft.Extensions.Logging.ILogger<EchoHub.Server.Services.MuteExpirationService>)
+  fullName.vb: EchoHub.Server.Services.MuteExpirationService.New(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory, Microsoft.Extensions.Logging.ILogger(Of EchoHub.Server.Services.MuteExpirationService))
+  nameWithType: MuteExpirationService.MuteExpirationService(IServiceScopeFactory, ILogger<MuteExpirationService>)
+  nameWithType.vb: MuteExpirationService.New(IServiceScopeFactory, ILogger(Of MuteExpirationService))
+- uid: EchoHub.Server.Services.MuteExpirationService.#ctor*
+  name: MuteExpirationService
+  href: api/server/EchoHub.Server.Services.MuteExpirationService.html#EchoHub_Server_Services_MuteExpirationService__ctor_
+  commentId: Overload:EchoHub.Server.Services.MuteExpirationService.#ctor
+  name.vb: New
+  fullName: EchoHub.Server.Services.MuteExpirationService.MuteExpirationService
+  fullName.vb: EchoHub.Server.Services.MuteExpirationService.New
+  nameWithType: MuteExpirationService.MuteExpirationService
+  nameWithType.vb: MuteExpirationService.New
+- uid: EchoHub.Server.Services.MuteExpirationService.ExecuteAsync(System.Threading.CancellationToken)
+  name: ExecuteAsync(CancellationToken)
+  href: api/server/EchoHub.Server.Services.MuteExpirationService.html#EchoHub_Server_Services_MuteExpirationService_ExecuteAsync_System_Threading_CancellationToken_
+  commentId: M:EchoHub.Server.Services.MuteExpirationService.ExecuteAsync(System.Threading.CancellationToken)
+  fullName: EchoHub.Server.Services.MuteExpirationService.ExecuteAsync(System.Threading.CancellationToken)
+  nameWithType: MuteExpirationService.ExecuteAsync(CancellationToken)
+- uid: EchoHub.Server.Services.MuteExpirationService.ExecuteAsync*
+  name: ExecuteAsync
+  href: api/server/EchoHub.Server.Services.MuteExpirationService.html#EchoHub_Server_Services_MuteExpirationService_ExecuteAsync_
+  commentId: Overload:EchoHub.Server.Services.MuteExpirationService.ExecuteAsync
+  fullName: EchoHub.Server.Services.MuteExpirationService.ExecuteAsync
+  nameWithType: MuteExpirationService.ExecuteAsync
 - uid: EchoHub.Server.Services.PresenceTracker
   name: PresenceTracker
   href: api/server/EchoHub.Server.Services.PresenceTracker.html
@@ -15961,15 +16876,15 @@ references:
   commentId: Overload:EchoHub.Server.Services.SignalRBroadcaster.SendUserBannedAsync
   fullName: EchoHub.Server.Services.SignalRBroadcaster.SendUserBannedAsync
   nameWithType: SignalRBroadcaster.SendUserBannedAsync
-- uid: EchoHub.Server.Services.SignalRBroadcaster.SendUserJoinedAsync(System.String,System.String,System.String)
-  name: SendUserJoinedAsync(string, string, string?)
-  href: api/server/EchoHub.Server.Services.SignalRBroadcaster.html#EchoHub_Server_Services_SignalRBroadcaster_SendUserJoinedAsync_System_String_System_String_System_String_
-  commentId: M:EchoHub.Server.Services.SignalRBroadcaster.SendUserJoinedAsync(System.String,System.String,System.String)
-  name.vb: SendUserJoinedAsync(String, String, String)
-  fullName: EchoHub.Server.Services.SignalRBroadcaster.SendUserJoinedAsync(string, string, string?)
-  fullName.vb: EchoHub.Server.Services.SignalRBroadcaster.SendUserJoinedAsync(String, String, String)
-  nameWithType: SignalRBroadcaster.SendUserJoinedAsync(string, string, string?)
-  nameWithType.vb: SignalRBroadcaster.SendUserJoinedAsync(String, String, String)
+- uid: EchoHub.Server.Services.SignalRBroadcaster.SendUserJoinedAsync(System.String,System.String,EchoHub.Core.DTOs.UserPresenceDto,System.String)
+  name: SendUserJoinedAsync(string, string, UserPresenceDto?, string?)
+  href: api/server/EchoHub.Server.Services.SignalRBroadcaster.html#EchoHub_Server_Services_SignalRBroadcaster_SendUserJoinedAsync_System_String_System_String_EchoHub_Core_DTOs_UserPresenceDto_System_String_
+  commentId: M:EchoHub.Server.Services.SignalRBroadcaster.SendUserJoinedAsync(System.String,System.String,EchoHub.Core.DTOs.UserPresenceDto,System.String)
+  name.vb: SendUserJoinedAsync(String, String, UserPresenceDto, String)
+  fullName: EchoHub.Server.Services.SignalRBroadcaster.SendUserJoinedAsync(string, string, EchoHub.Core.DTOs.UserPresenceDto?, string?)
+  fullName.vb: EchoHub.Server.Services.SignalRBroadcaster.SendUserJoinedAsync(String, String, EchoHub.Core.DTOs.UserPresenceDto, String)
+  nameWithType: SignalRBroadcaster.SendUserJoinedAsync(string, string, UserPresenceDto?, string?)
+  nameWithType.vb: SignalRBroadcaster.SendUserJoinedAsync(String, String, UserPresenceDto, String)
 - uid: EchoHub.Server.Services.SignalRBroadcaster.SendUserJoinedAsync*
   name: SendUserJoinedAsync
   href: api/server/EchoHub.Server.Services.SignalRBroadcaster.html#EchoHub_Server_Services_SignalRBroadcaster_SendUserJoinedAsync_
@@ -16021,6 +16936,117 @@ references:
   commentId: Overload:EchoHub.Server.Services.SignalRBroadcaster.SendUserStatusChangedAsync
   fullName: EchoHub.Server.Services.SignalRBroadcaster.SendUserStatusChangedAsync
   nameWithType: SignalRBroadcaster.SendUserStatusChangedAsync
+- uid: EchoHub.Server.Services.UserService
+  name: UserService
+  href: api/server/EchoHub.Server.Services.UserService.html
+  commentId: T:EchoHub.Server.Services.UserService
+  fullName: EchoHub.Server.Services.UserService
+  nameWithType: UserService
+- uid: EchoHub.Server.Services.UserService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory)
+  name: UserService(IServiceScopeFactory)
+  href: api/server/EchoHub.Server.Services.UserService.html#EchoHub_Server_Services_UserService__ctor_Microsoft_Extensions_DependencyInjection_IServiceScopeFactory_
+  commentId: M:EchoHub.Server.Services.UserService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory)
+  name.vb: New(IServiceScopeFactory)
+  fullName: EchoHub.Server.Services.UserService.UserService(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory)
+  fullName.vb: EchoHub.Server.Services.UserService.New(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory)
+  nameWithType: UserService.UserService(IServiceScopeFactory)
+  nameWithType.vb: UserService.New(IServiceScopeFactory)
+- uid: EchoHub.Server.Services.UserService.#ctor*
+  name: UserService
+  href: api/server/EchoHub.Server.Services.UserService.html#EchoHub_Server_Services_UserService__ctor_
+  commentId: Overload:EchoHub.Server.Services.UserService.#ctor
+  name.vb: New
+  fullName: EchoHub.Server.Services.UserService.UserService
+  fullName.vb: EchoHub.Server.Services.UserService.New
+  nameWithType: UserService.UserService
+  nameWithType.vb: UserService.New
+- uid: EchoHub.Server.Services.UserService.AuthenticateUserAsync(System.String,System.String)
+  name: AuthenticateUserAsync(string, string)
+  href: api/server/EchoHub.Server.Services.UserService.html#EchoHub_Server_Services_UserService_AuthenticateUserAsync_System_String_System_String_
+  commentId: M:EchoHub.Server.Services.UserService.AuthenticateUserAsync(System.String,System.String)
+  name.vb: AuthenticateUserAsync(String, String)
+  fullName: EchoHub.Server.Services.UserService.AuthenticateUserAsync(string, string)
+  fullName.vb: EchoHub.Server.Services.UserService.AuthenticateUserAsync(String, String)
+  nameWithType: UserService.AuthenticateUserAsync(string, string)
+  nameWithType.vb: UserService.AuthenticateUserAsync(String, String)
+- uid: EchoHub.Server.Services.UserService.AuthenticateUserAsync*
+  name: AuthenticateUserAsync
+  href: api/server/EchoHub.Server.Services.UserService.html#EchoHub_Server_Services_UserService_AuthenticateUserAsync_
+  commentId: Overload:EchoHub.Server.Services.UserService.AuthenticateUserAsync
+  fullName: EchoHub.Server.Services.UserService.AuthenticateUserAsync
+  nameWithType: UserService.AuthenticateUserAsync
+- uid: EchoHub.Server.Services.UserService.GetUserByIdAsync(System.Guid)
+  name: GetUserByIdAsync(Guid)
+  href: api/server/EchoHub.Server.Services.UserService.html#EchoHub_Server_Services_UserService_GetUserByIdAsync_System_Guid_
+  commentId: M:EchoHub.Server.Services.UserService.GetUserByIdAsync(System.Guid)
+  fullName: EchoHub.Server.Services.UserService.GetUserByIdAsync(System.Guid)
+  nameWithType: UserService.GetUserByIdAsync(Guid)
+- uid: EchoHub.Server.Services.UserService.GetUserByIdAsync*
+  name: GetUserByIdAsync
+  href: api/server/EchoHub.Server.Services.UserService.html#EchoHub_Server_Services_UserService_GetUserByIdAsync_
+  commentId: Overload:EchoHub.Server.Services.UserService.GetUserByIdAsync
+  fullName: EchoHub.Server.Services.UserService.GetUserByIdAsync
+  nameWithType: UserService.GetUserByIdAsync
+- uid: EchoHub.Server.Services.UserService.GetUserProfileAsync(System.String)
+  name: GetUserProfileAsync(string)
+  href: api/server/EchoHub.Server.Services.UserService.html#EchoHub_Server_Services_UserService_GetUserProfileAsync_System_String_
+  commentId: M:EchoHub.Server.Services.UserService.GetUserProfileAsync(System.String)
+  name.vb: GetUserProfileAsync(String)
+  fullName: EchoHub.Server.Services.UserService.GetUserProfileAsync(string)
+  fullName.vb: EchoHub.Server.Services.UserService.GetUserProfileAsync(String)
+  nameWithType: UserService.GetUserProfileAsync(string)
+  nameWithType.vb: UserService.GetUserProfileAsync(String)
+- uid: EchoHub.Server.Services.UserService.GetUserProfileAsync*
+  name: GetUserProfileAsync
+  href: api/server/EchoHub.Server.Services.UserService.html#EchoHub_Server_Services_UserService_GetUserProfileAsync_
+  commentId: Overload:EchoHub.Server.Services.UserService.GetUserProfileAsync
+  fullName: EchoHub.Server.Services.UserService.GetUserProfileAsync
+  nameWithType: UserService.GetUserProfileAsync
+- uid: EchoHub.Server.Services.UserService.RegisterUserAsync(System.String,System.String,System.String)
+  name: RegisterUserAsync(string, string, string?)
+  href: api/server/EchoHub.Server.Services.UserService.html#EchoHub_Server_Services_UserService_RegisterUserAsync_System_String_System_String_System_String_
+  commentId: M:EchoHub.Server.Services.UserService.RegisterUserAsync(System.String,System.String,System.String)
+  name.vb: RegisterUserAsync(String, String, String)
+  fullName: EchoHub.Server.Services.UserService.RegisterUserAsync(string, string, string?)
+  fullName.vb: EchoHub.Server.Services.UserService.RegisterUserAsync(String, String, String)
+  nameWithType: UserService.RegisterUserAsync(string, string, string?)
+  nameWithType.vb: UserService.RegisterUserAsync(String, String, String)
+- uid: EchoHub.Server.Services.UserService.RegisterUserAsync*
+  name: RegisterUserAsync
+  href: api/server/EchoHub.Server.Services.UserService.html#EchoHub_Server_Services_UserService_RegisterUserAsync_
+  commentId: Overload:EchoHub.Server.Services.UserService.RegisterUserAsync
+  fullName: EchoHub.Server.Services.UserService.RegisterUserAsync
+  nameWithType: UserService.RegisterUserAsync
+- uid: EchoHub.Server.Services.UserService.SetAvatarAsync(System.Guid,System.String)
+  name: SetAvatarAsync(Guid, string)
+  href: api/server/EchoHub.Server.Services.UserService.html#EchoHub_Server_Services_UserService_SetAvatarAsync_System_Guid_System_String_
+  commentId: M:EchoHub.Server.Services.UserService.SetAvatarAsync(System.Guid,System.String)
+  name.vb: SetAvatarAsync(Guid, String)
+  fullName: EchoHub.Server.Services.UserService.SetAvatarAsync(System.Guid, string)
+  fullName.vb: EchoHub.Server.Services.UserService.SetAvatarAsync(System.Guid, String)
+  nameWithType: UserService.SetAvatarAsync(Guid, string)
+  nameWithType.vb: UserService.SetAvatarAsync(Guid, String)
+- uid: EchoHub.Server.Services.UserService.SetAvatarAsync*
+  name: SetAvatarAsync
+  href: api/server/EchoHub.Server.Services.UserService.html#EchoHub_Server_Services_UserService_SetAvatarAsync_
+  commentId: Overload:EchoHub.Server.Services.UserService.SetAvatarAsync
+  fullName: EchoHub.Server.Services.UserService.SetAvatarAsync
+  nameWithType: UserService.SetAvatarAsync
+- uid: EchoHub.Server.Services.UserService.UpdateProfileAsync(System.Guid,System.String,System.String,System.String)
+  name: UpdateProfileAsync(Guid, string?, string?, string?)
+  href: api/server/EchoHub.Server.Services.UserService.html#EchoHub_Server_Services_UserService_UpdateProfileAsync_System_Guid_System_String_System_String_System_String_
+  commentId: M:EchoHub.Server.Services.UserService.UpdateProfileAsync(System.Guid,System.String,System.String,System.String)
+  name.vb: UpdateProfileAsync(Guid, String, String, String)
+  fullName: EchoHub.Server.Services.UserService.UpdateProfileAsync(System.Guid, string?, string?, string?)
+  fullName.vb: EchoHub.Server.Services.UserService.UpdateProfileAsync(System.Guid, String, String, String)
+  nameWithType: UserService.UpdateProfileAsync(Guid, string?, string?, string?)
+  nameWithType.vb: UserService.UpdateProfileAsync(Guid, String, String, String)
+- uid: EchoHub.Server.Services.UserService.UpdateProfileAsync*
+  name: UpdateProfileAsync
+  href: api/server/EchoHub.Server.Services.UserService.html#EchoHub_Server_Services_UserService_UpdateProfileAsync_
+  commentId: Overload:EchoHub.Server.Services.UserService.UpdateProfileAsync
+  fullName: EchoHub.Server.Services.UserService.UpdateProfileAsync
+  nameWithType: UserService.UpdateProfileAsync
 - uid: EchoHub.Server.Setup
   name: EchoHub.Server.Setup
   href: api/server/EchoHub.Server.Setup.html

@@ -2,11 +2,11 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Namespace EchoHub.Core.Contracts | EchoHub Documentation </title>
+      <title>Class PathSetup | EchoHub Documentation </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Namespace EchoHub.Core.Contracts | EchoHub Documentation ">
+      <meta name="title" content="Class PathSetup | EchoHub Documentation ">
       
-      
+      <meta name="description" content="Ensures the application&#39;s directory is on the system PATH so users can run &#39;echohub&#39; from any terminal session.">
       <link rel="icon" href="../../images/hue_icon.svg">
       <link rel="stylesheet" href="../../public/docfx.min.css">
       <link rel="stylesheet" href="../../public/main.css">
@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../../">
       
       
-      
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/new/master/apiSpec/new?filename=EchoHub_Client_Services_PathSetup.md&amp;value=---%0Auid%3A%20EchoHub.Client.Services.PathSetup%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -84,53 +84,110 @@
           <nav id="breadcrumb"></nav>
         </div>
 
-        <article data-uid="EchoHub.Core.Contracts">
+        <article data-uid="EchoHub.Client.Services.PathSetup">
 
-  <h1 id="EchoHub_Core_Contracts" data-uid="EchoHub.Core.Contracts" class="text-break">Namespace EchoHub.Core.Contracts</h1>
-  <div class="markdown level0 summary"></div>
-  <div class="markdown level0 conceptual"></div>
-  <div class="markdown level0 remarks"></div>
 
-    <h3 id="classes">
-Classes
-</h3>
-    <dl class="jumplist">
-      <dt><a class="xref" href="EchoHub.Core.Contracts.ChannelListItem.html">ChannelListItem</a></dt>
-      <dd></dd>
-    </dl>
-    <h3 id="interfaces">
-Interfaces
-</h3>
-    <dl class="jumplist">
-      <dt><a class="xref" href="EchoHub.Core.Contracts.IChannelService.html">IChannelService</a></dt>
-      <dd></dd>
-    </dl>
-    <dl class="jumplist">
-      <dt><a class="xref" href="EchoHub.Core.Contracts.IChatBroadcaster.html">IChatBroadcaster</a></dt>
-      <dd></dd>
-    </dl>
-    <dl class="jumplist">
-      <dt><a class="xref" href="EchoHub.Core.Contracts.IChatService.html">IChatService</a></dt>
-      <dd></dd>
-    </dl>
-    <dl class="jumplist">
-      <dt><a class="xref" href="EchoHub.Core.Contracts.IEchoHubClient.html">IEchoHubClient</a></dt>
-      <dd><p>Methods the server can invoke on connected clients.</p>
-</dd>
-    </dl>
-    <dl class="jumplist">
-      <dt><a class="xref" href="EchoHub.Core.Contracts.IMessageEncryptionService.html">IMessageEncryptionService</a></dt>
-      <dd></dd>
-    </dl>
-    <dl class="jumplist">
-      <dt><a class="xref" href="EchoHub.Core.Contracts.IUserService.html">IUserService</a></dt>
-      <dd></dd>
-    </dl>
+
+  <h1 id="EchoHub_Client_Services_PathSetup" data-uid="EchoHub.Client.Services.PathSetup" class="text-break">
+Class PathSetup  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/PathSetup.cs"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="EchoHub.html">EchoHub</a>.<a class="xref" href="EchoHub.Client.html">Client</a>.<a class="xref" href="EchoHub.Client.Services.html">Services</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>EchoHub.Client.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Ensures the application's directory is on the system PATH so users
+can run 'echohub' from any terminal session.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static class PathSetup</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">PathSetup</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+  </dd></dl>
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="EchoHub_Client_Services_PathSetup_EnsureOnPath_" data-uid="EchoHub.Client.Services.PathSetup.EnsureOnPath*"></a>
+
+  <h3 id="EchoHub_Client_Services_PathSetup_EnsureOnPath" data-uid="EchoHub.Client.Services.PathSetup.EnsureOnPath">
+  EnsureOnPath()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/PathSetup.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Checks if the app directory is on PATH; if not, adds it persistently.
+On Windows: modifies user-level PATH environment variable.
+On Linux/macOS: appends an export line to shell profile files.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static void EnsureOnPath()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 </article>
 
         <div class="contribution d-print-none">
+          <a href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/PathSetup.cs" class="edit-link">Edit this page</a>
         </div>
 
 

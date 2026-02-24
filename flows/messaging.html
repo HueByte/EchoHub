@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Messaging | EchoHub Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Messaging | EchoHub Documentation ">
+      
+      
+      <link rel="icon" href="../images/hue_icon.svg">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/blob/master/docs/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/hue_icon.svg" alt="EchoHub">
+            EchoHub
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="messaging">Messaging</h1>
+
+<h2 id="sending-a-message-signalr">Sending a Message (SignalR)</h2>
+<p>A message typed in the TUI travels through encryption, the SignalR hub,
+<code>ChatService</code> validation, database storage, and fan-out to both SignalR and IRC
+clients.</p>
+<pre><code class="lang-mermaid">sequenceDiagram
+    participant UI as MainWindow (TUI)
+    participant AO as AppOrchestrator
+    participant EHC as EchoHubConnection
+    participant Hub as ChatHub
+    participant CS as ChatService
+    participant LE as LinkEmbedService
+    participant DB as SQLite
+    participant SRB as SignalRBroadcaster
+    participant IRCB as IrcBroadcaster
+    participant Clients as Other Clients
+
+    UI-&gt;&gt;AO: OnMessageSubmitted(channel, text)
+    AO-&gt;&gt;AO: IsCommand(text)? → No
+    AO-&gt;&gt;EHC: SendMessageAsync(channel, text)
+    EHC-&gt;&gt;EHC: Encrypt(text) → ciphertext
+    EHC-&gt;&gt;Hub: InvokeAsync(&quot;SendMessage&quot;, channel, ciphertext)
+    Hub-&gt;&gt;CS: SendMessageAsync(userId, username, channel, ciphertext)
+    CS-&gt;&gt;CS: Decrypt(ciphertext) → plaintext
+    CS-&gt;&gt;CS: Validate (length, newlines, channel exists)
+    CS-&gt;&gt;DB: Check mute status
+    CS-&gt;&gt;LE: TryGetEmbedsAsync(plaintext)
+    LE-&gt;&gt;LE: Extract URLs, fetch OG tags
+    LE--&gt;&gt;CS: List&lt;EmbedDto&gt; (or null)
+    CS-&gt;&gt;DB: INSERT Message (encrypted at rest)
+    CS-&gt;&gt;CS: Re-encrypt plaintext for transport
+    CS-&gt;&gt;CS: Build MessageDto with embeds
+
+    par Fan-out to all broadcasters
+        CS-&gt;&gt;SRB: SendMessageToChannelAsync(channel, dto)
+        SRB-&gt;&gt;Clients: HubContext.Group(channel).ReceiveMessage(dto)
+    and
+        CS-&gt;&gt;IRCB: SendMessageToChannelAsync(channel, dto)
+        IRCB-&gt;&gt;IRCB: Decrypt → format as PRIVMSG lines
+        IRCB-&gt;&gt;Clients: Send to each IRC conn (skip sender)
+    end
+</code></pre>
+<p><strong>Code references:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>File</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Input handler</td>
+<td><code>src/EchoHub.Client/UI/MainWindow.cs</code></td>
+<td>Lines 428-449 (<code>OnInputKeyDown</code>)</td>
+</tr>
+<tr>
+<td>Orchestrator dispatch</td>
+<td><code>src/EchoHub.Client/AppOrchestrator.cs</code></td>
+<td>Lines 631-661 (<code>HandleMessageSubmitted</code>)</td>
+</tr>
+<tr>
+<td>Client encrypt + send</td>
+<td><code>src/EchoHub.Client/Services/EchoHubConnection.cs</code></td>
+<td>Lines 148-153 (<code>SendMessageAsync</code>)</td>
+</tr>
+<tr>
+<td>Hub receive</td>
+<td><code>src/EchoHub.Server/Hubs/ChatHub.cs</code></td>
+<td>Lines 98-111 (<code>SendMessage</code>)</td>
+</tr>
+<tr>
+<td>ChatService process</td>
+<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
+<td>Lines 145-241 (<code>SendMessageAsync</code>)</td>
+</tr>
+<tr>
+<td>Mute check</td>
+<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
+<td>Lines 177-190</td>
+</tr>
+<tr>
+<td>Link embeds</td>
+<td><code>src/EchoHub.Server/Services/LinkEmbedService.cs</code></td>
+<td>Lines 28-51 (<code>TryGetEmbedsAsync</code>)</td>
+</tr>
+<tr>
+<td>DB insert</td>
+<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
+<td>Lines 208-221</td>
+</tr>
+<tr>
+<td>Broadcast fan-out</td>
+<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
+<td>Lines 311-324 (<code>BroadcastToAllAsync</code>)</td>
+</tr>
+<tr>
+<td>SignalR broadcast</td>
+<td><code>src/EchoHub.Server/Services/SignalRBroadcaster.cs</code></td>
+<td>Lines 23-24</td>
+</tr>
+<tr>
+<td>IRC broadcast</td>
+<td><code>src/EchoHub.Server.Irc/IrcBroadcaster.cs</code></td>
+<td>Lines 17-32</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="sending-a-message-irc">Sending a Message (IRC)</h2>
+<p>Messages from IRC clients follow the same <code>ChatService</code> path but enter as
+plaintext (no app-layer encryption).</p>
+<pre><code class="lang-mermaid">sequenceDiagram
+    participant IRC as IRC Client
+    participant CH as IrcCommandHandler
+    participant CS as ChatService
+    participant DB as SQLite
+    participant SRB as SignalRBroadcaster
+    participant IRCB as IrcBroadcaster
+
+    IRC-&gt;&gt;CH: PRIVMSG #channel :Hello world
+    CH-&gt;&gt;CH: Parse target + content
+    CH-&gt;&gt;CH: IrcToEchoHubChannel(&quot;#channel&quot;) → &quot;channel&quot;
+    CH-&gt;&gt;CS: SendMessageAsync(userId, username, &quot;channel&quot;, &quot;Hello world&quot;)
+    CS-&gt;&gt;CS: Decrypt(&quot;Hello world&quot;) → passthrough (no $ENC$ prefix)
+    CS-&gt;&gt;CS: Validate, check mute, fetch embeds
+    CS-&gt;&gt;DB: INSERT Message
+    CS-&gt;&gt;CS: Encrypt plaintext for SignalR transport
+
+    par Fan-out
+        CS-&gt;&gt;SRB: SendMessageToChannelAsync (encrypted for SignalR)
+    and
+        CS-&gt;&gt;IRCB: SendMessageToChannelAsync (decrypt → PRIVMSG)
+        IRCB-&gt;&gt;IRCB: Skip sender (IRC echo suppression)
+    end
+</code></pre>
+<p><strong>Code references:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>File</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PRIVMSG handler</td>
+<td><code>src/EchoHub.Server.Irc/IrcCommandHandler.cs</code></td>
+<td>Lines 437-469</td>
+</tr>
+<tr>
+<td>Channel name conversion</td>
+<td><code>src/EchoHub.Server.Irc/IrcCommandHandler.cs</code></td>
+<td>Line 680 (<code>IrcToEchoHubChannel</code>)</td>
+</tr>
+<tr>
+<td>ChatService (shared path)</td>
+<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
+<td>Lines 145-241</td>
+</tr>
+<tr>
+<td>IRC echo suppression</td>
+<td><code>src/EchoHub.Server.Irc/IrcBroadcaster.cs</code></td>
+<td>Lines 25-26</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="receiving-a-message-tui-client">Receiving a Message (TUI Client)</h2>
+<p>When a message arrives via SignalR, the client decrypts it, adds it to the chat
+view, and optionally plays a notification sound for @mentions.</p>
+<pre><code class="lang-mermaid">sequenceDiagram
+    participant SRB as SignalRBroadcaster
+    participant EHC as EchoHubConnection
+    participant AO as AppOrchestrator
+    participant MM as ChatMessageManager
+    participant UI as MainWindow
+
+    SRB-&gt;&gt;EHC: ReceiveMessage(MessageDto)
+    EHC-&gt;&gt;EHC: Decrypt(message.Content)
+    EHC--&gt;&gt;AO: OnMessageReceived(decrypted dto)
+    AO-&gt;&gt;AO: InvokeUI (thread-safe)
+    AO-&gt;&gt;MM: AddMessage(message)
+    MM-&gt;&gt;UI: Render in chat ListView
+    alt Message contains @username
+        AO-&gt;&gt;AO: PlayAsync() notification sound
+    end
+</code></pre>
+<p><strong>Code references:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>File</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SignalR handler</td>
+<td><code>src/EchoHub.Client/Services/EchoHubConnection.cs</code></td>
+<td>Lines 64-71</td>
+</tr>
+<tr>
+<td>Orchestrator receive</td>
+<td><code>src/EchoHub.Client/AppOrchestrator.cs</code></td>
+<td>Lines 372-383</td>
+</tr>
+<tr>
+<td>@mention detection</td>
+<td><code>src/EchoHub.Client/AppOrchestrator.cs</code></td>
+<td>Lines 378-382</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="command-execution">Command Execution</h2>
+<p>Slash commands (<code>/status</code>, <code>/nick</code>, <code>/kick</code>, etc.) are parsed client-side and
+dispatched to appropriate handlers, which call REST APIs or SignalR methods.</p>
+<pre><code class="lang-mermaid">sequenceDiagram
+    participant UI as MainWindow
+    participant AO as AppOrchestrator
+    participant CMD as CommandHandler
+    participant API as ApiClient
+    participant EHC as EchoHubConnection
+    participant Server as Server (API/Hub)
+
+    UI-&gt;&gt;AO: OnMessageSubmitted(channel, &quot;/kick baduser&quot;)
+    AO-&gt;&gt;CMD: IsCommand(&quot;/kick baduser&quot;)? → true
+    AO-&gt;&gt;CMD: HandleAsync(&quot;/kick baduser&quot;)
+    CMD-&gt;&gt;CMD: Parse → command=&quot;kick&quot;, args=&quot;baduser&quot;
+
+    alt API command (kick, ban, mute, nick, etc.)
+        CMD--&gt;&gt;AO: Fire OnKickRequested(&quot;baduser&quot;)
+        AO-&gt;&gt;API: KickUserAsync(&quot;baduser&quot;)
+        API-&gt;&gt;Server: POST /api/moderation/kick/baduser
+    else Hub command (status, join, leave, etc.)
+        CMD--&gt;&gt;AO: Fire OnSetStatus / OnJoinChannel / etc.
+        AO-&gt;&gt;EHC: UpdateStatusAsync() / JoinChannelAsync() / etc.
+        EHC-&gt;&gt;Server: SignalR Invoke
+    else Local command (theme, help, quit)
+        CMD--&gt;&gt;AO: Fire OnThemeChanged / etc.
+        AO-&gt;&gt;UI: Apply locally (no server call)
+    end
+
+    AO-&gt;&gt;UI: AddSystemMessage(result)
+</code></pre>
+<p><strong>Available commands:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Type</th>
+<th>Handler</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/status &lt;status&gt; [message]</code></td>
+<td>Hub</td>
+<td><code>UpdateStatusAsync</code></td>
+</tr>
+<tr>
+<td><code>/nick &lt;name&gt;</code></td>
+<td>API</td>
+<td><code>UpdateProfileAsync</code></td>
+</tr>
+<tr>
+<td><code>/color &lt;hex&gt;</code></td>
+<td>API</td>
+<td><code>UpdateProfileAsync</code></td>
+</tr>
+<tr>
+<td><code>/join &lt;channel&gt;</code></td>
+<td>Hub</td>
+<td><code>JoinChannelAsync</code></td>
+</tr>
+<tr>
+<td><code>/leave</code></td>
+<td>Hub</td>
+<td><code>LeaveChannelAsync</code></td>
+</tr>
+<tr>
+<td><code>/topic &lt;text&gt;</code></td>
+<td>API</td>
+<td><code>UpdateChannelTopicAsync</code></td>
+</tr>
+<tr>
+<td><code>/kick &lt;user&gt;</code></td>
+<td>API</td>
+<td><code>POST /api/moderation/kick/{user}</code></td>
+</tr>
+<tr>
+<td><code>/ban &lt;user&gt;</code></td>
+<td>API</td>
+<td><code>POST /api/moderation/ban/{user}</code></td>
+</tr>
+<tr>
+<td><code>/unban &lt;user&gt;</code></td>
+<td>API</td>
+<td><code>POST /api/moderation/unban/{user}</code></td>
+</tr>
+<tr>
+<td><code>/mute &lt;user&gt; [mins]</code></td>
+<td>API</td>
+<td><code>POST /api/moderation/mute/{user}</code></td>
+</tr>
+<tr>
+<td><code>/unmute &lt;user&gt;</code></td>
+<td>API</td>
+<td><code>POST /api/moderation/unmute/{user}</code></td>
+</tr>
+<tr>
+<td><code>/role &lt;user&gt; &lt;role&gt;</code></td>
+<td>API</td>
+<td><code>PUT /api/moderation/role/{user}</code></td>
+</tr>
+<tr>
+<td><code>/nuke</code></td>
+<td>API</td>
+<td><code>DELETE /api/channels/{channel}/messages</code></td>
+</tr>
+<tr>
+<td><code>/send &lt;file&gt;</code></td>
+<td>API</td>
+<td><code>POST /api/channels/{channel}/upload</code></td>
+</tr>
+<tr>
+<td><code>/profile [user]</code></td>
+<td>Local</td>
+<td>Show profile dialog</td>
+</tr>
+<tr>
+<td><code>/avatar</code></td>
+<td>API</td>
+<td><code>POST /api/users/avatar</code></td>
+</tr>
+<tr>
+<td><code>/theme &lt;name&gt;</code></td>
+<td>Local</td>
+<td><code>ThemeManager.SetTheme()</code></td>
+</tr>
+<tr>
+<td><code>/servers</code></td>
+<td>API</td>
+<td><code>GET /api/serverdir/servers</code></td>
+</tr>
+<tr>
+<td><code>/users</code></td>
+<td>Local</td>
+<td>Show userlist</td>
+</tr>
+<tr>
+<td><code>/help</code></td>
+<td>Local</td>
+<td>Show help text</td>
+</tr>
+<tr>
+<td><code>/quit</code></td>
+<td>Local</td>
+<td>Exit application</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Code references:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>File</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Command detection</td>
+<td><code>src/EchoHub.Client/AppOrchestrator.cs</code></td>
+<td>Lines 639-655</td>
+</tr>
+<tr>
+<td>Command dispatch</td>
+<td><code>src/EchoHub.Client/Commands/CommandHandler.cs</code></td>
+<td>Lines 34-69 (<code>HandleAsync</code>)</td>
+</tr>
+<tr>
+<td>Command handlers wired</td>
+<td><code>src/EchoHub.Client/AppOrchestrator.cs</code></td>
+<td>Lines 97-117</td>
+</tr>
+<tr>
+<td>Individual handlers</td>
+<td><code>src/EchoHub.Client/AppOrchestrator.cs</code></td>
+<td>Lines 122-350</td>
+</tr>
+</tbody>
+</table>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/HueByte/EchoHub/blob/master/docs/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a><span class='footer-sep'>&middot;</span><span class='footer-credit'>Built with <a href='https://dotnet.github.io/docfx'>DocFX</a></span></div></div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

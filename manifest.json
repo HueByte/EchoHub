@@ -194,6 +194,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Services.BackupInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Services.BackupInfo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Services.BackupInfo",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/client/EchoHub.Client.Services.ClientEncryptionService.yml",
       "output": {
         ".html": {
@@ -233,6 +247,34 @@
       "IsMRef": true,
       "Title": "EchoHub.Client.Services.NotificationSoundService",
       "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Services.PathSetup.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Services.PathSetup.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Services.PathSetup",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.Services.PathSetup.yml\" sourcestartlinenumber=\"1\">Ensures the application's directory is on the system PATH so users\ncan run 'echohub' from any terminal session.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Services.UpdateBackupService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Services.UpdateBackupService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Services.UpdateBackupService",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.Services.UpdateBackupService.yml\" sourcestartlinenumber=\"1\">Manages pre-update backups and rollback restoration for the auto-updater.\nBackup location: ~/.echohub/update-backup/</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -852,6 +894,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Contracts.IUserService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Contracts.IUserService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Contracts.IUserService",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/core/EchoHub.Core.Contracts.yml",
       "output": {
         ".html": {
@@ -1030,6 +1086,20 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Core.DTOs.ErrorResponse",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.JoinChannelResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.JoinChannelResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.JoinChannelResult",
       "Summary": null
     },
     {
@@ -1240,6 +1310,34 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Core.DTOs.UserDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.UserError.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.UserError.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.UserError",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.UserOperationResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.UserOperationResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.UserOperationResult",
       "Summary": null
     },
     {
@@ -1958,6 +2056,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.MuteExpirationService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.MuteExpirationService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.MuteExpirationService",
+      "Summary": "<p sourcefile=\"_api_meta/server/EchoHub.Server.Services.MuteExpirationService.yml\" sourcestartlinenumber=\"1\">Background service that periodically unmutes users whose timed mute has expired.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/server/EchoHub.Server.Services.PresenceTracker.yml",
       "output": {
         ".html": {
@@ -1996,6 +2108,20 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Server.Services.SignalRBroadcaster",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.UserService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.UserService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.UserService",
       "Summary": null
     },
     {
@@ -2172,6 +2298,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "articles/docker.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/docker.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "articles/encryption.md",
       "output": {
         ".html": {
@@ -2337,6 +2473,99 @@
       "version": ""
     },
     {
+      "type": "Conceptual",
+      "source_relative_path": "changelog/v0.2.8.md",
+      "output": {
+        ".html": {
+          "relative_path": "changelog/v0.2.8.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "flows/authentication.md",
+      "output": {
+        ".html": {
+          "relative_path": "flows/authentication.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "flows/channels.md",
+      "output": {
+        ".html": {
+          "relative_path": "flows/channels.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "flows/connection.md",
+      "output": {
+        ".html": {
+          "relative_path": "flows/connection.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "flows/flows.md",
+      "output": {
+        ".html": {
+          "relative_path": "flows/flows.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "flows/media.md",
+      "output": {
+        ".html": {
+          "relative_path": "flows/media.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "flows/messaging.md",
+      "output": {
+        ".html": {
+          "relative_path": "flows/messaging.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "flows/moderation.md",
+      "output": {
+        ".html": {
+          "relative_path": "flows/moderation.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "flows/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "flows/toc.html"
+        },
+        ".json": {
+          "relative_path": "flows/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
       "type": "Resource",
       "source_relative_path": "images/hue_icon.svg",
       "output": {
@@ -2365,6 +2594,16 @@
         },
         ".json": {
           "relative_path": "toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "todo.md",
+      "output": {
+        ".html": {
+          "relative_path": "todo.html"
         }
       },
       "version": ""

@@ -87,24 +87,39 @@
         <article data-uid="">
 <h1 id="getting-started">Getting Started</h1>
 
-<h2 id="prerequisites">Prerequisites</h2>
-<ul>
-<li><a href="https://dotnet.microsoft.com/download">.NET 10 SDK</a></li>
-</ul>
-<p>Or grab a self-contained binary from <a href="https://github.com/HueByte/EchoHub/releases">Releases</a> -- no runtime needed.</p>
-<h2 id="run-the-server">Run the Server</h2>
+<h2 id="install-the-client">Install the Client</h2>
+<h3 id="windows-chocolatey">Windows (Chocolatey)</h3>
+<pre><code class="lang-bash">choco install echohub
+</code></pre>
+<h3 id="linux--macos">Linux / macOS</h3>
+<pre><code class="lang-bash">curl -sSfL https://raw.githubusercontent.com/HueByte/EchoHub/master/scripts/install.sh | sh
+</code></pre>
+<p>To install a specific version or to a custom directory:</p>
+<pre><code class="lang-bash">curl -sSfL .../install.sh | sh -s -- --version 0.2.8
+curl -sSfL .../install.sh | sh -s -- --install-dir /opt/echohub
+</code></pre>
+<h3 id="manual-download">Manual Download</h3>
+<p>Grab a self-contained binary from <a href="https://github.com/HueByte/EchoHub/releases">Releases</a> -- no runtime needed.</p>
+<h2 id="host-a-server">Host a Server</h2>
+<h3 id="docker">Docker</h3>
+<p>The quickest way to host a server:</p>
+<pre><code class="lang-bash">cp .env.example .env
+docker compose up -d
+</code></pre>
+<p>See the <a href="docker.html">Docker guide</a> for configuration, pre-built images, and more.</p>
+<h3 id="from-source">From Source</h3>
 <pre><code class="lang-bash">dotnet run --project src/EchoHub.Server
 </code></pre>
+<p>Requires <a href="https://dotnet.microsoft.com/download">.NET 10 SDK</a>.</p>
 <p>On first run, the server automatically:</p>
 <ol>
 <li>Creates <code>appsettings.json</code> from the example config</li>
 <li>Generates a secure JWT secret</li>
 <li>Creates the SQLite database with a <code>#general</code> channel</li>
 </ol>
-<h2 id="run-the-client">Run the Client</h2>
-<pre><code class="lang-bash">dotnet run --project src/EchoHub.Client
-</code></pre>
-<p>Connect to a server, register an account, and start chatting.</p>
+<h2 id="usage">Usage</h2>
+<p>After installing the client, run <code>echohub</code> (or <code>dotnet run --project src/EchoHub.Client</code> from source).
+Connect to a server, register an account, and start chatting.</p>
 <h2 id="connect-via-irc">Connect via IRC</h2>
 <p>Enable the IRC gateway in the server's <code>appsettings.json</code>:</p>
 <pre><code class="lang-json">{

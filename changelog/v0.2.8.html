@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>v0.2.8 | EchoHub Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="v0.2.8 | EchoHub Documentation ">
+      
+      
+      <link rel="icon" href="../images/hue_icon.svg">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/blob/master/docs/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/hue_icon.svg" alt="EchoHub">
+            EchoHub
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="v028">v0.2.8</h1>
+
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li>Fix memory leak — <code>HttpResponseMessage</code> objects never disposed in <code>ApiClient</code>, leaking TCP connections and content buffers on every API call (especially on failed connection attempts)</li>
+<li>Fix 401 retry leak — <code>AuthenticatedGetAsync</code>/<code>AuthenticatedRequestAsync</code> leaked the original response when retrying after token refresh</li>
+<li>Fix connection failure cleanup — <code>ConnectionManager.ConnectAsync</code> now properly disposes <code>ApiClient</code> and <code>EchoHubConnection</code> on any failure path (previously only cleaned up on saved-token auth failures)</li>
+<li>Fix IRC gateway sending UTF-8 BOM on first message, breaking CAP negotiation and SASL auth for all clients</li>
+<li>Handle <code>AUTHENTICATE *</code> (SASL abort) instead of crashing on invalid base64</li>
+<li>Fix userlist not refreshing when creating a new channel — now fetches online users after channel creation</li>
+<li>Fix unmute timer not working — add <code>MuteExpirationService</code> background job that proactively unmutes users when their timed mute expires (previously only checked on message send)</li>
+<li>Fix missing space between mod/admin role icon and username in the userlist</li>
+<li>Fix invisible users still visible in the userlist — <code>GetOnlineUsersAsync</code> now filters invisible users; server skips <code>UserJoined</code> broadcast for invisible users</li>
+<li>Fix invisible→online transition — user reappears in cached userlist when switching from invisible back to a visible status</li>
+<li>Fix thread safety — <code>_channelUsers</code> presence cache now protected by <code>Lock</code> to prevent races between SignalR events and background fetches</li>
+<li>Fix <code>@mention</code> regex matching email addresses and <code>#channel</code> regex matching hex colors / issue numbers — both now use lookbehind and letter-requirement guards</li>
+<li>Fix <code>ParseThemeColor</code> accepting non-hex characters — now validates <code>[0-9a-fA-F]</code> digits</li>
+<li>Fix ghost channel when trying to join a channel that doesn't exist</li>
+</ul>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li>Add Docker support for EchoHub.Server — <code>docker compose up -d</code> for easy self-hosting with persistent volume for database, uploads, and logs</li>
+<li>IRC account creation — connecting with a new username auto-registers the account (PASS and SASL PLAIN)</li>
+<li>Auto-updater rollback — pre-update backup created automatically before each update; restore via File &gt; Rollback menu or <code>--rollback</code> CLI flag</li>
+<li>Update failure recovery — if an update fails mid-extraction, offers to restore from the backup immediately</li>
+<li>Defensive Unix permission check — verify execute permission on startup after auto-update (defense-in-depth)</li>
+<li>Clickable usernames — press Enter on a username in the userlist or message sender to view their profile</li>
+<li>Clickable @mentions — press Enter on a message containing <code>@username</code> to open that user's profile</li>
+<li>Clickable #channels — press Enter on a message containing <code>#channel</code> to join/switch to that channel; <code>#channel</code> references are now highlighted in chat</li>
+<li>Embed theme colors — embed vertical border line now uses the source site's <code>theme-color</code> meta tag when available</li>
+<li>Stateful userlist — user presence is cached per channel and updated incrementally via SignalR events instead of re-fetching the full list on every join/leave/status change</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>Restrict file auto-open — only safe file types (video, PDF, text) are opened with the system default app; all other files are downloaded to temp without executing (prevents script execution via <code>.bat</code>, <code>.exe</code>, etc.)</li>
+</ul>
+<h2 id="refactoring">Refactoring</h2>
+<ul>
+<li>Extract <code>IUserService</code>/<code>UserService</code> — consolidate user registration, authentication, and profile management into a dedicated service, eliminating duplicated logic between <code>AuthController</code> and <code>ChatService</code></li>
+<li>IRC gateway now checks ban status during authentication (previously skipped)</li>
+<li>EchoHubSpace directory updates — server now only sends user count when it actually changes instead of every 30 seconds</li>
+<li><code>ChatHub.JoinChannel</code> now returns <code>JoinChannelResult</code> instead of <code>List&lt;MessageDto&gt;</code> to allow for better error handling</li>
+</ul>
+<h2 id="distribution">Distribution</h2>
+<ul>
+<li>Add Chocolatey package — <code>choco install echohub</code> for Windows users, auto-published from CI on each release</li>
+<li>Add Linux/macOS install script — <code>curl -sSfL .../install.sh | sh</code> with automatic OS/arch detection</li>
+</ul>
+<h2 id="documentation">Documentation</h2>
+<ul>
+<li>Add Flows section — Mermaid sequence diagrams documenting all major request/event flows (auth, connection, messaging, channels, moderation, file upload, link embeds, server directory) with inline code references</li>
+</ul>
+<h2 id="ci">CI</h2>
+<ul>
+<li>Add Docker workflow — builds and pushes multi-arch (<code>amd64</code>/<code>arm64</code>) server image to GHCR on release</li>
+<li>Add <code>linux-arm64</code> builds to release pipeline — server and client binaries for ARM Linux (Raspberry Pi, cloud ARM instances)</li>
+<li>Automate Chocolatey package publishing in release workflow (checksum calculation, pack, push)</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/HueByte/EchoHub/blob/master/docs/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a><span class='footer-sep'>&middot;</span><span class='footer-credit'>Built with <a href='https://dotnet.github.io/docfx'>DocFX</a></span></div></div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

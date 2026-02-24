@@ -1367,6 +1367,37 @@ Call after theme changes to refresh colors.</p>
 
 
 
+  <h3 id="EchoHub_Client_UI_MainWindow_OnChannelJoinRequested" data-uid="EchoHub.Client.UI.MainWindow.OnChannelJoinRequested">
+  OnChannelJoinRequested
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when the user activates a #channel reference in a message. Parameter is the channel name.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action&lt;string&gt;? OnChannelJoinRequested</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-1">Action</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <h3 id="EchoHub_Client_UI_MainWindow_OnChannelSelected" data-uid="EchoHub.Client.UI.MainWindow.OnChannelSelected">
   OnChannelSelected
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
@@ -1388,6 +1419,37 @@ Call after theme changes to refresh colors.</p>
   <h4 class="section">Event Type</h4>
   <dl class="parameters">
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-1">Action</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h3 id="EchoHub_Client_UI_MainWindow_OnCheckForUpdatesRequested" data-uid="EchoHub.Client.UI.MainWindow.OnCheckForUpdatesRequested">
+  OnCheckForUpdatesRequested
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when the user requests to check for updates.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action? OnCheckForUpdatesRequested</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action">Action</a></dt>
     <dd></dd>
   </dl>
 
@@ -1646,6 +1708,37 @@ Call after theme changes to refresh colors.</p>
 
 
 
+  <h3 id="EchoHub_Client_UI_MainWindow_OnRollbackRequested" data-uid="EchoHub.Client.UI.MainWindow.OnRollbackRequested">
+  OnRollbackRequested
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when the user requests to rollback to the previous version.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action? OnRollbackRequested</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action">Action</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <h3 id="EchoHub_Client_UI_MainWindow_OnSavedServersRequested" data-uid="EchoHub.Client.UI.MainWindow.OnSavedServersRequested">
   OnSavedServersRequested
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
@@ -1719,6 +1812,37 @@ Call after theme changes to refresh colors.</p>
 
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">public event Action&lt;string&gt;? OnThemeSelected</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-1">Action</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h3 id="EchoHub_Client_UI_MainWindow_OnUserProfileRequested" data-uid="EchoHub.Client.UI.MainWindow.OnUserProfileRequested">
+  OnUserProfileRequested
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when the user activates a username (in userlist or message). Parameter is the username.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action&lt;string&gt;? OnUserProfileRequested</code></pre>
   </div>
 
 

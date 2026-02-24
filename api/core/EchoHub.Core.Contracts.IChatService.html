@@ -120,44 +120,6 @@ Interface IChatService  <a class="header-action link-secondary" title="View sour
 </h2>
 
 
-  <a id="EchoHub_Core_Contracts_IChatService_AuthenticateUserAsync_" data-uid="EchoHub.Core.Contracts.IChatService.AuthenticateUserAsync*"></a>
-
-  <h3 id="EchoHub_Core_Contracts_IChatService_AuthenticateUserAsync_System_String_System_String_" data-uid="EchoHub.Core.Contracts.IChatService.AuthenticateUserAsync(System.String,System.String)">
-  AuthenticateUserAsync(string, string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/Contracts/IChatService.cs"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"></div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;(Guid UserId, string Username)?&gt; AuthenticateUserAsync(string username, string password)</code></pre>
-  </div>
-
-  <h4 class="section">Parameters</h4>
-  <dl class="parameters">
-    <dt><code>username</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd></dd>
-    <dt><code>password</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd></dd>
-  </dl>
-
-  <h4 class="section">Returns</h4>
-  <dl class="parameters">
-    <dt><span class="xref">Task</span>&lt;(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.guid">Guid</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.guid,system.string-.userid">UserId</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.guid,system.string-.username">Username</a>)?&gt;</dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
-
-
-
   <a id="EchoHub_Core_Contracts_IChatService_BroadcastChannelUpdatedAsync_" data-uid="EchoHub.Core.Contracts.IChatService.BroadcastChannelUpdatedAsync*"></a>
 
   <h3 id="EchoHub_Core_Contracts_IChatService_BroadcastChannelUpdatedAsync_EchoHub_Core_DTOs_ChannelDto_System_String_" data-uid="EchoHub.Core.Contracts.IChatService.BroadcastChannelUpdatedAsync(EchoHub.Core.DTOs.ChannelDto,System.String)">
@@ -331,42 +293,6 @@ Interface IChatService  <a class="header-action link-secondary" title="View sour
   <h4 class="section">Returns</h4>
   <dl class="parameters">
     <dt><span class="xref">Task</span>&lt;<span class="xref">List</span>&lt;<a class="xref" href="EchoHub.Core.DTOs.UserPresenceDto.html">UserPresenceDto</a>&gt;&gt;</dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
-
-
-
-  <a id="EchoHub_Core_Contracts_IChatService_GetUserProfileAsync_" data-uid="EchoHub.Core.Contracts.IChatService.GetUserProfileAsync*"></a>
-
-  <h3 id="EchoHub_Core_Contracts_IChatService_GetUserProfileAsync_System_String_" data-uid="EchoHub.Core.Contracts.IChatService.GetUserProfileAsync(System.String)">
-  GetUserProfileAsync(string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/Contracts/IChatService.cs"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"></div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;UserProfileDto?&gt; GetUserProfileAsync(string username)</code></pre>
-  </div>
-
-  <h4 class="section">Parameters</h4>
-  <dl class="parameters">
-    <dt><code>username</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd></dd>
-  </dl>
-
-  <h4 class="section">Returns</h4>
-  <dl class="parameters">
-    <dt><span class="xref">Task</span>&lt;<a class="xref" href="EchoHub.Core.DTOs.UserProfileDto.html">UserProfileDto</a>&gt;</dt>
     <dd></dd>
   </dl>
 

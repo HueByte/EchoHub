@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Channels | EchoHub Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Channels | EchoHub Documentation ">
+      
+      
+      <link rel="icon" href="../images/hue_icon.svg">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/blob/master/docs/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/hue_icon.svg" alt="EchoHub">
+            EchoHub
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="channels">Channels</h1>
+
+<h2 id="channel-creation">Channel Creation</h2>
+<p>Channels are created via the REST API. Public channels are broadcast to all
+connected clients.</p>
+<pre><code class="lang-mermaid">sequenceDiagram
+    participant Client as Client (TUI/API)
+    participant CC as ChannelsController
+    participant ChS as ChannelService
+    participant CS as ChatService
+    participant DB as SQLite
+    participant SRB as SignalRBroadcaster
+    participant IRCB as IrcBroadcaster
+
+    Client-&gt;&gt;CC: POST /api/channels {name, topic, isPublic}
+    CC-&gt;&gt;ChS: CreateChannelAsync(creatorId, name, topic, isPublic)
+    ChS-&gt;&gt;ChS: Normalize name (lowercase, trim)
+    ChS-&gt;&gt;ChS: Validate format (2-100 chars, regex)
+    ChS-&gt;&gt;DB: Check duplicate
+    ChS-&gt;&gt;DB: INSERT Channel + ChannelMembership (creator auto-added)
+    ChS--&gt;&gt;CC: ChannelDto
+
+    alt Channel is public
+        CC-&gt;&gt;CS: BroadcastChannelUpdatedAsync(channel)
+        CS-&gt;&gt;SRB: SendChannelUpdatedAsync(channelDto)
+        SRB-&gt;&gt;SRB: Notify all SignalR clients
+        CS-&gt;&gt;IRCB: SendChannelUpdatedAsync(channelDto)
+    end
+
+    CC--&gt;&gt;Client: 201 Created (ChannelDto)
+</code></pre>
+<p><strong>Code references:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>File</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Controller endpoint</td>
+<td><code>src/EchoHub.Server/Controllers/ChannelsController.cs</code></td>
+<td>Lines 60-76</td>
+</tr>
+<tr>
+<td>Channel service create</td>
+<td><code>src/EchoHub.Server/Services/ChannelService.cs</code></td>
+<td>Lines 50-90</td>
+</tr>
+<tr>
+<td>Broadcast updated</td>
+<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
+<td>Lines 308-309</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="channel-deletion">Channel Deletion</h2>
+<p>Only the channel creator (or admin) can delete a channel. The default channel
+is protected.</p>
+<pre><code class="lang-mermaid">sequenceDiagram
+    participant Client as Client
+    participant CC as ChannelsController
+    participant ChS as ChannelService
+    participant DB as SQLite
+
+    Client-&gt;&gt;CC: DELETE /api/channels/{channel}
+    CC-&gt;&gt;ChS: DeleteChannelAsync(channelName, callerId)
+    ChS-&gt;&gt;ChS: Reject if default channel
+    ChS-&gt;&gt;DB: Lookup channel
+    ChS-&gt;&gt;ChS: Verify caller is creator or admin
+    ChS-&gt;&gt;DB: DELETE Channel (cascade: messages, memberships)
+    ChS--&gt;&gt;CC: Success
+    CC--&gt;&gt;Client: 204 No Content
+</code></pre>
+<p><strong>Code references:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>File</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Controller endpoint</td>
+<td><code>src/EchoHub.Server/Controllers/ChannelsController.cs</code></td>
+<td>Lines 94-106</td>
+</tr>
+<tr>
+<td>Channel service delete</td>
+<td><code>src/EchoHub.Server/Services/ChannelService.cs</code></td>
+<td>Lines 119-144</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="joining-a-channel">Joining a Channel</h2>
+<p>Both SignalR and IRC clients join channels through <code>ChatService</code>. The presence
+tracker determines if this is a genuinely new join (vs. a second connection) and
+broadcasts accordingly.</p>
+<pre><code class="lang-mermaid">sequenceDiagram
+    participant Client as Client (SignalR or IRC)
+    participant Entry as ChatHub / IrcCommandHandler
+    participant CS as ChatService
+    participant ChS as ChannelService
+    participant PT as PresenceTracker
+    participant DB as SQLite
+    participant SRB as SignalRBroadcaster
+    participant IRCB as IrcBroadcaster
+
+    Client-&gt;&gt;Entry: JoinChannel / JOIN #channel
+    Entry-&gt;&gt;CS: JoinChannelAsync(connectionId, userId, username, channel)
+    CS-&gt;&gt;ChS: EnsureChannelMembershipAsync(userId, channel)
+    ChS-&gt;&gt;DB: INSERT ChannelMembership (if not exists)
+
+    CS-&gt;&gt;PT: JoinChannel(username, channel)
+    PT--&gt;&gt;CS: isNewJoin?
+
+    alt First connection in this channel
+        CS-&gt;&gt;DB: Fetch UserPresenceDto
+        CS-&gt;&gt;CS: BroadcastToAllAsync(SendUserJoinedAsync)
+        par
+            CS-&gt;&gt;SRB: SendUserJoinedAsync(channel, user, excludeConn)
+        and
+            CS-&gt;&gt;IRCB: SendUserJoinedAsync(channel, user)
+        end
+    end
+
+    CS-&gt;&gt;DB: Fetch message history
+    CS--&gt;&gt;Entry: (history, error)
+    Entry--&gt;&gt;Client: History messages
+</code></pre>
+<p><strong>Code references:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>File</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SignalR hub join</td>
+<td><code>src/EchoHub.Server/Hubs/ChatHub.cs</code></td>
+<td>Lines 59-81</td>
+</tr>
+<tr>
+<td>IRC join</td>
+<td><code>src/EchoHub.Server.Irc/IrcCommandHandler.cs</code></td>
+<td>Lines 361-414</td>
+</tr>
+<tr>
+<td>ChatService join</td>
+<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
+<td>Lines 96-135</td>
+</tr>
+<tr>
+<td>Presence join</td>
+<td><code>src/EchoHub.Server/Services/PresenceTracker.cs</code></td>
+<td>Lines 58-70</td>
+</tr>
+<tr>
+<td>SignalR broadcast</td>
+<td><code>src/EchoHub.Server/Services/SignalRBroadcaster.cs</code></td>
+<td>Lines 26-32</td>
+</tr>
+<tr>
+<td>IRC broadcast</td>
+<td><code>src/EchoHub.Server.Irc/IrcBroadcaster.cs</code></td>
+<td>Lines 34-41</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="leaving-a-channel">Leaving a Channel</h2>
+<pre><code class="lang-mermaid">sequenceDiagram
+    participant Client as Client
+    participant Entry as ChatHub / IrcCommandHandler
+    participant CS as ChatService
+    participant PT as PresenceTracker
+    participant SRB as SignalRBroadcaster
+    participant IRCB as IrcBroadcaster
+
+    Client-&gt;&gt;Entry: LeaveChannel / PART #channel
+    Entry-&gt;&gt;CS: LeaveChannelAsync(connectionId, username, channel)
+    CS-&gt;&gt;PT: LeaveChannel(username, channel)
+    CS-&gt;&gt;CS: BroadcastToAllAsync(SendUserLeftAsync)
+    par
+        CS-&gt;&gt;SRB: SendUserLeftAsync(channel, username)
+    and
+        CS-&gt;&gt;IRCB: SendUserLeftAsync(channel, username)
+    end
+</code></pre>
+<p><strong>Code references:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>File</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SignalR hub leave</td>
+<td><code>src/EchoHub.Server/Hubs/ChatHub.cs</code></td>
+<td>Lines 83-96</td>
+</tr>
+<tr>
+<td>IRC part</td>
+<td><code>src/EchoHub.Server.Irc/IrcCommandHandler.cs</code></td>
+<td>Lines 416-435</td>
+</tr>
+<tr>
+<td>ChatService leave</td>
+<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
+<td>Lines 137-143</td>
+</tr>
+<tr>
+<td>Presence leave</td>
+<td><code>src/EchoHub.Server/Services/PresenceTracker.cs</code></td>
+<td>Lines 72-81</td>
+</tr>
+</tbody>
+</table>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/HueByte/EchoHub/blob/master/docs/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a><span class='footer-sep'>&middot;</span><span class='footer-credit'>Built with <a href='https://dotnet.github.io/docfx'>DocFX</a></span></div></div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

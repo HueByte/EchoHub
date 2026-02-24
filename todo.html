@@ -2,18 +2,18 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Changelog | EchoHub Documentation </title>
+      <title>TODO | EchoHub Documentation </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Changelog | EchoHub Documentation ">
+      <meta name="title" content="TODO | EchoHub Documentation ">
       
       
-      <link rel="icon" href="../images/hue_icon.svg">
-      <link rel="stylesheet" href="../public/docfx.min.css">
-      <link rel="stylesheet" href="../public/main.css">
-      <meta name="docfx:navrel" content="../toc.html">
+      <link rel="icon" href="images/hue_icon.svg">
+      <link rel="stylesheet" href="public/docfx.min.css">
+      <link rel="stylesheet" href="public/main.css">
+      <meta name="docfx:navrel" content="toc.html">
       <meta name="docfx:tocrel" content="toc.html">
       
-      <meta name="docfx:rel" content="../">
+      <meta name="docfx:rel" content="">
       
       
       <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/blob/master/docs/#L1">
@@ -30,7 +30,7 @@
       <meta name="loc:copy" content="Copy">
       <meta name="loc:downloadPdf" content="Download PDF">
 
-      <script type="module" src="./../public/docfx.min.js"></script>
+      <script type="module" src="./public/docfx.min.js"></script>
 
       <script>
         const theme = localStorage.getItem('theme') || 'auto'
@@ -43,8 +43,8 @@
     <header class="bg-body border-bottom">
       <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
         <div class="container-xxl flex-nowrap">
-          <a class="navbar-brand" href="../index.html">
-            <img id="logo" class="svg" src="../images/hue_icon.svg" alt="EchoHub">
+          <a class="navbar-brand" href="index.html">
+            <img id="logo" class="svg" src="images/hue_icon.svg" alt="EchoHub">
             EchoHub
           </a>
           <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,44 +63,45 @@
     </header>
 
     <main class="container-xxl">
-      <div class="toc-offcanvas">
-        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
-          <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
-          </div>
-          <div class="offcanvas-body">
-            <nav class="toc" id="toc"></nav>
-          </div>
-        </div>
-      </div>
 
       <div class="content">
         <div class="actionbar">
-          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
-            <i class="bi bi-list"></i>
-          </button>
 
           <nav id="breadcrumb"></nav>
         </div>
 
         <article data-uid="">
-<h1 id="changelog">Changelog</h1>
+<h1 id="todo">TODO</h1>
 
-<p>Release history for EchoHub.</p>
-<h2 id="releases">Releases</h2>
 <ul>
-<li><a href="v0.2.8.html">v0.2.8</a> - Docker Support, IRC Account Creation &amp; BOM Fix</li>
-<li><a href="v0.2.7.html">v0.2.7</a> - User List Fix &amp; Terminal.Gui NuGet Migration</li>
-<li><a href="v0.2.6.html">v0.2.6</a> - Major Refactoring &amp; Code Organization</li>
-<li><a href="v0.2.5.html">v0.2.5</a> - Session Persistence, Auto-Updates, Audio &amp; Transparent Theme</li>
-<li><a href="v0.2.4.html">v0.2.4</a> - E2E Message Encryption</li>
-<li><a href="v0.2.3.html">v0.2.3</a> - Moderation, Embeds &amp; UI Overhaul</li>
-<li><a href="v0.2.2.html">v0.2.2</a> - Startup &amp; Shutdown Fixes</li>
-<li><a href="v0.2.1.html">v0.2.1</a> - Shutdown &amp; CI Fixes</li>
-<li><a href="v0.2.0.html">v0.2.0</a> - IRC Gateway</li>
-<li><a href="v0.1.1.html">v0.1.1</a> - Directory Connection Self-Healing</li>
-<li><a href="v0.1.0.html">v0.1.0</a> - Initial Release</li>
+<li>[ ] fix the chat trailing; when user scrolls up, and somebody sends a message – the chat instantly &quot;teleports&quot; to the very bottom</li>
+<li>[x] disable the autorun of files (maybe keep for mp4? gotta do some sec research on it)</li>
+<li>[x] when user creates a new channel, he gets moved to that channel; but the userlist does not refresh the state on that – it refreshes when user re-enters the channel again</li>
+<li>[ ] password protected rooms</li>
+<li>[ ] better audio lib, current one (NetCoreAudio) does not support seek or other audio actions</li>
+<li>[ ] Use options pattern for both client &amp; server
+<ul>
+<li>ref: <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-10.0">https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-10.0</a></li>
+</ul>
+</li>
+<li>[x] The vertical line of embeds should be the same colour as theme-color meta tag of the source</li>
+<li>[x] change text wrapping to honor the offset of the user. (Preferably wrap whole words if they fit in on line. Basically how the CSS &quot;text-wrap-mode: wrap;&quot; works)</li>
+<li>[x] make usernames in messages, mentions and in the user list clickable to open the user profile</li>
+<li>[ ] Add tags support for public servers &amp; add filters on echohubspace for those tags in the server &quot;browser&quot;</li>
+<li>[ ] when trying to /join a channel that doesn't exist a client side-ghost channel gets created that does not work</li>
+<li>[x] unmute timer does not seem to work</li>
+<li>[ ] add IRC network like support
+<ul>
+<li>that means basically multiple servers linked, so users can chat cross-server in this network</li>
+</ul>
+</li>
+<li>[ ] when users clicks public -&gt; private -&gt; public checkbox in the channel creation, it ends up creating the channel on 3rd check switch</li>
+<li>[ ] add keyboard only controls | at least for most important parts and the rest might be accessible with: (down)</li>
+<li>[ ] add search bar / search modal – that will allow users to instantly navigate to room / focus on app element &amp; etc</li>
+<li>[ ] Actually smart data management – cache messages, lazy load messages on scroll (currently hardcoded 100msgs fetched + new ones)</li>
+<li>[x] Another thing would be stateful userlist – basically fetch once and listen for userlist updates</li>
+<li>[x] Send to EchohubSpace only state changes, currently we send user count periodically, instead of updating it on update</li>
+<li>[x] space between mod|admin &quot;icon&quot; and username</li>
 </ul>
 
 </article>

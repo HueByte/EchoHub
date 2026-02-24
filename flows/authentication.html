@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Authentication | EchoHub Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Authentication | EchoHub Documentation ">
+      
+      
+      <link rel="icon" href="../images/hue_icon.svg">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/blob/master/docs/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/hue_icon.svg" alt="EchoHub">
+            EchoHub
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="authentication">Authentication</h1>
+
+<h2 id="user-registration">User Registration</h2>
+<p>A new user creates an account on a server. The client sends credentials via REST,
+the server hashes the password, issues JWT tokens, and the client stores the
+refresh token for &quot;Remember Me&quot; sessions.</p>
+<pre><code class="lang-mermaid">sequenceDiagram
+    participant UI as ConnectDialog
+    participant AO as AppOrchestrator
+    participant CM as ConnectionManager
+    participant API as ApiClient
+    participant Auth as AuthController
+    participant US as UserService
+    participant JWT as JwtTokenService
+    participant DB as SQLite
+
+    UI-&gt;&gt;AO: ConnectDialogResult(IsRegister: true)
+    AO-&gt;&gt;CM: ConnectAsync(dialogResult)
+    CM-&gt;&gt;API: RegisterAsync(username, password)
+    API-&gt;&gt;Auth: POST /api/auth/register
+    Auth-&gt;&gt;US: RegisterUserAsync(username, password, displayName)
+    US-&gt;&gt;US: Validate (regex, length, uniqueness)
+    US-&gt;&gt;DB: INSERT User (BCrypt hash)
+    US--&gt;&gt;Auth: UserOperationResult.Success
+    Auth-&gt;&gt;JWT: GenerateAccessToken(user)
+    JWT--&gt;&gt;Auth: (token, expiresAt) [15 min]
+    Auth-&gt;&gt;JWT: GenerateRefreshToken()
+    JWT--&gt;&gt;Auth: Base64 random (64 bytes)
+    Auth-&gt;&gt;DB: INSERT RefreshToken (SHA256 hash)
+    Auth--&gt;&gt;API: LoginResponse
+    API-&gt;&gt;API: SetTokens() — store in memory + set Bearer header
+    API--&gt;&gt;CM: LoginResponse
+    CM-&gt;&gt;CM: Wire OnTokensRefreshed for config persistence
+    CM-&gt;&gt;CM: Continue to connection setup (see Connection Flow)
+</code></pre>
+<p><strong>Code references:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>File</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dialog UI</td>
+<td><code>src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs</code></td>
+<td>Lines 251-268 (register handler)</td>
+</tr>
+<tr>
+<td>Orchestrator entry</td>
+<td><code>src/EchoHub.Client/AppOrchestrator.cs</code></td>
+<td>Lines 550-592 (<code>HandleConnect</code>)</td>
+</tr>
+<tr>
+<td>ConnectionManager auth</td>
+<td><code>src/EchoHub.Client/Services/ConnectionManager.cs</code></td>
+<td>Lines 74-76 (register branch)</td>
+</tr>
+<tr>
+<td>ApiClient register</td>
+<td><code>src/EchoHub.Client/Services/ApiClient.cs</code></td>
+<td>Lines 32-43 (<code>RegisterAsync</code>)</td>
+</tr>
+<tr>
+<td>AuthController register</td>
+<td><code>src/EchoHub.Server/Controllers/AuthController.cs</code></td>
+<td>Lines 28-49</td>
+</tr>
+<tr>
+<td>UserService register</td>
+<td><code>src/EchoHub.Server/Services/UserService.cs</code></td>
+<td>Lines 20-59 (<code>RegisterUserAsync</code>)</td>
+</tr>
+<tr>
+<td>JWT generation</td>
+<td><code>src/EchoHub.Server/Auth/JwtTokenService.cs</code></td>
+<td>Lines 30-53 (access), 80-86 (refresh)</td>
+</tr>
+<tr>
+<td>Token persistence</td>
+<td><code>src/EchoHub.Client/AppOrchestrator.cs</code></td>
+<td>Lines 1039-1053 (<code>SaveServerToConfig</code>)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="user-login">User Login</h2>
+<p>Returning user authenticates with username/password or a saved refresh token.</p>
+<pre><code class="lang-mermaid">sequenceDiagram
+    participant UI as ConnectDialog
+    participant CM as ConnectionManager
+    participant API as ApiClient
+    participant Auth as AuthController
+    participant US as UserService
+    participant DB as SQLite
+
+    alt Saved refresh token (Remember Me)
+        UI-&gt;&gt;CM: ConnectDialogResult(SavedRefreshToken: &quot;...&quot;)
+        CM-&gt;&gt;API: LoginWithRefreshTokenAsync()
+        API-&gt;&gt;Auth: POST /api/auth/refresh
+        Auth-&gt;&gt;DB: Lookup token by SHA256 hash
+        Auth-&gt;&gt;DB: Revoke old token, issue new pair
+        Auth--&gt;&gt;API: LoginResponse (rotated tokens)
+    else Username + Password
+        UI-&gt;&gt;CM: ConnectDialogResult(IsRegister: false)
+        CM-&gt;&gt;API: LoginAsync(username, password)
+        API-&gt;&gt;Auth: POST /api/auth/login
+        Auth-&gt;&gt;US: AuthenticateUserAsync(username, password)
+        US-&gt;&gt;DB: Fetch user, BCrypt.Verify(password, hash)
+        US-&gt;&gt;DB: Update LastSeenAt
+        US--&gt;&gt;Auth: UserOperationResult.Success
+        Auth--&gt;&gt;API: LoginResponse
+    end
+    API-&gt;&gt;API: SetTokens()
+</code></pre>
+<p><strong>Code references:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>File</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Login button handler</td>
+<td><code>src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs</code></td>
+<td>Lines 214-249</td>
+</tr>
+<tr>
+<td>Saved token branch</td>
+<td><code>src/EchoHub.Client/Services/ConnectionManager.cs</code></td>
+<td>Lines 69-71</td>
+</tr>
+<tr>
+<td>Password branch</td>
+<td><code>src/EchoHub.Client/Services/ConnectionManager.cs</code></td>
+<td>Lines 78-80</td>
+</tr>
+<tr>
+<td>ApiClient login</td>
+<td><code>src/EchoHub.Client/Services/ApiClient.cs</code></td>
+<td>Lines 45-56 (<code>LoginAsync</code>)</td>
+</tr>
+<tr>
+<td>AuthController login</td>
+<td><code>src/EchoHub.Server/Controllers/AuthController.cs</code></td>
+<td>Lines 51-72</td>
+</tr>
+<tr>
+<td>AuthController refresh</td>
+<td><code>src/EchoHub.Server/Controllers/AuthController.cs</code></td>
+<td>Lines 74-108</td>
+</tr>
+<tr>
+<td>UserService authenticate</td>
+<td><code>src/EchoHub.Server/Services/UserService.cs</code></td>
+<td>Lines 61-83</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="token-refresh">Token Refresh</h2>
+<p>Access tokens expire after 15 minutes. The client auto-refreshes transparently
+before requests and on 401 responses. Refresh tokens are rotated on each use.</p>
+<pre><code class="lang-mermaid">sequenceDiagram
+    participant SR as SignalR / HTTP Request
+    participant API as ApiClient
+    participant Auth as AuthController
+    participant DB as SQLite
+    participant Config as config.json
+
+    SR-&gt;&gt;API: GetValidTokenAsync() or HTTP 401
+    API-&gt;&gt;API: Token expires within 60s?
+    alt Proactive refresh (SignalR token provider)
+        API-&gt;&gt;Auth: POST /api/auth/refresh (old refresh token)
+    else Reactive refresh (HTTP 401 retry)
+        API-&gt;&gt;Auth: POST /api/auth/refresh (old refresh token)
+    end
+    Auth-&gt;&gt;DB: Lookup by SHA256 hash
+    Auth-&gt;&gt;DB: Revoke old refresh token
+    Auth-&gt;&gt;DB: INSERT new RefreshToken
+    Auth--&gt;&gt;API: LoginResponse (new token pair)
+    API-&gt;&gt;API: SetTokens() — update Bearer header
+    API--&gt;&gt;API: Fire OnTokensRefreshed event
+    API--&gt;&gt;Config: Persist new refresh token (if Remember Me)
+    API-&gt;&gt;SR: Retry original request with new token
+</code></pre>
+<p><strong>Code references:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>File</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Proactive check</td>
+<td><code>src/EchoHub.Client/Services/ApiClient.cs</code></td>
+<td>Lines 110-129 (<code>GetValidTokenAsync</code>)</td>
+</tr>
+<tr>
+<td>Reactive 401 retry (GET)</td>
+<td><code>src/EchoHub.Client/Services/ApiClient.cs</code></td>
+<td>Lines 338-358 (<code>AuthenticatedGetAsync</code>)</td>
+</tr>
+<tr>
+<td>Reactive 401 retry (POST/PUT/DELETE)</td>
+<td><code>src/EchoHub.Client/Services/ApiClient.cs</code></td>
+<td>Lines 364-384 (<code>AuthenticatedRequestAsync</code>)</td>
+</tr>
+<tr>
+<td>Refresh HTTP call</td>
+<td><code>src/EchoHub.Client/Services/ApiClient.cs</code></td>
+<td>Lines 58-71 (<code>RefreshTokenAsync</code>)</td>
+</tr>
+<tr>
+<td>SignalR token provider</td>
+<td><code>src/EchoHub.Client/Services/EchoHubConnection.cs</code></td>
+<td>Line 37 (<code>AccessTokenProvider</code>)</td>
+</tr>
+<tr>
+<td>Server-side rotation</td>
+<td><code>src/EchoHub.Server/Controllers/AuthController.cs</code></td>
+<td>Lines 74-108</td>
+</tr>
+<tr>
+<td>Token persistence callback</td>
+<td><code>src/EchoHub.Client/Services/ConnectionManager.cs</code></td>
+<td>Lines 253-264</td>
+</tr>
+</tbody>
+</table>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/HueByte/EchoHub/blob/master/docs/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a><span class='footer-sep'>&middot;</span><span class='footer-credit'>Built with <a href='https://dotnet.github.io/docfx'>DocFX</a></span></div></div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

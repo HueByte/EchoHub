@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Media &amp; Services | EchoHub Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Media &amp; Services | EchoHub Documentation ">
+      
+      
+      <link rel="icon" href="../images/hue_icon.svg">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/blob/master/docs/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/hue_icon.svg" alt="EchoHub">
+            EchoHub
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="media--services">Media &amp; Services</h1>
+
+<h2 id="file-upload">File Upload</h2>
+<p>Files are uploaded via REST, validated by magic bytes, stored with GUID filenames,
+and broadcast as a message with a download link.</p>
+<pre><code class="lang-mermaid">sequenceDiagram
+    participant Client as Client
+    participant CC as ChannelsController
+    participant FV as FileValidationHelper
+    participant FS as FileStorageService
+    participant CS as ChatService
+    participant DB as SQLite
+
+    Client-&gt;&gt;CC: POST /api/channels/{channel}/upload (multipart)
+    CC-&gt;&gt;CC: Check file size limits
+    CC-&gt;&gt;FV: IsValidImage(stream) — magic byte check
+    FV-&gt;&gt;FV: Read header: JPEG(FFD8FF) / PNG(89504E47) / GIF / WebP(RIFF+WEBP)
+    FV--&gt;&gt;CC: true/false
+    CC-&gt;&gt;FS: SaveFileAsync(stream, extension)
+    FS-&gt;&gt;FS: Generate GUID filename, write to uploads/
+    FS--&gt;&gt;CC: fileId (GUID)
+    CC-&gt;&gt;CC: Determine MessageType (Image/Audio/File)
+    CC-&gt;&gt;CS: SendMessageAsync (with file URL + optional ASCII art)
+    CS-&gt;&gt;DB: INSERT Message
+    CS-&gt;&gt;CS: BroadcastToAllAsync → fan out to clients
+</code></pre>
+<p><strong>Code references:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>File</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Upload endpoint</td>
+<td><code>src/EchoHub.Server/Controllers/ChannelsController.cs</code></td>
+<td>Lines 108-200</td>
+</tr>
+<tr>
+<td>File validation</td>
+<td><code>src/EchoHub.Server/Services/FileValidationHelper.cs</code></td>
+<td>Lines 15-82</td>
+</tr>
+<tr>
+<td>File storage</td>
+<td><code>src/EchoHub.Server/Services/FileStorageService.cs</code></td>
+<td>Lines 1-47</td>
+</tr>
+<tr>
+<td>File download</td>
+<td><code>src/EchoHub.Server/Controllers/FilesController.cs</code></td>
+<td>Lines 22-53</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="link-embed-resolution">Link Embed Resolution</h2>
+<p>When a message contains URLs, the server fetches OpenGraph metadata for preview
+embeds.</p>
+<pre><code class="lang-mermaid">sequenceDiagram
+    participant CS as ChatService
+    participant LE as LinkEmbedService
+    participant Web as External Website
+
+    CS-&gt;&gt;LE: TryGetEmbedsAsync(messageContent)
+    LE-&gt;&gt;LE: Extract URLs via regex
+    LE-&gt;&gt;LE: Filter: max URLs per message, skip duplicates
+
+    loop For each URL
+        LE-&gt;&gt;LE: Validate: http(s) only, block private IPs
+        LE-&gt;&gt;Web: GET URL (timeout + size limit)
+        Web--&gt;&gt;LE: HTML response
+        LE-&gt;&gt;LE: Parse og:title, og:description, og:site_name
+        LE-&gt;&gt;LE: Parse theme-color meta tag
+        LE-&gt;&gt;LE: Fallback to &lt;title&gt; if no og:title
+    end
+
+    LE--&gt;&gt;CS: List&lt;EmbedDto&gt; (or null)
+    Note over CS: Attached to MessageDto before broadcast
+</code></pre>
+<p><strong>Code references:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>File</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Entry point</td>
+<td><code>src/EchoHub.Server/Services/LinkEmbedService.cs</code></td>
+<td>Lines 28-51 (<code>TryGetEmbedsAsync</code>)</td>
+</tr>
+<tr>
+<td>URL extraction</td>
+<td><code>src/EchoHub.Server/Services/LinkEmbedService.cs</code></td>
+<td>Lines 145-160</td>
+</tr>
+<tr>
+<td>Private IP blocking</td>
+<td><code>src/EchoHub.Server/Services/LinkEmbedService.cs</code></td>
+<td>Lines 162-181</td>
+</tr>
+<tr>
+<td>OG tag parsing</td>
+<td><code>src/EchoHub.Server/Services/LinkEmbedService.cs</code></td>
+<td>Lines 187-210</td>
+</tr>
+<tr>
+<td>Theme color parsing</td>
+<td><code>src/EchoHub.Server/Services/LinkEmbedService.cs</code></td>
+<td>Lines 117-143</td>
+</tr>
+<tr>
+<td>ChatService integration</td>
+<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
+<td>Lines 194-201</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="server-directory-registration">Server Directory Registration</h2>
+<p>Public servers register with the EchoHubSpace directory for discoverability.</p>
+<pre><code class="lang-mermaid">sequenceDiagram
+    participant SDS as ServerDirectoryService
+    participant Dir as EchoHubSpace Directory
+    participant PT as PresenceTracker
+
+    SDS-&gt;&gt;SDS: Check Server:PublicServer config
+    SDS-&gt;&gt;Dir: SignalR connect (echohub.voidcube.cloud/hubs/servers)
+    SDS-&gt;&gt;Dir: RegisterServer(name, description, host, userCount)
+    Dir--&gt;&gt;SDS: Registered
+
+    loop Every 30 seconds
+        SDS-&gt;&gt;PT: Get online user count
+        alt Count changed
+            SDS-&gt;&gt;Dir: UpdateUserCount(count)
+        end
+    end
+
+    Dir-&gt;&gt;SDS: Ping
+    SDS-&gt;&gt;Dir: Heartbeat
+
+    Note over SDS,Dir: Exponential backoff on disconnect (2s → 30s max)
+</code></pre>
+<p><strong>Code references:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>File</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Service lifecycle</td>
+<td><code>src/EchoHub.Server/Services/ServerDirectoryService.cs</code></td>
+<td>Lines 29-122</td>
+</tr>
+<tr>
+<td>Registration</td>
+<td><code>src/EchoHub.Server/Services/ServerDirectoryService.cs</code></td>
+<td>Lines 195-212</td>
+</tr>
+<tr>
+<td>User count polling</td>
+<td><code>src/EchoHub.Server/Services/ServerDirectoryService.cs</code></td>
+<td>Lines 154-187</td>
+</tr>
+<tr>
+<td>Reconnection backoff</td>
+<td><code>src/EchoHub.Server/Services/ServerDirectoryService.cs</code></td>
+<td>Lines 77-82, 191</td>
+</tr>
+</tbody>
+</table>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/HueByte/EchoHub/blob/master/docs/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a><span class='footer-sep'>&middot;</span><span class='footer-credit'>Built with <a href='https://dotnet.github.io/docfx'>DocFX</a></span></div></div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

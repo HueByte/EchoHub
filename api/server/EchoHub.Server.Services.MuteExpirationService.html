@@ -2,11 +2,11 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Class UsersController | EchoHub Documentation </title>
+      <title>Class MuteExpirationService | EchoHub Documentation </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Class UsersController | EchoHub Documentation ">
+      <meta name="title" content="Class MuteExpirationService | EchoHub Documentation ">
       
-      
+      <meta name="description" content="Background service that periodically unmutes users whose timed mute has expired.">
       <link rel="icon" href="../../images/hue_icon.svg">
       <link rel="stylesheet" href="../../public/docfx.min.css">
       <link rel="stylesheet" href="../../public/main.css">
@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/new/master/apiSpec/new?filename=EchoHub_Server_Controllers_UsersController.md&amp;value=---%0Auid%3A%20EchoHub.Server.Controllers.UsersController%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/new/master/apiSpec/new?filename=EchoHub_Server_Services_MuteExpirationService.md&amp;value=---%0Auid%3A%20EchoHub.Server.Services.MuteExpirationService%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -84,28 +84,25 @@
           <nav id="breadcrumb"></nav>
         </div>
 
-        <article data-uid="EchoHub.Server.Controllers.UsersController">
+        <article data-uid="EchoHub.Server.Services.MuteExpirationService">
 
 
 
-  <h1 id="EchoHub_Server_Controllers_UsersController" data-uid="EchoHub.Server.Controllers.UsersController" class="text-break">
-Class UsersController  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/UsersController.cs"><i class="bi bi-code-slash"></i></a>
+  <h1 id="EchoHub_Server_Services_MuteExpirationService" data-uid="EchoHub.Server.Services.MuteExpirationService" class="text-break">
+Class MuteExpirationService  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/MuteExpirationService.cs"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
-    <dl><dt>Namespace</dt><dd><a class="xref" href="EchoHub.html">EchoHub</a>.<a class="xref" href="EchoHub.Server.html">Server</a>.<a class="xref" href="EchoHub.Server.Controllers.html">Controllers</a></dd></dl>
+    <dl><dt>Namespace</dt><dd><a class="xref" href="EchoHub.html">EchoHub</a>.<a class="xref" href="EchoHub.Server.html">Server</a>.<a class="xref" href="EchoHub.Server.Services.html">Services</a></dd></dl>
   <dl><dt>Assembly</dt><dd>EchoHub.Server.dll</dd></dl>
   </div>
 
-  <div class="markdown summary"></div>
+  <div class="markdown summary"><p>Background service that periodically unmutes users whose timed mute has expired.</p>
+</div>
   <div class="markdown conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[ApiController]
-[Route(&quot;api/users&quot;)]
-[Authorize]
-[EnableRateLimiting(&quot;general&quot;)]
-public class UsersController : ControllerBase</code></pre>
+    <pre><code class="lang-csharp hljs">public sealed class MuteExpirationService : BackgroundService, IDisposable</code></pre>
   </div>
 
 
@@ -115,11 +112,17 @@ public class UsersController : ControllerBase</code></pre>
     <dt>Inheritance</dt>
     <dd>
       <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
-      <div><span class="xref">ControllerBase</span></div>
-      <div><span class="xref">UsersController</span></div>
+      <div><span class="xref">BackgroundService</span></div>
+      <div><span class="xref">MuteExpirationService</span></div>
     </dd>
   </dl>
 
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
 
 
   <dl class="typelist inheritedMembers">
@@ -127,9 +130,6 @@ public class UsersController : ControllerBase</code></pre>
     <dd>
     <div>
       <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
-    </div>
-    <div>
-      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
     </div>
     <div>
       <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
@@ -157,25 +157,25 @@ public class UsersController : ControllerBase</code></pre>
 </h2>
 
 
-  <a id="EchoHub_Server_Controllers_UsersController__ctor_" data-uid="EchoHub.Server.Controllers.UsersController.#ctor*"></a>
+  <a id="EchoHub_Server_Services_MuteExpirationService__ctor_" data-uid="EchoHub.Server.Services.MuteExpirationService.#ctor*"></a>
 
-  <h3 id="EchoHub_Server_Controllers_UsersController__ctor_EchoHub_Core_Contracts_IUserService_EchoHub_Server_Services_ImageToAsciiService_" data-uid="EchoHub.Server.Controllers.UsersController.#ctor(EchoHub.Core.Contracts.IUserService,EchoHub.Server.Services.ImageToAsciiService)">
-  UsersController(IUserService, ImageToAsciiService)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/UsersController.cs"><i class="bi bi-code-slash"></i></a>
+  <h3 id="EchoHub_Server_Services_MuteExpirationService__ctor_Microsoft_Extensions_DependencyInjection_IServiceScopeFactory_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Services_MuteExpirationService__" data-uid="EchoHub.Server.Services.MuteExpirationService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.MuteExpirationService})">
+  MuteExpirationService(IServiceScopeFactory, ILogger&lt;MuteExpirationService&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/MuteExpirationService.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public UsersController(IUserService userService, ImageToAsciiService asciiService)</code></pre>
+    <pre><code class="lang-csharp hljs">public MuteExpirationService(IServiceScopeFactory scopeFactory, ILogger&lt;MuteExpirationService&gt; logger)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
-    <dt><code>userService</code> <a class="xref" href="../core/EchoHub.Core.Contracts.IUserService.html">IUserService</a></dt>
+    <dt><code>scopeFactory</code> <span class="xref">IServiceScopeFactory</span></dt>
     <dd></dd>
-    <dt><code>asciiService</code> <a class="xref" href="EchoHub.Server.Services.ImageToAsciiService.html">ImageToAsciiService</a></dt>
+    <dt><code>logger</code> <span class="xref">ILogger</span>&lt;<a class="xref" href="EchoHub.Server.Services.MuteExpirationService.html">MuteExpirationService</a>&gt;</dt>
     <dd></dd>
   </dl>
 
@@ -194,100 +194,29 @@ public class UsersController : ControllerBase</code></pre>
 </h2>
 
 
-  <a id="EchoHub_Server_Controllers_UsersController_GetProfile_" data-uid="EchoHub.Server.Controllers.UsersController.GetProfile*"></a>
+  <a id="EchoHub_Server_Services_MuteExpirationService_ExecuteAsync_" data-uid="EchoHub.Server.Services.MuteExpirationService.ExecuteAsync*"></a>
 
-  <h3 id="EchoHub_Server_Controllers_UsersController_GetProfile_System_String_" data-uid="EchoHub.Server.Controllers.UsersController.GetProfile(System.String)">
-  GetProfile(string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/UsersController.cs"><i class="bi bi-code-slash"></i></a>
+  <h3 id="EchoHub_Server_Services_MuteExpirationService_ExecuteAsync_System_Threading_CancellationToken_" data-uid="EchoHub.Server.Services.MuteExpirationService.ExecuteAsync(System.Threading.CancellationToken)">
+  ExecuteAsync(CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/MuteExpirationService.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[HttpGet(&quot;{username}/profile&quot;)]
-public Task&lt;IActionResult&gt; GetProfile(string username)</code></pre>
+    <pre><code class="lang-csharp hljs">protected override Task ExecuteAsync(CancellationToken stoppingToken)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
-    <dt><code>username</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dt><code>stoppingToken</code> <span class="xref">CancellationToken</span></dt>
     <dd></dd>
   </dl>
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
-    <dt><span class="xref">Task</span>&lt;<span class="xref">IActionResult</span>&gt;</dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
-
-
-
-  <a id="EchoHub_Server_Controllers_UsersController_UpdateProfile_" data-uid="EchoHub.Server.Controllers.UsersController.UpdateProfile*"></a>
-
-  <h3 id="EchoHub_Server_Controllers_UsersController_UpdateProfile_EchoHub_Core_DTOs_UpdateProfileRequest_" data-uid="EchoHub.Server.Controllers.UsersController.UpdateProfile(EchoHub.Core.DTOs.UpdateProfileRequest)">
-  UpdateProfile(UpdateProfileRequest)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/UsersController.cs"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"></div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[HttpPut(&quot;profile&quot;)]
-public Task&lt;IActionResult&gt; UpdateProfile(UpdateProfileRequest request)</code></pre>
-  </div>
-
-  <h4 class="section">Parameters</h4>
-  <dl class="parameters">
-    <dt><code>request</code> <a class="xref" href="../core/EchoHub.Core.DTOs.UpdateProfileRequest.html">UpdateProfileRequest</a></dt>
-    <dd></dd>
-  </dl>
-
-  <h4 class="section">Returns</h4>
-  <dl class="parameters">
-    <dt><span class="xref">Task</span>&lt;<span class="xref">IActionResult</span>&gt;</dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
-
-
-
-  <a id="EchoHub_Server_Controllers_UsersController_UploadAvatar_" data-uid="EchoHub.Server.Controllers.UsersController.UploadAvatar*"></a>
-
-  <h3 id="EchoHub_Server_Controllers_UsersController_UploadAvatar" data-uid="EchoHub.Server.Controllers.UsersController.UploadAvatar">
-  UploadAvatar()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/UsersController.cs"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"></div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[HttpPost(&quot;avatar&quot;)]
-[EnableRateLimiting(&quot;upload&quot;)]
-public Task&lt;IActionResult&gt; UploadAvatar()</code></pre>
-  </div>
-
-
-  <h4 class="section">Returns</h4>
-  <dl class="parameters">
-    <dt><span class="xref">Task</span>&lt;<span class="xref">IActionResult</span>&gt;</dt>
+    <dt><span class="xref">Task</span></dt>
     <dd></dd>
   </dl>
 
@@ -305,7 +234,7 @@ public Task&lt;IActionResult&gt; UploadAvatar()</code></pre>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/UsersController.cs" class="edit-link">Edit this page</a>
+          <a href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/MuteExpirationService.cs" class="edit-link">Edit this page</a>
         </div>
 
 
