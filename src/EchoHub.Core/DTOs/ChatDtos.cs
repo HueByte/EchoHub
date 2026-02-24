@@ -39,6 +39,8 @@ public record UpdateTopicRequest(string? Topic);
 
 public record SendUrlRequest(string Url);
 
+public record JoinChannelResult(bool Success, List<MessageDto> History, string? Error = null);
+
 public record EmbedDto(
     string? SiteName,
     string? Title,
