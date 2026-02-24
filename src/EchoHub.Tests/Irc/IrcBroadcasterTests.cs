@@ -132,7 +132,7 @@ public class IrcBroadcasterTests
     {
         var (_, bobStream) = AddConnectionWithCapture("bob", "general");
 
-        await _broadcaster.SendUserJoinedAsync("general", "alice");
+        await _broadcaster.SendUserJoinedAsync("general", "alice", null);
 
         var output = bobStream.GetOutputLines();
         Assert.Contains(output, l => l.Contains("JOIN #general") && l.Contains("alice"));
@@ -144,7 +144,7 @@ public class IrcBroadcasterTests
         var (conn, excludedStream) = AddConnectionWithCapture("alice", "general");
         var (_, bobStream) = AddConnectionWithCapture("bob", "general");
 
-        await _broadcaster.SendUserJoinedAsync("general", "alice", conn.ConnectionId);
+        await _broadcaster.SendUserJoinedAsync("general", "alice", null, conn.ConnectionId);
 
         // Excluded connection should not get the message
         Assert.Empty(excludedStream.GetOutputLines());

@@ -272,7 +272,10 @@ public sealed class ChatMessageManager
         }
 
         foreach (var line in lines)
+        {
             line.MessageId = message.Id;
+            line.SenderUsername = message.SenderUsername;
+        }
 
         if (!string.IsNullOrEmpty(_currentUser) && message.Type == MessageType.Text)
         {
@@ -329,18 +332,20 @@ public sealed class ChatMessageManager
         int textWidth = chatWidth - indentCols - borderCols;
         if (textWidth < 20) textWidth = 20;
 
+        var borderAttr = HexColorHelper.ParseHexColor(embed.ThemeColor) ?? ChatColors.EmbedBorderAttr;
+
         void AddTextLine(string text, Attribute? color)
         {
             lines.Add(new ChatLine(
             [
                 new ChatSegment(indent, null),
-                new ChatSegment(border, ChatColors.EmbedBorderAttr),
+                new ChatSegment(border, borderAttr),
                 new ChatSegment(text, color)
             ]));
         }
 
         if (!string.IsNullOrWhiteSpace(embed.SiteName))
-            AddTextLine(embed.SiteName, ChatColors.EmbedBorderAttr);
+            AddTextLine(embed.SiteName, borderAttr);
 
         if (!string.IsNullOrWhiteSpace(embed.Title))
         {

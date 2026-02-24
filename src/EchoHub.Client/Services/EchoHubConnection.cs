@@ -11,7 +11,7 @@ public sealed class EchoHubConnection : IAsyncDisposable
     private readonly ClientEncryptionService _encryption;
 
     public event Action<MessageDto>? OnMessageReceived;
-    public event Action<string, string>? OnUserJoined;
+    public event Action<string, string, UserPresenceDto?>? OnUserJoined;
     public event Action<string, string>? OnUserLeft;
     public event Action<ChannelDto>? OnChannelUpdated;
     public event Action<UserPresenceDto>? OnUserStatusChanged;
@@ -70,9 +70,9 @@ public sealed class EchoHubConnection : IAsyncDisposable
             OnMessageReceived?.Invoke(decrypted);
         });
 
-        _connection.On<string, string>(nameof(Core.Contracts.IEchoHubClient.UserJoined), (channelName, username) =>
+        _connection.On<string, string, UserPresenceDto?>(nameof(Core.Contracts.IEchoHubClient.UserJoined), (channelName, username, presence) =>
         {
-            OnUserJoined?.Invoke(channelName, username);
+            OnUserJoined?.Invoke(channelName, username, presence);
         });
 
         _connection.On<string, string>(nameof(Core.Contracts.IEchoHubClient.UserLeft), (channelName, username) =>

@@ -44,4 +44,5 @@ public record EmbedDto(
     string? Title,
     string? Description,
     string? ImageAscii,
-    string Url);
+    string Url,
+    string? ThemeColor = null);

@@ -109,6 +109,7 @@ while (true)
         builder.Services.AddSingleton<LinkEmbedService>();
         builder.Services.AddHostedService<ServerDirectoryService>();
         builder.Services.AddHostedService<FileCleanupService>();
+        builder.Services.AddHostedService<MuteExpirationService>();
 
         // ── Encryption ─────────────────────────────────────────────────────
         builder.Services.AddSingleton<IMessageEncryptionService, MessageEncryptionService>();

@@ -35,7 +35,7 @@ internal sealed class ConnectionManager : IAsyncDisposable
     // ── Events (forwarded from SignalR) ───────────────────────────────────
 
     public event Action<MessageDto>? MessageReceived;
-    public event Action<string, string>? UserJoined;
+    public event Action<string, string, UserPresenceDto?>? UserJoined;
     public event Action<string, string>? UserLeft;
     public event Action<UserPresenceDto>? UserStatusChanged;
     public event Action<string, string, string?>? UserKicked;
@@ -234,7 +234,7 @@ internal sealed class ConnectionManager : IAsyncDisposable
     private void WireConnectionEvents(EchoHubConnection connection)
     {
         connection.OnMessageReceived += msg => MessageReceived?.Invoke(msg);
-        connection.OnUserJoined += (ch, user) => UserJoined?.Invoke(ch, user);
+        connection.OnUserJoined += (ch, user, presence) => UserJoined?.Invoke(ch, user, presence);
         connection.OnUserLeft += (ch, user) => UserLeft?.Invoke(ch, user);
         connection.OnUserStatusChanged += p => UserStatusChanged?.Invoke(p);
         connection.OnUserKicked += (ch, user, reason) => UserKicked?.Invoke(ch, user, reason);

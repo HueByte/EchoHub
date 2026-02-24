@@ -108,8 +108,46 @@ public partial class LinkEmbedService
         siteName = siteName is not null ? WebUtility.HtmlDecode(siteName) : null;
         description = description is not null ? WebUtility.HtmlDecode(description) : null;
 
-        return new EmbedDto(siteName, title, description, null, url);
+        // Extract theme-color meta tag for embed border color
+        var themeColor = ParseThemeColor(html);
+
+        return new EmbedDto(siteName, title, description, null, url, themeColor);
     }
+
+    private static string? ParseThemeColor(string html)
+    {
+        // ThemeColorRegex: group 3 = color value
+        var match = ThemeColorRegex().Match(html);
+        var color = match.Success ? match.Groups[3].Value.Trim() : null;
+
+        if (color is null)
+        {
+            // ThemeColorReversedRegex: group 2 = color value
+            match = ThemeColorReversedRegex().Match(html);
+            color = match.Success ? match.Groups[2].Value.Trim() : null;
+        }
+
+        if (color is null)
+            return null;
+
+        if (color.Length == 4 && color[0] == '#'
+            && IsHexDigit(color[1]) && IsHexDigit(color[2]) && IsHexDigit(color[3]))
+        {
+            // Expand #RGB to #RRGGBB
+            return $"#{color[1]}{color[1]}{color[2]}{color[2]}{color[3]}{color[3]}";
+        }
+
+        if (color.Length == 7 && color[0] == '#'
+            && color[1..].All(IsHexDigit))
+        {
+            return color;
+        }
+
+        return null;
+    }
+
+    private static bool IsHexDigit(char c) =>
+        c is (>= '0' and <= '9') or (>= 'a' and <= 'f') or (>= 'A' and <= 'F');
 
     private static List<string> ExtractUrls(string content)
     {
@@ -213,4 +251,14 @@ public partial class LinkEmbedService
 
     [GeneratedRegex(@"<title[^>]*>([^<]+)</title>", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
     private static partial Regex TitleTagRegex();
+
+    // <meta name="theme-color" content="#hex">
+    [GeneratedRegex(@"<meta\s+[^>]*?name\s*=\s*([""'])theme-color\1[^>]*?content\s*=\s*([""'])(.*?)\2[^>]*/?>",
+        RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled)]
+    private static partial Regex ThemeColorRegex();
+
+    // <meta content="#hex" name="theme-color">
+    [GeneratedRegex(@"<meta\s+[^>]*?content\s*=\s*([""'])(.*?)\1[^>]*?name\s*=\s*([""'])theme-color\3[^>]*/?>",
+        RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled)]
+    private static partial Regex ThemeColorReversedRegex();
 }

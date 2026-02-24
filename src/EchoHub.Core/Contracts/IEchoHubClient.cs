@@ -8,7 +8,7 @@ namespace EchoHub.Core.Contracts;
 public interface IEchoHubClient
 {
     Task ReceiveMessage(MessageDto message);
-    Task UserJoined(string channelName, string username);
+    Task UserJoined(string channelName, string username, UserPresenceDto? presence);
     Task UserLeft(string channelName, string username);
     Task ChannelUpdated(ChannelDto channel);
     Task UserStatusChanged(UserPresenceDto presence);
