@@ -9,7 +9,9 @@
     // Allow inline HTML (docfx uses it)
     "MD033": false,
     // Allow bare URLs
-    "MD034": false
+    "MD034": false,
+    // Allow compact table pipe style (flow docs use compact tables)
+    "MD060": false
   },
 
   "globs": ["**/*.md"],
