@@ -928,7 +928,7 @@ public sealed partial class MainWindow : Runnable
                 ServerRole.Mod => "\u2740 ",   // ❀
                 _ => ""
             };
-            var text = $"{statusIcon} {roleTag}{name}";
+            var text = $"{statusIcon} {roleTag} {name}";
             var nameColor = HexColorHelper.ParseHexColor(u.NicknameColor);
             return (text, nameColor, u.Username);
         }).ToList();
