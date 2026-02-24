@@ -6,6 +6,8 @@
       href: docker.md
     - name: Architecture
       href: architecture.md
+    - name: Configuration
+      href: configuration.md
     - name: Encryption
       href: encryption.md
     - name: Notification Sounds

@@ -33,14 +33,6 @@ sequenceDiagram
     CC-->>Client: 201 Created (ChannelDto)
 ```
 
-**Code references:**
-
-| Step | File | Location |
-|------|------|----------|
-| Controller endpoint | `src/EchoHub.Server/Controllers/ChannelsController.cs` | Lines 60-76 |
-| Channel service create | `src/EchoHub.Server/Services/ChannelService.cs` | Lines 50-90 |
-| Broadcast updated | `src/EchoHub.Server/Services/ChatService.cs` | Lines 308-309 |
-
 ---
 
 ## Channel Deletion
@@ -64,13 +56,6 @@ sequenceDiagram
     ChS-->>CC: Success
     CC-->>Client: 204 No Content
 ```
-
-**Code references:**
-
-| Step | File | Location |
-|------|------|----------|
-| Controller endpoint | `src/EchoHub.Server/Controllers/ChannelsController.cs` | Lines 94-106 |
-| Channel service delete | `src/EchoHub.Server/Services/ChannelService.cs` | Lines 119-144 |
 
 ---
 
@@ -114,17 +99,6 @@ sequenceDiagram
     Entry-->>Client: History messages
 ```
 
-**Code references:**
-
-| Step | File | Location |
-|------|------|----------|
-| SignalR hub join | `src/EchoHub.Server/Hubs/ChatHub.cs` | Lines 59-81 |
-| IRC join | `src/EchoHub.Server.Irc/IrcCommandHandler.cs` | Lines 361-414 |
-| ChatService join | `src/EchoHub.Server/Services/ChatService.cs` | Lines 96-135 |
-| Presence join | `src/EchoHub.Server/Services/PresenceTracker.cs` | Lines 58-70 |
-| SignalR broadcast | `src/EchoHub.Server/Services/SignalRBroadcaster.cs` | Lines 26-32 |
-| IRC broadcast | `src/EchoHub.Server.Irc/IrcBroadcaster.cs` | Lines 34-41 |
-
 ---
 
 ## Leaving a Channel
@@ -148,12 +122,3 @@ sequenceDiagram
         CS->>IRCB: SendUserLeftAsync(channel, username)
     end
 ```
-
-**Code references:**
-
-| Step | File | Location |
-|------|------|----------|
-| SignalR hub leave | `src/EchoHub.Server/Hubs/ChatHub.cs` | Lines 83-96 |
-| IRC part | `src/EchoHub.Server.Irc/IrcCommandHandler.cs` | Lines 416-435 |
-| ChatService leave | `src/EchoHub.Server/Services/ChatService.cs` | Lines 137-143 |
-| Presence leave | `src/EchoHub.Server/Services/PresenceTracker.cs` | Lines 72-81 |

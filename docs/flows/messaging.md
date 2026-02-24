@@ -45,22 +45,6 @@ sequenceDiagram
     end
 ```
 
-**Code references:**
-
-| Step | File | Location |
-|------|------|----------|
-| Input handler | `src/EchoHub.Client/UI/MainWindow.cs` | Lines 428-449 (`OnInputKeyDown`) |
-| Orchestrator dispatch | `src/EchoHub.Client/AppOrchestrator.cs` | Lines 631-661 (`HandleMessageSubmitted`) |
-| Client encrypt + send | `src/EchoHub.Client/Services/EchoHubConnection.cs` | Lines 148-153 (`SendMessageAsync`) |
-| Hub receive | `src/EchoHub.Server/Hubs/ChatHub.cs` | Lines 98-111 (`SendMessage`) |
-| ChatService process | `src/EchoHub.Server/Services/ChatService.cs` | Lines 145-241 (`SendMessageAsync`) |
-| Mute check | `src/EchoHub.Server/Services/ChatService.cs` | Lines 177-190 |
-| Link embeds | `src/EchoHub.Server/Services/LinkEmbedService.cs` | Lines 28-51 (`TryGetEmbedsAsync`) |
-| DB insert | `src/EchoHub.Server/Services/ChatService.cs` | Lines 208-221 |
-| Broadcast fan-out | `src/EchoHub.Server/Services/ChatService.cs` | Lines 311-324 (`BroadcastToAllAsync`) |
-| SignalR broadcast | `src/EchoHub.Server/Services/SignalRBroadcaster.cs` | Lines 23-24 |
-| IRC broadcast | `src/EchoHub.Server.Irc/IrcBroadcaster.cs` | Lines 17-32 |
-
 ---
 
 ## Sending a Message (IRC)
@@ -94,15 +78,6 @@ sequenceDiagram
     end
 ```
 
-**Code references:**
-
-| Step | File | Location |
-|------|------|----------|
-| PRIVMSG handler | `src/EchoHub.Server.Irc/IrcCommandHandler.cs` | Lines 437-469 |
-| Channel name conversion | `src/EchoHub.Server.Irc/IrcCommandHandler.cs` | Line 680 (`IrcToEchoHubChannel`) |
-| ChatService (shared path) | `src/EchoHub.Server/Services/ChatService.cs` | Lines 145-241 |
-| IRC echo suppression | `src/EchoHub.Server.Irc/IrcBroadcaster.cs` | Lines 25-26 |
-
 ---
 
 ## Receiving a Message (TUI Client)
@@ -128,14 +103,6 @@ sequenceDiagram
         AO->>AO: PlayAsync() notification sound
     end
 ```
-
-**Code references:**
-
-| Step | File | Location |
-|------|------|----------|
-| SignalR handler | `src/EchoHub.Client/Services/EchoHubConnection.cs` | Lines 64-71 |
-| Orchestrator receive | `src/EchoHub.Client/AppOrchestrator.cs` | Lines 372-383 |
-| @mention detection | `src/EchoHub.Client/AppOrchestrator.cs` | Lines 378-382 |
 
 ---
 
@@ -199,12 +166,3 @@ sequenceDiagram
 | `/users` | Local | Show userlist |
 | `/help` | Local | Show help text |
 | `/quit` | Local | Exit application |
-
-**Code references:**
-
-| Step | File | Location |
-|------|------|----------|
-| Command detection | `src/EchoHub.Client/AppOrchestrator.cs` | Lines 639-655 |
-| Command dispatch | `src/EchoHub.Client/Commands/CommandHandler.cs` | Lines 34-69 (`HandleAsync`) |
-| Command handlers wired | `src/EchoHub.Client/AppOrchestrator.cs` | Lines 97-117 |
-| Individual handlers | `src/EchoHub.Client/AppOrchestrator.cs` | Lines 122-350 |

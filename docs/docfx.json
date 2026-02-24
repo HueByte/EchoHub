@@ -85,7 +85,7 @@
       "_appTitle": "EchoHub Documentation",
       "_appLogoPath": "images/hue_icon.svg",
       "_appFaviconPath": "images/hue_icon.svg",
-      "_appFooter": "<div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a><span class='footer-sep'>&middot;</span><span class='footer-credit'>Built with <a href='https://dotnet.github.io/docfx'>DocFX</a></span></div></div>",
+      "_appFooter": "<div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a></div></div>",
       "_enableSearch": true,
       "_disableContribution": false,
       "_gitContribute": {

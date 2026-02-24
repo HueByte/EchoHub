@@ -24,26 +24,17 @@ services:
 
 ## Configuration
 
-All settings are configured through the `.env` file. These are ASP.NET Core environment variables that override `appsettings.json`.
+All settings are configured through the `.env` file. These are environment variables that override `appsettings.json` — the `__` (double underscore) maps to JSON nesting levels. For example, `Server__Name` overrides the `Server:Name` key in `appsettings.json`.
+
+See the [Configuration](configuration.md) guide for the full reference of all available settings and how the override hierarchy works.
+
+Common Docker-relevant variables:
 
 | Variable | Default | Description |
 | --- | --- | --- |
 | `Server__Name` | My EchoHub Server | Display name for your server |
-| `Server__Description` | A self-hosted EchoHub chat server | Server description |
-| `Server__PublicServer` | `false` | List on the [public directory](https://echohub.voidcube.cloud/servers) |
-| `Server__PublicHost` | *(empty)* | Public address for the directory listing |
 | `Server__Admins__0` | *(empty)* | Admin username (use `__1`, `__2` for more) |
-| `Jwt__Secret` | *(auto-generated)* | JWT signing key. Auto-generated on first run |
-| `Encryption__Key` | *(auto-generated)* | AES encryption key. Auto-generated on first run |
-| `Encryption__EncryptDatabase` | `false` | Encrypt message content in the database |
-| `Storage__CleanupIntervalHours` | `1` | How often to clean expired uploads |
-| `Storage__RetentionDays` | `30` | Days to keep uploaded files |
 | `Irc__Enabled` | `false` | Enable the IRC gateway |
-| `Irc__Port` | `6667` | IRC plain-text port |
-| `Irc__TlsEnabled` | `false` | Enable IRC over TLS |
-| `Irc__TlsPort` | `6697` | IRC TLS port |
-| `Irc__ServerName` | `echohub` | IRC server name shown to clients |
-| `Irc__Motd` | Welcome to EchoHub IRC Gateway! | Message of the day |
 | `Serilog__MinimumLevel__Default` | `Information` | Log level (`Debug`, `Warning`, etc.) |
 
 ## Persistent Data
