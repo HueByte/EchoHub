@@ -116,33 +116,6 @@ connected clients.</p>
 
     CC--&gt;&gt;Client: 201 Created (ChannelDto)
 </code></pre>
-<p><strong>Code references:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Step</th>
-<th>File</th>
-<th>Location</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Controller endpoint</td>
-<td><code>src/EchoHub.Server/Controllers/ChannelsController.cs</code></td>
-<td>Lines 60-76</td>
-</tr>
-<tr>
-<td>Channel service create</td>
-<td><code>src/EchoHub.Server/Services/ChannelService.cs</code></td>
-<td>Lines 50-90</td>
-</tr>
-<tr>
-<td>Broadcast updated</td>
-<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
-<td>Lines 308-309</td>
-</tr>
-</tbody>
-</table>
 <hr>
 <h2 id="channel-deletion">Channel Deletion</h2>
 <p>Only the channel creator (or admin) can delete a channel. The default channel
@@ -162,28 +135,6 @@ is protected.</p>
     ChS--&gt;&gt;CC: Success
     CC--&gt;&gt;Client: 204 No Content
 </code></pre>
-<p><strong>Code references:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Step</th>
-<th>File</th>
-<th>Location</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Controller endpoint</td>
-<td><code>src/EchoHub.Server/Controllers/ChannelsController.cs</code></td>
-<td>Lines 94-106</td>
-</tr>
-<tr>
-<td>Channel service delete</td>
-<td><code>src/EchoHub.Server/Services/ChannelService.cs</code></td>
-<td>Lines 119-144</td>
-</tr>
-</tbody>
-</table>
 <hr>
 <h2 id="joining-a-channel">Joining a Channel</h2>
 <p>Both SignalR and IRC clients join channels through <code>ChatService</code>. The presence
@@ -221,48 +172,6 @@ broadcasts accordingly.</p>
     CS--&gt;&gt;Entry: (history, error)
     Entry--&gt;&gt;Client: History messages
 </code></pre>
-<p><strong>Code references:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Step</th>
-<th>File</th>
-<th>Location</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>SignalR hub join</td>
-<td><code>src/EchoHub.Server/Hubs/ChatHub.cs</code></td>
-<td>Lines 59-81</td>
-</tr>
-<tr>
-<td>IRC join</td>
-<td><code>src/EchoHub.Server.Irc/IrcCommandHandler.cs</code></td>
-<td>Lines 361-414</td>
-</tr>
-<tr>
-<td>ChatService join</td>
-<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
-<td>Lines 96-135</td>
-</tr>
-<tr>
-<td>Presence join</td>
-<td><code>src/EchoHub.Server/Services/PresenceTracker.cs</code></td>
-<td>Lines 58-70</td>
-</tr>
-<tr>
-<td>SignalR broadcast</td>
-<td><code>src/EchoHub.Server/Services/SignalRBroadcaster.cs</code></td>
-<td>Lines 26-32</td>
-</tr>
-<tr>
-<td>IRC broadcast</td>
-<td><code>src/EchoHub.Server.Irc/IrcBroadcaster.cs</code></td>
-<td>Lines 34-41</td>
-</tr>
-</tbody>
-</table>
 <hr>
 <h2 id="leaving-a-channel">Leaving a Channel</h2>
 <pre><code class="lang-mermaid">sequenceDiagram
@@ -283,38 +192,6 @@ broadcasts accordingly.</p>
         CS-&gt;&gt;IRCB: SendUserLeftAsync(channel, username)
     end
 </code></pre>
-<p><strong>Code references:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Step</th>
-<th>File</th>
-<th>Location</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>SignalR hub leave</td>
-<td><code>src/EchoHub.Server/Hubs/ChatHub.cs</code></td>
-<td>Lines 83-96</td>
-</tr>
-<tr>
-<td>IRC part</td>
-<td><code>src/EchoHub.Server.Irc/IrcCommandHandler.cs</code></td>
-<td>Lines 416-435</td>
-</tr>
-<tr>
-<td>ChatService leave</td>
-<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
-<td>Lines 137-143</td>
-</tr>
-<tr>
-<td>Presence leave</td>
-<td><code>src/EchoHub.Server/Services/PresenceTracker.cs</code></td>
-<td>Lines 72-81</td>
-</tr>
-</tbody>
-</table>
 
 </article>
 
@@ -336,7 +213,7 @@ broadcasts accordingly.</p>
     <footer class="border-top text-secondary">
       <div class="container-xxl">
         <div class="flex-fill">
-          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a><span class='footer-sep'>&middot;</span><span class='footer-credit'>Built with <a href='https://dotnet.github.io/docfx'>DocFX</a></span></div></div>
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a></div></div>
         </div>
       </div>
     </footer>

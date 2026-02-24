@@ -128,73 +128,6 @@ clients.</p>
         IRCB-&gt;&gt;Clients: Send to each IRC conn (skip sender)
     end
 </code></pre>
-<p><strong>Code references:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Step</th>
-<th>File</th>
-<th>Location</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Input handler</td>
-<td><code>src/EchoHub.Client/UI/MainWindow.cs</code></td>
-<td>Lines 428-449 (<code>OnInputKeyDown</code>)</td>
-</tr>
-<tr>
-<td>Orchestrator dispatch</td>
-<td><code>src/EchoHub.Client/AppOrchestrator.cs</code></td>
-<td>Lines 631-661 (<code>HandleMessageSubmitted</code>)</td>
-</tr>
-<tr>
-<td>Client encrypt + send</td>
-<td><code>src/EchoHub.Client/Services/EchoHubConnection.cs</code></td>
-<td>Lines 148-153 (<code>SendMessageAsync</code>)</td>
-</tr>
-<tr>
-<td>Hub receive</td>
-<td><code>src/EchoHub.Server/Hubs/ChatHub.cs</code></td>
-<td>Lines 98-111 (<code>SendMessage</code>)</td>
-</tr>
-<tr>
-<td>ChatService process</td>
-<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
-<td>Lines 145-241 (<code>SendMessageAsync</code>)</td>
-</tr>
-<tr>
-<td>Mute check</td>
-<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
-<td>Lines 177-190</td>
-</tr>
-<tr>
-<td>Link embeds</td>
-<td><code>src/EchoHub.Server/Services/LinkEmbedService.cs</code></td>
-<td>Lines 28-51 (<code>TryGetEmbedsAsync</code>)</td>
-</tr>
-<tr>
-<td>DB insert</td>
-<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
-<td>Lines 208-221</td>
-</tr>
-<tr>
-<td>Broadcast fan-out</td>
-<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
-<td>Lines 311-324 (<code>BroadcastToAllAsync</code>)</td>
-</tr>
-<tr>
-<td>SignalR broadcast</td>
-<td><code>src/EchoHub.Server/Services/SignalRBroadcaster.cs</code></td>
-<td>Lines 23-24</td>
-</tr>
-<tr>
-<td>IRC broadcast</td>
-<td><code>src/EchoHub.Server.Irc/IrcBroadcaster.cs</code></td>
-<td>Lines 17-32</td>
-</tr>
-</tbody>
-</table>
 <hr>
 <h2 id="sending-a-message-irc">Sending a Message (IRC)</h2>
 <p>Messages from IRC clients follow the same <code>ChatService</code> path but enter as
@@ -223,38 +156,6 @@ plaintext (no app-layer encryption).</p>
         IRCB-&gt;&gt;IRCB: Skip sender (IRC echo suppression)
     end
 </code></pre>
-<p><strong>Code references:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Step</th>
-<th>File</th>
-<th>Location</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>PRIVMSG handler</td>
-<td><code>src/EchoHub.Server.Irc/IrcCommandHandler.cs</code></td>
-<td>Lines 437-469</td>
-</tr>
-<tr>
-<td>Channel name conversion</td>
-<td><code>src/EchoHub.Server.Irc/IrcCommandHandler.cs</code></td>
-<td>Line 680 (<code>IrcToEchoHubChannel</code>)</td>
-</tr>
-<tr>
-<td>ChatService (shared path)</td>
-<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
-<td>Lines 145-241</td>
-</tr>
-<tr>
-<td>IRC echo suppression</td>
-<td><code>src/EchoHub.Server.Irc/IrcBroadcaster.cs</code></td>
-<td>Lines 25-26</td>
-</tr>
-</tbody>
-</table>
 <hr>
 <h2 id="receiving-a-message-tui-client">Receiving a Message (TUI Client)</h2>
 <p>When a message arrives via SignalR, the client decrypts it, adds it to the chat
@@ -276,33 +177,6 @@ view, and optionally plays a notification sound for @mentions.</p>
         AO-&gt;&gt;AO: PlayAsync() notification sound
     end
 </code></pre>
-<p><strong>Code references:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Step</th>
-<th>File</th>
-<th>Location</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>SignalR handler</td>
-<td><code>src/EchoHub.Client/Services/EchoHubConnection.cs</code></td>
-<td>Lines 64-71</td>
-</tr>
-<tr>
-<td>Orchestrator receive</td>
-<td><code>src/EchoHub.Client/AppOrchestrator.cs</code></td>
-<td>Lines 372-383</td>
-</tr>
-<tr>
-<td>@mention detection</td>
-<td><code>src/EchoHub.Client/AppOrchestrator.cs</code></td>
-<td>Lines 378-382</td>
-</tr>
-</tbody>
-</table>
 <hr>
 <h2 id="command-execution">Command Execution</h2>
 <p>Slash commands (<code>/status</code>, <code>/nick</code>, <code>/kick</code>, etc.) are parsed client-side and
@@ -452,38 +326,6 @@ dispatched to appropriate handlers, which call REST APIs or SignalR methods.</p>
 </tr>
 </tbody>
 </table>
-<p><strong>Code references:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Step</th>
-<th>File</th>
-<th>Location</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Command detection</td>
-<td><code>src/EchoHub.Client/AppOrchestrator.cs</code></td>
-<td>Lines 639-655</td>
-</tr>
-<tr>
-<td>Command dispatch</td>
-<td><code>src/EchoHub.Client/Commands/CommandHandler.cs</code></td>
-<td>Lines 34-69 (<code>HandleAsync</code>)</td>
-</tr>
-<tr>
-<td>Command handlers wired</td>
-<td><code>src/EchoHub.Client/AppOrchestrator.cs</code></td>
-<td>Lines 97-117</td>
-</tr>
-<tr>
-<td>Individual handlers</td>
-<td><code>src/EchoHub.Client/AppOrchestrator.cs</code></td>
-<td>Lines 122-350</td>
-</tr>
-</tbody>
-</table>
 
 </article>
 
@@ -505,7 +347,7 @@ dispatched to appropriate handlers, which call REST APIs or SignalR methods.</p>
     <footer class="border-top text-secondary">
       <div class="container-xxl">
         <div class="flex-fill">
-          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a><span class='footer-sep'>&middot;</span><span class='footer-credit'>Built with <a href='https://dotnet.github.io/docfx'>DocFX</a></span></div></div>
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a></div></div>
         </div>
       </div>
     </footer>

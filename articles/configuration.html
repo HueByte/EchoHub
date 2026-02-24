@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Configuration | EchoHub Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Configuration | EchoHub Documentation ">
+      
+      
+      <link rel="icon" href="../images/hue_icon.svg">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/blob/master/docs/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/hue_icon.svg" alt="EchoHub">
+            EchoHub
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="configuration">Configuration</h1>
+
+<p>EchoHub Server generates an <code>appsettings.json</code> with sensible defaults on first run (including a random JWT secret), so you can launch and start chatting immediately. Tweak things later when you feel like it.</p>
+<div class="NOTE">
+<h5>Note</h5>
+<p>Under the hood, EchoHub Server is built on ASP.NET Core, so it inherits the standard .NET configuration system. If you're familiar with that, everything works exactly as you'd expect. If not — no worries, this page covers everything you need.</p>
+</div>
+<h2 id="how-it-works">How It Works</h2>
+<p>EchoHub Server loads settings from multiple sources. Each source <strong>overrides</strong> the previous one, so you can layer defaults with environment-specific values:</p>
+<pre><code class="lang-text">1. appsettings.json                   (base defaults)
+2. appsettings.{Environment}.json     (e.g. appsettings.Production.json)
+3. Environment variables              (great for Docker / CI)
+4. Command-line arguments             (highest priority)
+</code></pre>
+<p>The last one wins. If <code>appsettings.json</code> says <code>&quot;Irc:Port&quot;: 6667</code> but you pass <code>--Irc:Port=7000</code> on the command line, port 7000 is what you get.</p>
+<p>In practice this means you can leave <code>appsettings.json</code> alone and override just the settings you care about using environment variables or CLI flags — no need to edit JSON files if that's not your thing.</p>
+<h3 id="environment-variable-mapping">Environment Variable Mapping</h3>
+<p>Environment variables use <strong>double underscores</strong> (<code>__</code>) in place of the JSON nesting. The rule is simple — replace every <code>:</code> (or each level of JSON nesting) with <code>__</code>:</p>
+<table>
+<thead>
+<tr>
+<th>appsettings.json path</th>
+<th>Environment variable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Server:Name</code></td>
+<td><code>Server__Name</code></td>
+</tr>
+<tr>
+<td><code>Irc:Enabled</code></td>
+<td><code>Irc__Enabled</code></td>
+</tr>
+<tr>
+<td><code>Jwt:Secret</code></td>
+<td><code>Jwt__Secret</code></td>
+</tr>
+<tr>
+<td><code>Serilog:MinimumLevel:Default</code></td>
+<td><code>Serilog__MinimumLevel__Default</code></td>
+</tr>
+<tr>
+<td><code>ConnectionStrings:DefaultConnection</code></td>
+<td><code>ConnectionStrings__DefaultConnection</code></td>
+</tr>
+</tbody>
+</table>
+<p>Arrays use numeric indices: <code>Server:Admins:0</code> becomes <code>Server__Admins__0</code>, <code>Server:Admins:1</code> becomes <code>Server__Admins__1</code>, and so on.</p>
+<p>This is why the Docker <code>.env</code> file uses <code>Server__Name=My Server</code> instead of JSON — Docker passes these as environment variables, and the server picks them up automatically.</p>
+<h3 id="examples">Examples</h3>
+<p>All three of these achieve the same thing — use whichever fits your setup.</p>
+<p><strong>appsettings.json</strong> (direct editing):</p>
+<pre><code class="lang-json">{
+  &quot;Server&quot;: {
+    &quot;Name&quot;: &quot;My EchoHub Server&quot;,
+    &quot;PublicServer&quot;: true
+  }
+}
+</code></pre>
+<p><strong>Environment variables</strong> (Docker, systemd, shell export):</p>
+<pre><code class="lang-bash">export Server__Name=&quot;My EchoHub Server&quot;
+export Server__PublicServer=true
+</code></pre>
+<p><strong>Command-line arguments</strong> (quick overrides, highest priority):</p>
+<pre><code class="lang-bash">./EchoHub.Server --Server:Name=&quot;My EchoHub Server&quot; --Irc:Enabled=true
+</code></pre>
+<h2 id="configuration-reference">Configuration Reference</h2>
+<p>The full <code>appsettings.json</code> is auto-generated on first run from the <a href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/appsettings.example.json">example config</a>. Here's every option:</p>
+<h3 id="general">General</h3>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Urls</code></td>
+<td><code>http://0.0.0.0:5000</code></td>
+<td>Listen address and port</td>
+</tr>
+<tr>
+<td><code>AllowedHosts</code></td>
+<td><code>*</code></td>
+<td>Allowed host headers (leave <code>*</code> unless you need host filtering)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="database">Database</h3>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ConnectionStrings:DefaultConnection</code></td>
+<td><em>(empty)</em></td>
+<td>SQLite connection string. Empty = <code>echohub.db</code> in the app directory</td>
+</tr>
+</tbody>
+</table>
+<h3 id="authentication">Authentication</h3>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Jwt:Secret</code></td>
+<td><em>(auto-generated)</em></td>
+<td>Signing key (min 32 chars). Auto-generated on first run</td>
+</tr>
+<tr>
+<td><code>Jwt:Issuer</code></td>
+<td><code>EchoHub.Server</code></td>
+<td>JWT issuer claim</td>
+</tr>
+<tr>
+<td><code>Jwt:Audience</code></td>
+<td><code>EchoHub.Client</code></td>
+<td>JWT audience claim</td>
+</tr>
+</tbody>
+</table>
+<p>Access tokens expire after 15 minutes, refresh tokens after 30 days with rotation on each use.</p>
+<h3 id="server-identity">Server Identity</h3>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Server:Name</code></td>
+<td><code>My EchoHub Server</code></td>
+<td>Display name shown to clients</td>
+</tr>
+<tr>
+<td><code>Server:Description</code></td>
+<td><code>A self-hosted EchoHub chat server</code></td>
+<td>Server description</td>
+</tr>
+<tr>
+<td><code>Server:PublicServer</code></td>
+<td><code>false</code></td>
+<td>Register on the <a href="https://echohub.voidcube.cloud/servers">public directory</a></td>
+</tr>
+<tr>
+<td><code>Server:PublicHost</code></td>
+<td><em>(empty)</em></td>
+<td>Public hostname for the directory listing (e.g. <code>chat.example.com:5000</code>)</td>
+</tr>
+<tr>
+<td><code>Server:Admins</code></td>
+<td><code>[]</code></td>
+<td>Array of admin usernames (e.g. <code>[&quot;alice&quot;, &quot;bob&quot;]</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="encryption">Encryption</h3>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Encryption:Key</code></td>
+<td><em>(auto-generated)</em></td>
+<td>AES key for message encryption in transit</td>
+</tr>
+<tr>
+<td><code>Encryption:EncryptDatabase</code></td>
+<td><code>false</code></td>
+<td>Also encrypt message content at rest in SQLite</td>
+</tr>
+</tbody>
+</table>
+<h3 id="storage">Storage</h3>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Storage:CleanupIntervalHours</code></td>
+<td><code>1</code></td>
+<td>How often the cleanup job runs (hours)</td>
+</tr>
+<tr>
+<td><code>Storage:RetentionDays</code></td>
+<td><code>30</code></td>
+<td>Days to keep uploaded files before cleanup</td>
+</tr>
+</tbody>
+</table>
+<h3 id="irc-gateway">IRC Gateway</h3>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Irc:Enabled</code></td>
+<td><code>false</code></td>
+<td>Enable the IRC protocol gateway</td>
+</tr>
+<tr>
+<td><code>Irc:Port</code></td>
+<td><code>6667</code></td>
+<td>IRC plain-text listen port</td>
+</tr>
+<tr>
+<td><code>Irc:TlsEnabled</code></td>
+<td><code>false</code></td>
+<td>Enable TLS termination for IRC</td>
+</tr>
+<tr>
+<td><code>Irc:TlsPort</code></td>
+<td><code>6697</code></td>
+<td>IRC TLS listen port</td>
+</tr>
+<tr>
+<td><code>Irc:TlsCertPath</code></td>
+<td><em>(empty)</em></td>
+<td>Path to a PKCS#12 (<code>.pfx</code>) certificate</td>
+</tr>
+<tr>
+<td><code>Irc:TlsCertPassword</code></td>
+<td><em>(empty)</em></td>
+<td>Password for the certificate file</td>
+</tr>
+<tr>
+<td><code>Irc:ServerName</code></td>
+<td><code>echohub</code></td>
+<td>IRC server name in protocol messages</td>
+</tr>
+<tr>
+<td><code>Irc:Motd</code></td>
+<td><code>Welcome to EchoHub IRC Gateway!</code></td>
+<td>Message of the day</td>
+</tr>
+</tbody>
+</table>
+<h3 id="logging">Logging</h3>
+<p>EchoHub uses <a href="https://serilog.net/">Serilog</a> for structured logging — console output + daily rolling files with 14-day retention by default.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Serilog:MinimumLevel:Default</code></td>
+<td><code>Information</code></td>
+<td>Global log level (<code>Debug</code>, <code>Information</code>, <code>Warning</code>, <code>Error</code>)</td>
+</tr>
+<tr>
+<td><code>Serilog:MinimumLevel:Override:Microsoft</code></td>
+<td><code>Warning</code></td>
+<td>Suppress noisy framework logs</td>
+</tr>
+<tr>
+<td><code>Serilog:MinimumLevel:Override:Microsoft.AspNetCore</code></td>
+<td><code>Warning</code></td>
+<td>Suppress request pipeline logs</td>
+</tr>
+<tr>
+<td><code>Serilog:MinimumLevel:Override:Microsoft.EntityFrameworkCore</code></td>
+<td><code>Warning</code></td>
+<td>Suppress database query logs</td>
+</tr>
+</tbody>
+</table>
+<p>Log files are written to <code>logs/echohub-server-YYYY-MM-DD.log</code>. To change the path or retention, edit the <code>Serilog:WriteTo</code> section in <code>appsettings.json</code>.</p>
+<p>Want more verbose output for debugging? Set the minimum level to <code>Debug</code>:</p>
+<pre><code class="lang-bash"># via environment variable
+export Serilog__MinimumLevel__Default=Debug
+
+# or command line
+./EchoHub.Server --Serilog:MinimumLevel:Default=Debug
+</code></pre>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/HueByte/EchoHub/blob/master/docs/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a></div></div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

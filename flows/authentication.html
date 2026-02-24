@@ -120,58 +120,6 @@ refresh token for &quot;Remember Me&quot; sessions.</p>
     CM-&gt;&gt;CM: Wire OnTokensRefreshed for config persistence
     CM-&gt;&gt;CM: Continue to connection setup (see Connection Flow)
 </code></pre>
-<p><strong>Code references:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Step</th>
-<th>File</th>
-<th>Location</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Dialog UI</td>
-<td><code>src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs</code></td>
-<td>Lines 251-268 (register handler)</td>
-</tr>
-<tr>
-<td>Orchestrator entry</td>
-<td><code>src/EchoHub.Client/AppOrchestrator.cs</code></td>
-<td>Lines 550-592 (<code>HandleConnect</code>)</td>
-</tr>
-<tr>
-<td>ConnectionManager auth</td>
-<td><code>src/EchoHub.Client/Services/ConnectionManager.cs</code></td>
-<td>Lines 74-76 (register branch)</td>
-</tr>
-<tr>
-<td>ApiClient register</td>
-<td><code>src/EchoHub.Client/Services/ApiClient.cs</code></td>
-<td>Lines 32-43 (<code>RegisterAsync</code>)</td>
-</tr>
-<tr>
-<td>AuthController register</td>
-<td><code>src/EchoHub.Server/Controllers/AuthController.cs</code></td>
-<td>Lines 28-49</td>
-</tr>
-<tr>
-<td>UserService register</td>
-<td><code>src/EchoHub.Server/Services/UserService.cs</code></td>
-<td>Lines 20-59 (<code>RegisterUserAsync</code>)</td>
-</tr>
-<tr>
-<td>JWT generation</td>
-<td><code>src/EchoHub.Server/Auth/JwtTokenService.cs</code></td>
-<td>Lines 30-53 (access), 80-86 (refresh)</td>
-</tr>
-<tr>
-<td>Token persistence</td>
-<td><code>src/EchoHub.Client/AppOrchestrator.cs</code></td>
-<td>Lines 1039-1053 (<code>SaveServerToConfig</code>)</td>
-</tr>
-</tbody>
-</table>
 <hr>
 <h2 id="user-login">User Login</h2>
 <p>Returning user authenticates with username/password or a saved refresh token.</p>
@@ -202,53 +150,6 @@ refresh token for &quot;Remember Me&quot; sessions.</p>
     end
     API-&gt;&gt;API: SetTokens()
 </code></pre>
-<p><strong>Code references:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Step</th>
-<th>File</th>
-<th>Location</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Login button handler</td>
-<td><code>src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs</code></td>
-<td>Lines 214-249</td>
-</tr>
-<tr>
-<td>Saved token branch</td>
-<td><code>src/EchoHub.Client/Services/ConnectionManager.cs</code></td>
-<td>Lines 69-71</td>
-</tr>
-<tr>
-<td>Password branch</td>
-<td><code>src/EchoHub.Client/Services/ConnectionManager.cs</code></td>
-<td>Lines 78-80</td>
-</tr>
-<tr>
-<td>ApiClient login</td>
-<td><code>src/EchoHub.Client/Services/ApiClient.cs</code></td>
-<td>Lines 45-56 (<code>LoginAsync</code>)</td>
-</tr>
-<tr>
-<td>AuthController login</td>
-<td><code>src/EchoHub.Server/Controllers/AuthController.cs</code></td>
-<td>Lines 51-72</td>
-</tr>
-<tr>
-<td>AuthController refresh</td>
-<td><code>src/EchoHub.Server/Controllers/AuthController.cs</code></td>
-<td>Lines 74-108</td>
-</tr>
-<tr>
-<td>UserService authenticate</td>
-<td><code>src/EchoHub.Server/Services/UserService.cs</code></td>
-<td>Lines 61-83</td>
-</tr>
-</tbody>
-</table>
 <hr>
 <h2 id="token-refresh">Token Refresh</h2>
 <p>Access tokens expire after 15 minutes. The client auto-refreshes transparently
@@ -276,53 +177,6 @@ before requests and on 401 responses. Refresh tokens are rotated on each use.</p
     API--&gt;&gt;Config: Persist new refresh token (if Remember Me)
     API-&gt;&gt;SR: Retry original request with new token
 </code></pre>
-<p><strong>Code references:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Step</th>
-<th>File</th>
-<th>Location</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Proactive check</td>
-<td><code>src/EchoHub.Client/Services/ApiClient.cs</code></td>
-<td>Lines 110-129 (<code>GetValidTokenAsync</code>)</td>
-</tr>
-<tr>
-<td>Reactive 401 retry (GET)</td>
-<td><code>src/EchoHub.Client/Services/ApiClient.cs</code></td>
-<td>Lines 338-358 (<code>AuthenticatedGetAsync</code>)</td>
-</tr>
-<tr>
-<td>Reactive 401 retry (POST/PUT/DELETE)</td>
-<td><code>src/EchoHub.Client/Services/ApiClient.cs</code></td>
-<td>Lines 364-384 (<code>AuthenticatedRequestAsync</code>)</td>
-</tr>
-<tr>
-<td>Refresh HTTP call</td>
-<td><code>src/EchoHub.Client/Services/ApiClient.cs</code></td>
-<td>Lines 58-71 (<code>RefreshTokenAsync</code>)</td>
-</tr>
-<tr>
-<td>SignalR token provider</td>
-<td><code>src/EchoHub.Client/Services/EchoHubConnection.cs</code></td>
-<td>Line 37 (<code>AccessTokenProvider</code>)</td>
-</tr>
-<tr>
-<td>Server-side rotation</td>
-<td><code>src/EchoHub.Server/Controllers/AuthController.cs</code></td>
-<td>Lines 74-108</td>
-</tr>
-<tr>
-<td>Token persistence callback</td>
-<td><code>src/EchoHub.Client/Services/ConnectionManager.cs</code></td>
-<td>Lines 253-264</td>
-</tr>
-</tbody>
-</table>
 
 </article>
 
@@ -344,7 +198,7 @@ before requests and on 401 responses. Refresh tokens are rotated on each use.</p
     <footer class="border-top text-secondary">
       <div class="container-xxl">
         <div class="flex-fill">
-          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a><span class='footer-sep'>&middot;</span><span class='footer-credit'>Built with <a href='https://dotnet.github.io/docfx'>DocFX</a></span></div></div>
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a></div></div>
         </div>
       </div>
     </footer>

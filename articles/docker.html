@@ -102,7 +102,9 @@ docker compose up -d         # start the server
     #   dockerfile: EchoHub.Server/Dockerfile
 </code></pre>
 <h2 id="configuration">Configuration</h2>
-<p>All settings are configured through the <code>.env</code> file. These are ASP.NET Core environment variables that override <code>appsettings.json</code>.</p>
+<p>All settings are configured through the <code>.env</code> file. These are environment variables that override <code>appsettings.json</code> — the <code>__</code> (double underscore) maps to JSON nesting levels. For example, <code>Server__Name</code> overrides the <code>Server:Name</code> key in <code>appsettings.json</code>.</p>
+<p>See the <a href="configuration.html">Configuration</a> guide for the full reference of all available settings and how the override hierarchy works.</p>
+<p>Common Docker-relevant variables:</p>
 <table>
 <thead>
 <tr>
@@ -118,79 +120,14 @@ docker compose up -d         # start the server
 <td>Display name for your server</td>
 </tr>
 <tr>
-<td><code>Server__Description</code></td>
-<td>A self-hosted EchoHub chat server</td>
-<td>Server description</td>
-</tr>
-<tr>
-<td><code>Server__PublicServer</code></td>
-<td><code>false</code></td>
-<td>List on the <a href="https://echohub.voidcube.cloud/servers">public directory</a></td>
-</tr>
-<tr>
-<td><code>Server__PublicHost</code></td>
-<td><em>(empty)</em></td>
-<td>Public address for the directory listing</td>
-</tr>
-<tr>
 <td><code>Server__Admins__0</code></td>
 <td><em>(empty)</em></td>
 <td>Admin username (use <code>__1</code>, <code>__2</code> for more)</td>
 </tr>
 <tr>
-<td><code>Jwt__Secret</code></td>
-<td><em>(auto-generated)</em></td>
-<td>JWT signing key. Auto-generated on first run</td>
-</tr>
-<tr>
-<td><code>Encryption__Key</code></td>
-<td><em>(auto-generated)</em></td>
-<td>AES encryption key. Auto-generated on first run</td>
-</tr>
-<tr>
-<td><code>Encryption__EncryptDatabase</code></td>
-<td><code>false</code></td>
-<td>Encrypt message content in the database</td>
-</tr>
-<tr>
-<td><code>Storage__CleanupIntervalHours</code></td>
-<td><code>1</code></td>
-<td>How often to clean expired uploads</td>
-</tr>
-<tr>
-<td><code>Storage__RetentionDays</code></td>
-<td><code>30</code></td>
-<td>Days to keep uploaded files</td>
-</tr>
-<tr>
 <td><code>Irc__Enabled</code></td>
 <td><code>false</code></td>
 <td>Enable the IRC gateway</td>
-</tr>
-<tr>
-<td><code>Irc__Port</code></td>
-<td><code>6667</code></td>
-<td>IRC plain-text port</td>
-</tr>
-<tr>
-<td><code>Irc__TlsEnabled</code></td>
-<td><code>false</code></td>
-<td>Enable IRC over TLS</td>
-</tr>
-<tr>
-<td><code>Irc__TlsPort</code></td>
-<td><code>6697</code></td>
-<td>IRC TLS port</td>
-</tr>
-<tr>
-<td><code>Irc__ServerName</code></td>
-<td><code>echohub</code></td>
-<td>IRC server name shown to clients</td>
-</tr>
-<tr>
-<td><code>Irc__Motd</code></td>
-<td>Welcome to EchoHub IRC Gateway!</td>
-<td>Message of the day</td>
 </tr>
 <tr>
 <td><code>Serilog__MinimumLevel__Default</code></td>
@@ -271,7 +208,7 @@ docker compose up -d
     <footer class="border-top text-secondary">
       <div class="container-xxl">
         <div class="flex-fill">
-          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a><span class='footer-sep'>&middot;</span><span class='footer-credit'>Built with <a href='https://dotnet.github.io/docfx'>DocFX</a></span></div></div>
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a></div></div>
         </div>
       </div>
     </footer>

@@ -117,58 +117,6 @@ event handlers, joins the default channel, and loads history.</p>
     Hub--&gt;&gt;EHC: List&lt;MessageDto&gt; (encrypted)
     EHC--&gt;&gt;CM: Decrypted history
 </code></pre>
-<p><strong>Code references:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Step</th>
-<th>File</th>
-<th>Location</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Connection orchestration</td>
-<td><code>src/EchoHub.Client/Services/ConnectionManager.cs</code></td>
-<td>Lines 58-140 (<code>ConnectAsync</code>)</td>
-</tr>
-<tr>
-<td>EchoHubConnection setup</td>
-<td><code>src/EchoHub.Client/Services/EchoHubConnection.cs</code></td>
-<td>Lines 29-62 (constructor)</td>
-</tr>
-<tr>
-<td>Handler registration</td>
-<td><code>src/EchoHub.Client/Services/EchoHubConnection.cs</code></td>
-<td>Lines 64-122 (<code>RegisterHandlers</code>)</td>
-</tr>
-<tr>
-<td>Hub OnConnected</td>
-<td><code>src/EchoHub.Server/Hubs/ChatHub.cs</code></td>
-<td>Lines 31-43</td>
-</tr>
-<tr>
-<td>ChatService connected</td>
-<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
-<td>Lines 41-57</td>
-</tr>
-<tr>
-<td>PresenceTracker connect</td>
-<td><code>src/EchoHub.Server/Services/PresenceTracker.cs</code></td>
-<td>Lines 13-29</td>
-</tr>
-<tr>
-<td>Join channel (hub)</td>
-<td><code>src/EchoHub.Server/Hubs/ChatHub.cs</code></td>
-<td>Lines 59-81</td>
-</tr>
-<tr>
-<td>Join channel (service)</td>
-<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
-<td>Lines 96-135</td>
-</tr>
-</tbody>
-</table>
 <hr>
 <h2 id="irc-client-connection">IRC Client Connection</h2>
 <p>IRC clients connect via TCP, authenticate with PASS/NICK/USER or SASL PLAIN,
@@ -213,53 +161,6 @@ and auto-join channels. New usernames are auto-registered.</p>
 
     Note over IRC,CH: Client is now ready for JOIN/PART/PRIVMSG
 </code></pre>
-<p><strong>Code references:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Step</th>
-<th>File</th>
-<th>Location</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>TCP listener</td>
-<td><code>src/EchoHub.Server.Irc/IrcGatewayService.cs</code></td>
-<td>Lines 45-90 (<code>ExecuteAsync</code>)</td>
-</tr>
-<tr>
-<td>Client handler</td>
-<td><code>src/EchoHub.Server.Irc/IrcGatewayService.cs</code></td>
-<td>Lines 92-154 (<code>HandleClientAsync</code>)</td>
-</tr>
-<tr>
-<td>Command read loop</td>
-<td><code>src/EchoHub.Server.Irc/IrcCommandHandler.cs</code></td>
-<td>Lines 40-98 (<code>RunAsync</code>)</td>
-</tr>
-<tr>
-<td>SASL auth</td>
-<td><code>src/EchoHub.Server.Irc/IrcCommandHandler.cs</code></td>
-<td>Lines 136-207 (<code>HandleAuthenticateAsync</code>)</td>
-</tr>
-<tr>
-<td>PASS/NICK/USER</td>
-<td><code>src/EchoHub.Server.Irc/IrcCommandHandler.cs</code></td>
-<td>Lines 209-267</td>
-</tr>
-<tr>
-<td>Registration completion</td>
-<td><code>src/EchoHub.Server.Irc/IrcCommandHandler.cs</code></td>
-<td>Lines 268-315 (<code>TryCompleteRegistrationAsync</code>)</td>
-</tr>
-<tr>
-<td>Cleanup on disconnect</td>
-<td><code>src/EchoHub.Server.Irc/IrcGatewayService.cs</code></td>
-<td>Lines 136-153</td>
-</tr>
-</tbody>
-</table>
 <hr>
 <h2 id="user-disconnect--presence">User Disconnect &amp; Presence</h2>
 <p>When a client disconnects, the presence tracker determines if the user has any
@@ -287,38 +188,6 @@ notified.</p>
         end
     end
 </code></pre>
-<p><strong>Code references:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Step</th>
-<th>File</th>
-<th>Location</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>SignalR disconnect</td>
-<td><code>src/EchoHub.Server/Hubs/ChatHub.cs</code></td>
-<td>Lines 45-57</td>
-</tr>
-<tr>
-<td>IRC cleanup</td>
-<td><code>src/EchoHub.Server.Irc/IrcGatewayService.cs</code></td>
-<td>Lines 136-153</td>
-</tr>
-<tr>
-<td>ChatService disconnect</td>
-<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
-<td>Lines 59-94</td>
-</tr>
-<tr>
-<td>Presence disconnect</td>
-<td><code>src/EchoHub.Server/Services/PresenceTracker.cs</code></td>
-<td>Lines 31-53</td>
-</tr>
-</tbody>
-</table>
 
 </article>
 
@@ -340,7 +209,7 @@ notified.</p>
     <footer class="border-top text-secondary">
       <div class="container-xxl">
         <div class="flex-fill">
-          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a><span class='footer-sep'>&middot;</span><span class='footer-credit'>Built with <a href='https://dotnet.github.io/docfx'>DocFX</a></span></div></div>
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a></div></div>
         </div>
       </div>
     </footer>

@@ -111,38 +111,6 @@ and broadcast as a message with a download link.</p>
     CS-&gt;&gt;DB: INSERT Message
     CS-&gt;&gt;CS: BroadcastToAllAsync → fan out to clients
 </code></pre>
-<p><strong>Code references:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Step</th>
-<th>File</th>
-<th>Location</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Upload endpoint</td>
-<td><code>src/EchoHub.Server/Controllers/ChannelsController.cs</code></td>
-<td>Lines 108-200</td>
-</tr>
-<tr>
-<td>File validation</td>
-<td><code>src/EchoHub.Server/Services/FileValidationHelper.cs</code></td>
-<td>Lines 15-82</td>
-</tr>
-<tr>
-<td>File storage</td>
-<td><code>src/EchoHub.Server/Services/FileStorageService.cs</code></td>
-<td>Lines 1-47</td>
-</tr>
-<tr>
-<td>File download</td>
-<td><code>src/EchoHub.Server/Controllers/FilesController.cs</code></td>
-<td>Lines 22-53</td>
-</tr>
-</tbody>
-</table>
 <hr>
 <h2 id="link-embed-resolution">Link Embed Resolution</h2>
 <p>When a message contains URLs, the server fetches OpenGraph metadata for preview
@@ -168,48 +136,6 @@ embeds.</p>
     LE--&gt;&gt;CS: List&lt;EmbedDto&gt; (or null)
     Note over CS: Attached to MessageDto before broadcast
 </code></pre>
-<p><strong>Code references:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Step</th>
-<th>File</th>
-<th>Location</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Entry point</td>
-<td><code>src/EchoHub.Server/Services/LinkEmbedService.cs</code></td>
-<td>Lines 28-51 (<code>TryGetEmbedsAsync</code>)</td>
-</tr>
-<tr>
-<td>URL extraction</td>
-<td><code>src/EchoHub.Server/Services/LinkEmbedService.cs</code></td>
-<td>Lines 145-160</td>
-</tr>
-<tr>
-<td>Private IP blocking</td>
-<td><code>src/EchoHub.Server/Services/LinkEmbedService.cs</code></td>
-<td>Lines 162-181</td>
-</tr>
-<tr>
-<td>OG tag parsing</td>
-<td><code>src/EchoHub.Server/Services/LinkEmbedService.cs</code></td>
-<td>Lines 187-210</td>
-</tr>
-<tr>
-<td>Theme color parsing</td>
-<td><code>src/EchoHub.Server/Services/LinkEmbedService.cs</code></td>
-<td>Lines 117-143</td>
-</tr>
-<tr>
-<td>ChatService integration</td>
-<td><code>src/EchoHub.Server/Services/ChatService.cs</code></td>
-<td>Lines 194-201</td>
-</tr>
-</tbody>
-</table>
 <hr>
 <h2 id="server-directory-registration">Server Directory Registration</h2>
 <p>Public servers register with the EchoHubSpace directory for discoverability.</p>
@@ -235,38 +161,6 @@ embeds.</p>
 
     Note over SDS,Dir: Exponential backoff on disconnect (2s → 30s max)
 </code></pre>
-<p><strong>Code references:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Step</th>
-<th>File</th>
-<th>Location</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Service lifecycle</td>
-<td><code>src/EchoHub.Server/Services/ServerDirectoryService.cs</code></td>
-<td>Lines 29-122</td>
-</tr>
-<tr>
-<td>Registration</td>
-<td><code>src/EchoHub.Server/Services/ServerDirectoryService.cs</code></td>
-<td>Lines 195-212</td>
-</tr>
-<tr>
-<td>User count polling</td>
-<td><code>src/EchoHub.Server/Services/ServerDirectoryService.cs</code></td>
-<td>Lines 154-187</td>
-</tr>
-<tr>
-<td>Reconnection backoff</td>
-<td><code>src/EchoHub.Server/Services/ServerDirectoryService.cs</code></td>
-<td>Lines 77-82, 191</td>
-</tr>
-</tbody>
-</table>
 
 </article>
 
@@ -288,7 +182,7 @@ embeds.</p>
     <footer class="border-top text-secondary">
       <div class="container-xxl">
         <div class="flex-fill">
-          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a><span class='footer-sep'>&middot;</span><span class='footer-credit'>Built with <a href='https://dotnet.github.io/docfx'>DocFX</a></span></div></div>
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a></div></div>
         </div>
       </div>
     </footer>
