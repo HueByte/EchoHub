@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using EchoHub.Client.Services;
 using EchoHub.Client.Themes;
@@ -117,6 +118,11 @@ public sealed partial class MainWindow : Runnable
     public event Action? OnSavedServersRequested;
 
     /// <summary>
+    /// Fired when the user scrolls to the top of the message list and older messages should be loaded.
+    /// </summary>
+    public event Action? OnLoadMoreRequested;
+
+    /// <summary>
     /// Fired when the user requests to create a new channel.
     /// </summary>
     public event Action? OnCreateChannelRequested;
@@ -156,6 +162,7 @@ public sealed partial class MainWindow : Runnable
         _app = app;
         _messageManager = messageManager;
         _messageManager.MessagesChanged += OnMessagesChanged;
+        _messageManager.HistoryPrepended += OnHistoryPrepended;
         Arrangement = ViewArrangement.Fixed;
 
         // Menu bar at the top
@@ -216,6 +223,9 @@ public sealed partial class MainWindow : Runnable
         };
         _messageList.Source = new ChatListSource();
         _messageList.Accepting += OnMessageListAccepting;
+        _messageList.VerticalScrollBar.Scrolled += OnMessageListVerticalScrollBarScrolled;
+        _messageList.VerticalScrollBar.Visible = true;
+
         _chatFrame.Add(_messageList);
         Add(_chatFrame);
 
@@ -472,6 +482,12 @@ public sealed partial class MainWindow : Runnable
         }
     }
 
+    private void OnMessageListVerticalScrollBarScrolled(object? sender, EventArgs<int> e)
+    {
+        if (_messageList.VerticalScrollBar.Value == 0)
+            OnLoadMoreRequested?.Invoke();
+    }
+
     private void OnUsersListAccepting(object? sender, CommandEventArgs e)
     {
         var index = _usersList.SelectedItem;
@@ -605,6 +621,26 @@ public sealed partial class MainWindow : Runnable
             RefreshMessages();
         else
             RefreshChannelList();
+    }
+
+    private void OnHistoryPrepended(string channelName)
+    {
+        if (channelName != _messageManager.CurrentChannel)
+            return;
+
+        var messages = _messageManager.GetMessages(channelName);
+        if (messages is null)
+            return;
+
+        var oldCount = (_messageList.Source as ChatListSource)?.Count ?? 0;
+
+        RefreshMessages();
+
+        // Scroll to the item that was at the top before the prepend so the user
+        // stays at their previous reading position rather than jumping to the top.
+        var prependedCount = (_messageList.Source as ChatListSource)?.Count - oldCount;
+        if (prependedCount > 0)
+            _messageList.SelectedItem = prependedCount;
     }
 
     /// <summary>

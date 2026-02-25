@@ -187,6 +187,39 @@ public sealed class ChatMessageManager
     }
 
     /// <summary>
+    /// Prepend older messages at the front of a channel's buffer, skipping any that are already present.
+    /// Fires <see cref="HistoryPrepended"/> when new lines are actually inserted.
+    /// </summary>
+    public void PrependHistory(string channelName, List<MessageDto> olderMessages)
+    {
+        if (!_channelMessages.TryGetValue(channelName, out var existing))
+            return;
+
+        var existingIds = existing
+            .Where(l => l.MessageId.HasValue)
+            .Select(l => l.MessageId!.Value)
+            .ToHashSet();
+
+        var newLines = olderMessages
+            .Where(m => !existingIds.Contains(m.Id))
+            .SelectMany(FormatMessage)
+            .ToList();
+
+        if (newLines.Count == 0)
+            return;
+
+        existing.InsertRange(0, newLines);
+
+        if (channelName == _currentChannel)
+            HistoryPrepended?.Invoke(channelName);
+    }
+
+    /// <summary>
+    /// Fired after older messages are prepended to a channel's buffer. Parameter is the channel name.
+    /// </summary>
+    public event Action<string>? HistoryPrepended;
+
+    /// <summary>
     /// Reset all message state (used on disconnect).
     /// </summary>
     public void ClearAll()
