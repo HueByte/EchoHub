@@ -7,12 +7,14 @@ namespace EchoHub.Client.Services;
 public class NotificationSoundService
 {
     private readonly Player _player = new();
+    private readonly SemaphoreSlim _lock = new(1, 1);
     private readonly NotificationConfig _config;
     private string? _resolvedSoundPath;
 
     public NotificationSoundService(NotificationConfig config)
     {
         _config = config;
+        _player.PlaybackFinished += (s, e) => _lock.Release();
         ResolveSoundPath();
     }
 
@@ -41,16 +43,16 @@ public class NotificationSoundService
 
     private async Task PlayInternal()
     {
+        await _lock.WaitAsync();
         try
         {
-            if (_player.Playing)
-                await _player.Stop();
-
             await _player.SetVolume(_config.Volume);
             await _player.Play(_resolvedSoundPath!);
         }
         catch (Exception ex)
         {
+            _lock.Release();
+
             Log.Warning(ex, "Failed to play notification sound");
         }
     }
