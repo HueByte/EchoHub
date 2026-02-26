@@ -152,6 +152,11 @@ public sealed partial class MainWindow : Runnable
     /// </summary>
     public event Action<string>? OnChannelJoinRequested;
 
+    /// <summary>
+    /// Fired when the user requests to open the search dialog (via menu or Ctrl+K).
+    /// </summary>
+    public event Action? OnSearchRequested;
+
     public MainWindow(IApplication app, ChatMessageManager messageManager)
     {
         _app = app;
@@ -610,6 +615,11 @@ public sealed partial class MainWindow : Runnable
         }
     }
 
+    private void ShowSearchDialog()
+    {
+        OnSearchRequested?.Invoke();
+    }
+
     private void OnMessagesChanged(string channelName)
     {
         if (channelName == _messageManager.CurrentChannel)
@@ -905,40 +915,6 @@ public sealed partial class MainWindow : Runnable
         _inputFrame.Width = Dim.Fill(rightMargin);
         _usersFrame.Visible = _usersPanelVisible;
         SetNeedsDraw();
-    }
-
-    /// <summary>
-    /// Open the command-palette search dialog (Ctrl+K) and dispatch the selected result.
-    /// </summary>
-    private void ShowSearchDialog()
-    {
-        var result = Dialogs.SearchDialog.Show(_app, _channelNames.AsReadOnly());
-        if (result is null) return;
-
-        switch (result.Type)
-        {
-            case Dialogs.SearchResultType.Channel:
-                SwitchToChannel(result.Key);
-                OnChannelSelected?.Invoke(result.Key);
-                break;
-
-            case Dialogs.SearchResultType.Action:
-                switch (result.Key)
-                {
-                    case "connect":        OnConnectRequested?.Invoke();        break;
-                    case "disconnect":     OnDisconnectRequested?.Invoke();     break;
-                    case "logout":         OnLogoutRequested?.Invoke();         break;
-                    case "profile":        OnProfileRequested?.Invoke();        break;
-                    case "status":         OnStatusRequested?.Invoke();         break;
-                    case "create-channel": OnCreateChannelRequested?.Invoke();  break;
-                    case "delete-channel": OnDeleteChannelRequested?.Invoke();  break;
-                    case "servers":        OnSavedServersRequested?.Invoke();   break;
-                    case "toggle-users":   ToggleUsersPanel();                  break;
-                    case "updates":        OnCheckForUpdatesRequested?.Invoke(); break;
-                    case "quit":           _app.RequestStop();                  break;
-                }
-                break;
-        }
     }
 
     /// <summary>

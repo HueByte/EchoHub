@@ -91,6 +91,7 @@ public sealed class AppOrchestrator : IDisposable
         _mainWindow.OnRollbackRequested += HandleRollbackRequested;
         _mainWindow.OnUserProfileRequested += HandleViewProfile;
         _mainWindow.OnChannelJoinRequested += HandleChannelJoinFromMessage;
+        _mainWindow.OnSearchRequested += HandleSearchRequested;
     }
 
     // ── Command Handler Wiring ─────────────────────────────────────────────
@@ -731,6 +732,38 @@ public sealed class AppOrchestrator : IDisposable
         });
 
         HandleChannelSelected(channelName);
+    }
+
+
+    private void HandleSearchRequested()
+    {
+        var result = SearchDialog.Show(_app, _mainWindow.GetChannelNames());
+        if (result is null) return;
+
+        switch (result.Type)
+        {
+            case SearchResultType.Channel:
+                _mainWindow.SwitchToChannel(result.Key);
+                HandleChannelSelected(result.Key);
+                break;
+
+            case SearchResultType.Action:
+                switch (result.Key)
+                {
+                    case "connect": HandleConnect(); break;
+                    case "disconnect": HandleDisconnect(); break;
+                    case "logout": HandleLogout(); break;
+                    case "profile": HandleProfileRequested(); break;
+                    case "status": HandleStatusRequested(); break;
+                    case "create-channel": HandleCreateChannelRequested(); break;
+                    case "delete-channel": HandleDeleteChannelRequested(); break;
+                    case "servers": HandleSavedServersRequested(); break;
+                    case "toggle-users": _mainWindow.ToggleUsersPanel(); break;
+                    case "updates": HandleCheckForUpdatesRequested(); break;
+                    case "quit": _app.RequestStop(); break;
+                }
+                break;
+        }
     }
 
     private void HandleProfileRequested()
