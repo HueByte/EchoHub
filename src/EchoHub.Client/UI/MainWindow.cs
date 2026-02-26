@@ -48,6 +48,7 @@ public sealed partial class MainWindow : Runnable
     private static readonly Key NewlineKey = Key.N.WithCtrl;
     private static readonly Key AltQKey = Key.Q.WithAlt;
     private static readonly Key TabKey = Key.Tab;
+    private static readonly Key CtrlKKey = Key.K.WithCtrl;
 
     // Available slash commands for Tab autocomplete
     private static readonly string[] SlashCommands =
@@ -151,6 +152,11 @@ public sealed partial class MainWindow : Runnable
     /// </summary>
     public event Action<string>? OnChannelJoinRequested;
 
+    /// <summary>
+    /// Fired when the user requests to open the search dialog (via menu or Ctrl+K).
+    /// </summary>
+    public event Action? OnSearchRequested;
+
     public MainWindow(IApplication app, ChatMessageManager messageManager)
     {
         _app = app;
@@ -222,7 +228,7 @@ public sealed partial class MainWindow : Runnable
         // Bottom input area
         _inputFrame = new FrameView
         {
-            Title = "Message \u2502 Enter=send \u2502 Ctrl+N=newline \u2502 Tab=complete",
+            Title = "Message \u2502 Enter=send \u2502 Ctrl+N=newline \u2502 Tab=complete \u2502 Ctrl+K=search",
             X = 22,
             Y = Pos.Bottom(_chatFrame),
             Width = Dim.Fill(UsersPanelWidth),
@@ -513,6 +519,11 @@ public sealed partial class MainWindow : Runnable
             _app.RequestStop();
             e.Handled = true;
         }
+        else if (e.KeyCode == CtrlKKey.KeyCode)
+        {
+            ShowSearchDialog();
+            e.Handled = true;
+        }
     }
 
     private bool _suppressEmojiReplace;
@@ -597,6 +608,16 @@ public sealed partial class MainWindow : Runnable
             ToggleUsersPanel();
             e.Handled = true;
         }
+        else if (e.KeyCode == CtrlKKey.KeyCode)
+        {
+            ShowSearchDialog();
+            e.Handled = true;
+        }
+    }
+
+    private void ShowSearchDialog()
+    {
+        OnSearchRequested?.Invoke();
     }
 
     private void OnMessagesChanged(string channelName)

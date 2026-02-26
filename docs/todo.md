@@ -17,7 +17,7 @@
   - that means basically multiple servers linked, so users can chat cross-server in this network
 - [x] when users clicks public -> private -> public checkbox in the channel creation, it ends up creating the channel on 3rd check switch
 - [ ] add keyboard only controls | at least for most important parts and the rest might be accessible with: (down)
-- [ ] add search bar / search modal – that will allow users to instantly navigate to room / focus on app element & etc
+- [x] add search bar / search modal – that will allow users to instantly navigate to room / focus on app element & etc
 - [ ] Actually smart data management – cache messages, lazy load messages on scroll (currently hardcoded 100msgs fetched + new ones)
 - [x] Another thing would be stateful userlist – basically fetch once and listen for userlist updates
 - [x] Send to EchohubSpace only state changes, currently we send user count periodically, instead of updating it on update
