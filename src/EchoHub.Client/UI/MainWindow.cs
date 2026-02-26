@@ -48,6 +48,7 @@ public sealed partial class MainWindow : Runnable
     private static readonly Key NewlineKey = Key.N.WithCtrl;
     private static readonly Key AltQKey = Key.Q.WithAlt;
     private static readonly Key TabKey = Key.Tab;
+    private static readonly Key CtrlKKey = Key.K.WithCtrl;
 
     // Available slash commands for Tab autocomplete
     private static readonly string[] SlashCommands =
@@ -222,7 +223,7 @@ public sealed partial class MainWindow : Runnable
         // Bottom input area
         _inputFrame = new FrameView
         {
-            Title = "Message \u2502 Enter=send \u2502 Ctrl+N=newline \u2502 Tab=complete",
+            Title = "Message \u2502 Enter=send \u2502 Ctrl+N=newline \u2502 Tab=complete \u2502 Ctrl+K=search",
             X = 22,
             Y = Pos.Bottom(_chatFrame),
             Width = Dim.Fill(UsersPanelWidth),
@@ -513,6 +514,11 @@ public sealed partial class MainWindow : Runnable
             _app.RequestStop();
             e.Handled = true;
         }
+        else if (e.KeyCode == CtrlKKey.KeyCode)
+        {
+            ShowSearchDialog();
+            e.Handled = true;
+        }
     }
 
     private bool _suppressEmojiReplace;
@@ -595,6 +601,11 @@ public sealed partial class MainWindow : Runnable
         else if (e.KeyCode == F2Key.KeyCode)
         {
             ToggleUsersPanel();
+            e.Handled = true;
+        }
+        else if (e.KeyCode == CtrlKKey.KeyCode)
+        {
+            ShowSearchDialog();
             e.Handled = true;
         }
     }
@@ -894,6 +905,40 @@ public sealed partial class MainWindow : Runnable
         _inputFrame.Width = Dim.Fill(rightMargin);
         _usersFrame.Visible = _usersPanelVisible;
         SetNeedsDraw();
+    }
+
+    /// <summary>
+    /// Open the command-palette search dialog (Ctrl+K) and dispatch the selected result.
+    /// </summary>
+    private void ShowSearchDialog()
+    {
+        var result = Dialogs.SearchDialog.Show(_app, _channelNames.AsReadOnly());
+        if (result is null) return;
+
+        switch (result.Type)
+        {
+            case Dialogs.SearchResultType.Channel:
+                SwitchToChannel(result.Key);
+                OnChannelSelected?.Invoke(result.Key);
+                break;
+
+            case Dialogs.SearchResultType.Action:
+                switch (result.Key)
+                {
+                    case "connect":        OnConnectRequested?.Invoke();        break;
+                    case "disconnect":     OnDisconnectRequested?.Invoke();     break;
+                    case "logout":         OnLogoutRequested?.Invoke();         break;
+                    case "profile":        OnProfileRequested?.Invoke();        break;
+                    case "status":         OnStatusRequested?.Invoke();         break;
+                    case "create-channel": OnCreateChannelRequested?.Invoke();  break;
+                    case "delete-channel": OnDeleteChannelRequested?.Invoke();  break;
+                    case "servers":        OnSavedServersRequested?.Invoke();   break;
+                    case "toggle-users":   ToggleUsersPanel();                  break;
+                    case "updates":        OnCheckForUpdatesRequested?.Invoke(); break;
+                    case "quit":           _app.RequestStop();                  break;
+                }
+                break;
+        }
     }
 
     /// <summary>
