@@ -40,7 +40,37 @@ public static class UpdateBackupService
 
         Log.Information("Creating pre-update backup of {AppDir} (v{Version})", appDir, version);
 
-        ZipFile.CreateFromDirectory(appDir, BackupZipPath, CompressionLevel.Fastest, includeBaseDirectory: false);
+        using (var archive = ZipFile.Open(BackupZipPath, ZipArchiveMode.Create))
+        {
+            foreach (var file in Directory.EnumerateFiles(appDir, "*", SearchOption.AllDirectories))
+            {
+                var relativePath = Path.GetRelativePath(appDir, file);
+
+                // Skip log files to prevent locking errors with Serilog while zipping
+                if (relativePath.StartsWith("logs" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
+                    relativePath.StartsWith("logs" + Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
+                    relativePath.EndsWith(".log", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                // Normalize path separators for the zip archive format
+                var entryName = relativePath.Replace(Path.DirectorySeparatorChar, '/').Replace(Path.AltDirectorySeparatorChar, '/');
+
+                try
+                {
+                    archive.CreateEntryFromFile(file, entryName, CompressionLevel.Fastest);
+                }
+                catch (IOException ex)
+                {
+                    Log.Warning(ex, "Skipped locked file {FileName} during backup calculation", relativePath);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    Log.Warning(ex, "Skipped inaccessible file {FileName} during backup calculation", relativePath);
+                }
+            }
+        }
 
         var info = new BackupInfo(version, appDir, DateTimeOffset.UtcNow);
         var json = JsonSerializer.Serialize(info, BackupJsonContext.Default.BackupInfo);
