@@ -4,6 +4,7 @@ Release history for EchoHub.
 
 ## Releases
 
+- [v0.2.9](v0.2.9.md) - Linux/macOS Single-File Publish Fix
 - [v0.2.8](v0.2.8.md) - Docker Support, IRC Account Creation & BOM Fix
 - [v0.2.7](v0.2.7.md) - User List Fix & Terminal.Gui NuGet Migration
 - [v0.2.6](v0.2.6.md) - Major Refactoring & Code Organization
