@@ -84,9 +84,9 @@ See the [Architecture](architecture.md) page for details on how the IRC gateway 
 
 ## Configuration
 
-Server configuration is in `appsettings.json` (auto-generated on first run). See the [example config](https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/appsettings.example.json) for all available options.
+Server configuration is in `appsettings.json` (auto-generated on first run). You can also use environment variables or command-line arguments to override settings.
 
-To list your server on the [public directory](https://echohub.voidcube.cloud/servers), set `Server:PublicServer` to `true` and `Server:PublicHost` to your server's public address.
+See the [Configuration](configuration.md) guide for the full reference and how it all works.
 
 ## Build from Source
 

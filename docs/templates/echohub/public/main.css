@@ -49,6 +49,7 @@ header.top-navbar {
 .navbar .navbar-brand svg {
     height: 28px;
     width: auto;
+    margin-right: 0.5em;
 }
 
 .navbar .nav-link {
@@ -317,19 +318,6 @@ footer {
 }
 
 .footer-custom a:hover {
-    color: #E6C06E;
-}
-
-.footer-credit {
-    color: #484f58;
-    font-size: 0.85em;
-}
-
-.footer-credit a {
-    color: #6e7681;
-}
-
-.footer-credit a:hover {
     color: #E6C06E;
 }
 

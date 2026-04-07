@@ -27,12 +27,14 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/HueByte/EchoHub/actions/workflows/ci.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/HueByte/EchoHub/ci.yml?branch=master&style=flat-square&logo=github&label=Build" /></a>
+  <a href="https://github.com/HueByte/EchoHub/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/HueByte/EchoHub?style=flat-square&logo=github&label=Release" /></a>
+  <a href="https://community.chocolatey.org/packages/echohub"><img alt="Chocolatey" src="https://img.shields.io/chocolatey/v/echohub?style=flat-square&logo=chocolatey&label=Chocolatey" /></a>
+  <a href="https://github.com/HueByte/EchoHub/pkgs/container/echohub-server"><img alt="Docker" src="https://img.shields.io/badge/Docker-GHCR-2496ED?style=flat-square&logo=docker&logoColor=white" /></a>
   <img alt=".NET 10" src="https://img.shields.io/badge/.NET-10-512BD4?style=flat-square&logo=dotnet&logoColor=white" />
-  <img alt="SignalR" src="https://img.shields.io/badge/SignalR-Real--time-0078D4?style=flat-square" />
-  <img alt="SQLite" src="https://img.shields.io/badge/SQLite-EF%20Core-003B57?style=flat-square&logo=sqlite&logoColor=white" />
-  <img alt="License" src="https://img.shields.io/badge/License-MIT-green?style=flat-square" />
   <img alt="Terminal.Gui" src="https://img.shields.io/badge/TUI-Terminal.Gui%20v2-yellow?style=flat-square" />
-  <img alt="Electron" src="https://img.shields.io/badge/Electron-None-red?style=flat-square" />
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/HueByte/EchoHub?style=flat-square" /></a>
+  <img alt="Repo size" src="https://img.shields.io/github/repo-size/HueByte/EchoHub?style=flat-square&label=Size" />
 </p>
 
 ---
@@ -76,10 +78,12 @@ graph TD
 ### Server
 
 - **Self-hostable** — your server, your rules, your data
+- **Docker ready** — `docker compose up -d` and you're done
 - **Real-time messaging** via SignalR WebSockets
 - **IRC gateway** — native IRC clients connect alongside TUI users, full cross-protocol messaging
 - **JWT auth** with short-lived access tokens and 30-day refresh tokens
 - **Channels** — create, set topics, delete (no 47-step permission wizard required)
+- **Moderation** — ban, mute (timed or permanent), kick, role assignment
 - **File & image uploads** with actual validation (magic bytes, not just trusting the extension)
 - **Image-to-ASCII** — because images in a terminal is objectively cool
 - **Presence tracking** — online/away/DND/invisible with custom status messages
@@ -94,34 +98,55 @@ graph TD
 - **13 built-in themes** — including `hacker` for when you want to feel like you're in a movie
 - **Slash commands** — `/join`, `/send`, `/status`, `/theme`, etc.
 - **Colored nicknames** — pick your hex color, express yourself
+- **Clickable everything** — usernames, @mentions, #channels — just press Enter
 - **File/image sharing** — local files or URLs
 - **Multi-server** — save and switch between servers
 - **Auto-reconnect** — drops happen, it rejoins your channels automatically
+- **Auto-updater** — updates in-place with automatic rollback if something goes wrong
 - **Message history** on join — you won't miss context
 
 ## Getting Started
 
-### Download
+### Install the Client
 
-Grab a self-contained binary from [Releases](../../releases) — no runtime needed, just run it.
+**Windows (Chocolatey):**
 
-### Prerequisites (for development)
+```bash
+choco install echohub
+```
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+**Linux / macOS:**
 
-### Run the Server
+```bash
+curl -sSfL https://raw.githubusercontent.com/HueByte/EchoHub/master/scripts/install.sh | sh
+```
+
+**Manual download:** grab a self-contained binary from [Releases](../../releases) — no runtime needed, just run it.
+
+### Host a Server
+
+**Docker (recommended):**
+
+```bash
+cp .env.example .env
+docker compose up -d
+```
+
+Pre-built images on [GHCR](https://github.com/HueByte/EchoHub/pkgs/container/echohub-server) — `linux/amd64` and `linux/arm64`.
+
+**From source:**
 
 ```bash
 dotnet run --project src/EchoHub.Server
 ```
 
-First run does everything for you:
+Requires [.NET 10 SDK](https://dotnet.microsoft.com/download). First run does everything for you:
 
 1. Creates `appsettings.json` from the example config
 2. Generates a secure JWT secret
 3. Creates the database with a `#general` channel
 
-### Run the Client
+### Run the Client (from source)
 
 ```bash
 dotnet run --project src/EchoHub.Client
@@ -165,7 +190,7 @@ irssi -c your-server.com -p 6667 -w <password> -n <username>
 /connect echohub
 ```
 
-IRC users must have an existing EchoHub account (no registration via IRC). Auth works via `PASS`/`NICK`/`USER` or SASL PLAIN.
+Auth works via `PASS`/`NICK`/`USER` or SASL PLAIN. New usernames are auto-registered on first connect — no separate signup needed.
 
 ### What Works
 

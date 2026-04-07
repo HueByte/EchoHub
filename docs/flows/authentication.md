@@ -37,19 +37,6 @@ sequenceDiagram
     CM->>CM: Continue to connection setup (see Connection Flow)
 ```
 
-**Code references:**
-
-| Step | File | Location |
-|------|------|----------|
-| Dialog UI | `src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs` | Lines 251-268 (register handler) |
-| Orchestrator entry | `src/EchoHub.Client/AppOrchestrator.cs` | Lines 550-592 (`HandleConnect`) |
-| ConnectionManager auth | `src/EchoHub.Client/Services/ConnectionManager.cs` | Lines 74-76 (register branch) |
-| ApiClient register | `src/EchoHub.Client/Services/ApiClient.cs` | Lines 32-43 (`RegisterAsync`) |
-| AuthController register | `src/EchoHub.Server/Controllers/AuthController.cs` | Lines 28-49 |
-| UserService register | `src/EchoHub.Server/Services/UserService.cs` | Lines 20-59 (`RegisterUserAsync`) |
-| JWT generation | `src/EchoHub.Server/Auth/JwtTokenService.cs` | Lines 30-53 (access), 80-86 (refresh) |
-| Token persistence | `src/EchoHub.Client/AppOrchestrator.cs` | Lines 1039-1053 (`SaveServerToConfig`) |
-
 ---
 
 ## User Login
@@ -85,18 +72,6 @@ sequenceDiagram
     API->>API: SetTokens()
 ```
 
-**Code references:**
-
-| Step | File | Location |
-|------|------|----------|
-| Login button handler | `src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs` | Lines 214-249 |
-| Saved token branch | `src/EchoHub.Client/Services/ConnectionManager.cs` | Lines 69-71 |
-| Password branch | `src/EchoHub.Client/Services/ConnectionManager.cs` | Lines 78-80 |
-| ApiClient login | `src/EchoHub.Client/Services/ApiClient.cs` | Lines 45-56 (`LoginAsync`) |
-| AuthController login | `src/EchoHub.Server/Controllers/AuthController.cs` | Lines 51-72 |
-| AuthController refresh | `src/EchoHub.Server/Controllers/AuthController.cs` | Lines 74-108 |
-| UserService authenticate | `src/EchoHub.Server/Services/UserService.cs` | Lines 61-83 |
-
 ---
 
 ## Token Refresh
@@ -128,15 +103,3 @@ sequenceDiagram
     API-->>Config: Persist new refresh token (if Remember Me)
     API->>SR: Retry original request with new token
 ```
-
-**Code references:**
-
-| Step | File | Location |
-|------|------|----------|
-| Proactive check | `src/EchoHub.Client/Services/ApiClient.cs` | Lines 110-129 (`GetValidTokenAsync`) |
-| Reactive 401 retry (GET) | `src/EchoHub.Client/Services/ApiClient.cs` | Lines 338-358 (`AuthenticatedGetAsync`) |
-| Reactive 401 retry (POST/PUT/DELETE) | `src/EchoHub.Client/Services/ApiClient.cs` | Lines 364-384 (`AuthenticatedRequestAsync`) |
-| Refresh HTTP call | `src/EchoHub.Client/Services/ApiClient.cs` | Lines 58-71 (`RefreshTokenAsync`) |
-| SignalR token provider | `src/EchoHub.Client/Services/EchoHubConnection.cs` | Line 37 (`AccessTokenProvider`) |
-| Server-side rotation | `src/EchoHub.Server/Controllers/AuthController.cs` | Lines 74-108 |
-| Token persistence callback | `src/EchoHub.Client/Services/ConnectionManager.cs` | Lines 253-264 |

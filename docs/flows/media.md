@@ -28,15 +28,6 @@ sequenceDiagram
     CS->>CS: BroadcastToAllAsync → fan out to clients
 ```
 
-**Code references:**
-
-| Step | File | Location |
-|------|------|----------|
-| Upload endpoint | `src/EchoHub.Server/Controllers/ChannelsController.cs` | Lines 108-200 |
-| File validation | `src/EchoHub.Server/Services/FileValidationHelper.cs` | Lines 15-82 |
-| File storage | `src/EchoHub.Server/Services/FileStorageService.cs` | Lines 1-47 |
-| File download | `src/EchoHub.Server/Controllers/FilesController.cs` | Lines 22-53 |
-
 ---
 
 ## Link Embed Resolution
@@ -67,17 +58,6 @@ sequenceDiagram
     Note over CS: Attached to MessageDto before broadcast
 ```
 
-**Code references:**
-
-| Step | File | Location |
-|------|------|----------|
-| Entry point | `src/EchoHub.Server/Services/LinkEmbedService.cs` | Lines 28-51 (`TryGetEmbedsAsync`) |
-| URL extraction | `src/EchoHub.Server/Services/LinkEmbedService.cs` | Lines 145-160 |
-| Private IP blocking | `src/EchoHub.Server/Services/LinkEmbedService.cs` | Lines 162-181 |
-| OG tag parsing | `src/EchoHub.Server/Services/LinkEmbedService.cs` | Lines 187-210 |
-| Theme color parsing | `src/EchoHub.Server/Services/LinkEmbedService.cs` | Lines 117-143 |
-| ChatService integration | `src/EchoHub.Server/Services/ChatService.cs` | Lines 194-201 |
-
 ---
 
 ## Server Directory Registration
@@ -107,12 +87,3 @@ sequenceDiagram
 
     Note over SDS,Dir: Exponential backoff on disconnect (2s → 30s max)
 ```
-
-**Code references:**
-
-| Step | File | Location |
-|------|------|----------|
-| Service lifecycle | `src/EchoHub.Server/Services/ServerDirectoryService.cs` | Lines 29-122 |
-| Registration | `src/EchoHub.Server/Services/ServerDirectoryService.cs` | Lines 195-212 |
-| User count polling | `src/EchoHub.Server/Services/ServerDirectoryService.cs` | Lines 154-187 |
-| Reconnection backoff | `src/EchoHub.Server/Services/ServerDirectoryService.cs` | Lines 77-82, 191 |

@@ -1,9 +1,6 @@
 - name: Articles
   href: articles/
   homepage: articles/getting-started.md
-- name: Flows
-  href: flows/
-  homepage: flows/flows.md
 - name: Changelog
   href: changelog/
   homepage: changelog/index.md
