@@ -832,7 +832,7 @@
   "changelog/index.html": {
     "href": "changelog/index.html",
     "title": "Changelog | EchoHub Documentation",
-    "summary": "Changelog Release history for EchoHub. Releases v0.2.8 - Docker Support, IRC Account Creation & BOM Fix v0.2.7 - User List Fix & Terminal.Gui NuGet Migration v0.2.6 - Major Refactoring & Code Organization v0.2.5 - Session Persistence, Auto-Updates, Audio & Transparent Theme v0.2.4 - E2E Message Encryption v0.2.3 - Moderation, Embeds & UI Overhaul v0.2.2 - Startup & Shutdown Fixes v0.2.1 - Shutdown & CI Fixes v0.2.0 - IRC Gateway v0.1.1 - Directory Connection Self-Healing v0.1.0 - Initial Release"
+    "summary": "Changelog Release history for EchoHub. Releases v0.2.9 - Linux/macOS Single-File Publish Fix v0.2.8 - Docker Support, IRC Account Creation & BOM Fix v0.2.7 - User List Fix & Terminal.Gui NuGet Migration v0.2.6 - Major Refactoring & Code Organization v0.2.5 - Session Persistence, Auto-Updates, Audio & Transparent Theme v0.2.4 - E2E Message Encryption v0.2.3 - Moderation, Embeds & UI Overhaul v0.2.2 - Startup & Shutdown Fixes v0.2.1 - Shutdown & CI Fixes v0.2.0 - IRC Gateway v0.1.1 - Directory Connection Self-Healing v0.1.0 - Initial Release"
   },
   "changelog/v0.1.0.html": {
     "href": "changelog/v0.1.0.html",
