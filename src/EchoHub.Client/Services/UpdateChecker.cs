@@ -118,7 +118,7 @@ public sealed class UpdateChecker : IDisposable
             statusText = $"{step}...";
         }
 
-        _progressDialog?.UpdateProgress(fraction, statusText);
+        _app.Invoke(() => _progressDialog?.UpdateProgress(fraction, statusText));
     }
 
     private void OnUpdateStarted(string version)
