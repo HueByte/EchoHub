@@ -2494,6 +2494,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "changelog/v0.2.9.md",
+      "output": {
+        ".html": {
+          "relative_path": "changelog/v0.2.9.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "flows/authentication.md",
       "output": {
         ".html": {
