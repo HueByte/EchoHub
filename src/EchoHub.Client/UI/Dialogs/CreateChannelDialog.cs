@@ -12,7 +12,7 @@ public sealed class CreateChannelDialog
     {
         CreateChannelResult? result = null;
 
-        var dialog = new Dialog { Title = "Create Channel", Width = 50, Height = 14 };
+        var dialog = new Dialog { Title = "Create Channel", Width = 50, Height = 14, CommandsToBubbleUp = [] };
 
         var nameLabel = new Label { Text = "Name:", X = 1, Y = 1 };
         var nameField = new TextField { X = 10, Y = 1, Width = Dim.Fill(2) };

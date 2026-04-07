@@ -80,23 +80,23 @@ jobs:
 
       - name: Publish Client win-x64
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
-        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r win-x64 --self-contained true -o publish/client-win-x64
+        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/client-win-x64
 
       - name: Publish Client linux-x64
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
-        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r linux-x64 --self-contained true -o publish/client-linux-x64
+        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/client-linux-x64
 
       - name: Publish Client osx-x64
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
-        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r osx-x64 --self-contained true -o publish/client-osx-x64
+        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/client-osx-x64
 
       - name: Publish Client osx-arm64
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
-        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r osx-arm64 --self-contained true -o publish/client-osx-arm64
+        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r osx-arm64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/client-osx-arm64
 
       - name: Publish Client linux-arm64
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'
-        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r linux-arm64 --self-contained true -o publish/client-linux-arm64
+        run: dotnet publish src/EchoHub.Client/EchoHub.Client.csproj -c Release -r linux-arm64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/client-linux-arm64
 
       - name: Zip artifacts
         if: steps.changes.outputs.src_changed == 'true' && steps.check_release.outputs.exists == 'false'

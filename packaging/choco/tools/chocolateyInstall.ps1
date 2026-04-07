@@ -14,5 +14,6 @@ $packageArgs = @{
 Install-ChocolateyZipPackage @packageArgs
 
 # Create a shim so 'echohub' is available on PATH
-$exePath = Join-Path $toolsDir 'client-win-x64' 'EchoHub.Client.exe'
+$exeDir = Join-Path $toolsDir 'client-win-x64'
+$exePath = Join-Path $exeDir 'EchoHub.Client.exe'
 Install-BinFile -Name 'echohub' -Path $exePath

@@ -199,10 +199,17 @@ main() {
         fi
     fi
 
-    # Install the binary
+    # Install full directory to ~/.local/share/echohub and symlink the binary.
+    # Even single-file publishes may have content files (appsettings, assets)
+    # that the app expects next to the binary via AppContext.BaseDirectory.
+    app_dir="$HOME/.local/share/echohub"
+    rm -rf "$app_dir"
+    mkdir -p "$app_dir"
+    cp -r "$src_dir"/. "$app_dir/"
+    chmod +x "$app_dir/EchoHub.Client"
+
     mkdir -p "$install_dir"
-    cp "$src_dir/EchoHub.Client" "$install_dir/$BINARY_NAME"
-    chmod +x "$install_dir/$BINARY_NAME"
+    ln -sf "$app_dir/EchoHub.Client" "$install_dir/$BINARY_NAME"
 
     echo ""
 
