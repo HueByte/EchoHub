@@ -100,6 +100,7 @@
 <li>Simplify update progress dispatch — remove redundant <code>Application.Invoke</code> wrappers around progress updates that are already called from the UI thread (introduced while fixing the freeze above)</li>
 <li>Fix cursor position being reset to the start of the line when auto-completing commands in the CLI app — insertion point is now moved to the end of the completed text</li>
 <li>Fix notification sounds crashing or being silently dropped when several arrive in quick succession — playback is now serialized through a semaphore that's held for the duration of each sound (using <code>PlaybackFinished</code> with a 10s safety timeout) and always released in <code>finally</code>, so back-to-back notifications queue up and play in order instead of racing the underlying audio player (fixes #20)</li>
+<li>Fix client crashing on startup with <code>No Serilog:Using configuration section is defined</code> under single-file publish — pass <code>ConfigurationReaderOptions</code> with the <code>Serilog.Sinks.File</code> assembly explicitly so Serilog can resolve sinks without scanning the filesystem for <code>.dll</code>s (which don't exist in a bundled exe)</li>
 </ul>
 <h2 id="refactoring">Refactoring</h2>
 <ul>
