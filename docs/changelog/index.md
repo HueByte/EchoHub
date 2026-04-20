@@ -4,7 +4,7 @@ Release history for EchoHub.
 
 ## Releases
 
-- [v0.2.10](v0.2.10.md) - Auto-Updater Hotfixes
+- [v0.2.10](v0.2.10.md) - Command Palette, Infinite History Scroll & Auto-Updater Fixes
 - [v0.2.9](v0.2.9.md) - Install Script & Chocolatey Fixes
 - [v0.2.8](v0.2.8.md) - Docker Support, IRC Account Creation & BOM Fix
 - [v0.2.7](v0.2.7.md) - User List Fix & Terminal.Gui NuGet Migration
