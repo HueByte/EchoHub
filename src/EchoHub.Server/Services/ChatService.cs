@@ -245,15 +245,16 @@ public class ChatService : IChatService
         return null;
     }
 
-    public async Task<List<MessageDto>> GetChannelHistoryAsync(string channelName, int count)
+    public async Task<List<MessageDto>> GetChannelHistoryAsync(string channelName, int count, int offset = 0)
     {
         channelName = channelName.ToLowerInvariant().Trim();
         count = Math.Clamp(count, 1, ValidationConstants.MaxHistoryCount);
+        offset = Math.Max(offset, 0);
 
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
-        return await GetChannelHistoryInternalAsync(db, channelName, count);
+        return await GetChannelHistoryInternalAsync(db, channelName, count, offset);
     }
 
     public async Task<string?> UpdateStatusAsync(Guid userId, string username, UserStatus status, string? statusMessage)
@@ -366,7 +367,7 @@ public class ChatService : IChatService
         return string.Join('\n', result);
     }
 
-    private async Task<List<MessageDto>> GetChannelHistoryInternalAsync(EchoHubDbContext db, string channelName, int count)
+    private async Task<List<MessageDto>> GetChannelHistoryInternalAsync(EchoHubDbContext db, string channelName, int count, int offset = 0)
     {
         var channel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
         if (channel is null)
@@ -375,6 +376,7 @@ public class ChatService : IChatService
         var raw = await db.Messages
             .Where(m => m.ChannelId == channel.Id)
             .OrderByDescending(m => m.SentAt)
+            .Skip(offset)
             .Take(count)
             .Join(db.Users,
                 m => m.SenderUserId,

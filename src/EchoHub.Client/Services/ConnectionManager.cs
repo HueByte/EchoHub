@@ -196,8 +196,8 @@ internal sealed class ConnectionManager : IAsyncDisposable
         _connection?.SendMessageAsync(channel, content)
         ?? throw new InvalidOperationException("Not connected");
 
-    public Task<List<MessageDto>> GetHistoryAsync(string channel) =>
-        _connection?.GetHistoryAsync(channel)
+    public Task<List<MessageDto>> GetHistoryAsync(string channel, int count = HubConstants.DefaultHistoryCount, int offset = 0) =>
+        _connection?.GetHistoryAsync(channel, count, offset)
         ?? throw new InvalidOperationException("Not connected");
 
     public Task<List<UserPresenceDto>> GetOnlineUsersAsync(string channel) =>

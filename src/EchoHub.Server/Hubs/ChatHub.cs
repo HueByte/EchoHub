@@ -106,11 +106,11 @@ public class ChatHub : Hub<IEchoHubClient>
         }
     }
 
-    public async Task<List<MessageDto>> GetChannelHistory(string channelName, int count = HubConstants.DefaultHistoryCount)
+    public async Task<List<MessageDto>> GetChannelHistory(string channelName, int count = HubConstants.DefaultHistoryCount, int offset = 0)
     {
         try
         {
-            return await _chatService.GetChannelHistoryAsync(channelName, count);
+            return await _chatService.GetChannelHistoryAsync(channelName, count, offset);
         }
         catch (Exception ex)
         {

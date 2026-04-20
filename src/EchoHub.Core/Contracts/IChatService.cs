@@ -15,7 +15,7 @@ public interface IChatService
 
     // Messaging
     Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content);
-    Task<List<MessageDto>> GetChannelHistoryAsync(string channelName, int count);
+    Task<List<MessageDto>> GetChannelHistoryAsync(string channelName, int count, int offset = 0);
 
     // Presence
     Task<string?> UpdateStatusAsync(Guid userId, string username, UserStatus status, string? statusMessage);

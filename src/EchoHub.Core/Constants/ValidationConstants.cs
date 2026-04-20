@@ -13,7 +13,7 @@ public static partial class ValidationConstants
     public const int MaxBioLength = 500;
     public const int MaxStatusMessageLength = 100;
     public const int MaxChannelTopicLength = 500;
-    public const int MaxHistoryCount = 100;
+    public const int MaxHistoryCount = 200;
 
     [GeneratedRegex(UsernamePattern)]
     public static partial Regex UsernameRegex();
