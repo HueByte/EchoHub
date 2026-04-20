@@ -30,6 +30,7 @@ public sealed class AppOrchestrator : IDisposable
     private readonly ConnectionManager _conn = new();
     private readonly Dictionary<string, List<UserPresenceDto>> _channelUsers = new(StringComparer.OrdinalIgnoreCase);
     private readonly Lock _channelUsersLock = new();
+    private readonly HashSet<string> _channelsLoadingMore = new(StringComparer.OrdinalIgnoreCase);
 
     private ClientConfig _config;
     private readonly UserSession _session = new();
@@ -91,6 +92,8 @@ public sealed class AppOrchestrator : IDisposable
         _mainWindow.OnRollbackRequested += HandleRollbackRequested;
         _mainWindow.OnUserProfileRequested += HandleViewProfile;
         _mainWindow.OnChannelJoinRequested += HandleChannelJoinFromMessage;
+        _mainWindow.OnSearchRequested += HandleSearchRequested;
+        _mainWindow.OnLoadMoreRequested += HandleLoadMoreRequested;
     }
 
     // ── Command Handler Wiring ─────────────────────────────────────────────
@@ -720,6 +723,31 @@ public sealed class AppOrchestrator : IDisposable
         }, "Failed to join channel");
     }
 
+    private void HandleLoadMoreRequested()
+    {
+        if (!_conn.IsConnected) return;
+
+        var channel = _mainWindow.CurrentChannel;
+        if (string.IsNullOrEmpty(channel)) return;
+
+        if (!_channelsLoadingMore.Add(channel)) return;
+
+        var offset = _messageManager.GetMessages(channel)?.Count ?? 0;
+
+        RunAsync(async () =>
+        {
+            try
+            {
+                var history = await _conn.GetHistoryAsync(channel, HubConstants.DefaultHistoryCount, offset);
+                InvokeUI(() => _messageManager.PrependHistory(channel, history));
+            }
+            finally
+            {
+                _channelsLoadingMore.Remove(channel);
+            }
+        }, "Failed to load more messages");
+    }
+
     private void HandleChannelJoinFromMessage(string channelName)
     {
         if (!_conn.IsConnected) return;
@@ -731,6 +759,38 @@ public sealed class AppOrchestrator : IDisposable
         });
 
         HandleChannelSelected(channelName);
+    }
+
+
+    private void HandleSearchRequested()
+    {
+        var result = SearchDialog.Show(_app, _mainWindow.GetChannelNames());
+        if (result is null) return;
+
+        switch (result.Type)
+        {
+            case SearchResultType.Channel:
+                _mainWindow.SwitchToChannel(result.Key);
+                HandleChannelSelected(result.Key);
+                break;
+
+            case SearchResultType.Action:
+                switch (result.Key)
+                {
+                    case "connect": HandleConnect(); break;
+                    case "disconnect": HandleDisconnect(); break;
+                    case "logout": HandleLogout(); break;
+                    case "profile": HandleProfileRequested(); break;
+                    case "status": HandleStatusRequested(); break;
+                    case "create-channel": HandleCreateChannelRequested(); break;
+                    case "delete-channel": HandleDeleteChannelRequested(); break;
+                    case "servers": HandleSavedServersRequested(); break;
+                    case "toggle-users": _mainWindow.ToggleUsersPanel(); break;
+                    case "updates": HandleCheckForUpdatesRequested(); break;
+                    case "quit": _app.RequestStop(); break;
+                }
+                break;
+        }
     }
 
     private void HandleProfileRequested()

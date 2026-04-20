@@ -154,9 +154,9 @@ public sealed class EchoHubConnection : IAsyncDisposable
         await _connection.InvokeAsync("SendMessage", channelName, encrypted);
     }
 
-    public async Task<List<MessageDto>> GetHistoryAsync(string channelName, int count = HubConstants.DefaultHistoryCount)
+    public async Task<List<MessageDto>> GetHistoryAsync(string channelName, int count = HubConstants.DefaultHistoryCount, int offset = 0)
     {
-        var messages = await _connection.InvokeAsync<List<MessageDto>>("GetChannelHistory", channelName, count);
+        var messages = await _connection.InvokeAsync<List<MessageDto>>("GetChannelHistory", channelName, count, offset);
         return DecryptMessages(messages);
     }
 

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using EchoHub.Client.Services;
 using EchoHub.Client.Themes;
@@ -48,6 +49,7 @@ public sealed partial class MainWindow : Runnable
     private static readonly Key NewlineKey = Key.N.WithCtrl;
     private static readonly Key AltQKey = Key.Q.WithAlt;
     private static readonly Key TabKey = Key.Tab;
+    private static readonly Key CtrlKKey = Key.K.WithCtrl;
 
     // Available slash commands for Tab autocomplete
     private static readonly string[] SlashCommands =
@@ -117,6 +119,11 @@ public sealed partial class MainWindow : Runnable
     public event Action? OnSavedServersRequested;
 
     /// <summary>
+    /// Fired when the user scrolls to the top of the message list and older messages should be loaded.
+    /// </summary>
+    public event Action? OnLoadMoreRequested;
+
+    /// <summary>
     /// Fired when the user requests to create a new channel.
     /// </summary>
     public event Action? OnCreateChannelRequested;
@@ -151,11 +158,17 @@ public sealed partial class MainWindow : Runnable
     /// </summary>
     public event Action<string>? OnChannelJoinRequested;
 
+    /// <summary>
+    /// Fired when the user requests to open the search dialog (via menu or Ctrl+K).
+    /// </summary>
+    public event Action? OnSearchRequested;
+
     public MainWindow(IApplication app, ChatMessageManager messageManager)
     {
         _app = app;
         _messageManager = messageManager;
         _messageManager.MessagesChanged += OnMessagesChanged;
+        _messageManager.HistoryPrepended += OnHistoryPrepended;
         Arrangement = ViewArrangement.Fixed;
 
         // Menu bar at the top
@@ -216,13 +229,16 @@ public sealed partial class MainWindow : Runnable
         };
         _messageList.Source = new ChatListSource();
         _messageList.Accepting += OnMessageListAccepting;
+        _messageList.VerticalScrollBar.Scrolled += OnMessageListVerticalScrollBarScrolled;
+        _messageList.VerticalScrollBar.Visible = true;
+
         _chatFrame.Add(_messageList);
         Add(_chatFrame);
 
         // Bottom input area
         _inputFrame = new FrameView
         {
-            Title = "Message \u2502 Enter=send \u2502 Ctrl+N=newline \u2502 Tab=complete",
+            Title = "Message \u2502 Enter=send \u2502 Ctrl+N=newline \u2502 Tab=complete \u2502 Ctrl+K=search",
             X = 22,
             Y = Pos.Bottom(_chatFrame),
             Width = Dim.Fill(UsersPanelWidth),
@@ -472,6 +488,12 @@ public sealed partial class MainWindow : Runnable
         }
     }
 
+    private void OnMessageListVerticalScrollBarScrolled(object? sender, EventArgs<int> e)
+    {
+        if (_messageList.VerticalScrollBar.Value == 0)
+            OnLoadMoreRequested?.Invoke();
+    }
+
     private void OnUsersListAccepting(object? sender, CommandEventArgs e)
     {
         var index = _usersList.SelectedItem;
@@ -511,6 +533,11 @@ public sealed partial class MainWindow : Runnable
         else if (e.KeyCode == AltQKey.KeyCode)
         {
             _app.RequestStop();
+            e.Handled = true;
+        }
+        else if (e.KeyCode == CtrlKKey.KeyCode)
+        {
+            ShowSearchDialog();
             e.Handled = true;
         }
     }
@@ -572,6 +599,9 @@ public sealed partial class MainWindow : Runnable
             if (prefix.Length > text.Length)
                 _inputField.Text = prefix;
         }
+
+        // Move cursor to end after autocomplete
+        _inputField.InsertionPoint = new System.Drawing.Point(_inputField.Text?.Length ?? 0, 0);
     }
 
     private void OnChatViewportChanged()
@@ -597,6 +627,16 @@ public sealed partial class MainWindow : Runnable
             ToggleUsersPanel();
             e.Handled = true;
         }
+        else if (e.KeyCode == CtrlKKey.KeyCode)
+        {
+            ShowSearchDialog();
+            e.Handled = true;
+        }
+    }
+
+    private void ShowSearchDialog()
+    {
+        OnSearchRequested?.Invoke();
     }
 
     private void OnMessagesChanged(string channelName)
@@ -605,6 +645,26 @@ public sealed partial class MainWindow : Runnable
             RefreshMessages();
         else
             RefreshChannelList();
+    }
+
+    private void OnHistoryPrepended(string channelName)
+    {
+        if (channelName != _messageManager.CurrentChannel)
+            return;
+
+        var messages = _messageManager.GetMessages(channelName);
+        if (messages is null)
+            return;
+
+        var oldCount = (_messageList.Source as ChatListSource)?.Count ?? 0;
+
+        RefreshMessages();
+
+        // Scroll to the item that was at the top before the prepend so the user
+        // stays at their previous reading position rather than jumping to the top.
+        var prependedCount = (_messageList.Source as ChatListSource)?.Count - oldCount;
+        if (prependedCount > 0)
+            _messageList.SelectedItem = prependedCount;
     }
 
     /// <summary>

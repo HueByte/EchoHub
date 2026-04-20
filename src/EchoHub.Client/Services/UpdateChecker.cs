@@ -71,7 +71,7 @@ public sealed class UpdateChecker : IDisposable
                     // Create backup before the update starts
                     try
                     {
-                        _app.Invoke(() => _progressDialog?.UpdateProgress(0f, "Creating backup..."));
+                        _progressDialog?.UpdateProgress(0f, "Creating backup...");
                         UpdateBackupService.CreateBackup();
                     }
                     catch (Exception ex)
@@ -79,27 +79,21 @@ public sealed class UpdateChecker : IDisposable
                         Log.Error(ex, "Failed to create pre-update backup");
 
                         var proceed = false;
-                        _app.Invoke(() =>
-                        {
-                            proceed = MessageBox.Query(
-                                _app,
-                                "Backup Warning",
-                                $"Could not create backup: {ex.Message}\n\nContinue update without backup?",
-                                "Continue", "Cancel") == 0;
-                        });
+                        proceed = MessageBox.Query(
+                            _app,
+                            "Backup Warning",
+                            $"Could not create backup: {ex.Message}\n\nContinue update without backup?",
+                            "Continue", "Cancel") == 0;
 
                         if (!proceed)
                         {
-                            _app.Invoke(() =>
-                            {
-                                _progressDialog?.Close();
-                                _progressDialog = null;
-                            });
+                            _progressDialog?.Close();
+                            _progressDialog = null;
                             return;
                         }
                     }
 
-                    _app.Invoke(() => _progressDialog?.UpdateProgress(0f, "Downloading update..."));
+                    _progressDialog?.UpdateProgress(0f, "Downloading update...");
                     await _updater.UpdateAsync();
                 });
 
