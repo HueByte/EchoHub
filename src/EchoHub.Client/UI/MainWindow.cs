@@ -572,6 +572,9 @@ public sealed partial class MainWindow : Runnable
             if (prefix.Length > text.Length)
                 _inputField.Text = prefix;
         }
+
+        // Move cursor to end after autocomplete
+        _inputField.InsertionPoint = new System.Drawing.Point(_inputField.Text?.Length ?? 0, 0);
     }
 
     private void OnChatViewportChanged()
