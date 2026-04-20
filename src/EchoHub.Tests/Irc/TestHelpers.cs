@@ -190,7 +190,7 @@ internal sealed class FakeChatService : IChatService
         return Task.FromResult(SendMessageError);
     }
 
-    public Task<List<MessageDto>> GetChannelHistoryAsync(string channelName, int count) =>
+    public Task<List<MessageDto>> GetChannelHistoryAsync(string channelName, int count, int offset = 0) =>
         Task.FromResult(HistoryToReturn);
 
     public Task<string?> UpdateStatusAsync(Guid userId, string username, UserStatus status, string? statusMessage)
