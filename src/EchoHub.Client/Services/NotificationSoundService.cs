@@ -6,7 +6,11 @@ namespace EchoHub.Client.Services;
 
 public class NotificationSoundService
 {
+    // Safety net: if PlaybackFinished never fires we don't want to block future notifications forever.
+    private static readonly TimeSpan PlaybackTimeout = TimeSpan.FromSeconds(10);
+
     private readonly Player _player = new();
+    private readonly SemaphoreSlim _lock = new(1, 1);
     private readonly NotificationConfig _config;
     private string? _resolvedSoundPath;
 
@@ -41,17 +45,30 @@ public class NotificationSoundService
 
     private async Task PlayInternal()
     {
+        await _lock.WaitAsync();
+
+        // _player.Play returns as soon as playback starts, so we wait on PlaybackFinished
+        // to hold the lock for the duration of the sound. A one-shot handler + timeout
+        // keeps the finally release robust: never-fires → timeout; fires twice → ignored
+        // (TrySetResult); handler throws → caller's catch still runs finally.
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        void OnFinished(object? s, EventArgs e) => completion.TrySetResult();
+        _player.PlaybackFinished += OnFinished;
+
         try
         {
-            if (_player.Playing)
-                await _player.Stop();
-
             await _player.SetVolume(_config.Volume);
             await _player.Play(_resolvedSoundPath!);
+            await Task.WhenAny(completion.Task, Task.Delay(PlaybackTimeout));
         }
         catch (Exception ex)
         {
             Log.Warning(ex, "Failed to play notification sound");
+        }
+        finally
+        {
+            _player.PlaybackFinished -= OnFinished;
+            _lock.Release();
         }
     }
 
