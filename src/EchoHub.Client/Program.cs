@@ -4,6 +4,7 @@ using EchoHub.Client.Services;
 using EchoHub.Client.Themes;
 using Microsoft.Extensions.Configuration;
 using Serilog;
+using Serilog.Settings.Configuration;
 using Terminal.Gui.App;
 
 // == CLI rollback: works without TUI, before anything else ================
@@ -71,8 +72,11 @@ var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
     .Build();
 
+// Explicit sink-assembly reference is required under PublishSingleFile — the default
+// AssemblyFinder scans for Serilog.Sinks.*.dll on disk, which don't exist in a bundled exe.
+var serilogOptions = new ConfigurationReaderOptions(typeof(FileLoggerConfigurationExtensions).Assembly);
 Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(configuration)
+    .ReadFrom.Configuration(configuration, serilogOptions)
     .CreateLogger();
 
 Log.Information("EchoHub client starting");
