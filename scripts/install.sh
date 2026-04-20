@@ -30,7 +30,7 @@ while [ $# -gt 0 ]; do
             sed -n '2,8p' "$0" 2>/dev/null || true
             echo ""
             echo "  curl -sSfL https://raw.githubusercontent.com/$REPO/master/scripts/install.sh | sh"
-            echo "  curl ... | sh -s -- --version 0.2.8"
+            echo "  curl ... | sh -s -- --version 0.2.10"
             echo "  curl ... | sh -s -- --install-dir /opt/echohub"
             exit 0
             ;;
