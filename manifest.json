@@ -572,6 +572,48 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.SearchDialog.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Dialogs.SearchDialog.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Dialogs.SearchDialog",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Dialogs.SearchDialog.yml\" sourcestartlinenumber=\"1\">Command-palette style search dialog (Ctrl+K) for navigating channels and triggering app actions.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.SearchResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Dialogs.SearchResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Dialogs.SearchResult",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.SearchResultType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Dialogs.SearchResultType.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Dialogs.SearchResultType",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.StatusDialog.yml",
       "output": {
         ".html": {
@@ -695,6 +737,20 @@
       "IsMRef": true,
       "Title": "EchoHub.Client.UI.ListSources.ChannelListSource",
       "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ListSources.ChannelListSource.yml\" sourcestartlinenumber=\"1\">Custom list data source for colored channel list rendering.\nActive channel gets a &gt; indicator, unread channels are bright with a count badge.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.ListSources.SearchListSource.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.ListSources.SearchListSource.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.ListSources.SearchListSource",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.ListSources.SearchListSource.yml\" sourcestartlinenumber=\"1\">List data source for the search dialog with filtering and colored rendering.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -2418,6 +2474,16 @@
       "output": {
         ".html": {
           "relative_path": "changelog/v0.2.1.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "changelog/v0.2.10.md",
+      "output": {
+        ".html": {
+          "relative_path": "changelog/v0.2.10.html"
         }
       },
       "version": ""

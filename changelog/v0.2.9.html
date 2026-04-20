@@ -90,6 +90,24 @@
 <h2 id="bug-fixes">Bug Fixes</h2>
 <ul>
 <li>Fix Linux/macOS client install — enable single-file publish so the install script copies one self-contained binary instead of just the native host (which failed with &quot;does not exist: EchoHub.Client.dll&quot;)</li>
+<li>Fix Chocolatey install path on Windows — <code>chocolateyInstall.ps1</code> was joining the install directory and executable name into a single segment, producing an invalid target path</li>
+<li>Fix Chocolatey package metadata — corrected GitHub repository URLs and documentation URLs in <code>echohub.nuspec</code> that pointed at the wrong location</li>
+<li>Fix double-click on &quot;Public&quot; checkbox in the Create Channel dialog accidentally submitting the dialog — checkbox toggle commands no longer bubble up to the dialog's default button</li>
+</ul>
+<h2 id="documentation">Documentation</h2>
+<ul>
+<li>Add a dedicated configuration guide (<code>docs/articles/configuration.md</code>) covering server settings, client settings, and environment overrides</li>
+<li>Refresh README badges and reorganize the articles table of contents for better discoverability</li>
+<li>Polish Docker, getting-started, and flow docs to match the current configuration surface</li>
+</ul>
+<h2 id="dependencies">Dependencies</h2>
+<ul>
+<li>Bump <code>Terminal.Gui</code> to <code>2.0.0-develop.5043</code> (from <code>5039</code>)</li>
+</ul>
+<h2 id="ci">CI</h2>
+<ul>
+<li>Release workflow now publishes a single-file self-contained client binary for Linux and macOS so the install script works out-of-the-box</li>
+<li>Chocolatey publishing step now triggers only when the package source actually changes and performs a proper version check against the feed before pushing</li>
 </ul>
 
 </article>

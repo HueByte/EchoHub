@@ -547,6 +547,41 @@ so the UI layer can refresh.</p>
 
 
 
+  <a id="EchoHub_Client_UI_Chat_ChatMessageManager_PrependHistory_" data-uid="EchoHub.Client.UI.Chat.ChatMessageManager.PrependHistory*"></a>
+
+  <h3 id="EchoHub_Client_UI_Chat_ChatMessageManager_PrependHistory_System_String_System_Collections_Generic_List_EchoHub_Core_DTOs_MessageDto__" data-uid="EchoHub.Client.UI.Chat.ChatMessageManager.PrependHistory(System.String,System.Collections.Generic.List{EchoHub.Core.DTOs.MessageDto})">
+  PrependHistory(string, List&lt;MessageDto&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatMessageManager.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Prepend older messages at the front of a channel's buffer, skipping any that are already present.
+Fires <a class="xref" href="EchoHub.Client.UI.Chat.ChatMessageManager.html#EchoHub_Client_UI_Chat_ChatMessageManager_HistoryPrepended">HistoryPrepended</a> when new lines are actually inserted.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void PrependHistory(string channelName, List&lt;MessageDto&gt; olderMessages)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>olderMessages</code> <span class="xref">List</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs">MessageDto</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
   <a id="EchoHub_Client_UI_Chat_ChatMessageManager_RemoveMessage_" data-uid="EchoHub.Client.UI.Chat.ChatMessageManager.RemoveMessage*"></a>
 
   <h3 id="EchoHub_Client_UI_Chat_ChatMessageManager_RemoveMessage_System_String_System_Guid_" data-uid="EchoHub.Client.UI.Chat.ChatMessageManager.RemoveMessage(System.String,System.Guid)">
@@ -645,6 +680,37 @@ so the UI layer can refresh.</p>
 
   <h2 class="section" id="events">Events
 </h2>
+
+
+
+  <h3 id="EchoHub_Client_UI_Chat_ChatMessageManager_HistoryPrepended" data-uid="EchoHub.Client.UI.Chat.ChatMessageManager.HistoryPrepended">
+  HistoryPrepended
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatMessageManager.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired after older messages are prepended to a channel's buffer. Parameter is the channel name.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action&lt;string&gt;? HistoryPrepended</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-1">Action</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
 
 
 

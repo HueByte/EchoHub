@@ -200,8 +200,8 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
 
   <a id="EchoHub_Server_Hubs_ChatHub_GetChannelHistory_" data-uid="EchoHub.Server.Hubs.ChatHub.GetChannelHistory*"></a>
 
-  <h3 id="EchoHub_Server_Hubs_ChatHub_GetChannelHistory_System_String_System_Int32_" data-uid="EchoHub.Server.Hubs.ChatHub.GetChannelHistory(System.String,System.Int32)">
-  GetChannelHistory(string, int)
+  <h3 id="EchoHub_Server_Hubs_ChatHub_GetChannelHistory_System_String_System_Int32_System_Int32_" data-uid="EchoHub.Server.Hubs.ChatHub.GetChannelHistory(System.String,System.Int32,System.Int32)">
+  GetChannelHistory(string, int, int)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Hubs/ChatHub.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -209,7 +209,7 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Task&lt;List&lt;MessageDto&gt;&gt; GetChannelHistory(string channelName, int count = 100)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;List&lt;MessageDto&gt;&gt; GetChannelHistory(string channelName, int count = 100, int offset = 0)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -217,6 +217,8 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
     <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>count</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+    <dt><code>offset</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
     <dd></dd>
   </dl>
 

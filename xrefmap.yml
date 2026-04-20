@@ -1756,15 +1756,15 @@ references:
   commentId: Overload:EchoHub.Client.Services.EchoHubConnection.DisposeAsync
   fullName: EchoHub.Client.Services.EchoHubConnection.DisposeAsync
   nameWithType: EchoHubConnection.DisposeAsync
-- uid: EchoHub.Client.Services.EchoHubConnection.GetHistoryAsync(System.String,System.Int32)
-  name: GetHistoryAsync(string, int)
-  href: api/client/EchoHub.Client.Services.EchoHubConnection.html#EchoHub_Client_Services_EchoHubConnection_GetHistoryAsync_System_String_System_Int32_
-  commentId: M:EchoHub.Client.Services.EchoHubConnection.GetHistoryAsync(System.String,System.Int32)
-  name.vb: GetHistoryAsync(String, Integer)
-  fullName: EchoHub.Client.Services.EchoHubConnection.GetHistoryAsync(string, int)
-  fullName.vb: EchoHub.Client.Services.EchoHubConnection.GetHistoryAsync(String, Integer)
-  nameWithType: EchoHubConnection.GetHistoryAsync(string, int)
-  nameWithType.vb: EchoHubConnection.GetHistoryAsync(String, Integer)
+- uid: EchoHub.Client.Services.EchoHubConnection.GetHistoryAsync(System.String,System.Int32,System.Int32)
+  name: GetHistoryAsync(string, int, int)
+  href: api/client/EchoHub.Client.Services.EchoHubConnection.html#EchoHub_Client_Services_EchoHubConnection_GetHistoryAsync_System_String_System_Int32_System_Int32_
+  commentId: M:EchoHub.Client.Services.EchoHubConnection.GetHistoryAsync(System.String,System.Int32,System.Int32)
+  name.vb: GetHistoryAsync(String, Integer, Integer)
+  fullName: EchoHub.Client.Services.EchoHubConnection.GetHistoryAsync(string, int, int)
+  fullName.vb: EchoHub.Client.Services.EchoHubConnection.GetHistoryAsync(String, Integer, Integer)
+  nameWithType: EchoHubConnection.GetHistoryAsync(string, int, int)
+  nameWithType.vb: EchoHubConnection.GetHistoryAsync(String, Integer, Integer)
 - uid: EchoHub.Client.Services.EchoHubConnection.GetHistoryAsync*
   name: GetHistoryAsync
   href: api/client/EchoHub.Client.Services.EchoHubConnection.html#EchoHub_Client_Services_EchoHubConnection_GetHistoryAsync_
@@ -3079,6 +3079,12 @@ references:
   commentId: Overload:EchoHub.Client.UI.Chat.ChatMessageManager.GetUnreadCount
   fullName: EchoHub.Client.UI.Chat.ChatMessageManager.GetUnreadCount
   nameWithType: ChatMessageManager.GetUnreadCount
+- uid: EchoHub.Client.UI.Chat.ChatMessageManager.HistoryPrepended
+  name: HistoryPrepended
+  href: api/client/EchoHub.Client.UI.Chat.ChatMessageManager.html#EchoHub_Client_UI_Chat_ChatMessageManager_HistoryPrepended
+  commentId: E:EchoHub.Client.UI.Chat.ChatMessageManager.HistoryPrepended
+  fullName: EchoHub.Client.UI.Chat.ChatMessageManager.HistoryPrepended
+  nameWithType: ChatMessageManager.HistoryPrepended
 - uid: EchoHub.Client.UI.Chat.ChatMessageManager.LoadHistory(System.String,System.Collections.Generic.List{EchoHub.Core.DTOs.MessageDto})
   name: LoadHistory(string, List<MessageDto>)
   href: api/client/EchoHub.Client.UI.Chat.ChatMessageManager.html#EchoHub_Client_UI_Chat_ChatMessageManager_LoadHistory_System_String_System_Collections_Generic_List_EchoHub_Core_DTOs_MessageDto__
@@ -3100,6 +3106,21 @@ references:
   commentId: E:EchoHub.Client.UI.Chat.ChatMessageManager.MessagesChanged
   fullName: EchoHub.Client.UI.Chat.ChatMessageManager.MessagesChanged
   nameWithType: ChatMessageManager.MessagesChanged
+- uid: EchoHub.Client.UI.Chat.ChatMessageManager.PrependHistory(System.String,System.Collections.Generic.List{EchoHub.Core.DTOs.MessageDto})
+  name: PrependHistory(string, List<MessageDto>)
+  href: api/client/EchoHub.Client.UI.Chat.ChatMessageManager.html#EchoHub_Client_UI_Chat_ChatMessageManager_PrependHistory_System_String_System_Collections_Generic_List_EchoHub_Core_DTOs_MessageDto__
+  commentId: M:EchoHub.Client.UI.Chat.ChatMessageManager.PrependHistory(System.String,System.Collections.Generic.List{EchoHub.Core.DTOs.MessageDto})
+  name.vb: PrependHistory(String, List(Of MessageDto))
+  fullName: EchoHub.Client.UI.Chat.ChatMessageManager.PrependHistory(string, System.Collections.Generic.List<EchoHub.Core.DTOs.MessageDto>)
+  fullName.vb: EchoHub.Client.UI.Chat.ChatMessageManager.PrependHistory(String, System.Collections.Generic.List(Of EchoHub.Core.DTOs.MessageDto))
+  nameWithType: ChatMessageManager.PrependHistory(string, List<MessageDto>)
+  nameWithType.vb: ChatMessageManager.PrependHistory(String, List(Of MessageDto))
+- uid: EchoHub.Client.UI.Chat.ChatMessageManager.PrependHistory*
+  name: PrependHistory
+  href: api/client/EchoHub.Client.UI.Chat.ChatMessageManager.html#EchoHub_Client_UI_Chat_ChatMessageManager_PrependHistory_
+  commentId: Overload:EchoHub.Client.UI.Chat.ChatMessageManager.PrependHistory
+  fullName: EchoHub.Client.UI.Chat.ChatMessageManager.PrependHistory
+  nameWithType: ChatMessageManager.PrependHistory
 - uid: EchoHub.Client.UI.Chat.ChatMessageManager.RemoveMessage(System.String,System.Guid)
   name: RemoveMessage(string, Guid)
   href: api/client/EchoHub.Client.UI.Chat.ChatMessageManager.html#EchoHub_Client_UI_Chat_ChatMessageManager_RemoveMessage_System_String_System_Guid_
@@ -4210,6 +4231,237 @@ references:
   commentId: Overload:EchoHub.Client.UI.Dialogs.ProfileViewDialog.ShowOwn
   fullName: EchoHub.Client.UI.Dialogs.ProfileViewDialog.ShowOwn
   nameWithType: ProfileViewDialog.ShowOwn
+- uid: EchoHub.Client.UI.Dialogs.SearchDialog
+  name: SearchDialog
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchDialog.html
+  commentId: T:EchoHub.Client.UI.Dialogs.SearchDialog
+  fullName: EchoHub.Client.UI.Dialogs.SearchDialog
+  nameWithType: SearchDialog
+- uid: EchoHub.Client.UI.Dialogs.SearchDialog.Show(Terminal.Gui.App.IApplication,System.Collections.Generic.IReadOnlyList{System.String})
+  name: Show(IApplication, IReadOnlyList<string>)
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchDialog.html#EchoHub_Client_UI_Dialogs_SearchDialog_Show_Terminal_Gui_App_IApplication_System_Collections_Generic_IReadOnlyList_System_String__
+  commentId: M:EchoHub.Client.UI.Dialogs.SearchDialog.Show(Terminal.Gui.App.IApplication,System.Collections.Generic.IReadOnlyList{System.String})
+  name.vb: Show(IApplication, IReadOnlyList(Of String))
+  fullName: EchoHub.Client.UI.Dialogs.SearchDialog.Show(Terminal.Gui.App.IApplication, System.Collections.Generic.IReadOnlyList<string>)
+  fullName.vb: EchoHub.Client.UI.Dialogs.SearchDialog.Show(Terminal.Gui.App.IApplication, System.Collections.Generic.IReadOnlyList(Of String))
+  nameWithType: SearchDialog.Show(IApplication, IReadOnlyList<string>)
+  nameWithType.vb: SearchDialog.Show(IApplication, IReadOnlyList(Of String))
+- uid: EchoHub.Client.UI.Dialogs.SearchDialog.Show*
+  name: Show
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchDialog.html#EchoHub_Client_UI_Dialogs_SearchDialog_Show_
+  commentId: Overload:EchoHub.Client.UI.Dialogs.SearchDialog.Show
+  fullName: EchoHub.Client.UI.Dialogs.SearchDialog.Show
+  nameWithType: SearchDialog.Show
+- uid: EchoHub.Client.UI.Dialogs.SearchResult
+  name: SearchResult
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html
+  commentId: T:EchoHub.Client.UI.Dialogs.SearchResult
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult
+  nameWithType: SearchResult
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.#ctor(EchoHub.Client.UI.Dialogs.SearchResult)
+  name: SearchResult(SearchResult)
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult__ctor_EchoHub_Client_UI_Dialogs_SearchResult_
+  commentId: M:EchoHub.Client.UI.Dialogs.SearchResult.#ctor(EchoHub.Client.UI.Dialogs.SearchResult)
+  name.vb: New(SearchResult)
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.SearchResult(EchoHub.Client.UI.Dialogs.SearchResult)
+  fullName.vb: EchoHub.Client.UI.Dialogs.SearchResult.New(EchoHub.Client.UI.Dialogs.SearchResult)
+  nameWithType: SearchResult.SearchResult(SearchResult)
+  nameWithType.vb: SearchResult.New(SearchResult)
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.#ctor(EchoHub.Client.UI.Dialogs.SearchResultType,System.String,System.String)
+  name: SearchResult(SearchResultType, string, string)
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult__ctor_EchoHub_Client_UI_Dialogs_SearchResultType_System_String_System_String_
+  commentId: M:EchoHub.Client.UI.Dialogs.SearchResult.#ctor(EchoHub.Client.UI.Dialogs.SearchResultType,System.String,System.String)
+  name.vb: New(SearchResultType, String, String)
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.SearchResult(EchoHub.Client.UI.Dialogs.SearchResultType, string, string)
+  fullName.vb: EchoHub.Client.UI.Dialogs.SearchResult.New(EchoHub.Client.UI.Dialogs.SearchResultType, String, String)
+  nameWithType: SearchResult.SearchResult(SearchResultType, string, string)
+  nameWithType.vb: SearchResult.New(SearchResultType, String, String)
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.#ctor*
+  name: SearchResult
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult__ctor_
+  commentId: Overload:EchoHub.Client.UI.Dialogs.SearchResult.#ctor
+  name.vb: New
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.SearchResult
+  fullName.vb: EchoHub.Client.UI.Dialogs.SearchResult.New
+  nameWithType: SearchResult.SearchResult
+  nameWithType.vb: SearchResult.New
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.Deconstruct(EchoHub.Client.UI.Dialogs.SearchResultType@,System.String@,System.String@)
+  name: Deconstruct(out SearchResultType, out string, out string)
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_Deconstruct_EchoHub_Client_UI_Dialogs_SearchResultType__System_String__System_String__
+  commentId: M:EchoHub.Client.UI.Dialogs.SearchResult.Deconstruct(EchoHub.Client.UI.Dialogs.SearchResultType@,System.String@,System.String@)
+  name.vb: Deconstruct(SearchResultType, String, String)
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.Deconstruct(out EchoHub.Client.UI.Dialogs.SearchResultType, out string, out string)
+  fullName.vb: EchoHub.Client.UI.Dialogs.SearchResult.Deconstruct(EchoHub.Client.UI.Dialogs.SearchResultType, String, String)
+  nameWithType: SearchResult.Deconstruct(out SearchResultType, out string, out string)
+  nameWithType.vb: SearchResult.Deconstruct(SearchResultType, String, String)
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.Deconstruct*
+  name: Deconstruct
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_Deconstruct_
+  commentId: Overload:EchoHub.Client.UI.Dialogs.SearchResult.Deconstruct
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.Deconstruct
+  nameWithType: SearchResult.Deconstruct
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.EqualityContract
+  name: EqualityContract
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_EqualityContract
+  commentId: P:EchoHub.Client.UI.Dialogs.SearchResult.EqualityContract
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.EqualityContract
+  nameWithType: SearchResult.EqualityContract
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.EqualityContract*
+  name: EqualityContract
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_EqualityContract_
+  commentId: Overload:EchoHub.Client.UI.Dialogs.SearchResult.EqualityContract
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.EqualityContract
+  nameWithType: SearchResult.EqualityContract
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.Equals(EchoHub.Client.UI.Dialogs.SearchResult)
+  name: Equals(SearchResult?)
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_Equals_EchoHub_Client_UI_Dialogs_SearchResult_
+  commentId: M:EchoHub.Client.UI.Dialogs.SearchResult.Equals(EchoHub.Client.UI.Dialogs.SearchResult)
+  name.vb: Equals(SearchResult)
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.Equals(EchoHub.Client.UI.Dialogs.SearchResult?)
+  fullName.vb: EchoHub.Client.UI.Dialogs.SearchResult.Equals(EchoHub.Client.UI.Dialogs.SearchResult)
+  nameWithType: SearchResult.Equals(SearchResult?)
+  nameWithType.vb: SearchResult.Equals(SearchResult)
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.Equals(System.Object)
+  name: Equals(object?)
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_Equals_System_Object_
+  commentId: M:EchoHub.Client.UI.Dialogs.SearchResult.Equals(System.Object)
+  name.vb: Equals(Object)
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.Equals(object?)
+  fullName.vb: EchoHub.Client.UI.Dialogs.SearchResult.Equals(Object)
+  nameWithType: SearchResult.Equals(object?)
+  nameWithType.vb: SearchResult.Equals(Object)
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.Equals*
+  name: Equals
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_Equals_
+  commentId: Overload:EchoHub.Client.UI.Dialogs.SearchResult.Equals
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.Equals
+  nameWithType: SearchResult.Equals
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.GetHashCode
+  name: GetHashCode()
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_GetHashCode
+  commentId: M:EchoHub.Client.UI.Dialogs.SearchResult.GetHashCode
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.GetHashCode()
+  nameWithType: SearchResult.GetHashCode()
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.GetHashCode*
+  name: GetHashCode
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_GetHashCode_
+  commentId: Overload:EchoHub.Client.UI.Dialogs.SearchResult.GetHashCode
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.GetHashCode
+  nameWithType: SearchResult.GetHashCode
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.Key
+  name: Key
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_Key
+  commentId: P:EchoHub.Client.UI.Dialogs.SearchResult.Key
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.Key
+  nameWithType: SearchResult.Key
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.Key*
+  name: Key
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_Key_
+  commentId: Overload:EchoHub.Client.UI.Dialogs.SearchResult.Key
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.Key
+  nameWithType: SearchResult.Key
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.Label
+  name: Label
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_Label
+  commentId: P:EchoHub.Client.UI.Dialogs.SearchResult.Label
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.Label
+  nameWithType: SearchResult.Label
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.Label*
+  name: Label
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_Label_
+  commentId: Overload:EchoHub.Client.UI.Dialogs.SearchResult.Label
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.Label
+  nameWithType: SearchResult.Label
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.PrintMembers(System.Text.StringBuilder)
+  name: PrintMembers(StringBuilder)
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_PrintMembers_System_Text_StringBuilder_
+  commentId: M:EchoHub.Client.UI.Dialogs.SearchResult.PrintMembers(System.Text.StringBuilder)
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.PrintMembers(System.Text.StringBuilder)
+  nameWithType: SearchResult.PrintMembers(StringBuilder)
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.PrintMembers*
+  name: PrintMembers
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_PrintMembers_
+  commentId: Overload:EchoHub.Client.UI.Dialogs.SearchResult.PrintMembers
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.PrintMembers
+  nameWithType: SearchResult.PrintMembers
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.ToString
+  name: ToString()
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_ToString
+  commentId: M:EchoHub.Client.UI.Dialogs.SearchResult.ToString
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.ToString()
+  nameWithType: SearchResult.ToString()
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.ToString*
+  name: ToString
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_ToString_
+  commentId: Overload:EchoHub.Client.UI.Dialogs.SearchResult.ToString
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.ToString
+  nameWithType: SearchResult.ToString
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.Type
+  name: Type
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_Type
+  commentId: P:EchoHub.Client.UI.Dialogs.SearchResult.Type
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.Type
+  nameWithType: SearchResult.Type
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.Type*
+  name: Type
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_Type_
+  commentId: Overload:EchoHub.Client.UI.Dialogs.SearchResult.Type
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.Type
+  nameWithType: SearchResult.Type
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.op_Equality(EchoHub.Client.UI.Dialogs.SearchResult,EchoHub.Client.UI.Dialogs.SearchResult)
+  name: operator ==(SearchResult?, SearchResult?)
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_op_Equality_EchoHub_Client_UI_Dialogs_SearchResult_EchoHub_Client_UI_Dialogs_SearchResult_
+  commentId: M:EchoHub.Client.UI.Dialogs.SearchResult.op_Equality(EchoHub.Client.UI.Dialogs.SearchResult,EchoHub.Client.UI.Dialogs.SearchResult)
+  name.vb: =(SearchResult, SearchResult)
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.operator ==(EchoHub.Client.UI.Dialogs.SearchResult?, EchoHub.Client.UI.Dialogs.SearchResult?)
+  fullName.vb: EchoHub.Client.UI.Dialogs.SearchResult.=(EchoHub.Client.UI.Dialogs.SearchResult, EchoHub.Client.UI.Dialogs.SearchResult)
+  nameWithType: SearchResult.operator ==(SearchResult?, SearchResult?)
+  nameWithType.vb: SearchResult.=(SearchResult, SearchResult)
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.op_Equality*
+  name: operator ==
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_op_Equality_
+  commentId: Overload:EchoHub.Client.UI.Dialogs.SearchResult.op_Equality
+  name.vb: =
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.operator ==
+  fullName.vb: EchoHub.Client.UI.Dialogs.SearchResult.=
+  nameWithType: SearchResult.operator ==
+  nameWithType.vb: SearchResult.=
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.op_Inequality(EchoHub.Client.UI.Dialogs.SearchResult,EchoHub.Client.UI.Dialogs.SearchResult)
+  name: operator !=(SearchResult?, SearchResult?)
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_op_Inequality_EchoHub_Client_UI_Dialogs_SearchResult_EchoHub_Client_UI_Dialogs_SearchResult_
+  commentId: M:EchoHub.Client.UI.Dialogs.SearchResult.op_Inequality(EchoHub.Client.UI.Dialogs.SearchResult,EchoHub.Client.UI.Dialogs.SearchResult)
+  name.vb: <>(SearchResult, SearchResult)
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.operator !=(EchoHub.Client.UI.Dialogs.SearchResult?, EchoHub.Client.UI.Dialogs.SearchResult?)
+  fullName.vb: EchoHub.Client.UI.Dialogs.SearchResult.<>(EchoHub.Client.UI.Dialogs.SearchResult, EchoHub.Client.UI.Dialogs.SearchResult)
+  nameWithType: SearchResult.operator !=(SearchResult?, SearchResult?)
+  nameWithType.vb: SearchResult.<>(SearchResult, SearchResult)
+- uid: EchoHub.Client.UI.Dialogs.SearchResult.op_Inequality*
+  name: operator !=
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResult.html#EchoHub_Client_UI_Dialogs_SearchResult_op_Inequality_
+  commentId: Overload:EchoHub.Client.UI.Dialogs.SearchResult.op_Inequality
+  name.vb: <>
+  fullName: EchoHub.Client.UI.Dialogs.SearchResult.operator !=
+  fullName.vb: EchoHub.Client.UI.Dialogs.SearchResult.<>
+  nameWithType: SearchResult.operator !=
+  nameWithType.vb: SearchResult.<>
+- uid: EchoHub.Client.UI.Dialogs.SearchResultType
+  name: SearchResultType
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResultType.html
+  commentId: T:EchoHub.Client.UI.Dialogs.SearchResultType
+  fullName: EchoHub.Client.UI.Dialogs.SearchResultType
+  nameWithType: SearchResultType
+- uid: EchoHub.Client.UI.Dialogs.SearchResultType.Action
+  name: Action
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResultType.html#EchoHub_Client_UI_Dialogs_SearchResultType_Action
+  commentId: F:EchoHub.Client.UI.Dialogs.SearchResultType.Action
+  fullName: EchoHub.Client.UI.Dialogs.SearchResultType.Action
+  nameWithType: SearchResultType.Action
+- uid: EchoHub.Client.UI.Dialogs.SearchResultType.Channel
+  name: Channel
+  href: api/client/EchoHub.Client.UI.Dialogs.SearchResultType.html#EchoHub_Client_UI_Dialogs_SearchResultType_Channel
+  commentId: F:EchoHub.Client.UI.Dialogs.SearchResultType.Channel
+  fullName: EchoHub.Client.UI.Dialogs.SearchResultType.Channel
+  nameWithType: SearchResultType.Channel
 - uid: EchoHub.Client.UI.Dialogs.StatusDialog
   name: StatusDialog
   href: api/client/EchoHub.Client.UI.Dialogs.StatusDialog.html
@@ -4750,6 +5002,171 @@ references:
   commentId: Overload:EchoHub.Client.UI.ListSources.ChannelListSource.Update
   fullName: EchoHub.Client.UI.ListSources.ChannelListSource.Update
   nameWithType: ChannelListSource.Update
+- uid: EchoHub.Client.UI.ListSources.SearchListSource
+  name: SearchListSource
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html
+  commentId: T:EchoHub.Client.UI.ListSources.SearchListSource
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource
+  nameWithType: SearchListSource
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.#ctor(System.Collections.Generic.List{EchoHub.Client.UI.Dialogs.SearchResult})
+  name: SearchListSource(List<SearchResult>)
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource__ctor_System_Collections_Generic_List_EchoHub_Client_UI_Dialogs_SearchResult__
+  commentId: M:EchoHub.Client.UI.ListSources.SearchListSource.#ctor(System.Collections.Generic.List{EchoHub.Client.UI.Dialogs.SearchResult})
+  name.vb: New(List(Of SearchResult))
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.SearchListSource(System.Collections.Generic.List<EchoHub.Client.UI.Dialogs.SearchResult>)
+  fullName.vb: EchoHub.Client.UI.ListSources.SearchListSource.New(System.Collections.Generic.List(Of EchoHub.Client.UI.Dialogs.SearchResult))
+  nameWithType: SearchListSource.SearchListSource(List<SearchResult>)
+  nameWithType.vb: SearchListSource.New(List(Of SearchResult))
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.#ctor*
+  name: SearchListSource
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource__ctor_
+  commentId: Overload:EchoHub.Client.UI.ListSources.SearchListSource.#ctor
+  name.vb: New
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.SearchListSource
+  fullName.vb: EchoHub.Client.UI.ListSources.SearchListSource.New
+  nameWithType: SearchListSource.SearchListSource
+  nameWithType.vb: SearchListSource.New
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.CollectionChanged
+  name: CollectionChanged
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_CollectionChanged
+  commentId: E:EchoHub.Client.UI.ListSources.SearchListSource.CollectionChanged
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.CollectionChanged
+  nameWithType: SearchListSource.CollectionChanged
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.Count
+  name: Count
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_Count
+  commentId: P:EchoHub.Client.UI.ListSources.SearchListSource.Count
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.Count
+  nameWithType: SearchListSource.Count
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.Count*
+  name: Count
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_Count_
+  commentId: Overload:EchoHub.Client.UI.ListSources.SearchListSource.Count
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.Count
+  nameWithType: SearchListSource.Count
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.Dispose
+  name: Dispose()
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_Dispose
+  commentId: M:EchoHub.Client.UI.ListSources.SearchListSource.Dispose
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.Dispose()
+  nameWithType: SearchListSource.Dispose()
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.Dispose*
+  name: Dispose
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_Dispose_
+  commentId: Overload:EchoHub.Client.UI.ListSources.SearchListSource.Dispose
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.Dispose
+  nameWithType: SearchListSource.Dispose
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.Filter(System.String)
+  name: Filter(string)
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_Filter_System_String_
+  commentId: M:EchoHub.Client.UI.ListSources.SearchListSource.Filter(System.String)
+  name.vb: Filter(String)
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.Filter(string)
+  fullName.vb: EchoHub.Client.UI.ListSources.SearchListSource.Filter(String)
+  nameWithType: SearchListSource.Filter(string)
+  nameWithType.vb: SearchListSource.Filter(String)
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.Filter*
+  name: Filter
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_Filter_
+  commentId: Overload:EchoHub.Client.UI.ListSources.SearchListSource.Filter
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.Filter
+  nameWithType: SearchListSource.Filter
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.GetItem(System.Int32)
+  name: GetItem(int)
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_GetItem_System_Int32_
+  commentId: M:EchoHub.Client.UI.ListSources.SearchListSource.GetItem(System.Int32)
+  name.vb: GetItem(Integer)
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.GetItem(int)
+  fullName.vb: EchoHub.Client.UI.ListSources.SearchListSource.GetItem(Integer)
+  nameWithType: SearchListSource.GetItem(int)
+  nameWithType.vb: SearchListSource.GetItem(Integer)
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.GetItem*
+  name: GetItem
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_GetItem_
+  commentId: Overload:EchoHub.Client.UI.ListSources.SearchListSource.GetItem
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.GetItem
+  nameWithType: SearchListSource.GetItem
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.IsMarked(System.Int32)
+  name: IsMarked(int)
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_IsMarked_System_Int32_
+  commentId: M:EchoHub.Client.UI.ListSources.SearchListSource.IsMarked(System.Int32)
+  name.vb: IsMarked(Integer)
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.IsMarked(int)
+  fullName.vb: EchoHub.Client.UI.ListSources.SearchListSource.IsMarked(Integer)
+  nameWithType: SearchListSource.IsMarked(int)
+  nameWithType.vb: SearchListSource.IsMarked(Integer)
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.IsMarked*
+  name: IsMarked
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_IsMarked_
+  commentId: Overload:EchoHub.Client.UI.ListSources.SearchListSource.IsMarked
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.IsMarked
+  nameWithType: SearchListSource.IsMarked
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.MaxItemLength
+  name: MaxItemLength
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_MaxItemLength
+  commentId: P:EchoHub.Client.UI.ListSources.SearchListSource.MaxItemLength
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.MaxItemLength
+  nameWithType: SearchListSource.MaxItemLength
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.MaxItemLength*
+  name: MaxItemLength
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_MaxItemLength_
+  commentId: Overload:EchoHub.Client.UI.ListSources.SearchListSource.MaxItemLength
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.MaxItemLength
+  nameWithType: SearchListSource.MaxItemLength
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.Render(Terminal.Gui.Views.ListView,System.Boolean,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)
+  name: Render(ListView, bool, int, int, int, int, int)
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_Render_Terminal_Gui_Views_ListView_System_Boolean_System_Int32_System_Int32_System_Int32_System_Int32_System_Int32_
+  commentId: M:EchoHub.Client.UI.ListSources.SearchListSource.Render(Terminal.Gui.Views.ListView,System.Boolean,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32)
+  name.vb: Render(ListView, Boolean, Integer, Integer, Integer, Integer, Integer)
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.Render(Terminal.Gui.Views.ListView, bool, int, int, int, int, int)
+  fullName.vb: EchoHub.Client.UI.ListSources.SearchListSource.Render(Terminal.Gui.Views.ListView, Boolean, Integer, Integer, Integer, Integer, Integer)
+  nameWithType: SearchListSource.Render(ListView, bool, int, int, int, int, int)
+  nameWithType.vb: SearchListSource.Render(ListView, Boolean, Integer, Integer, Integer, Integer, Integer)
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.Render*
+  name: Render
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_Render_
+  commentId: Overload:EchoHub.Client.UI.ListSources.SearchListSource.Render
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.Render
+  nameWithType: SearchListSource.Render
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.SetMark(System.Int32,System.Boolean)
+  name: SetMark(int, bool)
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_SetMark_System_Int32_System_Boolean_
+  commentId: M:EchoHub.Client.UI.ListSources.SearchListSource.SetMark(System.Int32,System.Boolean)
+  name.vb: SetMark(Integer, Boolean)
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.SetMark(int, bool)
+  fullName.vb: EchoHub.Client.UI.ListSources.SearchListSource.SetMark(Integer, Boolean)
+  nameWithType: SearchListSource.SetMark(int, bool)
+  nameWithType.vb: SearchListSource.SetMark(Integer, Boolean)
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.SetMark*
+  name: SetMark
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_SetMark_
+  commentId: Overload:EchoHub.Client.UI.ListSources.SearchListSource.SetMark
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.SetMark
+  nameWithType: SearchListSource.SetMark
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.SuspendCollectionChangedEvent
+  name: SuspendCollectionChangedEvent
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_SuspendCollectionChangedEvent
+  commentId: P:EchoHub.Client.UI.ListSources.SearchListSource.SuspendCollectionChangedEvent
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.SuspendCollectionChangedEvent
+  nameWithType: SearchListSource.SuspendCollectionChangedEvent
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.SuspendCollectionChangedEvent*
+  name: SuspendCollectionChangedEvent
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_SuspendCollectionChangedEvent_
+  commentId: Overload:EchoHub.Client.UI.ListSources.SearchListSource.SuspendCollectionChangedEvent
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.SuspendCollectionChangedEvent
+  nameWithType: SearchListSource.SuspendCollectionChangedEvent
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.ToList
+  name: ToList()
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_ToList
+  commentId: M:EchoHub.Client.UI.ListSources.SearchListSource.ToList
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.ToList()
+  nameWithType: SearchListSource.ToList()
+- uid: EchoHub.Client.UI.ListSources.SearchListSource.ToList*
+  name: ToList
+  href: api/client/EchoHub.Client.UI.ListSources.SearchListSource.html#EchoHub_Client_UI_ListSources_SearchListSource_ToList_
+  commentId: Overload:EchoHub.Client.UI.ListSources.SearchListSource.ToList
+  fullName: EchoHub.Client.UI.ListSources.SearchListSource.ToList
+  nameWithType: SearchListSource.ToList
 - uid: EchoHub.Client.UI.ListSources.UserListSource
   name: UserListSource
   href: api/client/EchoHub.Client.UI.ListSources.UserListSource.html
@@ -5068,6 +5485,12 @@ references:
   commentId: E:EchoHub.Client.UI.MainWindow.OnFileDownloadRequested
   fullName: EchoHub.Client.UI.MainWindow.OnFileDownloadRequested
   nameWithType: MainWindow.OnFileDownloadRequested
+- uid: EchoHub.Client.UI.MainWindow.OnLoadMoreRequested
+  name: OnLoadMoreRequested
+  href: api/client/EchoHub.Client.UI.MainWindow.html#EchoHub_Client_UI_MainWindow_OnLoadMoreRequested
+  commentId: E:EchoHub.Client.UI.MainWindow.OnLoadMoreRequested
+  fullName: EchoHub.Client.UI.MainWindow.OnLoadMoreRequested
+  nameWithType: MainWindow.OnLoadMoreRequested
 - uid: EchoHub.Client.UI.MainWindow.OnLogoutRequested
   name: OnLogoutRequested
   href: api/client/EchoHub.Client.UI.MainWindow.html#EchoHub_Client_UI_MainWindow_OnLogoutRequested
@@ -5098,6 +5521,12 @@ references:
   commentId: E:EchoHub.Client.UI.MainWindow.OnSavedServersRequested
   fullName: EchoHub.Client.UI.MainWindow.OnSavedServersRequested
   nameWithType: MainWindow.OnSavedServersRequested
+- uid: EchoHub.Client.UI.MainWindow.OnSearchRequested
+  name: OnSearchRequested
+  href: api/client/EchoHub.Client.UI.MainWindow.html#EchoHub_Client_UI_MainWindow_OnSearchRequested
+  commentId: E:EchoHub.Client.UI.MainWindow.OnSearchRequested
+  fullName: EchoHub.Client.UI.MainWindow.OnSearchRequested
+  nameWithType: MainWindow.OnSearchRequested
 - uid: EchoHub.Client.UI.MainWindow.OnStatusRequested
   name: OnStatusRequested
   href: api/client/EchoHub.Client.UI.MainWindow.html#EchoHub_Client_UI_MainWindow_OnStatusRequested
@@ -5998,15 +6427,15 @@ references:
   commentId: Overload:EchoHub.Core.Contracts.IChatService.BroadcastMessageAsync
   fullName: EchoHub.Core.Contracts.IChatService.BroadcastMessageAsync
   nameWithType: IChatService.BroadcastMessageAsync
-- uid: EchoHub.Core.Contracts.IChatService.GetChannelHistoryAsync(System.String,System.Int32)
-  name: GetChannelHistoryAsync(string, int)
-  href: api/core/EchoHub.Core.Contracts.IChatService.html#EchoHub_Core_Contracts_IChatService_GetChannelHistoryAsync_System_String_System_Int32_
-  commentId: M:EchoHub.Core.Contracts.IChatService.GetChannelHistoryAsync(System.String,System.Int32)
-  name.vb: GetChannelHistoryAsync(String, Integer)
-  fullName: EchoHub.Core.Contracts.IChatService.GetChannelHistoryAsync(string, int)
-  fullName.vb: EchoHub.Core.Contracts.IChatService.GetChannelHistoryAsync(String, Integer)
-  nameWithType: IChatService.GetChannelHistoryAsync(string, int)
-  nameWithType.vb: IChatService.GetChannelHistoryAsync(String, Integer)
+- uid: EchoHub.Core.Contracts.IChatService.GetChannelHistoryAsync(System.String,System.Int32,System.Int32)
+  name: GetChannelHistoryAsync(string, int, int)
+  href: api/core/EchoHub.Core.Contracts.IChatService.html#EchoHub_Core_Contracts_IChatService_GetChannelHistoryAsync_System_String_System_Int32_System_Int32_
+  commentId: M:EchoHub.Core.Contracts.IChatService.GetChannelHistoryAsync(System.String,System.Int32,System.Int32)
+  name.vb: GetChannelHistoryAsync(String, Integer, Integer)
+  fullName: EchoHub.Core.Contracts.IChatService.GetChannelHistoryAsync(string, int, int)
+  fullName.vb: EchoHub.Core.Contracts.IChatService.GetChannelHistoryAsync(String, Integer, Integer)
+  nameWithType: IChatService.GetChannelHistoryAsync(string, int, int)
+  nameWithType.vb: IChatService.GetChannelHistoryAsync(String, Integer, Integer)
 - uid: EchoHub.Core.Contracts.IChatService.GetChannelHistoryAsync*
   name: GetChannelHistoryAsync
   href: api/core/EchoHub.Core.Contracts.IChatService.html#EchoHub_Core_Contracts_IChatService_GetChannelHistoryAsync_
@@ -14536,15 +14965,15 @@ references:
   fullName.vb: EchoHub.Server.Hubs.ChatHub.New
   nameWithType: ChatHub.ChatHub
   nameWithType.vb: ChatHub.New
-- uid: EchoHub.Server.Hubs.ChatHub.GetChannelHistory(System.String,System.Int32)
-  name: GetChannelHistory(string, int)
-  href: api/server/EchoHub.Server.Hubs.ChatHub.html#EchoHub_Server_Hubs_ChatHub_GetChannelHistory_System_String_System_Int32_
-  commentId: M:EchoHub.Server.Hubs.ChatHub.GetChannelHistory(System.String,System.Int32)
-  name.vb: GetChannelHistory(String, Integer)
-  fullName: EchoHub.Server.Hubs.ChatHub.GetChannelHistory(string, int)
-  fullName.vb: EchoHub.Server.Hubs.ChatHub.GetChannelHistory(String, Integer)
-  nameWithType: ChatHub.GetChannelHistory(string, int)
-  nameWithType.vb: ChatHub.GetChannelHistory(String, Integer)
+- uid: EchoHub.Server.Hubs.ChatHub.GetChannelHistory(System.String,System.Int32,System.Int32)
+  name: GetChannelHistory(string, int, int)
+  href: api/server/EchoHub.Server.Hubs.ChatHub.html#EchoHub_Server_Hubs_ChatHub_GetChannelHistory_System_String_System_Int32_System_Int32_
+  commentId: M:EchoHub.Server.Hubs.ChatHub.GetChannelHistory(System.String,System.Int32,System.Int32)
+  name.vb: GetChannelHistory(String, Integer, Integer)
+  fullName: EchoHub.Server.Hubs.ChatHub.GetChannelHistory(string, int, int)
+  fullName.vb: EchoHub.Server.Hubs.ChatHub.GetChannelHistory(String, Integer, Integer)
+  nameWithType: ChatHub.GetChannelHistory(string, int, int)
+  nameWithType.vb: ChatHub.GetChannelHistory(String, Integer, Integer)
 - uid: EchoHub.Server.Hubs.ChatHub.GetChannelHistory*
   name: GetChannelHistory
   href: api/server/EchoHub.Server.Hubs.ChatHub.html#EchoHub_Server_Hubs_ChatHub_GetChannelHistory_
@@ -16015,15 +16444,15 @@ references:
   commentId: Overload:EchoHub.Server.Services.ChatService.BroadcastMessageAsync
   fullName: EchoHub.Server.Services.ChatService.BroadcastMessageAsync
   nameWithType: ChatService.BroadcastMessageAsync
-- uid: EchoHub.Server.Services.ChatService.GetChannelHistoryAsync(System.String,System.Int32)
-  name: GetChannelHistoryAsync(string, int)
-  href: api/server/EchoHub.Server.Services.ChatService.html#EchoHub_Server_Services_ChatService_GetChannelHistoryAsync_System_String_System_Int32_
-  commentId: M:EchoHub.Server.Services.ChatService.GetChannelHistoryAsync(System.String,System.Int32)
-  name.vb: GetChannelHistoryAsync(String, Integer)
-  fullName: EchoHub.Server.Services.ChatService.GetChannelHistoryAsync(string, int)
-  fullName.vb: EchoHub.Server.Services.ChatService.GetChannelHistoryAsync(String, Integer)
-  nameWithType: ChatService.GetChannelHistoryAsync(string, int)
-  nameWithType.vb: ChatService.GetChannelHistoryAsync(String, Integer)
+- uid: EchoHub.Server.Services.ChatService.GetChannelHistoryAsync(System.String,System.Int32,System.Int32)
+  name: GetChannelHistoryAsync(string, int, int)
+  href: api/server/EchoHub.Server.Services.ChatService.html#EchoHub_Server_Services_ChatService_GetChannelHistoryAsync_System_String_System_Int32_System_Int32_
+  commentId: M:EchoHub.Server.Services.ChatService.GetChannelHistoryAsync(System.String,System.Int32,System.Int32)
+  name.vb: GetChannelHistoryAsync(String, Integer, Integer)
+  fullName: EchoHub.Server.Services.ChatService.GetChannelHistoryAsync(string, int, int)
+  fullName.vb: EchoHub.Server.Services.ChatService.GetChannelHistoryAsync(String, Integer, Integer)
+  nameWithType: ChatService.GetChannelHistoryAsync(string, int, int)
+  nameWithType.vb: ChatService.GetChannelHistoryAsync(String, Integer, Integer)
 - uid: EchoHub.Server.Services.ChatService.GetChannelHistoryAsync*
   name: GetChannelHistoryAsync
   href: api/server/EchoHub.Server.Services.ChatService.html#EchoHub_Server_Services_ChatService_GetChannelHistoryAsync_
