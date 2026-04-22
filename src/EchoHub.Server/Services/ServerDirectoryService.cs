@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -280,8 +281,8 @@ public sealed class ServerDirectoryService : BackgroundService
             // ClaimToken is null on first-ever registration; otherwise the token persisted on first claim.
             var dto = new RegisterServerDto(name, description, hosts, userCount, version, tags, _claimStore.ClaimToken);
 
-            var result = await _connection.InvokeAsync<RegisterServerResult>("RegisterServer", dto);
-            await HandleRegistrationResultAsync(result, userCount, name, hosts);
+            var envelope = await _connection.InvokeAsync<Response<RegisterServerResult>>("RegisterServer", dto);
+            await HandleRegistrationResponseAsync(envelope, userCount, name, hosts);
         }
         catch (Exception ex)
         {
@@ -289,64 +290,49 @@ public sealed class ServerDirectoryService : BackgroundService
         }
     }
 
-    private async Task HandleRegistrationResultAsync(RegisterServerResult result, int userCount, string name, string[] hosts)
+    private async Task HandleRegistrationResponseAsync(Response<RegisterServerResult>? envelope, int userCount, string name, string[] hosts)
     {
-        if (!result.Success)
+        if (envelope is null)
         {
             _registrationPermanentlyFailed = true;
-
-            var error = result.Error ?? "UnknownError";
-            var conflicts = result.ConflictingHosts is { Length: > 0 }
-                ? string.Join(", ", result.ConflictingHosts)
-                : "(none reported)";
-
-            switch (error)
-            {
-                case DirectoryRegistrationErrors.HostAlreadyClaimed:
-                    _logger.LogError(
-                        "Directory rejected registration: host(s) already claimed by another server: {ConflictingHosts}. " +
-                        "Change Server:PublicHosts or contact the directory admin to release the claim. Server will not retry until restarted.",
-                        conflicts);
-                    break;
-
-                case DirectoryRegistrationErrors.InvalidToken:
-                    _logger.LogError(
-                        "Directory rejected registration: persisted claim token is invalid (likely deleted by admin or stale). " +
-                        "Delete the claim file ({ClaimFile}) to claim fresh, or contact the directory admin. Server will not retry until restarted.",
-                        _claimStore.FilePath);
-                    break;
-
-                case DirectoryRegistrationErrors.HostConflict:
-                    _logger.LogError(
-                        "Directory rejected registration: token is valid but newly-advertised host(s) conflict with another server's row: {ConflictingHosts}. " +
-                        "Remove the conflicting entries from Server:PublicHosts. Server will not retry until restarted.",
-                        conflicts);
-                    break;
-
-                default:
-                    _logger.LogError("Directory rejected registration with unknown error code: {Error}. Server will not retry until restarted.", error);
-                    break;
-            }
-
-            _claimStore.SetFailure(error, result.ConflictingHosts);
+            _logger.LogError("Directory returned a null envelope for RegisterServer — treating as malformed. Server will not retry until restarted.");
+            _claimStore.SetFailure(DirectoryRegistrationErrors.MalformedResponse, null);
             return;
         }
 
-        // Success path
-        if (!result.ServerId.HasValue)
+        // Pin protocol version. Spec: fail hard on mismatch — bumps are coordinated.
+        if (!string.Equals(envelope.Version, DirectoryProtocol.Version, StringComparison.Ordinal))
         {
-            _logger.LogWarning("Directory registration succeeded but ServerId was missing — treating as failure to be safe.");
             _registrationPermanentlyFailed = true;
-            _claimStore.SetFailure("MissingServerId", null);
+            _logger.LogError(
+                "Directory protocol version mismatch: client expects {Expected}, hub returned {Actual}. " +
+                "Refusing to operate. Coordinate a deploy that aligns both sides.",
+                DirectoryProtocol.Version, envelope.Version ?? "(null)");
+            _claimStore.SetFailure(DirectoryRegistrationErrors.ProtocolVersionMismatch, null);
             return;
         }
 
-        var serverId = result.ServerId.Value;
-
-        // Persist a freshly-issued claim token *before* anything else acks success — this is our durability guarantee.
-        if (!string.IsNullOrEmpty(result.ClaimToken))
+        if (!envelope.IsSuccess)
         {
-            await _claimStore.SaveClaimAsync(result.ClaimToken, serverId);
+            await HandleRegistrationErrorAsync(envelope.Errors);
+            return;
+        }
+
+        if (envelope.Data is null)
+        {
+            _registrationPermanentlyFailed = true;
+            _logger.LogError("Directory returned IsSuccess=true but Data was null — treating as malformed. Server will not retry until restarted.");
+            _claimStore.SetFailure(DirectoryRegistrationErrors.MalformedResponse, null);
+            return;
+        }
+
+        var data = envelope.Data;
+        var serverId = data.ServerId;
+
+        // Persist a freshly-issued claim token *before* anything else acks success — durability guarantee for first claim.
+        if (!string.IsNullOrEmpty(data.ClaimToken))
+        {
+            await _claimStore.SaveClaimAsync(data.ClaimToken, serverId);
         }
         else
         {
@@ -357,6 +343,84 @@ public sealed class ServerDirectoryService : BackgroundService
         _claimStore.SetSuccess(serverId);
         _lastReportedUserCount = userCount;
         _logger.LogInformation("Registered with directory as {Name} at {Hosts} (ServerId {ServerId})", name, string.Join(", ", hosts), serverId);
+    }
+
+    private Task HandleRegistrationErrorAsync(ErrorDetail[]? errors)
+    {
+        _registrationPermanentlyFailed = true;
+
+        var firstError = errors is { Length: > 0 } ? errors[0] : null;
+        var code = firstError?.Code ?? "UnknownError";
+        var conflictingHosts = ExtractConflictingHosts(firstError);
+        var conflicts = conflictingHosts is { Length: > 0 }
+            ? string.Join(", ", conflictingHosts)
+            : "(none reported)";
+
+        switch (code)
+        {
+            case DirectoryRegistrationErrors.HostAlreadyClaimed:
+                _logger.LogError(
+                    "Directory rejected registration: host(s) already claimed by another server: {ConflictingHosts}. " +
+                    "Change Server:PublicHosts or contact the directory admin to release the claim. Server will not retry until restarted.",
+                    conflicts);
+                break;
+
+            case DirectoryRegistrationErrors.InvalidToken:
+                _logger.LogError(
+                    "Directory rejected registration: persisted claim token is invalid (likely deleted by admin or stale). " +
+                    "Delete the claim file ({ClaimFile}) to claim fresh, or contact the directory admin. Server will not retry until restarted.",
+                    _claimStore.FilePath);
+                break;
+
+            case DirectoryRegistrationErrors.HostConflict:
+                _logger.LogError(
+                    "Directory rejected registration: token is valid but newly-advertised host(s) conflict with another server's row: {ConflictingHosts}. " +
+                    "Remove the conflicting entries from Server:PublicHosts. Server will not retry until restarted.",
+                    conflicts);
+                break;
+
+            case DirectoryRegistrationErrors.InvalidInput:
+                _logger.LogError(
+                    "Directory rejected registration as InvalidInput ({Message}). Likely a client/hub contract drift — check Server config. Server will not retry until restarted.",
+                    firstError?.Message ?? "(no message)");
+                break;
+
+            default:
+                _logger.LogError(
+                    "Directory rejected registration with unknown error code: {Error} ({Message}). Server will not retry until restarted.",
+                    code, firstError?.Message ?? "(no message)");
+                break;
+        }
+
+        _claimStore.SetFailure(code, conflictingHosts);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Pulls <c>ConflictingHosts</c> out of an error's loosely-typed <c>Data</c> payload.
+    /// Tolerates both PascalCase and camelCase keys since SignalR's wire casing depends on
+    /// the hub's serializer config and the field is typed <c>object?</c>.
+    /// </summary>
+    private static string[]? ExtractConflictingHosts(ErrorDetail? error)
+    {
+        if (error?.Data is not JsonElement element || element.ValueKind != JsonValueKind.Object)
+            return null;
+
+        if (!element.TryGetProperty("ConflictingHosts", out var hostsProp)
+            && !element.TryGetProperty("conflictingHosts", out hostsProp))
+            return null;
+
+        if (hostsProp.ValueKind != JsonValueKind.Array)
+            return null;
+
+        List<string> hosts = [];
+        foreach (var item in hostsProp.EnumerateArray())
+        {
+            if (item.ValueKind == JsonValueKind.String && item.GetString() is { } s)
+                hosts.Add(s);
+        }
+
+        return hosts.Count == 0 ? null : hosts.ToArray();
     }
 
     private static string ResolveVersion()
@@ -414,16 +478,35 @@ internal record RegisterServerDto(
     string[] Tags,
     string? ClaimToken);
 
-internal record RegisterServerResult(
-    bool Success,
-    Guid? ServerId,
-    string? ClaimToken,
-    string? Error,
-    string[]? ConflictingHosts);
+internal record RegisterServerResult(Guid ServerId, string? ClaimToken);
+
+/// <summary>
+/// Envelope wrapping every directory hub response. Mirrors the EchoHubSpace contract.
+/// </summary>
+internal record Response<T>(bool IsSuccess, T? Data, ErrorDetail[]? Errors, string? Version);
+
+/// <summary>
+/// Error entry inside a <see cref="Response{T}"/>. <c>Data</c> is loosely-typed because the
+/// payload shape varies by error code (e.g. <c>{ ConflictingHosts: string[] }</c> for host errors).
+/// </summary>
+internal record ErrorDetail(string Code, string? Message, JsonElement? Data);
+
+internal static class DirectoryProtocol
+{
+    /// <summary>
+    /// Pinned envelope protocol version. Bumps are coordinated across both repos.
+    /// </summary>
+    public const string Version = "1.0";
+}
 
 internal static class DirectoryRegistrationErrors
 {
-    public const string HostAlreadyClaimed = "HostAlreadyClaimed";
+    public const string InvalidInput = "InvalidInput";
     public const string InvalidToken = "InvalidToken";
+    public const string HostAlreadyClaimed = "HostAlreadyClaimed";
     public const string HostConflict = "HostConflict";
+
+    // Client-side synthetic codes (never returned by hub, generated locally for status reporting)
+    public const string ProtocolVersionMismatch = "ProtocolVersionMismatch";
+    public const string MalformedResponse = "MalformedResponse";
 }
