@@ -107,6 +107,7 @@ while (true)
         builder.Services.AddSingleton<ImageToAsciiService>();
         builder.Services.AddSingleton<FileStorageService>();
         builder.Services.AddSingleton<LinkEmbedService>();
+        builder.Services.AddSingleton<DirectoryClaimStore>();
         builder.Services.AddHostedService<ServerDirectoryService>();
         builder.Services.AddHostedService<FileCleanupService>();
         builder.Services.AddHostedService<MuteExpirationService>();
