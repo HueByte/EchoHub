@@ -1,3 +1,5 @@
+using System.Reflection;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace EchoHub.Server.Services;
@@ -5,13 +7,17 @@ namespace EchoHub.Server.Services;
 public sealed class ServerDirectoryService : BackgroundService
 {
     private const string DirectoryHubUrl = "https://echohub.voidcube.cloud/hubs/servers";
-    private static readonly TimeSpan UpdateInterval = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan ReconnectBaseDelay = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan ReconnectMaxDelay = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan UserCountMinInterval = TimeSpan.FromSeconds(1);
 
     private readonly IConfiguration _configuration;
     private readonly PresenceTracker _presenceTracker;
     private readonly ILogger<ServerDirectoryService> _logger;
+
+    // Single-slot, latest-wins channel coalesces bursts of presence changes into one update.
+    private readonly Channel<int> _userCountUpdates = Channel.CreateBounded<int>(
+        new BoundedChannelOptions(1) { FullMode = BoundedChannelFullMode.DropOldest });
 
     private HubConnection? _connection;
     private int _lastReportedUserCount = -1;
@@ -38,19 +44,44 @@ public sealed class ServerDirectoryService : BackgroundService
             return;
         }
 
-        var host = _configuration["Server:PublicHost"];
+        var hosts = _configuration.GetSection("Server:PublicHosts").Get<string[]>()
+            ?.Where(h => !string.IsNullOrWhiteSpace(h))
+            .ToArray() ?? Array.Empty<string>();
 
-        if (string.IsNullOrWhiteSpace(host))
+        if (hosts.Length == 0)
         {
-            _logger.LogWarning("PublicServer is enabled but Server:PublicHost is not set — skipping directory registration");
+            _logger.LogWarning("PublicServer is enabled but Server:PublicHosts is empty — skipping directory registration");
             return;
         }
 
         var serverName = _configuration["Server:Name"] ?? "EchoHub Server";
         var description = _configuration["Server:Description"];
+        var tags = _configuration.GetSection("Server:Tags").Get<string[]>()
+            ?.Where(t => !string.IsNullOrWhiteSpace(t))
+            .ToArray() ?? Array.Empty<string>();
+        var version = ResolveVersion();
 
-        _logger.LogInformation("PublicServer is enabled — connecting to EchoHubSpace directory as {Name} ({Host})", serverName, host);
+        _logger.LogInformation("PublicServer is enabled — connecting to EchoHubSpace directory as {Name} ({Hosts})", serverName, string.Join(", ", hosts));
 
+        _presenceTracker.UserCountChanged += OnUserCountChanged;
+        try
+        {
+            await RunConnectionLoopAsync(serverName, description, hosts, version, tags, stoppingToken);
+        }
+        finally
+        {
+            _presenceTracker.UserCountChanged -= OnUserCountChanged;
+        }
+    }
+
+    private async Task RunConnectionLoopAsync(
+        string serverName,
+        string? description,
+        string[] hosts,
+        string version,
+        string[] tags,
+        CancellationToken stoppingToken)
+    {
         // Outer loop: rebuilds the connection if automatic reconnect permanently fails
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -78,7 +109,7 @@ public sealed class ServerDirectoryService : BackgroundService
                 {
                     _logger.LogInformation("Reconnected to directory — re-registering server");
                     _lastReportedUserCount = -1;
-                    await RegisterAsync(serverName, description, host);
+                    await RegisterAsync(serverName, description, hosts, version, tags);
                 };
 
                 connection.Closed += ex =>
@@ -97,10 +128,10 @@ public sealed class ServerDirectoryService : BackgroundService
                     return;
 
                 _logger.LogInformation("Successfully connected to EchoHubSpace API at {Url}", DirectoryHubUrl);
-                await RegisterAsync(serverName, description, host);
+                await RegisterAsync(serverName, description, hosts, version, tags);
 
-                // Poll user count until the connection is permanently closed or cancellation
-                await PollUserCountAsync(connection, connectionPermanentlyClosed.Task, stoppingToken);
+                // Push user-count updates as PresenceTracker raises events, until the connection closes or cancellation
+                await ProcessUserCountUpdatesAsync(connection, connectionPermanentlyClosed.Task, stoppingToken);
 
                 if (stoppingToken.IsCancellationRequested)
                     return;
@@ -151,33 +182,58 @@ public sealed class ServerDirectoryService : BackgroundService
         return false;
     }
 
-    private async Task PollUserCountAsync(HubConnection connection, Task connectionClosed, CancellationToken ct)
+    private void OnUserCountChanged(int newCount)
     {
+        // Single-slot channel: latest write wins, so a burst of presence changes coalesces.
+        _userCountUpdates.Writer.TryWrite(newCount);
+    }
+
+    private async Task ProcessUserCountUpdatesAsync(HubConnection connection, Task connectionClosed, CancellationToken ct)
+    {
+        var lastSentAt = DateTimeOffset.MinValue;
+
         while (!ct.IsCancellationRequested)
         {
-            var delayTask = Task.Delay(UpdateInterval, ct);
-            var completed = await Task.WhenAny(delayTask, connectionClosed);
+            var waitTask = _userCountUpdates.Reader.WaitToReadAsync(ct).AsTask();
+            var completed = await Task.WhenAny(waitTask, connectionClosed);
 
             if (completed == connectionClosed)
                 return;
 
-            // Observe the delay task (may throw if cancelled)
-            try { await delayTask; }
+            bool hasUpdate;
+            try { hasUpdate = await waitTask; }
             catch (OperationCanceledException) { return; }
+
+            if (!hasUpdate)
+                return;
+
+            if (!_userCountUpdates.Reader.TryRead(out var count))
+                continue;
+
+            // Throttle: enforce a minimum interval between sends. While we wait, drain newer
+            // values so the eventual send carries the latest count, not a stale snapshot.
+            var elapsed = DateTimeOffset.UtcNow - lastSentAt;
+            if (elapsed < UserCountMinInterval)
+            {
+                try { await Task.Delay(UserCountMinInterval - elapsed, ct); }
+                catch (OperationCanceledException) { return; }
+
+                while (_userCountUpdates.Reader.TryRead(out var newer))
+                    count = newer;
+            }
+
+            if (count == _lastReportedUserCount)
+                continue;
 
             if (connection.State != HubConnectionState.Connected)
                 continue;
 
-            var currentCount = _presenceTracker.GetOnlineUserCount();
-
-            if (currentCount == _lastReportedUserCount)
-                continue;
-
             try
             {
-                await connection.InvokeAsync("UpdateUserCount", currentCount, ct);
-                _lastReportedUserCount = currentCount;
-                _logger.LogDebug("Updated directory user count to {Count}", currentCount);
+                await connection.InvokeAsync("UpdateUserCount", count, ct);
+                _lastReportedUserCount = count;
+                lastSentAt = DateTimeOffset.UtcNow;
+                _logger.LogDebug("Updated directory user count to {Count}", count);
             }
             catch (Exception ex)
             {
@@ -192,7 +248,7 @@ public sealed class ServerDirectoryService : BackgroundService
         return delay > ReconnectMaxDelay ? ReconnectMaxDelay : delay;
     }
 
-    private async Task RegisterAsync(string name, string? description, string host)
+    private async Task RegisterAsync(string name, string? description, string[] hosts, string version, string[] tags)
     {
         if (_connection?.State != HubConnectionState.Connected)
             return;
@@ -200,15 +256,29 @@ public sealed class ServerDirectoryService : BackgroundService
         try
         {
             var userCount = _presenceTracker.GetOnlineUserCount();
-            var dto = new RegisterServerDto(name, description, host, userCount);
+            var dto = new RegisterServerDto(name, description, hosts, userCount, version, tags);
             await _connection.InvokeAsync("RegisterServer", dto);
             _lastReportedUserCount = userCount;
-            _logger.LogInformation("Registered with directory as {Name} at {Host}", name, host);
+            _logger.LogInformation("Registered with directory as {Name} at {Hosts}", name, string.Join(", ", hosts));
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to register with directory");
         }
+    }
+
+    private static string ResolveVersion()
+    {
+        var assembly = typeof(ServerDirectoryService).Assembly;
+        var informational = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+        if (!string.IsNullOrWhiteSpace(informational))
+        {
+            // Strip git SHA suffix that SourceLink appends (e.g. "0.2.10+abc123")
+            var plus = informational.IndexOf('+');
+            return plus >= 0 ? informational[..plus] : informational;
+        }
+
+        return assembly.GetName().Version?.ToString() ?? "0.0.0";
     }
 
     private static async Task DisposeConnectionAsync(HubConnection connection)
@@ -243,4 +313,10 @@ public sealed class ServerDirectoryService : BackgroundService
     }
 }
 
-internal record RegisterServerDto(string Name, string? Description, string Host, int UserCount);
+internal record RegisterServerDto(
+    string Name,
+    string? Description,
+    string[] Hosts,
+    int UserCount,
+    string Version,
+    string[] Tags);
