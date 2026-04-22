@@ -4,6 +4,7 @@ Release history for EchoHub.
 
 ## Releases
 
+- [v0.2.11](v0.2.11.md) - EchoHubSpace Auth, Live Directory Updates & Server Browser Metadata
 - [v0.2.10](v0.2.10.md) - Command Palette, Infinite History Scroll & Auto-Updater Fixes
 - [v0.2.9](v0.2.9.md) - Install Script & Chocolatey Fixes
 - [v0.2.8](v0.2.8.md) - Docker Support, IRC Account Creation & BOM Fix
