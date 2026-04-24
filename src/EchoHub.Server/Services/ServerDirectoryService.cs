@@ -7,7 +7,7 @@ namespace EchoHub.Server.Services;
 
 public sealed class ServerDirectoryService : BackgroundService
 {
-    private const string DirectoryHubUrl = "https://localhost:5001/hubs/servers";
+    private const string DirectoryHubUrl = "https://echohub.voidcube.cloud/hubs/servers";
     private static readonly TimeSpan ReconnectBaseDelay = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan ReconnectMaxDelay = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan UserCountMinInterval = TimeSpan.FromSeconds(1);
