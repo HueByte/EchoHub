@@ -157,8 +157,8 @@ public class ServerController : ControllerBase</code></pre>
 
   <a id="EchoHub_Server_Controllers_ServerController__ctor_" data-uid="EchoHub.Server.Controllers.ServerController.#ctor*"></a>
 
-  <h3 id="EchoHub_Server_Controllers_ServerController__ctor_EchoHub_Server_Data_EchoHubDbContext_Microsoft_Extensions_Configuration_IConfiguration_" data-uid="EchoHub.Server.Controllers.ServerController.#ctor(EchoHub.Server.Data.EchoHubDbContext,Microsoft.Extensions.Configuration.IConfiguration)">
-  ServerController(EchoHubDbContext, IConfiguration)
+  <h3 id="EchoHub_Server_Controllers_ServerController__ctor_EchoHub_Server_Data_EchoHubDbContext_Microsoft_Extensions_Configuration_IConfiguration_EchoHub_Server_Services_DirectoryClaimStore_" data-uid="EchoHub.Server.Controllers.ServerController.#ctor(EchoHub.Server.Data.EchoHubDbContext,Microsoft.Extensions.Configuration.IConfiguration,EchoHub.Server.Services.DirectoryClaimStore)">
+  ServerController(EchoHubDbContext, IConfiguration, DirectoryClaimStore)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/ServerController.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -166,7 +166,7 @@ public class ServerController : ControllerBase</code></pre>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public ServerController(EchoHubDbContext db, IConfiguration config)</code></pre>
+    <pre><code class="lang-csharp hljs">public ServerController(EchoHubDbContext db, IConfiguration config, DirectoryClaimStore claimStore)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -174,6 +174,8 @@ public class ServerController : ControllerBase</code></pre>
     <dt><code>db</code> <a class="xref" href="EchoHub.Server.Data.EchoHubDbContext.html">EchoHubDbContext</a></dt>
     <dd></dd>
     <dt><code>config</code> <span class="xref">IConfiguration</span></dt>
+    <dd></dd>
+    <dt><code>claimStore</code> <a class="xref" href="EchoHub.Server.Services.DirectoryClaimStore.html">DirectoryClaimStore</a></dt>
     <dd></dd>
   </dl>
 
@@ -190,6 +192,42 @@ public class ServerController : ControllerBase</code></pre>
 
   <h2 class="section" id="methods">Methods
 </h2>
+
+
+  <a id="EchoHub_Server_Controllers_ServerController_GetDirectoryStatus_" data-uid="EchoHub.Server.Controllers.ServerController.GetDirectoryStatus*"></a>
+
+  <h3 id="EchoHub_Server_Controllers_ServerController_GetDirectoryStatus" data-uid="EchoHub.Server.Controllers.ServerController.GetDirectoryStatus">
+  GetDirectoryStatus()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/ServerController.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Operator-facing view of the EchoHubSpace directory registration: ServerId for admin
+support tickets, current registration state, and the last error/conflict if any.
+Never exposes the claim token itself.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[HttpGet(&quot;directory&quot;)]
+[Authorize]
+public Task&lt;IActionResult&gt; GetDirectoryStatus()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span>&lt;<span class="xref">IActionResult</span>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
 
 
   <a id="EchoHub_Server_Controllers_ServerController_GetEncryptionKey_" data-uid="EchoHub.Server.Controllers.ServerController.GetEncryptionKey*"></a>

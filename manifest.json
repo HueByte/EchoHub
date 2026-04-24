@@ -2028,6 +2028,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.DirectoryClaimStore.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.DirectoryClaimStore.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.DirectoryClaimStore",
+      "Summary": "<p sourcefile=\"_api_meta/server/EchoHub.Server.Services.DirectoryClaimStore.yml\" sourcestartlinenumber=\"1\">Persists and exposes the EchoHubSpace directory claim — the opaque token issued on first\nregistration and the row's stable <code>ServerId</code>. Also surfaces ephemeral registration\nstatus (success/failure code, conflicting hosts) for operator-facing endpoints.</p>\n<p sourcefile=\"_api_meta/server/EchoHub.Server.Services.DirectoryClaimStore.yml\" sourcestartlinenumber=\"5\">Persistence uses atomic write (tmp + rename). Treat the file contents as a secret.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/server/EchoHub.Server.Services.FileCleanupService.yml",
       "output": {
         ".html": {
@@ -2136,6 +2150,20 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Server.Services.PresenceTracker",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.RegistrationStatus.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.RegistrationStatus.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.RegistrationStatus",
       "Summary": null
     },
     {
@@ -2484,6 +2512,16 @@
       "output": {
         ".html": {
           "relative_path": "changelog/v0.2.10.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "changelog/v0.2.11.md",
+      "output": {
+        ".html": {
+          "relative_path": "changelog/v0.2.11.html"
         }
       },
       "version": ""

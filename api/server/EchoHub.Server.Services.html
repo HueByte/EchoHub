@@ -103,6 +103,14 @@ Classes
       <dd></dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Server.Services.DirectoryClaimStore.html">DirectoryClaimStore</a></dt>
+      <dd><p>Persists and exposes the EchoHubSpace directory claim — the opaque token issued on first
+registration and the row's stable <code>ServerId</code>. Also surfaces ephemeral registration
+status (success/failure code, conflicting hosts) for operator-facing endpoints.</p>
+<p>Persistence uses atomic write (tmp + rename). Treat the file contents as a secret.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Server.Services.FileCleanupService.html">FileCleanupService</a></dt>
       <dd></dd>
     </dl>
@@ -133,6 +141,10 @@ Classes
     </dl>
     <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Server.Services.PresenceTracker.html">PresenceTracker</a></dt>
+      <dd></dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Server.Services.RegistrationStatus.html">RegistrationStatus</a></dt>
       <dd></dd>
     </dl>
     <dl class="jumplist">

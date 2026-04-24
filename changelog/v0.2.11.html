@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Changelog | EchoHub Documentation </title>
+      <title>v0.2.11 | EchoHub Documentation </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Changelog | EchoHub Documentation ">
+      <meta name="title" content="v0.2.11 | EchoHub Documentation ">
       
       
       <link rel="icon" href="../images/hue_icon.svg">
@@ -85,25 +85,28 @@
         </div>
 
         <article data-uid="">
-<h1 id="changelog">Changelog</h1>
+<h1 id="v0211">v0.2.11</h1>
 
-<p>Release history for EchoHub.</p>
-<h2 id="releases">Releases</h2>
+<p>EchoHubSpace directory protocol overhaul: authenticated server registration with persistent claim tokens, near-real-time user-count updates, and richer server metadata (tags, multi-host, version). Coordinated cutover with the EchoHubSpace directory deploy.</p>
+<h2 id="new-features">New Features</h2>
 <ul>
-<li><a href="v0.2.11.html">v0.2.11</a> - EchoHubSpace Auth, Live Directory Updates &amp; Server Browser Metadata</li>
-<li><a href="v0.2.10.html">v0.2.10</a> - Command Palette, Infinite History Scroll &amp; Auto-Updater Fixes</li>
-<li><a href="v0.2.9.html">v0.2.9</a> - Install Script &amp; Chocolatey Fixes</li>
-<li><a href="v0.2.8.html">v0.2.8</a> - Docker Support, IRC Account Creation &amp; BOM Fix</li>
-<li><a href="v0.2.7.html">v0.2.7</a> - User List Fix &amp; Terminal.Gui NuGet Migration</li>
-<li><a href="v0.2.6.html">v0.2.6</a> - Major Refactoring &amp; Code Organization</li>
-<li><a href="v0.2.5.html">v0.2.5</a> - Session Persistence, Auto-Updates, Audio &amp; Transparent Theme</li>
-<li><a href="v0.2.4.html">v0.2.4</a> - E2E Message Encryption</li>
-<li><a href="v0.2.3.html">v0.2.3</a> - Moderation, Embeds &amp; UI Overhaul</li>
-<li><a href="v0.2.2.html">v0.2.2</a> - Startup &amp; Shutdown Fixes</li>
-<li><a href="v0.2.1.html">v0.2.1</a> - Shutdown &amp; CI Fixes</li>
-<li><a href="v0.2.0.html">v0.2.0</a> - IRC Gateway</li>
-<li><a href="v0.1.1.html">v0.1.1</a> - Directory Connection Self-Healing</li>
-<li><a href="v0.1.0.html">v0.1.0</a> - Initial Release</li>
+<li>EchoHubSpace claim-token authentication — the directory issues a per-server claim token on first registration, persisted atomically alongside the SQLite database (chmod 0600 on Unix). Subsequent reconnects authenticate with the token instead of relying on raw hostname-squatting protection. Token survives both client and directory restarts; lost tokens require an admin-side <code>DELETE /api/servers/{id}</code> on the directory to recover</li>
+<li>Server tags — public servers can advertise topic tags via the new <code>Server:Tags</code> config array, surfacing as filter facets in the EchoHubSpace browser</li>
+<li>Multi-host advertisement — a single server can register multiple hostnames (e.g. apex domain, IPv6, alias domains) by listing them in <code>Server:PublicHosts</code>. All hosts route to the same directory row</li>
+<li>Server version sent to directory — the EchoHubSpace browser shows what version each public server is running, pulled from the server's assembly informational version</li>
+<li>Operator-facing <code>GET /api/server/directory</code> endpoint (Admin role required) — returns <code>ServerId</code>, <code>IsRegistered</code>, <code>LastRegisteredAt</code>, <code>LastError</code>, and any <code>ConflictingHosts</code> for support tickets. Never exposes the claim token itself, only a <code>HasClaimToken</code> boolean</li>
+</ul>
+<h2 id="refactoring">Refactoring</h2>
+<ul>
+<li>Replace 30s polling with event-driven directory updates — <code>PresenceTracker</code> now raises <code>UserCountChanged</code> only when the distinct user count actually changes (multi-tab/multi-connection users no longer trigger). <code>ServerDirectoryService</code> consumes via a single-slot <code>Channel&lt;int&gt;</code> (latest-wins coalesces bursts) with a 1-second min-interval throttle. Directory reflects user-count changes within ~1s instead of up to 30s stale</li>
+<li>Wrap directory hub responses in a <code>Response&lt;T&gt;</code> envelope with <code>IsSuccess</code>/<code>Data</code>/<code>Errors</code>/<code>Version</code> shape — protocol version is pinned client-side (currently <code>1.0</code>); mismatches trigger a permanent-failure stop with operator-facing log</li>
+<li>Stop attempting re-registration after permanent failures (<code>HostAlreadyClaimed</code>, <code>InvalidToken</code>, <code>HostConflict</code>, <code>InvalidInput</code>) — the directory no longer terminates the connection on these errors, so the client suppresses re-register on <code>Reconnected</code> to avoid tight retry loops. Operator must restart the server after fixing config</li>
+</ul>
+<h2 id="configuration">Configuration</h2>
+<ul>
+<li><strong>Breaking</strong>: <code>Server:PublicHost</code> (string) renamed to <code>Server:PublicHosts</code> (string array). Public servers must update <code>appsettings.json</code> — single-host deployments use a one-element array</li>
+<li>New <code>Server:Tags</code> (string array) — defaults to empty</li>
+<li>New optional <code>Server:DirectoryClaimPath</code> — overrides the path of the persisted claim file. Defaults to a <code>directory-claim.json</code> next to the SQLite database. Treat the file as a secret; back it up alongside the database</li>
 </ul>
 
 </article>

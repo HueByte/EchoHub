@@ -14290,15 +14290,15 @@ references:
   commentId: T:EchoHub.Server.Controllers.ServerController
   fullName: EchoHub.Server.Controllers.ServerController
   nameWithType: ServerController
-- uid: EchoHub.Server.Controllers.ServerController.#ctor(EchoHub.Server.Data.EchoHubDbContext,Microsoft.Extensions.Configuration.IConfiguration)
-  name: ServerController(EchoHubDbContext, IConfiguration)
-  href: api/server/EchoHub.Server.Controllers.ServerController.html#EchoHub_Server_Controllers_ServerController__ctor_EchoHub_Server_Data_EchoHubDbContext_Microsoft_Extensions_Configuration_IConfiguration_
-  commentId: M:EchoHub.Server.Controllers.ServerController.#ctor(EchoHub.Server.Data.EchoHubDbContext,Microsoft.Extensions.Configuration.IConfiguration)
-  name.vb: New(EchoHubDbContext, IConfiguration)
-  fullName: EchoHub.Server.Controllers.ServerController.ServerController(EchoHub.Server.Data.EchoHubDbContext, Microsoft.Extensions.Configuration.IConfiguration)
-  fullName.vb: EchoHub.Server.Controllers.ServerController.New(EchoHub.Server.Data.EchoHubDbContext, Microsoft.Extensions.Configuration.IConfiguration)
-  nameWithType: ServerController.ServerController(EchoHubDbContext, IConfiguration)
-  nameWithType.vb: ServerController.New(EchoHubDbContext, IConfiguration)
+- uid: EchoHub.Server.Controllers.ServerController.#ctor(EchoHub.Server.Data.EchoHubDbContext,Microsoft.Extensions.Configuration.IConfiguration,EchoHub.Server.Services.DirectoryClaimStore)
+  name: ServerController(EchoHubDbContext, IConfiguration, DirectoryClaimStore)
+  href: api/server/EchoHub.Server.Controllers.ServerController.html#EchoHub_Server_Controllers_ServerController__ctor_EchoHub_Server_Data_EchoHubDbContext_Microsoft_Extensions_Configuration_IConfiguration_EchoHub_Server_Services_DirectoryClaimStore_
+  commentId: M:EchoHub.Server.Controllers.ServerController.#ctor(EchoHub.Server.Data.EchoHubDbContext,Microsoft.Extensions.Configuration.IConfiguration,EchoHub.Server.Services.DirectoryClaimStore)
+  name.vb: New(EchoHubDbContext, IConfiguration, DirectoryClaimStore)
+  fullName: EchoHub.Server.Controllers.ServerController.ServerController(EchoHub.Server.Data.EchoHubDbContext, Microsoft.Extensions.Configuration.IConfiguration, EchoHub.Server.Services.DirectoryClaimStore)
+  fullName.vb: EchoHub.Server.Controllers.ServerController.New(EchoHub.Server.Data.EchoHubDbContext, Microsoft.Extensions.Configuration.IConfiguration, EchoHub.Server.Services.DirectoryClaimStore)
+  nameWithType: ServerController.ServerController(EchoHubDbContext, IConfiguration, DirectoryClaimStore)
+  nameWithType.vb: ServerController.New(EchoHubDbContext, IConfiguration, DirectoryClaimStore)
 - uid: EchoHub.Server.Controllers.ServerController.#ctor*
   name: ServerController
   href: api/server/EchoHub.Server.Controllers.ServerController.html#EchoHub_Server_Controllers_ServerController__ctor_
@@ -14308,6 +14308,18 @@ references:
   fullName.vb: EchoHub.Server.Controllers.ServerController.New
   nameWithType: ServerController.ServerController
   nameWithType.vb: ServerController.New
+- uid: EchoHub.Server.Controllers.ServerController.GetDirectoryStatus
+  name: GetDirectoryStatus()
+  href: api/server/EchoHub.Server.Controllers.ServerController.html#EchoHub_Server_Controllers_ServerController_GetDirectoryStatus
+  commentId: M:EchoHub.Server.Controllers.ServerController.GetDirectoryStatus
+  fullName: EchoHub.Server.Controllers.ServerController.GetDirectoryStatus()
+  nameWithType: ServerController.GetDirectoryStatus()
+- uid: EchoHub.Server.Controllers.ServerController.GetDirectoryStatus*
+  name: GetDirectoryStatus
+  href: api/server/EchoHub.Server.Controllers.ServerController.html#EchoHub_Server_Controllers_ServerController_GetDirectoryStatus_
+  commentId: Overload:EchoHub.Server.Controllers.ServerController.GetDirectoryStatus
+  fullName: EchoHub.Server.Controllers.ServerController.GetDirectoryStatus
+  nameWithType: ServerController.GetDirectoryStatus
 - uid: EchoHub.Server.Controllers.ServerController.GetEncryptionKey
   name: GetEncryptionKey()
   href: api/server/EchoHub.Server.Controllers.ServerController.html#EchoHub_Server_Controllers_ServerController_GetEncryptionKey
@@ -16579,6 +16591,132 @@ references:
   commentId: Overload:EchoHub.Server.Services.ChatService.UserDisconnectedAsync
   fullName: EchoHub.Server.Services.ChatService.UserDisconnectedAsync
   nameWithType: ChatService.UserDisconnectedAsync
+- uid: EchoHub.Server.Services.DirectoryClaimStore
+  name: DirectoryClaimStore
+  href: api/server/EchoHub.Server.Services.DirectoryClaimStore.html
+  commentId: T:EchoHub.Server.Services.DirectoryClaimStore
+  fullName: EchoHub.Server.Services.DirectoryClaimStore
+  nameWithType: DirectoryClaimStore
+- uid: EchoHub.Server.Services.DirectoryClaimStore.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.DirectoryClaimStore})
+  name: DirectoryClaimStore(IConfiguration, ILogger<DirectoryClaimStore>)
+  href: api/server/EchoHub.Server.Services.DirectoryClaimStore.html#EchoHub_Server_Services_DirectoryClaimStore__ctor_Microsoft_Extensions_Configuration_IConfiguration_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Services_DirectoryClaimStore__
+  commentId: M:EchoHub.Server.Services.DirectoryClaimStore.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.DirectoryClaimStore})
+  name.vb: New(IConfiguration, ILogger(Of DirectoryClaimStore))
+  fullName: EchoHub.Server.Services.DirectoryClaimStore.DirectoryClaimStore(Microsoft.Extensions.Configuration.IConfiguration, Microsoft.Extensions.Logging.ILogger<EchoHub.Server.Services.DirectoryClaimStore>)
+  fullName.vb: EchoHub.Server.Services.DirectoryClaimStore.New(Microsoft.Extensions.Configuration.IConfiguration, Microsoft.Extensions.Logging.ILogger(Of EchoHub.Server.Services.DirectoryClaimStore))
+  nameWithType: DirectoryClaimStore.DirectoryClaimStore(IConfiguration, ILogger<DirectoryClaimStore>)
+  nameWithType.vb: DirectoryClaimStore.New(IConfiguration, ILogger(Of DirectoryClaimStore))
+- uid: EchoHub.Server.Services.DirectoryClaimStore.#ctor*
+  name: DirectoryClaimStore
+  href: api/server/EchoHub.Server.Services.DirectoryClaimStore.html#EchoHub_Server_Services_DirectoryClaimStore__ctor_
+  commentId: Overload:EchoHub.Server.Services.DirectoryClaimStore.#ctor
+  name.vb: New
+  fullName: EchoHub.Server.Services.DirectoryClaimStore.DirectoryClaimStore
+  fullName.vb: EchoHub.Server.Services.DirectoryClaimStore.New
+  nameWithType: DirectoryClaimStore.DirectoryClaimStore
+  nameWithType.vb: DirectoryClaimStore.New
+- uid: EchoHub.Server.Services.DirectoryClaimStore.ClaimToken
+  name: ClaimToken
+  href: api/server/EchoHub.Server.Services.DirectoryClaimStore.html#EchoHub_Server_Services_DirectoryClaimStore_ClaimToken
+  commentId: P:EchoHub.Server.Services.DirectoryClaimStore.ClaimToken
+  fullName: EchoHub.Server.Services.DirectoryClaimStore.ClaimToken
+  nameWithType: DirectoryClaimStore.ClaimToken
+- uid: EchoHub.Server.Services.DirectoryClaimStore.ClaimToken*
+  name: ClaimToken
+  href: api/server/EchoHub.Server.Services.DirectoryClaimStore.html#EchoHub_Server_Services_DirectoryClaimStore_ClaimToken_
+  commentId: Overload:EchoHub.Server.Services.DirectoryClaimStore.ClaimToken
+  fullName: EchoHub.Server.Services.DirectoryClaimStore.ClaimToken
+  nameWithType: DirectoryClaimStore.ClaimToken
+- uid: EchoHub.Server.Services.DirectoryClaimStore.FilePath
+  name: FilePath
+  href: api/server/EchoHub.Server.Services.DirectoryClaimStore.html#EchoHub_Server_Services_DirectoryClaimStore_FilePath
+  commentId: P:EchoHub.Server.Services.DirectoryClaimStore.FilePath
+  fullName: EchoHub.Server.Services.DirectoryClaimStore.FilePath
+  nameWithType: DirectoryClaimStore.FilePath
+- uid: EchoHub.Server.Services.DirectoryClaimStore.FilePath*
+  name: FilePath
+  href: api/server/EchoHub.Server.Services.DirectoryClaimStore.html#EchoHub_Server_Services_DirectoryClaimStore_FilePath_
+  commentId: Overload:EchoHub.Server.Services.DirectoryClaimStore.FilePath
+  fullName: EchoHub.Server.Services.DirectoryClaimStore.FilePath
+  nameWithType: DirectoryClaimStore.FilePath
+- uid: EchoHub.Server.Services.DirectoryClaimStore.SaveClaimAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  name: SaveClaimAsync(string, Guid, CancellationToken)
+  href: api/server/EchoHub.Server.Services.DirectoryClaimStore.html#EchoHub_Server_Services_DirectoryClaimStore_SaveClaimAsync_System_String_System_Guid_System_Threading_CancellationToken_
+  commentId: M:EchoHub.Server.Services.DirectoryClaimStore.SaveClaimAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  name.vb: SaveClaimAsync(String, Guid, CancellationToken)
+  fullName: EchoHub.Server.Services.DirectoryClaimStore.SaveClaimAsync(string, System.Guid, System.Threading.CancellationToken)
+  fullName.vb: EchoHub.Server.Services.DirectoryClaimStore.SaveClaimAsync(String, System.Guid, System.Threading.CancellationToken)
+  nameWithType: DirectoryClaimStore.SaveClaimAsync(string, Guid, CancellationToken)
+  nameWithType.vb: DirectoryClaimStore.SaveClaimAsync(String, Guid, CancellationToken)
+- uid: EchoHub.Server.Services.DirectoryClaimStore.SaveClaimAsync*
+  name: SaveClaimAsync
+  href: api/server/EchoHub.Server.Services.DirectoryClaimStore.html#EchoHub_Server_Services_DirectoryClaimStore_SaveClaimAsync_
+  commentId: Overload:EchoHub.Server.Services.DirectoryClaimStore.SaveClaimAsync
+  fullName: EchoHub.Server.Services.DirectoryClaimStore.SaveClaimAsync
+  nameWithType: DirectoryClaimStore.SaveClaimAsync
+- uid: EchoHub.Server.Services.DirectoryClaimStore.ServerId
+  name: ServerId
+  href: api/server/EchoHub.Server.Services.DirectoryClaimStore.html#EchoHub_Server_Services_DirectoryClaimStore_ServerId
+  commentId: P:EchoHub.Server.Services.DirectoryClaimStore.ServerId
+  fullName: EchoHub.Server.Services.DirectoryClaimStore.ServerId
+  nameWithType: DirectoryClaimStore.ServerId
+- uid: EchoHub.Server.Services.DirectoryClaimStore.ServerId*
+  name: ServerId
+  href: api/server/EchoHub.Server.Services.DirectoryClaimStore.html#EchoHub_Server_Services_DirectoryClaimStore_ServerId_
+  commentId: Overload:EchoHub.Server.Services.DirectoryClaimStore.ServerId
+  fullName: EchoHub.Server.Services.DirectoryClaimStore.ServerId
+  nameWithType: DirectoryClaimStore.ServerId
+- uid: EchoHub.Server.Services.DirectoryClaimStore.SetFailure(System.String,System.String[])
+  name: SetFailure(string, string[]?)
+  href: api/server/EchoHub.Server.Services.DirectoryClaimStore.html#EchoHub_Server_Services_DirectoryClaimStore_SetFailure_System_String_System_String___
+  commentId: M:EchoHub.Server.Services.DirectoryClaimStore.SetFailure(System.String,System.String[])
+  name.vb: SetFailure(String, String())
+  fullName: EchoHub.Server.Services.DirectoryClaimStore.SetFailure(string, string[]?)
+  fullName.vb: EchoHub.Server.Services.DirectoryClaimStore.SetFailure(String, String())
+  nameWithType: DirectoryClaimStore.SetFailure(string, string[]?)
+  nameWithType.vb: DirectoryClaimStore.SetFailure(String, String())
+- uid: EchoHub.Server.Services.DirectoryClaimStore.SetFailure*
+  name: SetFailure
+  href: api/server/EchoHub.Server.Services.DirectoryClaimStore.html#EchoHub_Server_Services_DirectoryClaimStore_SetFailure_
+  commentId: Overload:EchoHub.Server.Services.DirectoryClaimStore.SetFailure
+  fullName: EchoHub.Server.Services.DirectoryClaimStore.SetFailure
+  nameWithType: DirectoryClaimStore.SetFailure
+- uid: EchoHub.Server.Services.DirectoryClaimStore.SetSuccess(System.Guid)
+  name: SetSuccess(Guid)
+  href: api/server/EchoHub.Server.Services.DirectoryClaimStore.html#EchoHub_Server_Services_DirectoryClaimStore_SetSuccess_System_Guid_
+  commentId: M:EchoHub.Server.Services.DirectoryClaimStore.SetSuccess(System.Guid)
+  fullName: EchoHub.Server.Services.DirectoryClaimStore.SetSuccess(System.Guid)
+  nameWithType: DirectoryClaimStore.SetSuccess(Guid)
+- uid: EchoHub.Server.Services.DirectoryClaimStore.SetSuccess*
+  name: SetSuccess
+  href: api/server/EchoHub.Server.Services.DirectoryClaimStore.html#EchoHub_Server_Services_DirectoryClaimStore_SetSuccess_
+  commentId: Overload:EchoHub.Server.Services.DirectoryClaimStore.SetSuccess
+  fullName: EchoHub.Server.Services.DirectoryClaimStore.SetSuccess
+  nameWithType: DirectoryClaimStore.SetSuccess
+- uid: EchoHub.Server.Services.DirectoryClaimStore.Status
+  name: Status
+  href: api/server/EchoHub.Server.Services.DirectoryClaimStore.html#EchoHub_Server_Services_DirectoryClaimStore_Status
+  commentId: P:EchoHub.Server.Services.DirectoryClaimStore.Status
+  fullName: EchoHub.Server.Services.DirectoryClaimStore.Status
+  nameWithType: DirectoryClaimStore.Status
+- uid: EchoHub.Server.Services.DirectoryClaimStore.Status*
+  name: Status
+  href: api/server/EchoHub.Server.Services.DirectoryClaimStore.html#EchoHub_Server_Services_DirectoryClaimStore_Status_
+  commentId: Overload:EchoHub.Server.Services.DirectoryClaimStore.Status
+  fullName: EchoHub.Server.Services.DirectoryClaimStore.Status
+  nameWithType: DirectoryClaimStore.Status
+- uid: EchoHub.Server.Services.DirectoryClaimStore.UpdateServerIdAsync(System.Guid,System.Threading.CancellationToken)
+  name: UpdateServerIdAsync(Guid, CancellationToken)
+  href: api/server/EchoHub.Server.Services.DirectoryClaimStore.html#EchoHub_Server_Services_DirectoryClaimStore_UpdateServerIdAsync_System_Guid_System_Threading_CancellationToken_
+  commentId: M:EchoHub.Server.Services.DirectoryClaimStore.UpdateServerIdAsync(System.Guid,System.Threading.CancellationToken)
+  fullName: EchoHub.Server.Services.DirectoryClaimStore.UpdateServerIdAsync(System.Guid, System.Threading.CancellationToken)
+  nameWithType: DirectoryClaimStore.UpdateServerIdAsync(Guid, CancellationToken)
+- uid: EchoHub.Server.Services.DirectoryClaimStore.UpdateServerIdAsync*
+  name: UpdateServerIdAsync
+  href: api/server/EchoHub.Server.Services.DirectoryClaimStore.html#EchoHub_Server_Services_DirectoryClaimStore_UpdateServerIdAsync_
+  commentId: Overload:EchoHub.Server.Services.DirectoryClaimStore.UpdateServerIdAsync
+  fullName: EchoHub.Server.Services.DirectoryClaimStore.UpdateServerIdAsync
+  nameWithType: DirectoryClaimStore.UpdateServerIdAsync
 - uid: EchoHub.Server.Services.FileCleanupService
   name: FileCleanupService
   href: api/server/EchoHub.Server.Services.FileCleanupService.html
@@ -17113,6 +17251,12 @@ references:
   commentId: Overload:EchoHub.Server.Services.PresenceTracker.UserConnected
   fullName: EchoHub.Server.Services.PresenceTracker.UserConnected
   nameWithType: PresenceTracker.UserConnected
+- uid: EchoHub.Server.Services.PresenceTracker.UserCountChanged
+  name: UserCountChanged
+  href: api/server/EchoHub.Server.Services.PresenceTracker.html#EchoHub_Server_Services_PresenceTracker_UserCountChanged
+  commentId: E:EchoHub.Server.Services.PresenceTracker.UserCountChanged
+  fullName: EchoHub.Server.Services.PresenceTracker.UserCountChanged
+  nameWithType: PresenceTracker.UserCountChanged
 - uid: EchoHub.Server.Services.PresenceTracker.UserDisconnected(System.String)
   name: UserDisconnected(string)
   href: api/server/EchoHub.Server.Services.PresenceTracker.html#EchoHub_Server_Services_PresenceTracker_UserDisconnected_System_String_
@@ -17128,21 +17272,204 @@ references:
   commentId: Overload:EchoHub.Server.Services.PresenceTracker.UserDisconnected
   fullName: EchoHub.Server.Services.PresenceTracker.UserDisconnected
   nameWithType: PresenceTracker.UserDisconnected
+- uid: EchoHub.Server.Services.RegistrationStatus
+  name: RegistrationStatus
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html
+  commentId: T:EchoHub.Server.Services.RegistrationStatus
+  fullName: EchoHub.Server.Services.RegistrationStatus
+  nameWithType: RegistrationStatus
+- uid: EchoHub.Server.Services.RegistrationStatus.#ctor(System.Boolean,System.Nullable{System.Guid},System.Nullable{System.DateTimeOffset},System.String,System.String[])
+  name: RegistrationStatus(bool, Guid?, DateTimeOffset?, string?, string[]?)
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus__ctor_System_Boolean_System_Nullable_System_Guid__System_Nullable_System_DateTimeOffset__System_String_System_String___
+  commentId: M:EchoHub.Server.Services.RegistrationStatus.#ctor(System.Boolean,System.Nullable{System.Guid},System.Nullable{System.DateTimeOffset},System.String,System.String[])
+  name.vb: New(Boolean, Guid?, DateTimeOffset?, String, String())
+  fullName: EchoHub.Server.Services.RegistrationStatus.RegistrationStatus(bool, System.Guid?, System.DateTimeOffset?, string?, string[]?)
+  fullName.vb: EchoHub.Server.Services.RegistrationStatus.New(Boolean, System.Guid?, System.DateTimeOffset?, String, String())
+  nameWithType: RegistrationStatus.RegistrationStatus(bool, Guid?, DateTimeOffset?, string?, string[]?)
+  nameWithType.vb: RegistrationStatus.New(Boolean, Guid?, DateTimeOffset?, String, String())
+- uid: EchoHub.Server.Services.RegistrationStatus.#ctor*
+  name: RegistrationStatus
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus__ctor_
+  commentId: Overload:EchoHub.Server.Services.RegistrationStatus.#ctor
+  name.vb: New
+  fullName: EchoHub.Server.Services.RegistrationStatus.RegistrationStatus
+  fullName.vb: EchoHub.Server.Services.RegistrationStatus.New
+  nameWithType: RegistrationStatus.RegistrationStatus
+  nameWithType.vb: RegistrationStatus.New
+- uid: EchoHub.Server.Services.RegistrationStatus.ConflictingHosts
+  name: ConflictingHosts
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_ConflictingHosts
+  commentId: P:EchoHub.Server.Services.RegistrationStatus.ConflictingHosts
+  fullName: EchoHub.Server.Services.RegistrationStatus.ConflictingHosts
+  nameWithType: RegistrationStatus.ConflictingHosts
+- uid: EchoHub.Server.Services.RegistrationStatus.ConflictingHosts*
+  name: ConflictingHosts
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_ConflictingHosts_
+  commentId: Overload:EchoHub.Server.Services.RegistrationStatus.ConflictingHosts
+  fullName: EchoHub.Server.Services.RegistrationStatus.ConflictingHosts
+  nameWithType: RegistrationStatus.ConflictingHosts
+- uid: EchoHub.Server.Services.RegistrationStatus.Deconstruct(System.Boolean@,System.Nullable{System.Guid}@,System.Nullable{System.DateTimeOffset}@,System.String@,System.String[]@)
+  name: Deconstruct(out bool, out Guid?, out DateTimeOffset?, out string?, out string[]?)
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_Deconstruct_System_Boolean__System_Nullable_System_Guid___System_Nullable_System_DateTimeOffset___System_String__System_String____
+  commentId: M:EchoHub.Server.Services.RegistrationStatus.Deconstruct(System.Boolean@,System.Nullable{System.Guid}@,System.Nullable{System.DateTimeOffset}@,System.String@,System.String[]@)
+  name.vb: Deconstruct(Boolean, Guid?, DateTimeOffset?, String, String())
+  fullName: EchoHub.Server.Services.RegistrationStatus.Deconstruct(out bool, out System.Guid?, out System.DateTimeOffset?, out string?, out string[]?)
+  fullName.vb: EchoHub.Server.Services.RegistrationStatus.Deconstruct(Boolean, System.Guid?, System.DateTimeOffset?, String, String())
+  nameWithType: RegistrationStatus.Deconstruct(out bool, out Guid?, out DateTimeOffset?, out string?, out string[]?)
+  nameWithType.vb: RegistrationStatus.Deconstruct(Boolean, Guid?, DateTimeOffset?, String, String())
+- uid: EchoHub.Server.Services.RegistrationStatus.Deconstruct*
+  name: Deconstruct
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_Deconstruct_
+  commentId: Overload:EchoHub.Server.Services.RegistrationStatus.Deconstruct
+  fullName: EchoHub.Server.Services.RegistrationStatus.Deconstruct
+  nameWithType: RegistrationStatus.Deconstruct
+- uid: EchoHub.Server.Services.RegistrationStatus.Equals(EchoHub.Server.Services.RegistrationStatus)
+  name: Equals(RegistrationStatus?)
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_Equals_EchoHub_Server_Services_RegistrationStatus_
+  commentId: M:EchoHub.Server.Services.RegistrationStatus.Equals(EchoHub.Server.Services.RegistrationStatus)
+  name.vb: Equals(RegistrationStatus)
+  fullName: EchoHub.Server.Services.RegistrationStatus.Equals(EchoHub.Server.Services.RegistrationStatus?)
+  fullName.vb: EchoHub.Server.Services.RegistrationStatus.Equals(EchoHub.Server.Services.RegistrationStatus)
+  nameWithType: RegistrationStatus.Equals(RegistrationStatus?)
+  nameWithType.vb: RegistrationStatus.Equals(RegistrationStatus)
+- uid: EchoHub.Server.Services.RegistrationStatus.Equals(System.Object)
+  name: Equals(object?)
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_Equals_System_Object_
+  commentId: M:EchoHub.Server.Services.RegistrationStatus.Equals(System.Object)
+  name.vb: Equals(Object)
+  fullName: EchoHub.Server.Services.RegistrationStatus.Equals(object?)
+  fullName.vb: EchoHub.Server.Services.RegistrationStatus.Equals(Object)
+  nameWithType: RegistrationStatus.Equals(object?)
+  nameWithType.vb: RegistrationStatus.Equals(Object)
+- uid: EchoHub.Server.Services.RegistrationStatus.Equals*
+  name: Equals
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_Equals_
+  commentId: Overload:EchoHub.Server.Services.RegistrationStatus.Equals
+  fullName: EchoHub.Server.Services.RegistrationStatus.Equals
+  nameWithType: RegistrationStatus.Equals
+- uid: EchoHub.Server.Services.RegistrationStatus.GetHashCode
+  name: GetHashCode()
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_GetHashCode
+  commentId: M:EchoHub.Server.Services.RegistrationStatus.GetHashCode
+  fullName: EchoHub.Server.Services.RegistrationStatus.GetHashCode()
+  nameWithType: RegistrationStatus.GetHashCode()
+- uid: EchoHub.Server.Services.RegistrationStatus.GetHashCode*
+  name: GetHashCode
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_GetHashCode_
+  commentId: Overload:EchoHub.Server.Services.RegistrationStatus.GetHashCode
+  fullName: EchoHub.Server.Services.RegistrationStatus.GetHashCode
+  nameWithType: RegistrationStatus.GetHashCode
+- uid: EchoHub.Server.Services.RegistrationStatus.IsRegistered
+  name: IsRegistered
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_IsRegistered
+  commentId: P:EchoHub.Server.Services.RegistrationStatus.IsRegistered
+  fullName: EchoHub.Server.Services.RegistrationStatus.IsRegistered
+  nameWithType: RegistrationStatus.IsRegistered
+- uid: EchoHub.Server.Services.RegistrationStatus.IsRegistered*
+  name: IsRegistered
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_IsRegistered_
+  commentId: Overload:EchoHub.Server.Services.RegistrationStatus.IsRegistered
+  fullName: EchoHub.Server.Services.RegistrationStatus.IsRegistered
+  nameWithType: RegistrationStatus.IsRegistered
+- uid: EchoHub.Server.Services.RegistrationStatus.LastError
+  name: LastError
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_LastError
+  commentId: P:EchoHub.Server.Services.RegistrationStatus.LastError
+  fullName: EchoHub.Server.Services.RegistrationStatus.LastError
+  nameWithType: RegistrationStatus.LastError
+- uid: EchoHub.Server.Services.RegistrationStatus.LastError*
+  name: LastError
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_LastError_
+  commentId: Overload:EchoHub.Server.Services.RegistrationStatus.LastError
+  fullName: EchoHub.Server.Services.RegistrationStatus.LastError
+  nameWithType: RegistrationStatus.LastError
+- uid: EchoHub.Server.Services.RegistrationStatus.LastRegisteredAt
+  name: LastRegisteredAt
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_LastRegisteredAt
+  commentId: P:EchoHub.Server.Services.RegistrationStatus.LastRegisteredAt
+  fullName: EchoHub.Server.Services.RegistrationStatus.LastRegisteredAt
+  nameWithType: RegistrationStatus.LastRegisteredAt
+- uid: EchoHub.Server.Services.RegistrationStatus.LastRegisteredAt*
+  name: LastRegisteredAt
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_LastRegisteredAt_
+  commentId: Overload:EchoHub.Server.Services.RegistrationStatus.LastRegisteredAt
+  fullName: EchoHub.Server.Services.RegistrationStatus.LastRegisteredAt
+  nameWithType: RegistrationStatus.LastRegisteredAt
+- uid: EchoHub.Server.Services.RegistrationStatus.ServerId
+  name: ServerId
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_ServerId
+  commentId: P:EchoHub.Server.Services.RegistrationStatus.ServerId
+  fullName: EchoHub.Server.Services.RegistrationStatus.ServerId
+  nameWithType: RegistrationStatus.ServerId
+- uid: EchoHub.Server.Services.RegistrationStatus.ServerId*
+  name: ServerId
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_ServerId_
+  commentId: Overload:EchoHub.Server.Services.RegistrationStatus.ServerId
+  fullName: EchoHub.Server.Services.RegistrationStatus.ServerId
+  nameWithType: RegistrationStatus.ServerId
+- uid: EchoHub.Server.Services.RegistrationStatus.ToString
+  name: ToString()
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_ToString
+  commentId: M:EchoHub.Server.Services.RegistrationStatus.ToString
+  fullName: EchoHub.Server.Services.RegistrationStatus.ToString()
+  nameWithType: RegistrationStatus.ToString()
+- uid: EchoHub.Server.Services.RegistrationStatus.ToString*
+  name: ToString
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_ToString_
+  commentId: Overload:EchoHub.Server.Services.RegistrationStatus.ToString
+  fullName: EchoHub.Server.Services.RegistrationStatus.ToString
+  nameWithType: RegistrationStatus.ToString
+- uid: EchoHub.Server.Services.RegistrationStatus.op_Equality(EchoHub.Server.Services.RegistrationStatus,EchoHub.Server.Services.RegistrationStatus)
+  name: operator ==(RegistrationStatus?, RegistrationStatus?)
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_op_Equality_EchoHub_Server_Services_RegistrationStatus_EchoHub_Server_Services_RegistrationStatus_
+  commentId: M:EchoHub.Server.Services.RegistrationStatus.op_Equality(EchoHub.Server.Services.RegistrationStatus,EchoHub.Server.Services.RegistrationStatus)
+  name.vb: =(RegistrationStatus, RegistrationStatus)
+  fullName: EchoHub.Server.Services.RegistrationStatus.operator ==(EchoHub.Server.Services.RegistrationStatus?, EchoHub.Server.Services.RegistrationStatus?)
+  fullName.vb: EchoHub.Server.Services.RegistrationStatus.=(EchoHub.Server.Services.RegistrationStatus, EchoHub.Server.Services.RegistrationStatus)
+  nameWithType: RegistrationStatus.operator ==(RegistrationStatus?, RegistrationStatus?)
+  nameWithType.vb: RegistrationStatus.=(RegistrationStatus, RegistrationStatus)
+- uid: EchoHub.Server.Services.RegistrationStatus.op_Equality*
+  name: operator ==
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_op_Equality_
+  commentId: Overload:EchoHub.Server.Services.RegistrationStatus.op_Equality
+  name.vb: =
+  fullName: EchoHub.Server.Services.RegistrationStatus.operator ==
+  fullName.vb: EchoHub.Server.Services.RegistrationStatus.=
+  nameWithType: RegistrationStatus.operator ==
+  nameWithType.vb: RegistrationStatus.=
+- uid: EchoHub.Server.Services.RegistrationStatus.op_Inequality(EchoHub.Server.Services.RegistrationStatus,EchoHub.Server.Services.RegistrationStatus)
+  name: operator !=(RegistrationStatus?, RegistrationStatus?)
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_op_Inequality_EchoHub_Server_Services_RegistrationStatus_EchoHub_Server_Services_RegistrationStatus_
+  commentId: M:EchoHub.Server.Services.RegistrationStatus.op_Inequality(EchoHub.Server.Services.RegistrationStatus,EchoHub.Server.Services.RegistrationStatus)
+  name.vb: <>(RegistrationStatus, RegistrationStatus)
+  fullName: EchoHub.Server.Services.RegistrationStatus.operator !=(EchoHub.Server.Services.RegistrationStatus?, EchoHub.Server.Services.RegistrationStatus?)
+  fullName.vb: EchoHub.Server.Services.RegistrationStatus.<>(EchoHub.Server.Services.RegistrationStatus, EchoHub.Server.Services.RegistrationStatus)
+  nameWithType: RegistrationStatus.operator !=(RegistrationStatus?, RegistrationStatus?)
+  nameWithType.vb: RegistrationStatus.<>(RegistrationStatus, RegistrationStatus)
+- uid: EchoHub.Server.Services.RegistrationStatus.op_Inequality*
+  name: operator !=
+  href: api/server/EchoHub.Server.Services.RegistrationStatus.html#EchoHub_Server_Services_RegistrationStatus_op_Inequality_
+  commentId: Overload:EchoHub.Server.Services.RegistrationStatus.op_Inequality
+  name.vb: <>
+  fullName: EchoHub.Server.Services.RegistrationStatus.operator !=
+  fullName.vb: EchoHub.Server.Services.RegistrationStatus.<>
+  nameWithType: RegistrationStatus.operator !=
+  nameWithType.vb: RegistrationStatus.<>
 - uid: EchoHub.Server.Services.ServerDirectoryService
   name: ServerDirectoryService
   href: api/server/EchoHub.Server.Services.ServerDirectoryService.html
   commentId: T:EchoHub.Server.Services.ServerDirectoryService
   fullName: EchoHub.Server.Services.ServerDirectoryService
   nameWithType: ServerDirectoryService
-- uid: EchoHub.Server.Services.ServerDirectoryService.#ctor(Microsoft.Extensions.Configuration.IConfiguration,EchoHub.Server.Services.PresenceTracker,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.ServerDirectoryService})
-  name: ServerDirectoryService(IConfiguration, PresenceTracker, ILogger<ServerDirectoryService>)
-  href: api/server/EchoHub.Server.Services.ServerDirectoryService.html#EchoHub_Server_Services_ServerDirectoryService__ctor_Microsoft_Extensions_Configuration_IConfiguration_EchoHub_Server_Services_PresenceTracker_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Services_ServerDirectoryService__
-  commentId: M:EchoHub.Server.Services.ServerDirectoryService.#ctor(Microsoft.Extensions.Configuration.IConfiguration,EchoHub.Server.Services.PresenceTracker,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.ServerDirectoryService})
-  name.vb: New(IConfiguration, PresenceTracker, ILogger(Of ServerDirectoryService))
-  fullName: EchoHub.Server.Services.ServerDirectoryService.ServerDirectoryService(Microsoft.Extensions.Configuration.IConfiguration, EchoHub.Server.Services.PresenceTracker, Microsoft.Extensions.Logging.ILogger<EchoHub.Server.Services.ServerDirectoryService>)
-  fullName.vb: EchoHub.Server.Services.ServerDirectoryService.New(Microsoft.Extensions.Configuration.IConfiguration, EchoHub.Server.Services.PresenceTracker, Microsoft.Extensions.Logging.ILogger(Of EchoHub.Server.Services.ServerDirectoryService))
-  nameWithType: ServerDirectoryService.ServerDirectoryService(IConfiguration, PresenceTracker, ILogger<ServerDirectoryService>)
-  nameWithType.vb: ServerDirectoryService.New(IConfiguration, PresenceTracker, ILogger(Of ServerDirectoryService))
+- uid: EchoHub.Server.Services.ServerDirectoryService.#ctor(Microsoft.Extensions.Configuration.IConfiguration,EchoHub.Server.Services.PresenceTracker,EchoHub.Server.Services.DirectoryClaimStore,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.ServerDirectoryService})
+  name: ServerDirectoryService(IConfiguration, PresenceTracker, DirectoryClaimStore, ILogger<ServerDirectoryService>)
+  href: api/server/EchoHub.Server.Services.ServerDirectoryService.html#EchoHub_Server_Services_ServerDirectoryService__ctor_Microsoft_Extensions_Configuration_IConfiguration_EchoHub_Server_Services_PresenceTracker_EchoHub_Server_Services_DirectoryClaimStore_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Services_ServerDirectoryService__
+  commentId: M:EchoHub.Server.Services.ServerDirectoryService.#ctor(Microsoft.Extensions.Configuration.IConfiguration,EchoHub.Server.Services.PresenceTracker,EchoHub.Server.Services.DirectoryClaimStore,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.ServerDirectoryService})
+  name.vb: New(IConfiguration, PresenceTracker, DirectoryClaimStore, ILogger(Of ServerDirectoryService))
+  fullName: EchoHub.Server.Services.ServerDirectoryService.ServerDirectoryService(Microsoft.Extensions.Configuration.IConfiguration, EchoHub.Server.Services.PresenceTracker, EchoHub.Server.Services.DirectoryClaimStore, Microsoft.Extensions.Logging.ILogger<EchoHub.Server.Services.ServerDirectoryService>)
+  fullName.vb: EchoHub.Server.Services.ServerDirectoryService.New(Microsoft.Extensions.Configuration.IConfiguration, EchoHub.Server.Services.PresenceTracker, EchoHub.Server.Services.DirectoryClaimStore, Microsoft.Extensions.Logging.ILogger(Of EchoHub.Server.Services.ServerDirectoryService))
+  nameWithType: ServerDirectoryService.ServerDirectoryService(IConfiguration, PresenceTracker, DirectoryClaimStore, ILogger<ServerDirectoryService>)
+  nameWithType.vb: ServerDirectoryService.New(IConfiguration, PresenceTracker, DirectoryClaimStore, ILogger(Of ServerDirectoryService))
 - uid: EchoHub.Server.Services.ServerDirectoryService.#ctor*
   name: ServerDirectoryService
   href: api/server/EchoHub.Server.Services.ServerDirectoryService.html#EchoHub_Server_Services_ServerDirectoryService__ctor_

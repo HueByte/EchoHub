@@ -158,8 +158,8 @@ Class ServerDirectoryService  <a class="header-action link-secondary" title="Vie
 
   <a id="EchoHub_Server_Services_ServerDirectoryService__ctor_" data-uid="EchoHub.Server.Services.ServerDirectoryService.#ctor*"></a>
 
-  <h3 id="EchoHub_Server_Services_ServerDirectoryService__ctor_Microsoft_Extensions_Configuration_IConfiguration_EchoHub_Server_Services_PresenceTracker_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Services_ServerDirectoryService__" data-uid="EchoHub.Server.Services.ServerDirectoryService.#ctor(Microsoft.Extensions.Configuration.IConfiguration,EchoHub.Server.Services.PresenceTracker,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.ServerDirectoryService})">
-  ServerDirectoryService(IConfiguration, PresenceTracker, ILogger&lt;ServerDirectoryService&gt;)
+  <h3 id="EchoHub_Server_Services_ServerDirectoryService__ctor_Microsoft_Extensions_Configuration_IConfiguration_EchoHub_Server_Services_PresenceTracker_EchoHub_Server_Services_DirectoryClaimStore_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Services_ServerDirectoryService__" data-uid="EchoHub.Server.Services.ServerDirectoryService.#ctor(Microsoft.Extensions.Configuration.IConfiguration,EchoHub.Server.Services.PresenceTracker,EchoHub.Server.Services.DirectoryClaimStore,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.ServerDirectoryService})">
+  ServerDirectoryService(IConfiguration, PresenceTracker, DirectoryClaimStore, ILogger&lt;ServerDirectoryService&gt;)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/ServerDirectoryService.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -167,7 +167,7 @@ Class ServerDirectoryService  <a class="header-action link-secondary" title="Vie
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public ServerDirectoryService(IConfiguration configuration, PresenceTracker presenceTracker, ILogger&lt;ServerDirectoryService&gt; logger)</code></pre>
+    <pre><code class="lang-csharp hljs">public ServerDirectoryService(IConfiguration configuration, PresenceTracker presenceTracker, DirectoryClaimStore claimStore, ILogger&lt;ServerDirectoryService&gt; logger)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -175,6 +175,8 @@ Class ServerDirectoryService  <a class="header-action link-secondary" title="Vie
     <dt><code>configuration</code> <span class="xref">IConfiguration</span></dt>
     <dd></dd>
     <dt><code>presenceTracker</code> <a class="xref" href="EchoHub.Server.Services.PresenceTracker.html">PresenceTracker</a></dt>
+    <dd></dd>
+    <dt><code>claimStore</code> <a class="xref" href="EchoHub.Server.Services.DirectoryClaimStore.html">DirectoryClaimStore</a></dt>
     <dd></dd>
     <dt><code>logger</code> <span class="xref">ILogger</span>&lt;<a class="xref" href="EchoHub.Server.Services.ServerDirectoryService.html">ServerDirectoryService</a>&gt;</dt>
     <dd></dd>
