@@ -10,9 +10,17 @@ public class PresenceTracker
 
     private readonly object _lock = new();
 
+    /// <summary>
+    /// Raised when the distinct online user count changes (multi-connection users only fire once).
+    /// </summary>
+    public event Action<int>? UserCountChanged;
+
     public void UserConnected(string connectionId, Guid userId, string username)
     {
         _connections[connectionId] = (userId, username);
+
+        bool userIsNew;
+        int newCount;
 
         // Lock is required: ConcurrentDictionary only protects its own slots, not the HashSet values inside.
         // It also makes the TryGetValue → add sequence atomic to prevent race conditions.
@@ -22,10 +30,19 @@ public class PresenceTracker
             {
                 connections = new HashSet<string>();
                 _userConnections[username] = connections;
+                userIsNew = true;
+            }
+            else
+            {
+                userIsNew = false;
             }
 
             connections.Add(connectionId);
+            newCount = _userConnections.Count;
         }
+
+        if (userIsNew)
+            UserCountChanged?.Invoke(newCount);
     }
 
     public string? UserDisconnected(string connectionId)
@@ -34,6 +51,8 @@ public class PresenceTracker
             return null;
 
         var username = userInfo.username;
+        bool userRemoved = false;
+        int newCount;
 
         lock (_lock)
         {
@@ -45,9 +64,15 @@ public class PresenceTracker
                 {
                     _userConnections.TryRemove(username, out _);
                     _userChannels.TryRemove(username, out _);
+                    userRemoved = true;
                 }
             }
+
+            newCount = _userConnections.Count;
         }
+
+        if (userRemoved)
+            UserCountChanged?.Invoke(newCount);
 
         return username;
     }
@@ -160,20 +185,29 @@ public class PresenceTracker
     /// </summary>
     public (List<string> ConnectionIds, List<string> Channels) ForceRemoveUser(string username)
     {
+        bool userRemoved;
+        int newCount;
+        List<string> channels;
+        List<string> connectionIds;
+
         lock (_lock)
         {
-            var channels = _userChannels.TryRemove(username, out var ch)
+            channels = _userChannels.TryRemove(username, out var ch)
                 ? ch.ToList()
                 : [];
 
-            var connectionIds = _userConnections.TryRemove(username, out var conns)
-                ? conns.ToList()
-                : [];
+            userRemoved = _userConnections.TryRemove(username, out var conns);
+            connectionIds = userRemoved ? conns!.ToList() : [];
 
             foreach (var connId in connectionIds)
                 _connections.TryRemove(connId, out _);
 
-            return (connectionIds, channels);
+            newCount = _userConnections.Count;
         }
+
+        if (userRemoved)
+            UserCountChanged?.Invoke(newCount);
+
+        return (connectionIds, channels);
     }
 }

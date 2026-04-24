@@ -17,7 +17,7 @@ curl -sSfL https://raw.githubusercontent.com/HueByte/EchoHub/master/scripts/inst
 To install a specific version or to a custom directory:
 
 ```bash
-curl -sSfL .../install.sh | sh -s -- --version 0.2.10
+curl -sSfL .../install.sh | sh -s -- --version 0.2.11
 curl -sSfL .../install.sh | sh -s -- --install-dir /opt/echohub
 ```
 

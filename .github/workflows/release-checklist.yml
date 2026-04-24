@@ -1,0 +1,60 @@
+name: Release Checklist
+
+on:
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  release-checklist:
+    name: Release Checklist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version
+        id: version
+        run: |
+          VERSION=$(grep -oP '(?<=<Version>)[^<]+' src/Directory.Build.props)
+          if [ -z "$VERSION" ]; then
+            echo "::error file=src/Directory.Build.props::Could not read version from Directory.Build.props"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Version: $VERSION"
+
+      - name: Check version was bumped from master
+        run: |
+          BRANCH_VERSION="${{ steps.version.outputs.version }}"
+          git fetch origin master --depth=1
+          MASTER_VERSION=$(git show origin/master:src/Directory.Build.props | grep -oP '(?<=<Version>)[^<]+')
+          echo "Branch: $BRANCH_VERSION | Master: $MASTER_VERSION"
+          if [ "$BRANCH_VERSION" = "$MASTER_VERSION" ]; then
+            echo "::error file=src/Directory.Build.props::Version $BRANCH_VERSION was not bumped from master. Update <Version> in src/Directory.Build.props."
+            exit 1
+          fi
+
+      - name: Check changelog file exists
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          FILE="docs/changelog/v${VERSION}.md"
+          if [ ! -f "$FILE" ]; then
+            echo "::error::Missing changelog file: $FILE"
+            exit 1
+          fi
+          echo "Found: $FILE"
+
+      - name: Check changelog TOC
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if ! grep -q "v${VERSION}.md" docs/changelog/toc.yml; then
+            echo "::error file=docs/changelog/toc.yml::v${VERSION} not found in changelog TOC. Add it to docs/changelog/toc.yml."
+            exit 1
+          fi
+          if ! grep -q "v${VERSION}" docs/changelog/index.md; then
+            echo "::error file=docs/changelog/index.md::v${VERSION} not found in changelog index. Add it to docs/changelog/index.md."
+            exit 1
+          fi
+          echo "toc.yml and index.md: OK"
