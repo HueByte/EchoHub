@@ -4,11 +4,11 @@
     <id>echohub</id>
     <version>__VERSION__</version>
     <title>EchoHub</title>
-    <authors>HueByte</authors>
+    <authors>HueByte, StoneRed</authors>
     <owners>HueByte</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://github.com/HueByte/EchoHub/blob/master/LICENSE</licenseUrl>
-    <projectUrl>https://github.com/HueByte/EchoHub</projectUrl>
+    <projectUrl>https://echohub.voidcube.cloud/</projectUrl>
     <projectSourceUrl>https://github.com/HueByte/EchoHub</projectSourceUrl>
     <docsUrl>https://huebyte.github.io/EchoHub</docsUrl>
     <bugTrackerUrl>https://github.com/HueByte/EchoHub/issues</bugTrackerUrl>
