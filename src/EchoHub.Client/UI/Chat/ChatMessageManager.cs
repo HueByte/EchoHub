@@ -101,7 +101,7 @@ public sealed class ChatMessageManager
             _channelMessages[channelName] = messages;
         }
 
-        var time = DateTimeOffset.Now.ToString("HH:mm");
+        var time = FormatDateTime(DateTimeOffset.Now);
         var textLines = text.Split('\n');
 
         messages.Add(new ChatLine(
@@ -130,7 +130,7 @@ public sealed class ChatMessageManager
     /// </summary>
     public void AddStatusMessage(string channelName, string username, string status)
     {
-        var time = DateTimeOffset.Now.ToString("HH:mm");
+        var time = FormatDateTime(DateTimeOffset.Now);
         var segments = new List<ChatSegment>
         {
             new($"[{time}] ", ChatColors.TimestampAttr),
@@ -234,7 +234,7 @@ public sealed class ChatMessageManager
 
     private List<ChatLine> FormatMessage(MessageDto message)
     {
-        var time = message.SentAt.ToLocalTime().ToString("HH:mm");
+        var time = FormatDateTime(message.SentAt);
         var senderName = message.SenderUsername + ":";
         var senderColor = HexColorHelper.ParseHexColor(message.SenderNicknameColor);
 
@@ -423,6 +423,14 @@ public sealed class ChatMessageManager
             result.Add(currentLine);
 
         return result;
+    }
+
+    private static string FormatDateTime(DateTimeOffset timestamp)
+    {
+        if (timestamp.Date == DateTimeOffset.Now.Date)
+            return timestamp.ToLocalTime().ToString("t");
+        else
+            return timestamp.ToLocalTime().ToString("g");
     }
 
     internal static string FormatFileSize(long? bytes)
