@@ -18,6 +18,7 @@ public class ChannelListSource : IListDataSource
     private readonly Dictionary<string, int> _unreadCounts = [];
     private readonly HashSet<string> _protectedChannels = [];
     private readonly HashSet<string> _mentionChannels = [];
+    private readonly HashSet<string> _privateChannels = [];
     private string _activeChannel = string.Empty;
 
     public event NotifyCollectionChangedEventHandler? CollectionChanged;
@@ -32,7 +33,8 @@ public class ChannelListSource : IListDataSource
     private static readonly Attribute MentionAttr = new(new Color(230, 140, 60), Color.None);
 
     public void Update(List<string> channels, Dictionary<string, int> unread, string activeChannel,
-        IReadOnlySet<string>? protectedChannels = null, IReadOnlySet<string>? mentionChannels = null)
+        IReadOnlySet<string>? protectedChannels = null, IReadOnlySet<string>? mentionChannels = null,
+        IReadOnlySet<string>? privateChannels = null)
     {
         _channelNames.Clear();
         _channelNames.AddRange(channels);
@@ -45,6 +47,9 @@ public class ChannelListSource : IListDataSource
         _mentionChannels.Clear();
         if (mentionChannels is not null)
             _mentionChannels.UnionWith(mentionChannels);
+        _privateChannels.Clear();
+        if (privateChannels is not null)
+            _privateChannels.UnionWith(privateChannels);
         _activeChannel = activeChannel;
         MaxItemLength = channels.Count > 0 ? channels.Max(c => c.Length + 6) : 0;
         if (!SuspendCollectionChangedEvent)
@@ -67,8 +72,12 @@ public class ChannelListSource : IListDataSource
         var normalAttr = listView.GetAttributeForRole(VisualRole.Normal);
         var focusAttr = listView.GetAttributeForRole(VisualRole.Focus);
         var prefix = isActive ? "> " : "  ";
-        // Trailing * marks password-protected (+k) channels
-        var channelText = _protectedChannels.Contains(name) ? $"#{name}*" : $"#{name}";
+        // Trailing * marks password-protected (+k) channels; ~ marks private (unlisted) ones
+        var channelText = $"#{name}";
+        if (_protectedChannels.Contains(name))
+            channelText += "*";
+        if (_privateChannels.Contains(name))
+            channelText += "~";
         var badge = hasUnread ? $" ({unread})" : "";
 
         // Resolve Transparent backgrounds to the view's actual background

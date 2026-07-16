@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using EchoHub.Core.Constants;
 
 namespace EchoHub.Server.Services;
 
@@ -172,6 +173,20 @@ public class PresenceTracker
     public bool IsOnline(string username)
     {
         return _userConnections.TryGetValue(username, out var connections) && connections.Count > 0;
+    }
+
+    /// <summary>
+    /// True when the user is online exclusively through the IRC gateway. A user who also has a
+    /// native client connected has full features, so they don't count as IRC-only.
+    /// </summary>
+    public bool IsIrcOnly(string username)
+    {
+        lock (_lock)
+        {
+            return _userConnections.TryGetValue(username, out var connections)
+                && connections.Count > 0
+                && connections.All(c => c.StartsWith(HubConstants.IrcConnectionIdPrefix, StringComparison.Ordinal));
+        }
     }
 
     public int GetOnlineUserCount()

@@ -30,6 +30,7 @@ public record UserPresenceDto(
     string? NicknameColor,
     UserStatus Status,
     string? StatusMessage,
-    ServerRole Role);
+    ServerRole Role,
+    bool IsIrc = false);
 
 public record AvatarUploadResponse(string AvatarAscii);
