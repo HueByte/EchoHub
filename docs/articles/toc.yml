@@ -2,6 +2,14 @@
   items:
     - name: Getting Started
       href: getting-started.md
+    - name: TUI Guide
+      href: tui-guide.md
+    - name: Messages & Attachments
+      href: messages-and-attachments.md
+    - name: Moderation & Roles
+      href: moderation.md
+    - name: IRC Gateway
+      href: irc-gateway.md
     - name: Docker
       href: docker.md
     - name: Architecture

@@ -17,7 +17,7 @@ curl -sSfL https://raw.githubusercontent.com/HueByte/EchoHub/master/scripts/inst
 To install a specific version or to a custom directory:
 
 ```bash
-curl -sSfL .../install.sh | sh -s -- --version 0.2.11
+curl -sSfL .../install.sh | sh -s -- --version 0.2.14
 curl -sSfL .../install.sh | sh -s -- --install-dir /opt/echohub
 ```
 
@@ -76,11 +76,11 @@ Then connect with any standard IRC client:
 irssi -c localhost -p 6667 -w <password> -n <username>
 ```
 
-IRC users must have an existing EchoHub account. Authentication works via `PASS`/`NICK`/`USER` or SASL PLAIN. Messages flow bidirectionally between IRC and TUI clients.
+Your nick is your EchoHub username and the server password is your account password (`PASS`/`NICK`/`USER` or SASL PLAIN). Connecting with a new username registers the account. Messages flow bidirectionally between IRC and TUI clients.
 
 For TLS, set `TlsEnabled: true`, `TlsPort: 6697`, and provide a PKCS#12 certificate path.
 
-See the [Architecture](architecture.md) page for details on how the IRC gateway integrates with the chat service.
+See the [IRC Gateway guide](irc-gateway.md) for command mapping, attachment rendering, and limitations, or [Architecture](architecture.md) for how the gateway integrates with the chat service.
 
 ## Configuration
 

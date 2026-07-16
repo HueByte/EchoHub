@@ -101,6 +101,23 @@ Access tokens expire after 15 minutes, refresh tokens after 30 days with rotatio
 | `Server:PublicHost` | *(empty)* | Public hostname for the directory listing (e.g. `chat.example.com:5000`) |
 | `Server:Admins` | `[]` | Array of admin usernames (e.g. `["alice", "bob"]`) |
 
+### Uploads
+
+Per-attachment size limits by kind (in megabytes) and the per-message attachment cap. An
+absent or partial `Uploads` section keeps the built-in defaults. See
+[Messages & Attachments](messages-and-attachments.md) for how kinds are detected.
+
+| Key | Default | Description |
+| --- | --- | --- |
+| `Uploads:MaxImageSizeMB` | `10` | Max size for one image attachment |
+| `Uploads:MaxAudioSizeMB` | `10` | Max size for one audio attachment |
+| `Uploads:MaxFileSizeMB` | `100` | Max size for any other attachment |
+| `Uploads:MaxAvatarSizeMB` | `2` | Max avatar upload size |
+| `Uploads:MaxAttachmentsPerMessage` | `10` | Attachments allowed on a single message |
+
+The server sizes its request-body limits from these values, so raising a limit here is all
+that's needed — no separate Kestrel tuning.
+
 ### Encryption
 
 | Key | Default | Description |

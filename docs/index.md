@@ -11,6 +11,10 @@ Welcome to the EchoHub documentation. EchoHub is a decentralized, IRC-style chat
 ## Quick Links
 
 - [Getting Started](articles/getting-started.md) - Set up and run EchoHub
+- [TUI Guide](articles/tui-guide.md) - Keyboard shortcuts, slash commands, and everyday usage
+- [Messages & Attachments](articles/messages-and-attachments.md) - Attaching, pasting, and receiving files
+- [Encrypted Rooms](articles/encrypted-rooms.md) - End-to-end encrypted channels
+- [IRC Gateway](articles/irc-gateway.md) - Connect with any IRC client
 - [Architecture](articles/architecture.md) - System design and IRC gateway
 - [API Reference](api/index.md) - Generated C# API documentation
 - [Changelog](changelog/index.md) - Release history
