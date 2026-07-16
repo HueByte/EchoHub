@@ -451,10 +451,17 @@ public sealed class ChatMessageManager
 
     private static string FormatDateTime(DateTimeOffset timestamp)
     {
-        if (timestamp.Date == DateTimeOffset.Now.Date)
-            return timestamp.ToLocalTime().ToString("t");
-        else
-            return timestamp.ToLocalTime().ToString("g");
+        // Server timestamps arrive in UTC; convert to local before deciding the calendar day,
+        // otherwise a "today" message near midnight is misclassified against the local date.
+        var local = timestamp.ToLocalTime();
+
+        // Today's messages show a compact date + short time; older messages fall back to the
+        // culture's general short date/time. Both always include the date so new messages
+        // are never left date-less.
+        if (local.Date == DateTimeOffset.Now.Date)
+            return $"{local:d} {local:t}";
+
+        return local.ToString("g");
     }
 
     internal static string FormatFileSize(long? bytes)

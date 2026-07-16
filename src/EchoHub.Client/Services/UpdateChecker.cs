@@ -1,3 +1,5 @@
+using System.Text;
+
 using AlwaysUpToDate;
 
 using EchoHub.Client.UI.Dialogs;
@@ -88,6 +90,10 @@ public sealed class UpdateChecker : IDisposable
     private async Task ApplyUpdateAsync()
     {
         _applying = true;
+
+        // The TUI restored the console on shutdown; make sure the block-glyph bar renders.
+        try { Console.OutputEncoding = Encoding.UTF8; } catch { /* redirected/non-interactive */ }
+
         Console.WriteLine();
         Console.WriteLine($"Updating EchoHub to v{_pendingVersion}...");
 
@@ -106,22 +112,48 @@ public sealed class UpdateChecker : IDisposable
         await _updater.UpdateAsync(); // download → extract → restart → Environment.Exit(0)
     }
 
+    private const int BarWidth = 28;
+
     private void OnProgressChanged(UpdateStep step, long itemsProcessed, long? totalItems, double? progressPercentage)
     {
         // Before the TUI is torn down (i.e. during a check) there is no progress surface; the
-        // real work happens headless after shutdown, so report it on the console.
+        // real work happens headless after shutdown, so draw a progress bar on the console.
         if (!_applying)
             return;
 
+        // Finish the previous step's line so each step keeps its completed bar.
         if (step != _lastStep)
         {
-            Console.WriteLine();
+            if (_lastStep != (UpdateStep)(-1))
+                Console.WriteLine();
             _lastStep = step;
         }
 
-        var pct = progressPercentage ?? 0;
-        Console.Write($"\r  {step}: {itemsProcessed}/{totalItems ?? 0} ({pct:F0}%)   ");
+        var label = Humanize(step);
+
+        if (progressPercentage is { } percent)
+        {
+            var pct = (int)Math.Clamp(Math.Round(percent), 0, 100);
+            var filled = pct * BarWidth / 100;
+            var bar = new string('█', filled) + new string('░', BarWidth - filled); // █ / ░
+            Console.Write($"\r  {label,-13} [{bar}] {pct,3}%   ");
+        }
+        else
+        {
+            // Steps with no measurable total (verifying, restarting): show an indeterminate marker.
+            Console.Write($"\r  {label,-13} working...   ");
+        }
     }
+
+    private static string Humanize(UpdateStep step) => step switch
+    {
+        UpdateStep.Downloading => "Downloading",
+        UpdateStep.VerifyingChecksum => "Verifying",
+        UpdateStep.Extracting => "Extracting",
+        UpdateStep.CleaningUp => "Cleaning up",
+        UpdateStep.Restarting => "Restarting",
+        _ => step.ToString(),
+    };
 
     private void OnUpdateStarted(string version)
     {

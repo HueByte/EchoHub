@@ -118,7 +118,7 @@ If you need to recover old encrypted messages, restore the original key from a b
 ### Limitations
 
 - **TLS-inspecting proxies** — if a corporate proxy terminates TLS with a trusted root CA, it can intercept the key exchange (`GET /api/server/encryption-key`) and read all traffic. A future upgrade to ECDH key exchange would address this.
-- **Server has full access** — the server decrypts all messages for processing. This is not end-to-end encryption between users; it's transport encryption between client and server.
+- **Server has full access** — the server decrypts all messages for processing. This is not end-to-end encryption between users; it's transport encryption between client and server. For true end-to-end encryption where the server cannot read content, use [encrypted rooms](encrypted-rooms.md).
 - **IRC clients receive plaintext** — IRC is an open protocol and third-party clients cannot participate in the encryption scheme.
 
 ## Troubleshooting

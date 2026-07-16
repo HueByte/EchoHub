@@ -270,6 +270,11 @@ internal sealed class FakeChannelService : IChannelService
     public Task<ChannelDto?> GetChannelByNameAsync(string channelName) =>
         Task.FromResult(ChannelByNameToReturn);
 
+    public ChannelMetaDto? ChannelMetaToReturn { get; set; }
+
+    public Task<ChannelMetaDto?> GetChannelMetaAsync(string channelName) =>
+        Task.FromResult(ChannelMetaToReturn);
+
     public Task<(bool Success, string? Error, bool PasswordRequired)> EnsureChannelMembershipAsync(Guid userId, string channelName, string? password = null) =>
         Task.FromResult(MembershipResult);
 }
