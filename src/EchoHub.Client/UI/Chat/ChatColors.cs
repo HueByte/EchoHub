@@ -21,6 +21,15 @@ public static partial class ChatColors
     public static readonly Attribute AudioAttr = new(new Color(180, 100, 255), Color.None);
     public static readonly Attribute FileAttr = new(new Color(100, 180, 255), Color.None);
 
+    /// <summary>The dim vertical rail (│) separating the nick column from message text.</summary>
+    public static readonly Attribute RailAttr = new(new Color(95, 95, 95), Color.None);
+
+    /// <summary>Horizontal date-separator rules (── Wed, Jul 16 ──…).</summary>
+    public static readonly Attribute DateRuleAttr = new(new Color(120, 120, 120), Color.None);
+
+    /// <summary>The irssi-style "new messages" unread marker rule.</summary>
+    public static readonly Attribute UnreadMarkerAttr = new(new Color(230, 140, 60), Color.None);
+
     /// <summary>
     /// Split text around @mentions and #channels, giving each the appropriate accent color.
     /// Non-special text uses the provided default color.

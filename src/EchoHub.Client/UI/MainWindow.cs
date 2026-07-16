@@ -319,6 +319,12 @@ public sealed partial class MainWindow : Runnable
         _statusLabel.DrawingContent += OnStatusBarDrawContent;
         Add(_statusLabel);
 
+        // Rounded borders for a softer, modern frame look
+        channelsFrame.BorderStyle = LineStyle.Rounded;
+        _chatFrame.BorderStyle = LineStyle.Rounded;
+        _inputFrame.BorderStyle = LineStyle.Rounded;
+        _usersFrame.BorderStyle = LineStyle.Rounded;
+
         // Apply our custom color schemes to all views
         ApplyColorSchemes();
 
@@ -1016,6 +1022,7 @@ public sealed partial class MainWindow : Runnable
     public void UpdateStatusBar(string status)
     {
         _connectionStatus = status;
+        UpdateSpinner();
         _statusLabel.SetNeedsDraw();
     }
 
@@ -1023,6 +1030,38 @@ public sealed partial class MainWindow : Runnable
     private static readonly Attribute StatusDisconnectedAttr = new(new Color(220, 50, 50), Color.None);
     private static readonly Attribute StatusTransitionalAttr = new(new Color(220, 180, 0), Color.None);
     private static readonly Attribute StatusBrandAttr = new(new Color(218, 165, 32), Color.None);
+    private static readonly Attribute StatusActivityAttr = new(new Color(80, 200, 220), Color.None);
+    private static readonly Attribute StatusMentionAttr = new(new Color(230, 140, 60), Color.None);
+
+    // Braille spinner shown while the connection is in a transitional state
+    private static readonly string[] SpinnerFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+    private object? _spinnerToken;
+    private int _spinnerFrame;
+
+    private bool IsTransitionalStatus => _connectionStatus is not ("Connected" or "Disconnected");
+
+    /// <summary>
+    /// Starts the spinner timer when entering a transitional connection state
+    /// (Connecting, Reconnecting, …); the timer stops itself once the state settles.
+    /// </summary>
+    private void UpdateSpinner()
+    {
+        if (!IsTransitionalStatus || _spinnerToken is not null)
+            return;
+
+        _spinnerToken = _app.AddTimeout(TimeSpan.FromMilliseconds(120), () =>
+        {
+            if (!IsTransitionalStatus)
+            {
+                _spinnerToken = null;
+                return false;
+            }
+
+            _spinnerFrame = (_spinnerFrame + 1) % SpinnerFrames.Length;
+            _statusLabel.SetNeedsDraw();
+            return true;
+        });
+    }
 
     private void OnStatusBarDrawContent(object? sender, DrawEventArgs e)
     {
@@ -1054,13 +1093,15 @@ public sealed partial class MainWindow : Runnable
         Write(" EchoHub", Resolve(StatusBrandAttr));
         Write($" \u2502 v{AppVersion} \u2502 ", normalAttr);
 
-        // Connection state with color
+        // Connection state with color; transitional states get an animated spinner
         var statusAttr = _connectionStatus switch
         {
             "Connected" => StatusConnectedAttr,
             "Disconnected" => StatusDisconnectedAttr,
             _ => StatusTransitionalAttr // Connecting, Reconnecting, Authenticating, etc.
         };
+        if (IsTransitionalStatus)
+            Write($"{SpinnerFrames[_spinnerFrame]} ", statusAttr);
         Write(_connectionStatus, Resolve(statusAttr));
 
         // User
@@ -1077,6 +1118,28 @@ public sealed partial class MainWindow : Runnable
             if (_channelProtected.Contains(currentChannel))
                 typeSuffix += " +k";
             Write($" \u2502 #{currentChannel} - {typeSuffix}", normalAttr);
+        }
+
+        // Activity segment (irssi-style): channels with unread messages,
+        // mention-channels highlighted in orange
+        var activity = _messageManager.GetUnreadCounts()
+            .Where(kv => kv.Value > 0)
+            .Select(kv => kv.Key)
+            .OrderBy(n => n, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        if (activity.Count > 0)
+        {
+            const int maxShown = 4;
+            Write(" \u2502 Act: ", normalAttr);
+            var mentions = _messageManager.MentionChannels;
+            for (int i = 0; i < activity.Count && i < maxShown; i++)
+            {
+                if (i > 0)
+                    Write(",", normalAttr);
+                Write($"#{activity[i]}", mentions.Contains(activity[i]) ? StatusMentionAttr : StatusActivityAttr);
+            }
+            if (activity.Count > maxShown)
+                Write($" +{activity.Count - maxShown}", normalAttr);
         }
 
         // Fill remaining space
@@ -1181,24 +1244,29 @@ public sealed partial class MainWindow : Runnable
 
     private void RefreshMessages()
     {
+        var width = _messageList.Viewport.Width;
+
+        // Update cached width when viewport reports a valid value;
+        // fall back to last known width if viewport hasn't been laid out yet.
+        if (width > 0)
+            _lastChatWidth = width;
+        else
+            width = _lastChatWidth;
+
         var messages = _messageManager.GetMessages(_messageManager.CurrentChannel);
         if (messages is not null)
         {
-            var width = _messageList.Viewport.Width;
-
-            // Update cached width when viewport reports a valid value;
-            // fall back to last known width if viewport hasn't been laid out yet.
-            if (width > 0)
-                _lastChatWidth = width;
-            else
-                width = _lastChatWidth;
-
             var source = new ChatListSource();
 
             if (width > 0)
             {
                 foreach (var line in messages)
-                    source.AddRange(line.Wrap(width, line.ContinuationIndent));
+                {
+                    if (line.RuleLabel is not null)
+                        source.Add(ExpandRule(line, width));
+                    else
+                        source.AddRange(line.Wrap(width, line.ContinuationIndent));
+                }
             }
             else
             {
@@ -1211,8 +1279,27 @@ public sealed partial class MainWindow : Runnable
         }
         else
         {
-            _messageList.Source = new ChatListSource();
+            // No channel selected — greet with the MOTD-style splash
+            var source = new ChatListSource();
+            if (width > 0)
+                source.AddRange(WelcomeBanner.Build(width, AppVersion));
+            _messageList.Source = source;
         }
+    }
+
+    /// <summary>
+    /// Regenerates a separator rule (date change / unread marker) to span the
+    /// current viewport width: "── label ────────…".
+    /// </summary>
+    private static ChatLine ExpandRule(ChatLine line, int width)
+    {
+        var attr = line.RuleAttr ?? ChatColors.DateRuleAttr;
+        var label = line.RuleLabel!;
+        var tailLen = Math.Max(width - 4 - label.GetColumns() - 1, 2);
+        return new ChatLine([new ChatSegment($"── {label} {new string('─', tailLen)}", attr)])
+        {
+            IsUnreadMarker = line.IsUnreadMarker,
+        };
     }
 
     /// <summary>
@@ -1220,7 +1307,8 @@ public sealed partial class MainWindow : Runnable
     /// </summary>
     private void RefreshChannelList()
     {
-        _channelListSource.Update(_channelNames, _messageManager.GetUnreadCounts(), _messageManager.CurrentChannel, _channelProtected);
+        _channelListSource.Update(_channelNames, _messageManager.GetUnreadCounts(), _messageManager.CurrentChannel,
+            _channelProtected, _messageManager.MentionChannels);
         _channelList.Source = _channelListSource;
 
         // Restore selection to current channel
@@ -1296,8 +1384,11 @@ public sealed partial class MainWindow : Runnable
             var text = roleTag.Length > 0
                 ? $"{statusIcon} {roleTag} {name}"
                 : $"{statusIcon} {name}";
-            var nameColor = HexColorHelper.ParseHexColor(u.NicknameColor);
-            return (text, nameColor, u.Username);
+            // Fall back to the deterministic per-nick palette so user-list colors
+            // match the same user's messages in chat.
+            var nameColor = HexColorHelper.ParseHexColor(u.NicknameColor)
+                ?? NickColorHelper.GetAttribute(u.Username);
+            return (text, (Attribute?)nameColor, u.Username);
         }).ToList();
 
         _usersListSource.Update(displayItems);
