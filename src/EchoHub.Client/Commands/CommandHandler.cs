@@ -17,6 +17,7 @@ public class CommandHandler
     public event Func<string, string, Task>? OnChangeRoomPassword;
     public event Func<Task>? OnClearAttachments;
     public event Func<string, Task>? OnSetDownloadPath;
+    public event Func<string, Task>? OnSetAsciiSize;
     public event Func<Task>? OnLeaveChannel;
     public event Func<string, Task>? OnSetTopic;
     public event Func<Task>? OnListUsers;
@@ -51,6 +52,7 @@ public class CommandHandler
             "theme" => await HandleTheme(args),
             "send" => await HandleSend(args),
             "clear" => await HandleClear(),
+            "size" or "asciisize" => await HandleAsciiSize(args),
             "downloadpath" or "downloads" => await HandleDownloadPath(args),
             "profile" => await HandleProfile(args),
             "avatar" => await HandleAvatar(args),
@@ -174,6 +176,14 @@ public class CommandHandler
         if (OnClearAttachments is not null)
             await OnClearAttachments();
         return new CommandResult(true, "Cleared staged attachments.");
+    }
+
+    private async Task<CommandResult> HandleAsciiSize(string args)
+    {
+        // No argument → open the size picker; an argument (s/m/l or small/medium/large) sets it.
+        if (OnSetAsciiSize is not null)
+            await OnSetAsciiSize(args.Trim());
+        return new CommandResult(true);
     }
 
     private async Task<CommandResult> HandleDownloadPath(string args)
@@ -380,7 +390,10 @@ public class CommandHandler
               /send <filepath> [-s|-m|-l]          - Stage a file to attach (Enter sends with your text)
               /send <URL> [-s|-m|-l]               - Send an image URL immediately
               /clear                               - Drop all staged attachments
+              /size [s|m|l]                        - ASCII art size for attached images (no arg = picker)
             (Tip: copy a file and press Ctrl+V, or drag a file onto the window, to attach it.)
+            (Tip: right-click a message for actions — delete, save/download/play attachment,
+                  mention, view profile, copy. Or press F6 to pick a message, then Delete.)
               /downloadpath [path]                 - Set download folder (no path = native folder picker)
               /avatar <URL or filepath>             - Set your avatar
               /profile [username]                   - View a profile

@@ -65,6 +65,13 @@ public class ChatListSource : IListDataSource
 
         var chatLine = _lines[item];
         var normalAttr = listView.GetAttributeForRole(VisualRole.Normal);
+
+        // Highlight the selected row (whole width) while the list has focus — used by the
+        // F6 selection flow and right-click. The custom source must draw this itself.
+        var focusAttr = selected && listView.HasFocus
+            ? listView.GetAttributeForRole(VisualRole.Focus)
+            : (Attribute?)null;
+
         var mentionBg = chatLine.IsMention ? ChatColors.MentionHighlightAttr.Background : (Color?)null;
 
         int charPos = 0;
@@ -72,11 +79,19 @@ public class ChatListSource : IListDataSource
 
         foreach (var segment in chatLine.Segments)
         {
-            var attr = segment.Color ?? normalAttr;
-            if (attr.Background == Color.None)
-                attr = attr with { Background = normalAttr.Background };
-            if (mentionBg.HasValue)
-                attr = attr with { Background = mentionBg.Value };
+            Attribute attr;
+            if (focusAttr is { } focus)
+            {
+                attr = focus;
+            }
+            else
+            {
+                attr = segment.Color ?? normalAttr;
+                if (attr.Background == Color.None)
+                    attr = attr with { Background = normalAttr.Background };
+                if (mentionBg.HasValue)
+                    attr = attr with { Background = mentionBg.Value };
+            }
             listView.SetAttribute(attr);
 
             foreach (var grapheme in GraphemeHelper.GetGraphemes(segment.Text))
@@ -91,7 +106,8 @@ public class ChatListSource : IListDataSource
             }
         }
 
-        var fillAttr = mentionBg.HasValue ? new Attribute(normalAttr.Foreground, mentionBg.Value) : normalAttr;
+        var fillAttr = focusAttr
+            ?? (mentionBg.HasValue ? new Attribute(normalAttr.Foreground, mentionBg.Value) : normalAttr);
         listView.SetAttribute(fillAttr);
         for (int i = drawnChars; i < width; i++)
             listView.AddStr(" ");

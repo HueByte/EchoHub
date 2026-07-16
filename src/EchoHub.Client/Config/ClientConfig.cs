@@ -12,6 +12,12 @@ public class ClientConfig
     /// OS Downloads folder is used. Set via the native folder picker or <c>/downloadpath</c>.
     /// </summary>
     public string? DownloadPath { get; set; }
+
+    /// <summary>
+    /// ASCII-art rendering size for images you attach: "s" (40×40), "m" (80×80), or "l" (120×120).
+    /// Applies to copy-paste/drag-drop attachments, which have no per-file size flag.
+    /// </summary>
+    public string DefaultAsciiSize { get; set; } = "m";
 }
 
 public class NotificationConfig

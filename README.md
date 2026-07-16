@@ -227,6 +227,7 @@ For direct TLS without a reverse proxy, the IRC gateway can terminate TLS itself
 | ------- | ----------- |
 | `/join <channel> [password]` | Join a channel (passphrase for encrypted channels) |
 | `/passwd <old> <new>` | Change the current encrypted channel's passphrase (creator only) |
+| `/size [s\|m\|l]` | ASCII-art size for attached images (no arg = picker) |
 | `/downloadpath [path]` | Set the download folder (no path = native folder picker) |
 | `/leave` | Leave current channel |
 | `/topic <text>` | Set channel topic (creator only) |
@@ -241,6 +242,8 @@ For direct TLS without a reverse proxy, the IRC gateway can terminate TLS itself
 | `/servers` | Manage saved servers |
 | `/help` | Show help |
 | `/quit` | Exit |
+
+**Message actions:** **right-click a message** for a context menu — delete, save/download/play its attachment, mention the sender, view their profile, or copy the text. (Keyboard alternative: press <kbd>F6</kbd> to focus the message list, select with the arrow keys, and press <kbd>Delete</kbd>; <kbd>F6</kbd> again returns to the input.) You can always delete your own messages; moderators and above can delete others' messages, but only from users below their own role.
 
 ## Themes
 

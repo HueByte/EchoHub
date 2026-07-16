@@ -18,6 +18,7 @@ public class ChatService : IChatService
     private readonly LinkEmbedService _embedService;
     private readonly IMessageEncryptionService _encryption;
     private readonly IChannelService _channelService;
+    private readonly FileStorageService _fileStorage;
     private readonly ILogger<ChatService> _logger;
 
     public ChatService(
@@ -27,6 +28,7 @@ public class ChatService : IChatService
         LinkEmbedService embedService,
         IMessageEncryptionService encryption,
         IChannelService channelService,
+        FileStorageService fileStorage,
         ILogger<ChatService> logger)
     {
         _scopeFactory = scopeFactory;
@@ -35,6 +37,7 @@ public class ChatService : IChatService
         _embedService = embedService;
         _encryption = encryption;
         _channelService = channelService;
+        _fileStorage = fileStorage;
         _logger = logger;
     }
 
@@ -389,12 +392,46 @@ public class ChatService : IChatService
             .GroupBy(a => a.MessageId)
             .ToDictionary(g => g.Key, g => g.ToList());
 
-        return raw.Select(x =>
+        // Attachment blobs can be pruned by retention while the message rows remain. Check what's
+        // actually on disk (one scan) so we never render a dead download, and so we can drop
+        // attachment-only messages whose files are all gone.
+        var storedFileIds = attachmentsByMessage.Count > 0 ? _fileStorage.GetStoredFileIds() : [];
+
+        var result = new List<MessageDto>(raw.Count);
+        var deadMessageIds = new List<Guid>();
+
+        foreach (var x in raw)
         {
             // Decrypt DB content (handles both encrypted and plaintext via prefix detection)
             var plaintext = _encryption.Decrypt(x.m.Content);
-            var embedJsonPlain = _encryption.DecryptNullable(x.m.EmbedJson);
 
+            List<AttachmentDto>? attachments = null;
+            var hadAttachments = attachmentsByMessage.TryGetValue(x.m.Id, out var atts) && atts.Count > 0;
+            if (hadAttachments)
+            {
+                // Keep only attachments whose underlying file still exists on disk.
+                var live = atts!.Where(a => storedFileIds.Contains(FileIdFromUrl(a.Url))).ToList();
+
+                // Attachment-only message whose files are all gone → prune it entirely.
+                if (live.Count == 0 && string.IsNullOrEmpty(plaintext))
+                {
+                    deadMessageIds.Add(x.m.Id);
+                    continue;
+                }
+
+                if (live.Count > 0)
+                {
+                    attachments = live.Select(a => new AttachmentDto(
+                        a.Kind,
+                        a.Url,
+                        a.FileName,
+                        a.FileSize,
+                        // Preview re-encrypted for transport; client decrypts (and room-decrypts for E2E)
+                        _encryption.EncryptNullable(_encryption.DecryptNullable(a.AsciiPreview)))).ToList();
+                }
+            }
+
+            var embedJsonPlain = _encryption.DecryptNullable(x.m.EmbedJson);
             List<EmbedDto>? embeds = null;
             if (embedJsonPlain is not null)
             {
@@ -402,20 +439,8 @@ public class ChatService : IChatService
                 catch { /* ignore malformed JSON */ }
             }
 
-            List<AttachmentDto>? attachments = null;
-            if (attachmentsByMessage.TryGetValue(x.m.Id, out var atts) && atts.Count > 0)
-            {
-                attachments = atts.Select(a => new AttachmentDto(
-                    a.Kind,
-                    a.Url,
-                    a.FileName,
-                    a.FileSize,
-                    // Preview re-encrypted for transport; client decrypts (and room-decrypts for E2E)
-                    _encryption.EncryptNullable(_encryption.DecryptNullable(a.AsciiPreview)))).ToList();
-            }
-
             // Encrypt for transport — client decrypts
-            return new MessageDto(
+            result.Add(new MessageDto(
                 x.m.Id,
                 _encryption.Encrypt(plaintext),
                 x.m.SenderUsername,
@@ -423,7 +448,28 @@ public class ChatService : IChatService
                 channelName,
                 x.m.SentAt,
                 attachments,
-                embeds);
-        }).ToList();
+                embeds));
+        }
+
+        // Lazily delete the pruned messages (+ their attachment rows) as they're encountered.
+        if (deadMessageIds.Count > 0)
+        {
+            try
+            {
+                await db.Attachments.Where(a => deadMessageIds.Contains(a.MessageId)).ExecuteDeleteAsync();
+                await db.Messages.Where(m => deadMessageIds.Contains(m.Id)).ExecuteDeleteAsync();
+                _logger.LogInformation("Pruned {Count} attachment-only messages with missing files in '{Channel}'",
+                    deadMessageIds.Count, channelName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to prune messages with missing attachments in '{Channel}'", channelName);
+            }
+        }
+
+        return result;
     }
+
+    /// <summary>Extracts the storage file id from an attachment URL (e.g. "/api/files/{id}").</summary>
+    private static string FileIdFromUrl(string url) => url.Split('/')[^1];
 }

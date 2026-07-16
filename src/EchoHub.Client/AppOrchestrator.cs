@@ -116,6 +116,7 @@ public sealed class AppOrchestrator : IDisposable
         _commandHandler.OnJoinChannel += HandleCmdJoinChannel;
         _commandHandler.OnChangeRoomPassword += HandleCmdChangeRoomPassword;
         _commandHandler.OnClearAttachments += HandleCmdClearAttachments;
+        _commandHandler.OnSetAsciiSize += HandleCmdSetAsciiSize;
         _commandHandler.OnSetDownloadPath += HandleCmdSetDownloadPath;
         _commandHandler.OnLeaveChannel += HandleCmdLeaveChannel;
         _commandHandler.OnSetTopic += HandleCmdSetTopic;
@@ -195,17 +196,83 @@ public sealed class AppOrchestrator : IDisposable
             return Task.CompletedTask;
         }
 
+        // An explicit "-s/-m/-l" on /send also sets the message's ASCII size.
+        if (NormalizeAsciiSize(size) is { } flag)
+            _config.DefaultAsciiSize = flag;
+
         _stagedAttachments.Add(target);
-        InvokeUI(() => _mainWindow.SetStagedAttachments(_stagedAttachments.Select(Path.GetFileName).OfType<string>().ToList()));
+        InvokeUI(RefreshStagingTray);
         return Task.CompletedTask;
     }
 
     private Task HandleCmdClearAttachments()
     {
         _stagedAttachments.Clear();
-        InvokeUI(() => _mainWindow.SetStagedAttachments([]));
+        InvokeUI(RefreshStagingTray);
         return Task.CompletedTask;
     }
+
+    /// <summary>
+    /// Opens the ASCII-art size picker (no argument) or sets it directly from "s"/"m"/"l" (or
+    /// small/medium/large). The choice is a persistent preference applied to attached images.
+    /// </summary>
+    private Task HandleCmdSetAsciiSize(string args)
+    {
+        var flag = NormalizeAsciiSize(args);
+        if (flag is not null)
+        {
+            InvokeUI(() => ApplyAsciiSize(flag));
+            return Task.CompletedTask;
+        }
+
+        InvokeUI(() =>
+        {
+            var choice = MessageBox.Query(_app, "ASCII Art Size",
+                "Size of the ASCII rendering for images you attach:\n\n"
+                + "  Small    40 x 40    (compact)\n"
+                + "  Medium   80 x 80    (default)\n"
+                + "  Large    120 x 120  (detailed)",
+                "Small", "Medium", "Large", "Cancel");
+
+            var picked = choice switch { 0 => "s", 1 => "m", 2 => "l", _ => null };
+            if (picked is not null)
+                ApplyAsciiSize(picked);
+        });
+        return Task.CompletedTask;
+    }
+
+    private void ApplyAsciiSize(string flag)
+    {
+        _config.DefaultAsciiSize = flag;
+        ConfigManager.Save(_config);
+        RefreshStagingTray();
+
+        var channel = _mainWindow.CurrentChannel;
+        if (!string.IsNullOrEmpty(channel))
+            _messageManager.AddSystemMessage(channel, $"Image ASCII size set to {AsciiSizeLabel(flag)}.");
+    }
+
+    /// <summary>Refreshes the staging tray with the current staged files and ASCII size.</summary>
+    private void RefreshStagingTray()
+    {
+        var names = _stagedAttachments.Select(Path.GetFileName).OfType<string>().ToList();
+        _mainWindow.SetStagedAttachments(names, AsciiSizeLabel(_config.DefaultAsciiSize));
+    }
+
+    private static string? NormalizeAsciiSize(string? size) => size?.Trim().ToLowerInvariant() switch
+    {
+        "s" or "small" => "s",
+        "m" or "medium" => "m",
+        "l" or "large" => "l",
+        _ => null,
+    };
+
+    private static string AsciiSizeLabel(string flag) => flag switch
+    {
+        "s" => "Small (40x40)",
+        "l" => "Large (120x120)",
+        _ => "Medium (80x80)",
+    };
 
     /// <summary>
     /// Sends one message with the given caption plus all staged files as attachments, then
@@ -216,30 +283,32 @@ public sealed class AppOrchestrator : IDisposable
     {
         var staged = _stagedAttachments.ToList();
         _stagedAttachments.Clear();
-        InvokeUI(() => _mainWindow.SetStagedAttachments([]));
+        InvokeUI(RefreshStagingTray);
 
         var hasRoomKey = _conn.RoomKeys.TryGetKey(channel, out var roomKey);
+        var size = _config.DefaultAsciiSize;
 
         RunAsync(async () =>
         {
             var outgoing = new List<OutgoingAttachment>();
             foreach (var path in staged)
-                outgoing.Add(await BuildOutgoingAttachmentAsync(path, hasRoomKey ? roomKey : null));
+                outgoing.Add(await BuildOutgoingAttachmentAsync(path, hasRoomKey ? roomKey : null, size));
 
             var wireContent = hasRoomKey && !string.IsNullOrEmpty(content)
                 ? RoomCrypto.EncryptText(content, roomKey)
                 : content;
 
-            await _conn.Api!.SendMessageWithAttachmentsAsync(channel, wireContent, outgoing);
+            await _conn.Api!.SendMessageWithAttachmentsAsync(channel, wireContent, outgoing, size);
         }, "Send failed");
     }
 
     /// <summary>
     /// Reads a staged file into an <see cref="OutgoingAttachment"/>. For encrypted channels the
     /// blob is AES-GCM encrypted, its kind is declared, and the image ASCII preview is rendered
-    /// locally and room-encrypted — so the server never sees the file or image contents.
+    /// locally (at <paramref name="size"/>) and room-encrypted — so the server never sees the
+    /// file or image contents.
     /// </summary>
-    private static async Task<OutgoingAttachment> BuildOutgoingAttachmentAsync(string path, byte[]? roomKey)
+    private static async Task<OutgoingAttachment> BuildOutgoingAttachmentAsync(string path, byte[]? roomKey, string size)
     {
         var fileName = Path.GetFileName(path);
 
@@ -255,7 +324,7 @@ public sealed class AppOrchestrator : IDisposable
             if (FileValidationHelper.IsValidImage(ms))
             {
                 declaredKind = "image";
-                var (w, h) = ImageToAsciiService.GetDimensions(null);
+                var (w, h) = ImageToAsciiService.GetDimensions(size);
                 ms.Position = 0;
                 preview = RoomCrypto.EncryptText(new ImageToAsciiService().ConvertToAscii(ms, w, h), roomKey);
             }
