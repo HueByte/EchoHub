@@ -78,7 +78,7 @@ Images are rendered in chat as half-block ASCII art. You pick the rendering size
 Right-click a message (or press `F6` to select one with the arrow keys) for actions:
 
 - **Images** → save to disk
-- **Audio** → play (in-client playback) 
+- **Audio** → play (in-client playback)
 - **Files** → download
 
 Downloads go to your configured download folder — set it with `/downloadpath` (no argument

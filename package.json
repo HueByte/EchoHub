@@ -1,0 +1,12 @@
+{
+  "name": "echohub",
+  "private": true,
+  "description": "Repo tooling — markdown linting. Not an npm package.",
+  "scripts": {
+    "lint:md": "markdownlint-cli2",
+    "lint:md:fix": "markdownlint-cli2 --fix"
+  },
+  "devDependencies": {
+    "markdownlint-cli2": "^0.23.0"
+  }
+}
