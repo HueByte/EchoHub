@@ -126,10 +126,24 @@ try
     var theme = ThemeManager.GetTheme(config.ActiveTheme);
     ThemeManager.ApplyTheme(theme);
 
-    using var orchestrator = new AppOrchestrator(app, config);
+    var orchestrator = new AppOrchestrator(app, config);
 
     app.Run(orchestrator.MainWindow);
+
+    // Capture any confirmed update before tearing anything down, then restore the console.
+    var pendingUpdate = orchestrator.PendingUpdate;
     app.Dispose();
+
+    // Apply the update on a clean console: the TUI has released it, so the updater can extract
+    // and restart the process without deadlocking against the alternate-screen buffer. This call
+    // ends by starting the new version and calling Environment.Exit, so it does not return.
+    if (pendingUpdate is not null)
+    {
+        Log.Information("Applying confirmed update after shutdown");
+        await pendingUpdate();
+    }
+
+    orchestrator.Dispose();
 }
 catch (Exception ex)
 {

@@ -15,9 +15,17 @@ public sealed class UpdateChecker : IDisposable
 
     private readonly Updater _updater;
     private readonly IApplication _app;
-    private UpdateProgressDialog? _progressDialog;
+    private string? _pendingVersion;
+    private bool _applying;
+    private UpdateStep _lastStep = (UpdateStep)(-1);
     private bool _manualCheck;
 
+    /// <summary>
+    /// Set when the user confirms an update. The host runs this <b>after</b> the Terminal.Gui
+    /// main loop has exited and the console is restored, so the library's in-place restart doesn't
+    /// deadlock against a TUI that still owns the console.
+    /// </summary>
+    public Func<Task>? PendingUpdate { get; private set; }
 
     public static string CurrentVersion => typeof(UpdateChecker).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
 
@@ -40,7 +48,6 @@ public sealed class UpdateChecker : IDisposable
 #endif
     }
 
-
     public async Task CheckNowAsync()
     {
         _manualCheck = true;
@@ -54,65 +61,66 @@ public sealed class UpdateChecker : IDisposable
         }
     }
 
-    private async void OnUpdateAvailable(string version, string changelogUrl)
+    private void OnUpdateAvailable(string version, string changelogUrl)
     {
         Log.Information("Update available: v{Version}", version);
 
         _app.Invoke(() =>
         {
             var confirmed = UpdateConfirmDialog.Show(_app, CurrentVersion, version);
+            if (!confirmed)
+                return;
 
-            if (confirmed)
-            {
-                _progressDialog = new UpdateProgressDialog(_app, version);
-
-                _ = Task.Run(async () =>
-                {
-                    // Create backup before the update starts
-                    try
-                    {
-                        _progressDialog?.UpdateProgress(0f, "Creating backup...");
-                        UpdateBackupService.CreateBackup();
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex, "Failed to create pre-update backup");
-
-                        var proceed = false;
-                        proceed = MessageBox.Query(
-                            _app,
-                            "Backup Warning",
-                            $"Could not create backup: {ex.Message}\n\nContinue update without backup?",
-                            "Continue", "Cancel") == 0;
-
-                        if (!proceed)
-                        {
-                            _progressDialog?.Close();
-                            _progressDialog = null;
-                            return;
-                        }
-                    }
-
-                    _progressDialog?.UpdateProgress(0f, "Downloading update...");
-                    await _updater.UpdateAsync();
-                });
-
-                _progressDialog.Show();
-            }
+            // Defer the actual download/extract/restart to after the TUI is torn down.
+            // Running it under the live main loop lets the library restart the process while
+            // this one still holds the console in raw/alternate-screen mode — the two processes
+            // then deadlock over the console (the "stuck at N/N extracting" hang).
+            _pendingVersion = version;
+            PendingUpdate = ApplyUpdateAsync;
+            _app.RequestStop();
         });
+    }
+
+    /// <summary>
+    /// Runs the update on a plain console (invoked by the host after the main loop exits).
+    /// Ends by restarting the app and exiting the process, or restoring the backup on failure.
+    /// </summary>
+    private async Task ApplyUpdateAsync()
+    {
+        _applying = true;
+        Console.WriteLine();
+        Console.WriteLine($"Updating EchoHub to v{_pendingVersion}...");
+
+        try
+        {
+            Console.WriteLine("Creating backup...");
+            UpdateBackupService.CreateBackup();
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to create pre-update backup");
+            Console.WriteLine($"Warning: could not create a backup ({ex.Message}). Continuing without one.");
+        }
+
+        Console.WriteLine("Downloading update...");
+        await _updater.UpdateAsync(); // download → extract → restart → Environment.Exit(0)
     }
 
     private void OnProgressChanged(UpdateStep step, long itemsProcessed, long? totalItems, double? progressPercentage)
     {
-        var fraction = progressPercentage.HasValue ? (float)(progressPercentage.Value / 100.0) : 0f;
-        var statusText = $"{step}: {itemsProcessed}/{totalItems ?? 0} ({progressPercentage ?? 0:F0}%)";
+        // Before the TUI is torn down (i.e. during a check) there is no progress surface; the
+        // real work happens headless after shutdown, so report it on the console.
+        if (!_applying)
+            return;
 
-        if (!progressPercentage.HasValue)
+        if (step != _lastStep)
         {
-            statusText = $"{step}...";
+            Console.WriteLine();
+            _lastStep = step;
         }
 
-        _progressDialog?.UpdateProgress(fraction, statusText);
+        var pct = progressPercentage ?? 0;
+        Console.Write($"\r  {step}: {itemsProcessed}/{totalItems ?? 0} ({pct:F0}%)   ");
     }
 
     private void OnUpdateStarted(string version)
@@ -135,40 +143,40 @@ public sealed class UpdateChecker : IDisposable
     private void OnException(Exception exception)
     {
         Log.Error(exception, "Update failed");
-        _app.Invoke(() =>
+
+        // Headless failure (post-shutdown): report and offer rollback on the console.
+        if (_applying)
         {
-            _progressDialog?.Close();
-            _progressDialog = null;
+            Console.Error.WriteLine();
+            Console.Error.WriteLine($"Update failed: {exception.Message}");
 
             if (UpdateBackupService.BackupExists())
             {
-                var restore = MessageBox.Query(
-                    _app,
-                    "Update Failed",
-                    $"The update failed: {exception.Message}\n\n"
-                    + "A backup of the previous version is available.\nRestore now? (The app will restart.)",
-                    "Restore", "Cancel");
-
-                if (restore == 0)
+                Console.WriteLine("Restoring the previous version...");
+                try
                 {
-                    try
-                    {
-                        UpdateBackupService.RestoreBackup();
-                        // RestoreBackup calls Environment.Exit(0)
-                    }
-                    catch (Exception restoreEx)
-                    {
-                        Log.Error(restoreEx, "Backup restoration failed");
-                        MessageBox.ErrorQuery(_app, "Restore Failed",
-                            $"Could not restore backup: {restoreEx.Message}\n\nYou may need to re-download the application.", "OK");
-                    }
+                    UpdateBackupService.RestoreBackup(); // calls Environment.Exit(0)
+                }
+                catch (Exception restoreEx)
+                {
+                    Log.Error(restoreEx, "Backup restoration failed");
+                    Console.Error.WriteLine($"Restore failed: {restoreEx.Message}. Re-download EchoHub to recover.");
+                    Environment.Exit(1);
                 }
             }
             else
             {
-                MessageBox.ErrorQuery(_app, "Update Failed",
-                    $"The update failed: {exception.Message}\n\nYou may need to re-download the application.", "OK");
+                Console.Error.WriteLine("No backup available. Re-download EchoHub if it no longer starts.");
+                Environment.Exit(1);
             }
+            return;
+        }
+
+        // Failure during a check while the TUI is still running.
+        _app.Invoke(() =>
+        {
+            MessageBox.ErrorQuery(_app, "Update Check Failed",
+                $"Could not check for updates: {exception.Message}", "OK");
         });
     }
 
@@ -179,5 +187,6 @@ public sealed class UpdateChecker : IDisposable
         _updater.UpdateStarted -= OnUpdateStarted;
         _updater.NoUpdateAvailable -= OnNoUpdateAvailable;
         _updater.OnException -= OnException;
+        _updater.Dispose();
     }
 }

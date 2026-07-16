@@ -40,6 +40,12 @@ public sealed class AppOrchestrator : IDisposable
 
     public MainWindow MainWindow => _mainWindow;
 
+    /// <summary>
+    /// Set when the user confirms an update. The host must run this after the Terminal.Gui main
+    /// loop exits (console restored), so the updater's in-place restart doesn't fight the TUI.
+    /// </summary>
+    public Func<Task>? PendingUpdate => _updateService.PendingUpdate;
+
     public AppOrchestrator(IApplication app, ClientConfig config)
     {
         _app = app;
