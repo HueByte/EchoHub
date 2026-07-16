@@ -250,6 +250,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Services.ClipboardImage.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Services.ClipboardImage.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Services.ClipboardImage",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.Services.ClipboardImage.yml\" sourcestartlinenumber=\"1\">Reads raw image data from the OS clipboard (e.g. an image copied from a browser, or a\nWin+Shift+S screenshot), which terminals cannot paste as text. Always returns PNG bytes:\nclipboard PNG data is passed through, clipboard bitmaps (CF_DIB) are re-encoded.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/client/EchoHub.Client.Services.EchoHubConnection.yml",
       "output": {
         ".html": {
@@ -362,6 +376,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Services.RoomKeyProtector.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Services.RoomKeyProtector.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Services.RoomKeyProtector",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.Services.RoomKeyProtector.yml\" sourcestartlinenumber=\"1\">Encrypts cached room content keys at rest so the client config never holds them as\nplain base64. Windows uses DPAPI (current-user scope, format prefix &quot;dp1:&quot;). On other\nplatforms the keys are AES-GCM encrypted with a per-user master key file stored next\nto the config with 0600 permissions (prefix &quot;k1:&quot;) — without an OS keychain that is\nfile-permission-level protection, not zero-knowledge: anyone who can read both the\nconfig and the key file can recover the room keys. Values with no recognized prefix\nare legacy plain-base64 keys from older clients; they load once and are re-encrypted.\nThe room passphrase itself is never stored in any form.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/client/EchoHub.Client.Services.RoomKeyStore.yml",
       "output": {
         ".html": {
@@ -372,7 +400,21 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Client.Services.RoomKeyStore",
-      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.Services.RoomKeyStore.yml\" sourcestartlinenumber=\"1\">Holds room content keys for end-to-end encrypted channels: in-memory for the\nactive session, persisted per-server in the client config (like saved sessions)\nso users don't retype the passphrase every launch. Keys never leave this machine.</p>\n"
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.Services.RoomKeyStore.yml\" sourcestartlinenumber=\"1\">Holds room content keys for end-to-end encrypted channels: in-memory for the\nactive session, persisted per-server in the client config (like saved sessions)\nso users don't retype the passphrase every launch. Keys never leave this machine\nand are encrypted at rest by <xref href=\"EchoHub.Client.Services.RoomKeyProtector\" data-throw-if-not-resolved=\"false\"></xref>. Also tracks which\nchannels are known to be end-to-end encrypted, so senders can refuse to emit\nplaintext into a room whose key isn't cached yet.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Services.RoomLockedException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Services.RoomLockedException.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Services.RoomLockedException",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.Services.RoomLockedException.yml\" sourcestartlinenumber=\"1\">Thrown when sending into an end-to-end encrypted channel whose room key isn't cached:\nwithout the key the message would leave the client as plaintext, which must never happen.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -2782,6 +2824,36 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "articles/irc-gateway.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/irc-gateway.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/messages-and-attachments.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/messages-and-attachments.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/moderation.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/moderation.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "articles/notification-sounds.md",
       "output": {
         ".html": {
@@ -2799,6 +2871,26 @@
         },
         ".json": {
           "relative_path": "articles/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/tui-guide.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/tui-guide.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/index.html",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/index.html"
         }
       },
       "version": ""
@@ -2902,6 +2994,16 @@
       "output": {
         ".html": {
           "relative_path": "changelog/v0.2.13.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "changelog/v0.2.14.md",
+      "output": {
+        ".html": {
+          "relative_path": "changelog/v0.2.14.html"
         }
       },
       "version": ""

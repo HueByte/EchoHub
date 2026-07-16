@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>v0.2.14 | EchoHub Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="v0.2.14 | EchoHub Documentation ">
+      
+      
+      <link rel="icon" href="../images/hue_icon.svg">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/blob/master/docs/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/hue_icon.svg" alt="EchoHub">
+            EchoHub
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="v0214">v0.2.14</h1>
+
+<p>A reliability and security pass over end-to-end encrypted rooms: locked channels now offer the passphrase prompt instead of dead-ending on the &quot;rejoin to unlock&quot; placeholder, the client can no longer be tricked into sending plaintext into an encrypted room, and cached room keys are encrypted at rest instead of sitting in the config as base64. Ctrl+V grows up too — images copied from a browser or screenshot tool paste straight into the chat as attachments, and copying several files pastes them all into one message. Plus a set of IRC gateway fixes — decrypted image previews, display-name plumbing, and user/channel indicators.</p>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><strong>Paste images straight from the clipboard</strong> — copy an image from a browser, a screenshot tool (Win+Shift+S), or an image editor and Ctrl+V it into the input: it's attached as a PNG (<code>image.png</code>), no saving to disk first, Discord-style. Transparency is preserved when the source provides PNG data; plain clipboard bitmaps are converted automatically. On Linux this uses <code>wl-paste</code>/<code>xclip</code>; on macOS it requires <code>pngpaste</code>. In end-to-end encrypted rooms pasted images go through the same client-side encryption as any other attachment.</li>
+<li><strong>Multi-file paste</strong> — copying several files in your file manager and pasting attaches them all to a single message (up to the 10-attachment cap), staged as one batch alongside anything you type as the caption. Previously each pasted file was routed through its own <code>/send</code>, which could misbehave on large batches.</li>
+<li><strong>Room keys encrypted at rest</strong> — the per-channel room keys cached so you don't retype a passphrase every launch are no longer stored as plain base64 in <code>config.json</code>. On Windows they're protected with DPAPI (current-user scope); on Linux/macOS with AES-GCM under a per-user key file created with <code>0600</code> permissions next to the config. Existing plain entries migrate to the encrypted format automatically on first load. The passphrase itself is never stored in any form.</li>
+<li><strong><code>[irc]</code> tag in the users panel</strong> — users online only through the IRC gateway are tagged <code>[irc]</code>, useful context since IRC clients lack encryption, attachments, and profiles. Someone also running the TUI shows untagged.</li>
+<li><strong><code>~</code> marker for private channels</strong> — the channel list now marks private (unlisted) channels with a trailing <code>~</code>, alongside the existing <code>*</code> for password-protected ones (<code>#room*~</code> when both apply).</li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><strong>Locked encrypted channels now prompt for the passphrase.</strong> Auto-joining your channels at connect silently entered end-to-end encrypted rooms you're a member of without running the unlock flow — on a new device (or after a cancelled prompt) the room showed only <code>[encrypted — rejoin this channel with its passphrase to unlock]</code> placeholders, and only a manual <code>/join</code> recovered it. Selecting the channel now offers the passphrase prompt; entering it unlocks history and live messages in place. Cancelling is remembered for the session so reselecting the channel doesn't nag — <code>/join</code> or trying to send always re-offers the prompt.</li>
+<li><strong>A stale cached room key no longer beats a fresh one.</strong> If an encrypted channel was deleted and recreated under the same name, a client that still had the old key cached kept encrypting messages nobody else could read. Typing the passphrase on join now always adopts the key from the server's current envelope, replacing the stale cache.</li>
+<li><strong>IRC clients no longer get flooded with ciphertext for image messages.</strong> The gateway forwarded image ASCII previews without stripping transport encryption, spamming IRC clients with one enormous <code>$ENC$v1$…</code> line per image. Previews are now decrypted before formatting, and any that still can't be read (e.g. end-to-end room ciphertext the server cannot decrypt) are skipped in favor of the plain <code>[Image: name] url</code> line.</li>
+<li><strong>Display names now show on chat messages.</strong> Messages only carried the sender's username, so a configured display name appeared in the user list but not on the messages themselves. Live messages, history, and attachment messages now all carry it; mention and profile lookups stay keyed to the username.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li><strong>No plaintext can leak into an encrypted room.</strong> Previously, a client without the room key silently sent unencrypted text into an end-to-end encrypted channel (and other members saw it as a normal message, none the wiser it went over the wire readable by the server). All send paths — typed messages, staged file attachments, and URL sends — are now blocked while a room is locked: the client offers the unlock prompt, keeps staged files in the tray, and refuses to transmit until the key is present, with a hard guard at the connection layer as backstop.</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/HueByte/EchoHub/blob/master/docs/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a></div></div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

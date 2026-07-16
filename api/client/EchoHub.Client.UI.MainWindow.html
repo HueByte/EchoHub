@@ -1698,6 +1698,70 @@ current ASCII-art size for images. Passing an empty list restores the default hi
 
 
 
+  <h3 id="EchoHub_Client_UI_MainWindow_OnFilesStaged" data-uid="EchoHub.Client.UI.MainWindow.OnFilesStaged">
+  OnFilesStaged
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when local files arrive via paste or drag-and-drop to be staged as attachments.
+Parameters: channel name, absolute paths of existing files.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action&lt;string, IReadOnlyList&lt;string&gt;&gt;? OnFilesStaged</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-2">Action</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <span class="xref">IReadOnlyList</span>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h3 id="EchoHub_Client_UI_MainWindow_OnImagePasted" data-uid="EchoHub.Client.UI.MainWindow.OnImagePasted">
+  OnImagePasted
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when raw image data is pasted from the clipboard (e.g. copied from a browser or a
+screenshot tool). Parameters: channel name, PNG-encoded image bytes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action&lt;string, byte[]&gt;? OnImagePasted</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-2">Action</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>[]&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <h3 id="EchoHub_Client_UI_MainWindow_OnImageSaveRequested" data-uid="EchoHub.Client.UI.MainWindow.OnImageSaveRequested">
   OnImageSaveRequested
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>

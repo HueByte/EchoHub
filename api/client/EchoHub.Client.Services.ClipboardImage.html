@@ -2,11 +2,11 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Class ConfigManager | EchoHub Documentation </title>
+      <title>Class ClipboardImage | EchoHub Documentation </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Class ConfigManager | EchoHub Documentation ">
+      <meta name="title" content="Class ClipboardImage | EchoHub Documentation ">
       
-      
+      <meta name="description" content="Reads raw image data from the OS clipboard (e.g. an image copied from a browser, or a Win+Shift+S screenshot), which terminals cannot paste as text. Always returns PNG bytes: clipboard PNG data is passed through, clipboard bitmaps (CF_DIB) are re-encoded.">
       <link rel="icon" href="../../images/hue_icon.svg">
       <link rel="stylesheet" href="../../public/docfx.min.css">
       <link rel="stylesheet" href="../../public/main.css">
@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/new/master/apiSpec/new?filename=EchoHub_Client_Config_ConfigManager.md&amp;value=---%0Auid%3A%20EchoHub.Client.Config.ConfigManager%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/new/master/apiSpec/new?filename=EchoHub_Client_Services_ClipboardImage.md&amp;value=---%0Auid%3A%20EchoHub.Client.Services.ClipboardImage%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -84,24 +84,27 @@
           <nav id="breadcrumb"></nav>
         </div>
 
-        <article data-uid="EchoHub.Client.Config.ConfigManager">
+        <article data-uid="EchoHub.Client.Services.ClipboardImage">
 
 
 
-  <h1 id="EchoHub_Client_Config_ConfigManager" data-uid="EchoHub.Client.Config.ConfigManager" class="text-break">
-Class ConfigManager  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Config/ConfigManager.cs"><i class="bi bi-code-slash"></i></a>
+  <h1 id="EchoHub_Client_Services_ClipboardImage" data-uid="EchoHub.Client.Services.ClipboardImage" class="text-break">
+Class ClipboardImage  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ClipboardImage.cs"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
-    <dl><dt>Namespace</dt><dd><a class="xref" href="EchoHub.html">EchoHub</a>.<a class="xref" href="EchoHub.Client.html">Client</a>.<a class="xref" href="EchoHub.Client.Config.html">Config</a></dd></dl>
+    <dl><dt>Namespace</dt><dd><a class="xref" href="EchoHub.html">EchoHub</a>.<a class="xref" href="EchoHub.Client.html">Client</a>.<a class="xref" href="EchoHub.Client.Services.html">Services</a></dd></dl>
   <dl><dt>Assembly</dt><dd>EchoHub.Client.dll</dd></dl>
   </div>
 
-  <div class="markdown summary"></div>
+  <div class="markdown summary"><p>Reads raw image data from the OS clipboard (e.g. an image copied from a browser, or a
+Win+Shift+S screenshot), which terminals cannot paste as text. Always returns PNG bytes:
+clipboard PNG data is passed through, clipboard bitmaps (CF_DIB) are re-encoded.</p>
+</div>
   <div class="markdown conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static class ConfigManager</code></pre>
+    <pre><code class="lang-csharp hljs">public static class ClipboardImage</code></pre>
   </div>
 
 
@@ -111,7 +114,7 @@ Class ConfigManager  <a class="header-action link-secondary" title="View source"
     <dt>Inheritance</dt>
     <dd>
       <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
-      <div><span class="xref">ConfigManager</span></div>
+      <div><span class="xref">ClipboardImage</span></div>
     </dd>
   </dl>
 
@@ -148,64 +151,36 @@ Class ConfigManager  <a class="header-action link-secondary" title="View source"
 
 
 
-  <h2 class="section" id="properties">Properties
-</h2>
-
-
-  <a id="EchoHub_Client_Config_ConfigManager_ConfigDirectory_" data-uid="EchoHub.Client.Config.ConfigManager.ConfigDirectory*"></a>
-
-  <h3 id="EchoHub_Client_Config_ConfigManager_ConfigDirectory" data-uid="EchoHub.Client.Config.ConfigManager.ConfigDirectory">
-  ConfigDirectory
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Config/ConfigManager.cs"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Directory holding the client config and local key material.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static string ConfigDirectory { get; }</code></pre>
-  </div>
-
-
-
-
-
-  <h4 class="section">Property Value</h4>
-  <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
   <h2 class="section" id="methods">Methods
 </h2>
 
 
-  <a id="EchoHub_Client_Config_ConfigManager_Load_" data-uid="EchoHub.Client.Config.ConfigManager.Load*"></a>
+  <a id="EchoHub_Client_Services_ClipboardImage_DibToPng_" data-uid="EchoHub.Client.Services.ClipboardImage.DibToPng*"></a>
 
-  <h3 id="EchoHub_Client_Config_ConfigManager_Load" data-uid="EchoHub.Client.Config.ConfigManager.Load">
-  Load()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Config/ConfigManager.cs"><i class="bi bi-code-slash"></i></a>
+  <h3 id="EchoHub_Client_Services_ClipboardImage_DibToPng_System_Byte___" data-uid="EchoHub.Client.Services.ClipboardImage.DibToPng(System.Byte[])">
+  DibToPng(byte[])
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ClipboardImage.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 summary"><p>Converts clipboard DIB bytes (a BITMAPINFOHEADER/V4/V5 + optional palette/masks + pixel
+data, i.e. a .bmp file without its 14-byte file header) to PNG. Returns null when the
+data is malformed or not decodable as a bitmap.</p>
+</div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static ClientConfig Load()</code></pre>
+    <pre><code class="lang-csharp hljs">public static byte[]? DibToPng(byte[] dib)</code></pre>
   </div>
 
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>dib</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>[]</dt>
+    <dd></dd>
+  </dl>
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
-    <dt><a class="xref" href="EchoHub.Client.Config.ClientConfig.html">ClientConfig</a></dt>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>[]</dt>
     <dd></dd>
   </dl>
 
@@ -219,88 +194,31 @@ Class ConfigManager  <a class="header-action link-secondary" title="View source"
 
 
 
-  <a id="EchoHub_Client_Config_ConfigManager_RemoveServer_" data-uid="EchoHub.Client.Config.ConfigManager.RemoveServer*"></a>
+  <a id="EchoHub_Client_Services_ClipboardImage_TryGetPng_" data-uid="EchoHub.Client.Services.ClipboardImage.TryGetPng*"></a>
 
-  <h3 id="EchoHub_Client_Config_ConfigManager_RemoveServer_System_String_" data-uid="EchoHub.Client.Config.ConfigManager.RemoveServer(System.String)">
-  RemoveServer(string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Config/ConfigManager.cs"><i class="bi bi-code-slash"></i></a>
+  <h3 id="EchoHub_Client_Services_ClipboardImage_TryGetPng_System_Byte____" data-uid="EchoHub.Client.Services.ClipboardImage.TryGetPng(System.Byte[]@)">
+  TryGetPng(out byte[])
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ClipboardImage.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"></div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static void RemoveServer(string url)</code></pre>
+    <pre><code class="lang-csharp hljs">public static bool TryGetPng(out byte[] png)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
-    <dt><code>url</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dt><code>png</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>[]</dt>
     <dd></dd>
   </dl>
 
-
-
-
-
-
-
-
-
-
-
-
-  <a id="EchoHub_Client_Config_ConfigManager_Save_" data-uid="EchoHub.Client.Config.ConfigManager.Save*"></a>
-
-  <h3 id="EchoHub_Client_Config_ConfigManager_Save_EchoHub_Client_Config_ClientConfig_" data-uid="EchoHub.Client.Config.ConfigManager.Save(EchoHub.Client.Config.ClientConfig)">
-  Save(ClientConfig)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Config/ConfigManager.cs"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"></div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static void Save(ClientConfig config)</code></pre>
-  </div>
-
-  <h4 class="section">Parameters</h4>
+  <h4 class="section">Returns</h4>
   <dl class="parameters">
-    <dt><code>config</code> <a class="xref" href="EchoHub.Client.Config.ClientConfig.html">ClientConfig</a></dt>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
     <dd></dd>
   </dl>
-
-
-
-
-
-
-
-
-
-
-
-
-  <a id="EchoHub_Client_Config_ConfigManager_SaveServer_" data-uid="EchoHub.Client.Config.ConfigManager.SaveServer*"></a>
-
-  <h3 id="EchoHub_Client_Config_ConfigManager_SaveServer_EchoHub_Client_Config_SavedServer_" data-uid="EchoHub.Client.Config.ConfigManager.SaveServer(EchoHub.Client.Config.SavedServer)">
-  SaveServer(SavedServer)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Config/ConfigManager.cs"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"></div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static void SaveServer(SavedServer server)</code></pre>
-  </div>
-
-  <h4 class="section">Parameters</h4>
-  <dl class="parameters">
-    <dt><code>server</code> <a class="xref" href="EchoHub.Client.Config.SavedServer.html">SavedServer</a></dt>
-    <dd></dd>
-  </dl>
-
 
 
 
@@ -316,7 +234,7 @@ Class ConfigManager  <a class="header-action link-secondary" title="View source"
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Config/ConfigManager.cs" class="edit-link">Edit this page</a>
+          <a href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ClipboardImage.cs" class="edit-link">Edit this page</a>
         </div>
 
 

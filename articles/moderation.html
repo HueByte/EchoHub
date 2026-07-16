@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Moderation &amp; Roles | EchoHub Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Moderation &amp; Roles | EchoHub Documentation ">
+      
+      
+      <link rel="icon" href="../images/hue_icon.svg">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/blob/master/docs/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/hue_icon.svg" alt="EchoHub">
+            EchoHub
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="moderation--roles">Moderation &amp; Roles</h1>
+
+<p>Every EchoHub server has a four-tier role hierarchy. Moderation is <strong>strictly hierarchical</strong>:
+acting on another user requires outranking them — equal rank is never enough — and a few
+invariants protect the server owner from lockouts.</p>
+<h2 id="roles">Roles</h2>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Rank</th>
+<th>Users panel glyph</th>
+<th>How it's granted</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Owner</strong></td>
+<td>3</td>
+<td>★</td>
+<td>The first account ever registered on the server</td>
+</tr>
+<tr>
+<td><strong>Admin</strong></td>
+<td>2</td>
+<td>♦</td>
+<td>Assigned by the Owner</td>
+</tr>
+<tr>
+<td><strong>Mod</strong></td>
+<td>1</td>
+<td>❀</td>
+<td>Assigned by an Admin or the Owner</td>
+</tr>
+<tr>
+<td><strong>Member</strong></td>
+<td>0</td>
+<td>—</td>
+<td>Everyone else</td>
+</tr>
+</tbody>
+</table>
+<p>Assign roles with <code>/role &lt;user&gt; &lt;admin|mod|member&gt;</code>. Two rules apply:</p>
+<ul>
+<li>You can only assign roles <strong>strictly below your own</strong> — an Admin can promote to Mod but
+cannot create another Admin; only the Owner can.</li>
+<li><strong>Owner is not assignable and not demotable.</strong> There is exactly one Owner (the first
+account), nobody can be promoted to it, and the Owner's role can't be changed.</li>
+</ul>
+<h2 id="actions">Actions</h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Minimum role</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/kick &lt;user&gt; [reason]</code></td>
+<td>Mod</td>
+<td>Disconnects the user. Not persistent — they can reconnect immediately.</td>
+</tr>
+<tr>
+<td><code>/ban &lt;user&gt; [reason]</code></td>
+<td>Admin</td>
+<td>Persistent: flags the account banned and disconnects it. Banned accounts are rejected at login.</td>
+</tr>
+<tr>
+<td><code>/unban &lt;user&gt;</code></td>
+<td>Admin</td>
+<td>Lifts a ban.</td>
+</tr>
+<tr>
+<td><code>/mute &lt;user&gt; [minutes]</code></td>
+<td>Mod</td>
+<td>Blocks the user from sending messages or uploading files. Without a duration the mute is <strong>indefinite</strong>; with one it auto-expires (checked every ~15 seconds).</td>
+</tr>
+<tr>
+<td><code>/unmute &lt;user&gt;</code></td>
+<td>Mod</td>
+<td>Lifts a mute early.</td>
+</tr>
+<tr>
+<td><code>/role &lt;user&gt; &lt;role&gt;</code></td>
+<td>Admin</td>
+<td>Assign a role (see rules above).</td>
+</tr>
+<tr>
+<td><code>/nuke</code></td>
+<td>Mod</td>
+<td>Deletes the <strong>entire history of the current channel</strong>, including all attachment files on disk. Channel-wide — no per-user check.</td>
+</tr>
+</tbody>
+</table>
+<p>Kick, ban, and mute all enforce the hierarchy: the target's role must be <strong>strictly lower</strong>
+than yours. A Mod cannot kick another Mod; nobody can kick, ban, mute, or demote the Owner.</p>
+<h2 id="deleting-messages">Deleting messages</h2>
+<p>Deletion has its own, slightly different rule set:</p>
+<ul>
+<li><strong>Your own messages</strong> — always deletable, whatever your role. Right-click a message →
+<em>Delete message</em>, or press <code>F6</code>, pick the message, and hit <code>Delete</code>.</li>
+<li><strong>Someone else's messages</strong> — requires <strong>Mod or higher</strong> <em>and</em> strictly outranking the
+author. A Mod can delete a Member's message, but not another Mod's.</li>
+</ul>
+<p>Deleting a message also purges its uploaded attachment blobs from the server's disk, and the
+removal is broadcast live — the message disappears from everyone's chat immediately.</p>
+<h2 id="how-actions-surface">How actions surface</h2>
+<p>Everyone in the channel sees moderation happen:</p>
+<ul>
+<li><strong>TUI clients</strong> show system messages — <em>&quot;alice was kicked (reason)&quot;</em>, <em>&quot;bob was banned&quot;</em>,
+<em>&quot;Channel history has been cleared by a moderator.&quot;</em> The kicked or banned user themselves
+gets a dialog with the reason, then the client disconnects.</li>
+<li><strong>IRC clients</strong> get native protocol events: kicks arrive as a real <code>KICK</code> command, bans as
+a server <code>NOTICE</code>. (See the <a href="irc-gateway.html">IRC Gateway guide</a>.)</li>
+</ul>
+<p>Muted users aren't announced; they simply receive <em>&quot;You are muted and cannot send messages.&quot;</em>
+when they try to speak.</p>
+<h2 id="design-notes">Design notes</h2>
+<ul>
+<li>All checks run server-side in the moderation API — the client commands are conveniences,
+and the same rules bind IRC users and any direct API caller.</li>
+<li>Bans are account-level, not IP-level. A banned person can register a fresh account; pair
+bans with registration hygiene on public servers.</li>
+<li>In <a href="encrypted-rooms.html">end-to-end encrypted rooms</a> moderation still works at the metadata
+level — messages can be deleted and users muted/kicked by identity — but no moderator can
+<em>read</em> the content, including the Owner.</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/HueByte/EchoHub/blob/master/docs/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a></div></div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

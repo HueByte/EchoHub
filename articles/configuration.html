@@ -258,6 +258,48 @@ export Server__PublicServer=true
 </tr>
 </tbody>
 </table>
+<h3 id="uploads">Uploads</h3>
+<p>Per-attachment size limits by kind (in megabytes) and the per-message attachment cap. An
+absent or partial <code>Uploads</code> section keeps the built-in defaults. See
+<a href="messages-and-attachments.html">Messages &amp; Attachments</a> for how kinds are detected.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Uploads:MaxImageSizeMB</code></td>
+<td><code>10</code></td>
+<td>Max size for one image attachment</td>
+</tr>
+<tr>
+<td><code>Uploads:MaxAudioSizeMB</code></td>
+<td><code>10</code></td>
+<td>Max size for one audio attachment</td>
+</tr>
+<tr>
+<td><code>Uploads:MaxFileSizeMB</code></td>
+<td><code>100</code></td>
+<td>Max size for any other attachment</td>
+</tr>
+<tr>
+<td><code>Uploads:MaxAvatarSizeMB</code></td>
+<td><code>2</code></td>
+<td>Max avatar upload size</td>
+</tr>
+<tr>
+<td><code>Uploads:MaxAttachmentsPerMessage</code></td>
+<td><code>10</code></td>
+<td>Attachments allowed on a single message</td>
+</tr>
+</tbody>
+</table>
+<p>The server sizes its request-body limits from these values, so raising a limit here is all
+that's needed — no separate Kestrel tuning.</p>
 <h3 id="encryption">Encryption</h3>
 <table>
 <thead>

@@ -182,8 +182,8 @@ Class MessageDto  <a class="header-action link-secondary" title="View source" hr
 
   <a id="EchoHub_Core_DTOs_MessageDto__ctor_" data-uid="EchoHub.Core.DTOs.MessageDto.#ctor*"></a>
 
-  <h3 id="EchoHub_Core_DTOs_MessageDto__ctor_System_Guid_System_String_System_String_System_String_System_String_System_DateTimeOffset_System_Collections_Generic_List_EchoHub_Core_DTOs_AttachmentDto__System_Collections_Generic_List_EchoHub_Core_DTOs_EmbedDto__" data-uid="EchoHub.Core.DTOs.MessageDto.#ctor(System.Guid,System.String,System.String,System.String,System.String,System.DateTimeOffset,System.Collections.Generic.List{EchoHub.Core.DTOs.AttachmentDto},System.Collections.Generic.List{EchoHub.Core.DTOs.EmbedDto})">
-  MessageDto(Guid, string, string, string?, string, DateTimeOffset, List&lt;AttachmentDto&gt;?, List&lt;EmbedDto&gt;?)
+  <h3 id="EchoHub_Core_DTOs_MessageDto__ctor_System_Guid_System_String_System_String_System_String_System_String_System_DateTimeOffset_System_Collections_Generic_List_EchoHub_Core_DTOs_AttachmentDto__System_Collections_Generic_List_EchoHub_Core_DTOs_EmbedDto__System_String_" data-uid="EchoHub.Core.DTOs.MessageDto.#ctor(System.Guid,System.String,System.String,System.String,System.String,System.DateTimeOffset,System.Collections.Generic.List{EchoHub.Core.DTOs.AttachmentDto},System.Collections.Generic.List{EchoHub.Core.DTOs.EmbedDto},System.String)">
+  MessageDto(Guid, string, string, string?, string, DateTimeOffset, List&lt;AttachmentDto&gt;?, List&lt;EmbedDto&gt;?, string?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -191,7 +191,7 @@ Class MessageDto  <a class="header-action link-secondary" title="View source" hr
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public MessageDto(Guid Id, string Content, string SenderUsername, string? SenderNicknameColor, string ChannelName, DateTimeOffset SentAt, List&lt;AttachmentDto&gt;? Attachments = null, List&lt;EmbedDto&gt;? Embeds = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public MessageDto(Guid Id, string Content, string SenderUsername, string? SenderNicknameColor, string ChannelName, DateTimeOffset SentAt, List&lt;AttachmentDto&gt;? Attachments = null, List&lt;EmbedDto&gt;? Embeds = null, string? SenderDisplayName = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -211,6 +211,8 @@ Class MessageDto  <a class="header-action link-secondary" title="View source" hr
     <dt><code>Attachments</code> <span class="xref">List</span>&lt;<a class="xref" href="EchoHub.Core.DTOs.AttachmentDto.html">AttachmentDto</a>&gt;</dt>
     <dd></dd>
     <dt><code>Embeds</code> <span class="xref">List</span>&lt;<a class="xref" href="EchoHub.Core.DTOs.EmbedDto.html">EmbedDto</a>&gt;</dt>
+    <dd></dd>
+    <dt><code>SenderDisplayName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 
@@ -415,6 +417,37 @@ Class MessageDto  <a class="header-action link-secondary" title="View source" hr
 
 
 
+  <a id="EchoHub_Core_DTOs_MessageDto_SenderDisplayName_" data-uid="EchoHub.Core.DTOs.MessageDto.SenderDisplayName*"></a>
+
+  <h3 id="EchoHub_Core_DTOs_MessageDto_SenderDisplayName" data-uid="EchoHub.Core.DTOs.MessageDto.SenderDisplayName">
+  SenderDisplayName
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? SenderDisplayName { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="EchoHub_Core_DTOs_MessageDto_SenderNicknameColor_" data-uid="EchoHub.Core.DTOs.MessageDto.SenderNicknameColor*"></a>
 
   <h3 id="EchoHub_Core_DTOs_MessageDto_SenderNicknameColor" data-uid="EchoHub.Core.DTOs.MessageDto.SenderNicknameColor">
@@ -514,8 +547,8 @@ Class MessageDto  <a class="header-action link-secondary" title="View source" hr
 
   <a id="EchoHub_Core_DTOs_MessageDto_Deconstruct_" data-uid="EchoHub.Core.DTOs.MessageDto.Deconstruct*"></a>
 
-  <h3 id="EchoHub_Core_DTOs_MessageDto_Deconstruct_System_Guid__System_String__System_String__System_String__System_String__System_DateTimeOffset__System_Collections_Generic_List_EchoHub_Core_DTOs_AttachmentDto___System_Collections_Generic_List_EchoHub_Core_DTOs_EmbedDto___" data-uid="EchoHub.Core.DTOs.MessageDto.Deconstruct(System.Guid@,System.String@,System.String@,System.String@,System.String@,System.DateTimeOffset@,System.Collections.Generic.List{EchoHub.Core.DTOs.AttachmentDto}@,System.Collections.Generic.List{EchoHub.Core.DTOs.EmbedDto}@)">
-  Deconstruct(out Guid, out string, out string, out string?, out string, out DateTimeOffset, out List&lt;AttachmentDto&gt;?, out List&lt;EmbedDto&gt;?)
+  <h3 id="EchoHub_Core_DTOs_MessageDto_Deconstruct_System_Guid__System_String__System_String__System_String__System_String__System_DateTimeOffset__System_Collections_Generic_List_EchoHub_Core_DTOs_AttachmentDto___System_Collections_Generic_List_EchoHub_Core_DTOs_EmbedDto___System_String__" data-uid="EchoHub.Core.DTOs.MessageDto.Deconstruct(System.Guid@,System.String@,System.String@,System.String@,System.String@,System.DateTimeOffset@,System.Collections.Generic.List{EchoHub.Core.DTOs.AttachmentDto}@,System.Collections.Generic.List{EchoHub.Core.DTOs.EmbedDto}@,System.String@)">
+  Deconstruct(out Guid, out string, out string, out string?, out string, out DateTimeOffset, out List&lt;AttachmentDto&gt;?, out List&lt;EmbedDto&gt;?, out string?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -523,7 +556,7 @@ Class MessageDto  <a class="header-action link-secondary" title="View source" hr
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public void Deconstruct(out Guid Id, out string Content, out string SenderUsername, out string? SenderNicknameColor, out string ChannelName, out DateTimeOffset SentAt, out List&lt;AttachmentDto&gt;? Attachments, out List&lt;EmbedDto&gt;? Embeds)</code></pre>
+    <pre><code class="lang-csharp hljs">public void Deconstruct(out Guid Id, out string Content, out string SenderUsername, out string? SenderNicknameColor, out string ChannelName, out DateTimeOffset SentAt, out List&lt;AttachmentDto&gt;? Attachments, out List&lt;EmbedDto&gt;? Embeds, out string? SenderDisplayName)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -543,6 +576,8 @@ Class MessageDto  <a class="header-action link-secondary" title="View source" hr
     <dt><code>Attachments</code> <span class="xref">List</span>&lt;<a class="xref" href="EchoHub.Core.DTOs.AttachmentDto.html">AttachmentDto</a>&gt;</dt>
     <dd></dd>
     <dt><code>Embeds</code> <span class="xref">List</span>&lt;<a class="xref" href="EchoHub.Core.DTOs.EmbedDto.html">EmbedDto</a>&gt;</dt>
+    <dd></dd>
+    <dt><code>SenderDisplayName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 

@@ -95,7 +95,7 @@
 <pre><code class="lang-bash">curl -sSfL https://raw.githubusercontent.com/HueByte/EchoHub/master/scripts/install.sh | sh
 </code></pre>
 <p>To install a specific version or to a custom directory:</p>
-<pre><code class="lang-bash">curl -sSfL .../install.sh | sh -s -- --version 0.2.11
+<pre><code class="lang-bash">curl -sSfL .../install.sh | sh -s -- --version 0.2.14
 curl -sSfL .../install.sh | sh -s -- --install-dir /opt/echohub
 </code></pre>
 <h3 id="manual-download">Manual Download</h3>
@@ -132,9 +132,9 @@ Connect to a server, register an account, and start chatting.</p>
 <p>Then connect with any standard IRC client:</p>
 <pre><code class="lang-bash">irssi -c localhost -p 6667 -w &lt;password&gt; -n &lt;username&gt;
 </code></pre>
-<p>IRC users must have an existing EchoHub account. Authentication works via <code>PASS</code>/<code>NICK</code>/<code>USER</code> or SASL PLAIN. Messages flow bidirectionally between IRC and TUI clients.</p>
+<p>Your nick is your EchoHub username and the server password is your account password (<code>PASS</code>/<code>NICK</code>/<code>USER</code> or SASL PLAIN). Connecting with a new username registers the account. Messages flow bidirectionally between IRC and TUI clients.</p>
 <p>For TLS, set <code>TlsEnabled: true</code>, <code>TlsPort: 6697</code>, and provide a PKCS#12 certificate path.</p>
-<p>See the <a href="architecture.html">Architecture</a> page for details on how the IRC gateway integrates with the chat service.</p>
+<p>See the <a href="irc-gateway.html">IRC Gateway guide</a> for command mapping, attachment rendering, and limitations, or <a href="architecture.html">Architecture</a> for how the gateway integrates with the chat service.</p>
 <h2 id="configuration">Configuration</h2>
 <p>Server configuration is in <code>appsettings.json</code> (auto-generated on first run). You can also use environment variables or command-line arguments to override settings.</p>
 <p>See the <a href="configuration.html">Configuration</a> guide for the full reference and how it all works.</p>

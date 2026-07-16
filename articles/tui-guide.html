@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>TUI Guide | EchoHub Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="TUI Guide | EchoHub Documentation ">
+      
+      
+      <link rel="icon" href="../images/hue_icon.svg">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/blob/master/docs/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/hue_icon.svg" alt="EchoHub">
+            EchoHub
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="tui-guide">TUI Guide</h1>
+
+<p>Everything you can do in the EchoHub terminal client: keyboard shortcuts, mouse actions,
+slash commands, themes, and the everyday behaviors (unread markers, auto-join, scrollback)
+that make it feel like a proper IRC-era client with modern comforts.</p>
+<h2 id="layout">Layout</h2>
+<pre><code class="lang-text">┌ Menu bar ──────────────────────────────────────────────────┐
+│ ┌ Channels ─┐ ┌ Messages ────────────────────┐ ┌ Users ──┐ │
+│ │ #general 3│ │ 12:01 &lt;alice&gt; hi             │ │ ★ alice │ │
+│ │ #dev      │ │ ── new messages ──           │ │ ❀ bob   │ │
+│ │ #random*~ │ │ 12:04 &lt;bob&gt; anyone around?   │ │ carol   │ │
+│ └───────────┘ └──────────────────────────────┘ │ d [irc] │ │
+│ ┌ Message │ Enter=send │ Tab=complete │ … ────┐ └─────────┘ │
+│ │ _                                           │             │
+│ └─────────────────────────────────────────────┘             │
+│ Status: Connected │ v0.2.14 │ alice │ Act: #dev             │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<p>Channel list markers: <code>*</code> = password-protected, <code>~</code> = private (unlisted), plus unread counts
+(orange when you were @mentioned). Users panel glyphs: <code>★</code> Owner, <code>♦</code> Admin, <code>❀</code> Mod,
+<code>[irc]</code> for IRC-gateway-only users; status icons <code>●</code>/<code>○</code>/<code>◐</code>/<code>◌</code> for online/offline/away/dnd.</p>
+<h2 id="keyboard-shortcuts">Keyboard shortcuts</h2>
+<h3 id="in-the-message-input">In the message input</h3>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Enter</code></td>
+<td>Send the message (also sends staged attachments with the text as caption)</td>
+</tr>
+<tr>
+<td><code>Ctrl+N</code></td>
+<td>Insert a newline (multiline message)</td>
+</tr>
+<tr>
+<td><code>Tab</code></td>
+<td>Autocomplete a slash command (<code>/th</code> → <code>/theme</code>)</td>
+</tr>
+<tr>
+<td><code>Ctrl+V</code> (or <code>Ctrl+Y</code>)</td>
+<td>Paste — copied files and images become attachments, text pastes normally (<a href="messages-and-attachments.html">details</a>)</td>
+</tr>
+<tr>
+<td><code>Ctrl+C</code> / <code>Ctrl+X</code></td>
+<td>Copy / cut in the input</td>
+</tr>
+<tr>
+<td><code>Ctrl+W</code></td>
+<td>Delete the word left of the cursor</td>
+</tr>
+<tr>
+<td><code>Ctrl+K</code></td>
+<td>Open the search palette</td>
+</tr>
+<tr>
+<td><code>F6</code></td>
+<td>Move focus into the message list</td>
+</tr>
+</tbody>
+</table>
+<h3 id="in-the-message-list-after-f6">In the message list (after <code>F6</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>↑</code> / <code>↓</code></td>
+<td>Select a message</td>
+</tr>
+<tr>
+<td><code>Enter</code></td>
+<td>Activate: play/download/save an attachment, open an <code>@mention</code>'s profile, join a <code>#channel</code>, or open the sender's profile</td>
+</tr>
+<tr>
+<td><code>Delete</code> / <code>Backspace</code></td>
+<td>Delete the selected message (with confirmation; <a href="moderation.html">permission rules</a>)</td>
+</tr>
+<tr>
+<td><code>F6</code></td>
+<td>Return focus to the input</td>
+</tr>
+</tbody>
+</table>
+<h3 id="anywhere">Anywhere</h3>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>F2</code></td>
+<td>Toggle the users panel</td>
+</tr>
+<tr>
+<td><code>Ctrl+K</code></td>
+<td>Search palette</td>
+</tr>
+<tr>
+<td><code>Alt+Q</code></td>
+<td>Quit</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-search-palette-ctrlk">The search palette (<code>Ctrl+K</code>)</h2>
+<p>A command-palette that searches <strong>channels and app actions</strong> — type to filter, <code>↓</code> to
+navigate, <code>Enter</code> to jump. Actions include Connect, Disconnect, Logout, My Profile,
+Set Status, Create/Delete Channel, Saved Servers, Toggle Users Panel, Check for Updates,
+and Quit. <code>Ctrl+K</code> again closes it.</p>
+<h2 id="mouse">Mouse</h2>
+<ul>
+<li><strong>Right-click a message</strong> for the context menu: save image / play audio / download file
+(depending on the attachment), *Mention @user*, <em>View profile</em>, <em>Copy text</em>,
+<em>Copy message ID</em>, <em>Delete message</em>.</li>
+<li><strong>Left-click a message</strong> does the most useful thing for that line: attachments
+play/download/save, <code>@mentions</code> and the sender open profiles, <code>#channel</code> references join
+that channel.</li>
+<li><strong>Click a user</strong> in the users panel to open their profile; <strong>click a channel</strong> to switch.</li>
+</ul>
+<h2 id="slash-commands">Slash commands</h2>
+<p>Type <code>/help</code> in any channel for the full list. The highlights:</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/status &lt;online\|away\|dnd\|invisible&gt;</code> or <code>/status &lt;message&gt;</code></td>
+<td>Presence / status message</td>
+</tr>
+<tr>
+<td><code>/nick &lt;name&gt;</code>, <code>/color &lt;#hex&gt;</code>, <code>/avatar &lt;url or path&gt;</code></td>
+<td>Display name, nick color, avatar</td>
+</tr>
+<tr>
+<td><code>/theme &lt;name&gt;</code></td>
+<td>Switch theme</td>
+</tr>
+<tr>
+<td><code>/send</code>, <code>/clear</code>, <code>/size</code>, <code>/downloadpath</code></td>
+<td>Attachments — see <a href="messages-and-attachments.html">Messages &amp; Attachments</a></td>
+</tr>
+<tr>
+<td><code>/join &lt;channel&gt; [password]</code>, <code>/leave</code>, <code>/topic &lt;text&gt;</code></td>
+<td>Channel membership and topic</td>
+</tr>
+<tr>
+<td><code>/passwd &lt;old&gt; &lt;new&gt;</code></td>
+<td>Rotate an encrypted room's passphrase</td>
+</tr>
+<tr>
+<td><code>/profile [user]</code>, <code>/users</code>, <code>/meta</code></td>
+<td>Profiles, online users, room info</td>
+</tr>
+<tr>
+<td><code>/kick</code>, <code>/ban</code>, <code>/mute</code>, <code>/role</code>, <code>/nuke</code>, …</td>
+<td><a href="moderation.html">Moderation</a></td>
+</tr>
+<tr>
+<td><code>/servers</code>, <code>/quit</code></td>
+<td>Saved servers, exit</td>
+</tr>
+</tbody>
+</table>
+<p>Emoji shortcodes (<code>:smile:</code> style) are replaced live as you type.</p>
+<h2 id="themes">Themes</h2>
+<p>14 built-in themes: <strong>Default, Transparent, TransparentLight, Classic, Light, Hacker,
+Solarized, Dracula, Monokai, Nord, Gruvbox, Ocean, HighContrast, RosePine</strong> — switch from
+the User menu or <code>/theme &lt;name&gt;</code>. The two <em>Transparent</em> themes use no background color at
+all, so your terminal's own background (and any blur/acrylic) shows through.</p>
+<p>You can add your own: drop a theme JSON into <code>~/.echohub/themes/</code> and it appears in the list
+(names that collide with a built-in are skipped).</p>
+<h2 id="everyday-behaviors">Everyday behaviors</h2>
+<ul>
+<li><strong>Unread markers</strong> — a <code>── new messages ──</code> rule marks where you left off in each channel,
+irssi-style. Read positions are <strong>persisted per server</strong>, so the marker survives
+reconnects and restarts. The status bar's <code>Act:</code> segment lists channels with activity
+(orange when you were @mentioned), and day boundaries draw a date rule.</li>
+<li><strong>Auto-join</strong> — connecting joins <code>#general</code> plus every channel you're a member of, so
+unread counts and mentions accumulate everywhere. Channels you <code>/leave</code> stay left, and
+password-protected or <a href="encrypted-rooms.html">encrypted rooms</a> are never auto-prompted —
+join those explicitly. <code>#general</code> is the home channel and can't be left or deleted.</li>
+<li><strong>Scrollback</strong> — history loads 100 messages at a time; scrolling to the top of a channel
+fetches the next page and keeps your position (no jump).</li>
+<li><strong>Drag &amp; drop</strong> — dropping a file onto the window stages it as an attachment.</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/HueByte/EchoHub/blob/master/docs/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a></div></div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

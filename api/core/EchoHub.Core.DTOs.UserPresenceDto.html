@@ -182,8 +182,8 @@ Class UserPresenceDto  <a class="header-action link-secondary" title="View sourc
 
   <a id="EchoHub_Core_DTOs_UserPresenceDto__ctor_" data-uid="EchoHub.Core.DTOs.UserPresenceDto.#ctor*"></a>
 
-  <h3 id="EchoHub_Core_DTOs_UserPresenceDto__ctor_System_String_System_String_System_String_EchoHub_Core_Models_UserStatus_System_String_EchoHub_Core_Models_ServerRole_" data-uid="EchoHub.Core.DTOs.UserPresenceDto.#ctor(System.String,System.String,System.String,EchoHub.Core.Models.UserStatus,System.String,EchoHub.Core.Models.ServerRole)">
-  UserPresenceDto(string, string?, string?, UserStatus, string?, ServerRole)
+  <h3 id="EchoHub_Core_DTOs_UserPresenceDto__ctor_System_String_System_String_System_String_EchoHub_Core_Models_UserStatus_System_String_EchoHub_Core_Models_ServerRole_System_Boolean_" data-uid="EchoHub.Core.DTOs.UserPresenceDto.#ctor(System.String,System.String,System.String,EchoHub.Core.Models.UserStatus,System.String,EchoHub.Core.Models.ServerRole,System.Boolean)">
+  UserPresenceDto(string, string?, string?, UserStatus, string?, ServerRole, bool)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ProfileDtos.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -191,7 +191,7 @@ Class UserPresenceDto  <a class="header-action link-secondary" title="View sourc
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public UserPresenceDto(string Username, string? DisplayName, string? NicknameColor, UserStatus Status, string? StatusMessage, ServerRole Role)</code></pre>
+    <pre><code class="lang-csharp hljs">public UserPresenceDto(string Username, string? DisplayName, string? NicknameColor, UserStatus Status, string? StatusMessage, ServerRole Role, bool IsIrc = false)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -207,6 +207,8 @@ Class UserPresenceDto  <a class="header-action link-secondary" title="View sourc
     <dt><code>StatusMessage</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>Role</code> <a class="xref" href="EchoHub.Core.Models.ServerRole.html">ServerRole</a></dt>
+    <dd></dd>
+    <dt><code>IsIrc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
     <dd></dd>
   </dl>
 
@@ -277,6 +279,37 @@ Class UserPresenceDto  <a class="header-action link-secondary" title="View sourc
   <h4 class="section">Property Value</h4>
   <dl class="parameters">
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.type">Type</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Core_DTOs_UserPresenceDto_IsIrc_" data-uid="EchoHub.Core.DTOs.UserPresenceDto.IsIrc*"></a>
+
+  <h3 id="EchoHub_Core_DTOs_UserPresenceDto_IsIrc" data-uid="EchoHub.Core.DTOs.UserPresenceDto.IsIrc">
+  IsIrc
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ProfileDtos.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsIrc { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
     <dd></dd>
   </dl>
 
@@ -448,8 +481,8 @@ Class UserPresenceDto  <a class="header-action link-secondary" title="View sourc
 
   <a id="EchoHub_Core_DTOs_UserPresenceDto_Deconstruct_" data-uid="EchoHub.Core.DTOs.UserPresenceDto.Deconstruct*"></a>
 
-  <h3 id="EchoHub_Core_DTOs_UserPresenceDto_Deconstruct_System_String__System_String__System_String__EchoHub_Core_Models_UserStatus__System_String__EchoHub_Core_Models_ServerRole__" data-uid="EchoHub.Core.DTOs.UserPresenceDto.Deconstruct(System.String@,System.String@,System.String@,EchoHub.Core.Models.UserStatus@,System.String@,EchoHub.Core.Models.ServerRole@)">
-  Deconstruct(out string, out string?, out string?, out UserStatus, out string?, out ServerRole)
+  <h3 id="EchoHub_Core_DTOs_UserPresenceDto_Deconstruct_System_String__System_String__System_String__EchoHub_Core_Models_UserStatus__System_String__EchoHub_Core_Models_ServerRole__System_Boolean__" data-uid="EchoHub.Core.DTOs.UserPresenceDto.Deconstruct(System.String@,System.String@,System.String@,EchoHub.Core.Models.UserStatus@,System.String@,EchoHub.Core.Models.ServerRole@,System.Boolean@)">
+  Deconstruct(out string, out string?, out string?, out UserStatus, out string?, out ServerRole, out bool)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ProfileDtos.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -457,7 +490,7 @@ Class UserPresenceDto  <a class="header-action link-secondary" title="View sourc
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public void Deconstruct(out string Username, out string? DisplayName, out string? NicknameColor, out UserStatus Status, out string? StatusMessage, out ServerRole Role)</code></pre>
+    <pre><code class="lang-csharp hljs">public void Deconstruct(out string Username, out string? DisplayName, out string? NicknameColor, out UserStatus Status, out string? StatusMessage, out ServerRole Role, out bool IsIrc)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -473,6 +506,8 @@ Class UserPresenceDto  <a class="header-action link-secondary" title="View sourc
     <dt><code>StatusMessage</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>Role</code> <a class="xref" href="EchoHub.Core.Models.ServerRole.html">ServerRole</a></dt>
+    <dd></dd>
+    <dt><code>IsIrc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
     <dd></dd>
   </dl>
 

@@ -190,7 +190,8 @@ Class SavedServer  <a class="header-action link-secondary" title="View source" h
   </h3>
 
   <div class="markdown level1 summary"><p>Cached room content keys for end-to-end encrypted channels on this server,
-keyed by channel name (base64). Like RefreshToken, these live only on the
+keyed by channel name and encrypted at rest (see RoomKeyProtector; legacy
+entries were plain base64). Like RefreshToken, these live only on the
 user's machine — the server never sees them.</p>
 </div>
   <div class="markdown level1 conceptual"></div>

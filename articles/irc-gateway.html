@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>IRC Gateway | EchoHub Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="IRC Gateway | EchoHub Documentation ">
+      
+      
+      <link rel="icon" href="../images/hue_icon.svg">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/blob/master/docs/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/hue_icon.svg" alt="EchoHub">
+            EchoHub
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="irc-gateway">IRC Gateway</h1>
+
+<p>Every EchoHub server can expose a second door: a built-in <strong>IRC gateway</strong> that speaks the
+classic IRC protocol on port 6667. Any standard IRC client — irssi, WeeChat, HexChat,
+Halloy — can join the same channels as TUI users, see the same messages, and chat with the
+same accounts. Under the hood both protocols call the same chat service, so a message sent
+from IRC appears instantly in the TUI and vice versa (see <a href="architecture.html">Architecture</a>).</p>
+<h2 id="enabling-the-gateway">Enabling the gateway</h2>
+<p>The gateway is off by default. Enable it in <code>appsettings.json</code> (or <code>Irc__Enabled=true</code> as an
+environment variable):</p>
+<pre><code class="lang-json">{
+  &quot;Irc&quot;: {
+    &quot;Enabled&quot;: true,
+    &quot;Port&quot;: 6667,
+    &quot;TlsEnabled&quot;: false,
+    &quot;TlsPort&quot;: 6697,
+    &quot;TlsCertPath&quot;: &quot;&quot;,
+    &quot;ServerName&quot;: &quot;echohub&quot;,
+    &quot;Motd&quot;: &quot;Welcome to EchoHub IRC Gateway!&quot;
+  }
+}
+</code></pre>
+<p>The plaintext listener always starts on <code>Port</code>. The TLS listener on <code>TlsPort</code> starts only
+when <code>TlsEnabled</code> is <code>true</code> <strong>and</strong> <code>TlsCertPath</code> points to a PKCS#12 (<code>.pfx</code>) certificate.
+See the <a href="configuration.html#irc-gateway">configuration reference</a> for every option.</p>
+<h2 id="connecting--authentication">Connecting &amp; authentication</h2>
+<p>Your IRC <strong>nick is your EchoHub username</strong> and your server password is your <strong>account
+password</strong>. Two flows are supported:</p>
+<pre><code class="lang-bash"># classic PASS/NICK/USER — most clients call this the &quot;server password&quot;
+irssi -c chat.example.com -p 6667 -w &lt;password&gt; -n &lt;username&gt;
+</code></pre>
+<p>or <strong>SASL PLAIN</strong> (advertised via <code>CAP LS</code>), where the SASL username/password are the account
+credentials.</p>
+<p>A few things worth knowing:</p>
+<ul>
+<li><strong>Connecting auto-registers.</strong> If the username doesn't exist yet, the gateway creates the
+account with that password (usernames: 3–50 chars of <code>a-z 0-9 _ -</code>; passwords: 6+ chars).
+The very first account ever created on a server becomes the <strong>Owner</strong>.</li>
+<li>Because of that, a typo'd password for an <em>existing</em> account fails with
+<code>Username is already taken</code> — the gateway tried to log in, couldn't, then tried to register
+the name. If you see that error, re-check your password.</li>
+<li>Connecting without a password is rejected: <code>Password required. Use PASS command or SASL PLAIN.</code></li>
+</ul>
+<h2 id="what-maps-to-what">What maps to what</h2>
+<table>
+<thead>
+<tr>
+<th>IRC</th>
+<th>EchoHub</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>JOIN #room</code></td>
+<td>Join a channel (history is replayed on join)</td>
+</tr>
+<tr>
+<td><code>JOIN #room &lt;key&gt;</code></td>
+<td>Join a password-protected (<code>+k</code>) channel</td>
+</tr>
+<tr>
+<td><code>PART</code> / <code>QUIT</code></td>
+<td>Leave channel / disconnect</td>
+</tr>
+<tr>
+<td><code>LIST</code></td>
+<td>Public channels only (password-protected ones show a <code>[+k]</code> hint)</td>
+</tr>
+<tr>
+<td><code>TOPIC</code></td>
+<td>Read or set the channel topic (permission-checked)</td>
+</tr>
+<tr>
+<td><code>NAMES</code> / <code>WHO</code></td>
+<td>Online users in the channel</td>
+</tr>
+<tr>
+<td><code>WHOIS</code></td>
+<td>Profile: display name, channels, idle time, away status</td>
+</tr>
+<tr>
+<td><code>AWAY [message]</code></td>
+<td>Sets your EchoHub status to Away / back to Online</td>
+</tr>
+<tr>
+<td><code>MODE #room +k &lt;key&gt;</code> / <code>-k</code></td>
+<td>Set / clear the channel password</td>
+</tr>
+</tbody>
+</table>
+<p>Private (unlisted) channels don't appear in <code>LIST</code>, but members who know the exact name can
+still <code>JOIN</code> them. Channels are not auto-created from IRC — create them from the TUI first.</p>
+<h2 id="how-messages-look">How messages look</h2>
+<ul>
+<li><strong>Attachments</strong> arrive as labeled link lines — <code>[Image: photo.png] https://…</code>,
+<code>♪ [Audio: song.mp3] https://…</code>, <code>[File: report.pdf] https://…</code> — and image attachments
+additionally render their <strong>ASCII-art preview</strong> using truecolor ANSI escapes, so a modern
+terminal IRC client shows actual picture previews.</li>
+<li><strong>Link embeds</strong> are appended as <code>│</code>-prefixed text lines.</li>
+<li>Long messages are split at word boundaries into IRC-safe lines (~400 bytes each);
+incoming messages may be up to 2,000 characters like any EchoHub message.</li>
+<li>Your own messages aren't echoed back (standard IRC convention).</li>
+<li>Moderation actions surface natively: kicks arrive as <code>KICK</code>, bans and channel nukes as
+server <code>NOTICE</code>s.</li>
+</ul>
+<h2 id="limitations">Limitations</h2>
+<p>The gateway bridges what IRC can express — and deliberately refuses what it can't:</p>
+<ul>
+<li><strong>No end-to-end encrypted rooms.</strong> Joining an <a href="encrypted-rooms.html">encrypted room</a> fails
+with <em>&quot;Cannot join channel — end-to-end encrypted, use the EchoHub client.&quot;</em> Bridging one
+would require the server to hold the room key, breaking the zero-knowledge design.</li>
+<li><strong>No private messages.</strong> <code>PRIVMSG</code> to a nick is rejected; EchoHub is channel-based.</li>
+<li><strong>Usernames, not display names.</strong> Messages are attributed to the account username;
+a user's display name is visible via <code>WHOIS</code>/<code>WHO</code> (realname field).</li>
+<li><strong>No client features.</strong> Uploading attachments, profiles, themes, and reactions to status
+changes are TUI-client features. Other users' status changes aren't pushed to IRC —
+discover them with <code>WHOIS</code>/<code>WHO</code>.</li>
+</ul>
+<h2 id="how-irc-users-appear-to-tui-users">How IRC users appear to TUI users</h2>
+<p>Users connected <em>only</em> through the gateway are tagged <code>[irc]</code> in the users panel — a hint
+that they can't receive encrypted content or use client-side features. Someone connected
+with both an IRC client and the TUI shows untagged.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/HueByte/EchoHub/blob/master/docs/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a></div></div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

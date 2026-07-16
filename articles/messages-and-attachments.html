@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Messages &amp; Attachments | EchoHub Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Messages &amp; Attachments | EchoHub Documentation ">
+      
+      
+      <link rel="icon" href="../images/hue_icon.svg">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/blob/master/docs/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/hue_icon.svg" alt="EchoHub">
+            EchoHub
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="messages--attachments">Messages &amp; Attachments</h1>
+
+<p>An EchoHub message is <strong>text content plus up to 10 attachments</strong>, Discord-style. A plain chat
+line is just a message with no attachments; a photo dump is one message with several files and
+an optional caption. This page explains how to attach files, what happens to them on the way to
+the server, and how other clients receive them.</p>
+<h2 id="message-basics">Message basics</h2>
+<table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Max message length</td>
+<td>2,000 characters</td>
+</tr>
+<tr>
+<td>Max newlines per message</td>
+<td>30 (no blank-line runs)</td>
+</tr>
+<tr>
+<td>Max attachments per message</td>
+<td>10</td>
+</tr>
+<tr>
+<td>Link embeds per message</td>
+<td>first 3 URLs</td>
+</tr>
+</tbody>
+</table>
+<p>Multiline messages are written with <code>Ctrl+N</code> for a newline; <code>Enter</code> sends. URLs in a message
+get link embeds (title, description, theme color) fetched by the server.</p>
+<h2 id="attaching-files">Attaching files</h2>
+<p>All of these end up in the same place — the <strong>staging tray</strong> — and are sent together as one
+message the next time you press <code>Enter</code>, with whatever you've typed as the caption:</p>
+<ul>
+<li><strong>Paste a copied file</strong> — copy one <em>or several</em> files in your file manager and press
+<code>Ctrl+V</code> in the input. All of them are staged at once.</li>
+<li><strong>Paste an image from the clipboard</strong> — copy an image in a browser (right-click → <em>Copy
+image</em>), take a screenshot (<code>Win+Shift+S</code>), or copy from an image editor, then <code>Ctrl+V</code>.
+The image is attached directly as a PNG named <code>image.png</code> — no saving to disk first.
+On Linux this uses <code>wl-paste</code> or <code>xclip</code>; on macOS it requires
+<a href="https://github.com/jcsalterego/pngpaste"><code>pngpaste</code></a> (<code>brew install pngpaste</code>).</li>
+<li><strong>Drag &amp; drop</strong> — drop a file onto the terminal window; the client recognizes the dropped
+path and stages the file.</li>
+<li><strong><code>/send &lt;filepath&gt;</code></strong> — stage a file by path (quote paths containing spaces).</li>
+</ul>
+<p>The input frame's title shows what's currently staged. <code>/clear</code> drops all staged attachments
+without sending. Sending with an empty input is fine — the message is just the attachments.</p>
+<pre><code class="lang-text">┌ Message (2 attached: report.pdf, image.png) ──────────────┐
+│ here's the summary and a screenshot_                      │
+└────────────────────────────────────────────────────────────┘
+</code></pre>
+<p><strong>URL sends are different:</strong> <code>/send &lt;https://…&gt;</code> sends an image URL immediately as its own
+message — nothing is staged, and it isn't available in end-to-end encrypted rooms (the server
+would have to fetch the image, which would defeat the encryption).</p>
+<h2 id="attachment-kinds">Attachment kinds</h2>
+<p>The kind is detected per attachment, not per message:</p>
+<table>
+<thead>
+<tr>
+<th>Kind</th>
+<th>Detected by</th>
+<th>Renders as</th>
+<th>Default size limit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Image</strong></td>
+<td>Magic bytes: JPEG, PNG, GIF, WebP</td>
+<td>ASCII-art preview in chat</td>
+<td>10 MB</td>
+</tr>
+<tr>
+<td><strong>Audio</strong></td>
+<td>Extension: <code>.mp3</code> <code>.wav</code> <code>.ogg</code> <code>.flac</code> <code>.aac</code> <code>.m4a</code> <code>.wma</code></td>
+<td>Playable row (▶)</td>
+<td>10 MB</td>
+</tr>
+<tr>
+<td><strong>File</strong></td>
+<td>Everything else</td>
+<td>Downloadable row</td>
+<td>100 MB</td>
+</tr>
+</tbody>
+</table>
+<p>Limits are per file and server-configurable — see the <code>Uploads</code> section in the
+<a href="configuration.html">configuration guide</a> (<code>MaxImageSizeMB</code>, <code>MaxAudioSizeMB</code>, <code>MaxFileSizeMB</code>,
+<code>MaxAttachmentsPerMessage</code>).</p>
+<h2 id="image-previews-ascii-art">Image previews (ASCII art)</h2>
+<p>Images are rendered in chat as half-block ASCII art. You pick the rendering size:</p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Size</th>
+<th>Feel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-s</code> / <code>/size s</code></td>
+<td>40 × 40</td>
+<td>compact</td>
+</tr>
+<tr>
+<td><code>-m</code> / <code>/size m</code></td>
+<td>80 × 80</td>
+<td>default</td>
+</tr>
+<tr>
+<td><code>-l</code> / <code>/size l</code></td>
+<td>120 × 120</td>
+<td>detailed</td>
+</tr>
+</tbody>
+</table>
+<p><code>/size</code> with no argument opens a picker; the choice persists as your default. A one-off
+<code>-s|-m|-l</code> flag on <code>/send</code> applies to that message.</p>
+<h2 id="receiving-attachments">Receiving attachments</h2>
+<p>Right-click a message (or press <code>F6</code> to select one with the arrow keys) for actions:</p>
+<ul>
+<li><strong>Images</strong> → save to disk</li>
+<li><strong>Audio</strong> → play (in-client playback)</li>
+<li><strong>Files</strong> → download</li>
+</ul>
+<p>Downloads go to your configured download folder — set it with <code>/downloadpath</code> (no argument
+opens a native folder picker, or pass a path directly).</p>
+<h2 id="attachments-in-encrypted-rooms">Attachments in encrypted rooms</h2>
+<p>In an <a href="encrypted-rooms.html">end-to-end encrypted room</a> every attachment is encrypted
+client-side <strong>before</strong> upload:</p>
+<pre><code class="lang-mermaid">flowchart LR
+    F[File bytes] --&gt;|AES-256-GCM with room key| B[Ciphertext blob]
+    F --&gt;|if image: render ASCII locally| A[ASCII preview]
+    A --&gt;|room-encrypt| AP[&quot;$RC1$… preview&quot;]
+    B --&gt; S[Server stores blob + name + size]
+    AP --&gt; S
+</code></pre>
+<p>The server never sees the file contents or the rendered preview — it stores an opaque blob and
+broadcasts it to members, who decrypt locally. File <strong>names and sizes remain visible</strong> to the
+server so the file list stays usable; don't put secrets in a file name. Pasted clipboard
+images go through exactly the same pipeline.</p>
+<h2 id="deleting-messages-with-attachments">Deleting messages with attachments</h2>
+<p>Deleting a message also removes its uploaded attachment files from the server. You can always
+delete your own messages; moderators can delete others' — see <a href="moderation.html">Moderation &amp; Roles</a>.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/HueByte/EchoHub/blob/master/docs/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a></div></div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

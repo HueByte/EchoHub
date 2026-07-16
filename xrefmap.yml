@@ -649,6 +649,18 @@ references:
   commentId: T:EchoHub.Client.Config.ConfigManager
   fullName: EchoHub.Client.Config.ConfigManager
   nameWithType: ConfigManager
+- uid: EchoHub.Client.Config.ConfigManager.ConfigDirectory
+  name: ConfigDirectory
+  href: api/client/EchoHub.Client.Config.ConfigManager.html#EchoHub_Client_Config_ConfigManager_ConfigDirectory
+  commentId: P:EchoHub.Client.Config.ConfigManager.ConfigDirectory
+  fullName: EchoHub.Client.Config.ConfigManager.ConfigDirectory
+  nameWithType: ConfigManager.ConfigDirectory
+- uid: EchoHub.Client.Config.ConfigManager.ConfigDirectory*
+  name: ConfigDirectory
+  href: api/client/EchoHub.Client.Config.ConfigManager.html#EchoHub_Client_Config_ConfigManager_ConfigDirectory_
+  commentId: Overload:EchoHub.Client.Config.ConfigManager.ConfigDirectory
+  fullName: EchoHub.Client.Config.ConfigManager.ConfigDirectory
+  nameWithType: ConfigManager.ConfigDirectory
 - uid: EchoHub.Client.Config.ConfigManager.Load
   name: Load()
   href: api/client/EchoHub.Client.Config.ConfigManager.html#EchoHub_Client_Config_ConfigManager_Load
@@ -1900,6 +1912,42 @@ references:
   commentId: Overload:EchoHub.Client.Services.ClipboardFiles.TryGetFiles
   fullName: EchoHub.Client.Services.ClipboardFiles.TryGetFiles
   nameWithType: ClipboardFiles.TryGetFiles
+- uid: EchoHub.Client.Services.ClipboardImage
+  name: ClipboardImage
+  href: api/client/EchoHub.Client.Services.ClipboardImage.html
+  commentId: T:EchoHub.Client.Services.ClipboardImage
+  fullName: EchoHub.Client.Services.ClipboardImage
+  nameWithType: ClipboardImage
+- uid: EchoHub.Client.Services.ClipboardImage.DibToPng(System.Byte[])
+  name: DibToPng(byte[])
+  href: api/client/EchoHub.Client.Services.ClipboardImage.html#EchoHub_Client_Services_ClipboardImage_DibToPng_System_Byte___
+  commentId: M:EchoHub.Client.Services.ClipboardImage.DibToPng(System.Byte[])
+  name.vb: DibToPng(Byte())
+  fullName: EchoHub.Client.Services.ClipboardImage.DibToPng(byte[])
+  fullName.vb: EchoHub.Client.Services.ClipboardImage.DibToPng(Byte())
+  nameWithType: ClipboardImage.DibToPng(byte[])
+  nameWithType.vb: ClipboardImage.DibToPng(Byte())
+- uid: EchoHub.Client.Services.ClipboardImage.DibToPng*
+  name: DibToPng
+  href: api/client/EchoHub.Client.Services.ClipboardImage.html#EchoHub_Client_Services_ClipboardImage_DibToPng_
+  commentId: Overload:EchoHub.Client.Services.ClipboardImage.DibToPng
+  fullName: EchoHub.Client.Services.ClipboardImage.DibToPng
+  nameWithType: ClipboardImage.DibToPng
+- uid: EchoHub.Client.Services.ClipboardImage.TryGetPng(System.Byte[]@)
+  name: TryGetPng(out byte[])
+  href: api/client/EchoHub.Client.Services.ClipboardImage.html#EchoHub_Client_Services_ClipboardImage_TryGetPng_System_Byte____
+  commentId: M:EchoHub.Client.Services.ClipboardImage.TryGetPng(System.Byte[]@)
+  name.vb: TryGetPng(Byte())
+  fullName: EchoHub.Client.Services.ClipboardImage.TryGetPng(out byte[])
+  fullName.vb: EchoHub.Client.Services.ClipboardImage.TryGetPng(Byte())
+  nameWithType: ClipboardImage.TryGetPng(out byte[])
+  nameWithType.vb: ClipboardImage.TryGetPng(Byte())
+- uid: EchoHub.Client.Services.ClipboardImage.TryGetPng*
+  name: TryGetPng
+  href: api/client/EchoHub.Client.Services.ClipboardImage.html#EchoHub_Client_Services_ClipboardImage_TryGetPng_
+  commentId: Overload:EchoHub.Client.Services.ClipboardImage.TryGetPng
+  fullName: EchoHub.Client.Services.ClipboardImage.TryGetPng
+  nameWithType: ClipboardImage.TryGetPng
 - uid: EchoHub.Client.Services.EchoHubConnection
   name: EchoHubConnection
   href: api/client/EchoHub.Client.Services.EchoHubConnection.html
@@ -2764,6 +2812,72 @@ references:
   commentId: F:EchoHub.Client.Services.PickerOutcome.Unavailable
   fullName: EchoHub.Client.Services.PickerOutcome.Unavailable
   nameWithType: PickerOutcome.Unavailable
+- uid: EchoHub.Client.Services.RoomKeyProtector
+  name: RoomKeyProtector
+  href: api/client/EchoHub.Client.Services.RoomKeyProtector.html
+  commentId: T:EchoHub.Client.Services.RoomKeyProtector
+  fullName: EchoHub.Client.Services.RoomKeyProtector
+  nameWithType: RoomKeyProtector
+- uid: EchoHub.Client.Services.RoomKeyProtector.#ctor(System.String,System.Nullable{System.Boolean})
+  name: RoomKeyProtector(string, bool?)
+  href: api/client/EchoHub.Client.Services.RoomKeyProtector.html#EchoHub_Client_Services_RoomKeyProtector__ctor_System_String_System_Nullable_System_Boolean__
+  commentId: M:EchoHub.Client.Services.RoomKeyProtector.#ctor(System.String,System.Nullable{System.Boolean})
+  name.vb: New(String, Boolean?)
+  fullName: EchoHub.Client.Services.RoomKeyProtector.RoomKeyProtector(string, bool?)
+  fullName.vb: EchoHub.Client.Services.RoomKeyProtector.New(String, Boolean?)
+  nameWithType: RoomKeyProtector.RoomKeyProtector(string, bool?)
+  nameWithType.vb: RoomKeyProtector.New(String, Boolean?)
+- uid: EchoHub.Client.Services.RoomKeyProtector.#ctor*
+  name: RoomKeyProtector
+  href: api/client/EchoHub.Client.Services.RoomKeyProtector.html#EchoHub_Client_Services_RoomKeyProtector__ctor_
+  commentId: Overload:EchoHub.Client.Services.RoomKeyProtector.#ctor
+  name.vb: New
+  fullName: EchoHub.Client.Services.RoomKeyProtector.RoomKeyProtector
+  fullName.vb: EchoHub.Client.Services.RoomKeyProtector.New
+  nameWithType: RoomKeyProtector.RoomKeyProtector
+  nameWithType.vb: RoomKeyProtector.New
+- uid: EchoHub.Client.Services.RoomKeyProtector.DpapiPrefix
+  name: DpapiPrefix
+  href: api/client/EchoHub.Client.Services.RoomKeyProtector.html#EchoHub_Client_Services_RoomKeyProtector_DpapiPrefix
+  commentId: F:EchoHub.Client.Services.RoomKeyProtector.DpapiPrefix
+  fullName: EchoHub.Client.Services.RoomKeyProtector.DpapiPrefix
+  nameWithType: RoomKeyProtector.DpapiPrefix
+- uid: EchoHub.Client.Services.RoomKeyProtector.KeyFilePrefix
+  name: KeyFilePrefix
+  href: api/client/EchoHub.Client.Services.RoomKeyProtector.html#EchoHub_Client_Services_RoomKeyProtector_KeyFilePrefix
+  commentId: F:EchoHub.Client.Services.RoomKeyProtector.KeyFilePrefix
+  fullName: EchoHub.Client.Services.RoomKeyProtector.KeyFilePrefix
+  nameWithType: RoomKeyProtector.KeyFilePrefix
+- uid: EchoHub.Client.Services.RoomKeyProtector.Protect(System.Byte[])
+  name: Protect(byte[])
+  href: api/client/EchoHub.Client.Services.RoomKeyProtector.html#EchoHub_Client_Services_RoomKeyProtector_Protect_System_Byte___
+  commentId: M:EchoHub.Client.Services.RoomKeyProtector.Protect(System.Byte[])
+  name.vb: Protect(Byte())
+  fullName: EchoHub.Client.Services.RoomKeyProtector.Protect(byte[])
+  fullName.vb: EchoHub.Client.Services.RoomKeyProtector.Protect(Byte())
+  nameWithType: RoomKeyProtector.Protect(byte[])
+  nameWithType.vb: RoomKeyProtector.Protect(Byte())
+- uid: EchoHub.Client.Services.RoomKeyProtector.Protect*
+  name: Protect
+  href: api/client/EchoHub.Client.Services.RoomKeyProtector.html#EchoHub_Client_Services_RoomKeyProtector_Protect_
+  commentId: Overload:EchoHub.Client.Services.RoomKeyProtector.Protect
+  fullName: EchoHub.Client.Services.RoomKeyProtector.Protect
+  nameWithType: RoomKeyProtector.Protect
+- uid: EchoHub.Client.Services.RoomKeyProtector.TryUnprotect(System.String,System.Byte[]@,System.Boolean@)
+  name: TryUnprotect(string, out byte[], out bool)
+  href: api/client/EchoHub.Client.Services.RoomKeyProtector.html#EchoHub_Client_Services_RoomKeyProtector_TryUnprotect_System_String_System_Byte____System_Boolean__
+  commentId: M:EchoHub.Client.Services.RoomKeyProtector.TryUnprotect(System.String,System.Byte[]@,System.Boolean@)
+  name.vb: TryUnprotect(String, Byte(), Boolean)
+  fullName: EchoHub.Client.Services.RoomKeyProtector.TryUnprotect(string, out byte[], out bool)
+  fullName.vb: EchoHub.Client.Services.RoomKeyProtector.TryUnprotect(String, Byte(), Boolean)
+  nameWithType: RoomKeyProtector.TryUnprotect(string, out byte[], out bool)
+  nameWithType.vb: RoomKeyProtector.TryUnprotect(String, Byte(), Boolean)
+- uid: EchoHub.Client.Services.RoomKeyProtector.TryUnprotect*
+  name: TryUnprotect
+  href: api/client/EchoHub.Client.Services.RoomKeyProtector.html#EchoHub_Client_Services_RoomKeyProtector_TryUnprotect_
+  commentId: Overload:EchoHub.Client.Services.RoomKeyProtector.TryUnprotect
+  fullName: EchoHub.Client.Services.RoomKeyProtector.TryUnprotect
+  nameWithType: RoomKeyProtector.TryUnprotect
 - uid: EchoHub.Client.Services.RoomKeyStore
   name: RoomKeyStore
   href: api/client/EchoHub.Client.Services.RoomKeyStore.html
@@ -2779,6 +2893,15 @@ references:
   fullName.vb: EchoHub.Client.Services.RoomKeyStore.New()
   nameWithType: RoomKeyStore.RoomKeyStore()
   nameWithType.vb: RoomKeyStore.New()
+- uid: EchoHub.Client.Services.RoomKeyStore.#ctor(EchoHub.Client.Services.RoomKeyProtector)
+  name: RoomKeyStore(RoomKeyProtector)
+  href: api/client/EchoHub.Client.Services.RoomKeyStore.html#EchoHub_Client_Services_RoomKeyStore__ctor_EchoHub_Client_Services_RoomKeyProtector_
+  commentId: M:EchoHub.Client.Services.RoomKeyStore.#ctor(EchoHub.Client.Services.RoomKeyProtector)
+  name.vb: New(RoomKeyProtector)
+  fullName: EchoHub.Client.Services.RoomKeyStore.RoomKeyStore(EchoHub.Client.Services.RoomKeyProtector)
+  fullName.vb: EchoHub.Client.Services.RoomKeyStore.New(EchoHub.Client.Services.RoomKeyProtector)
+  nameWithType: RoomKeyStore.RoomKeyStore(RoomKeyProtector)
+  nameWithType.vb: RoomKeyStore.New(RoomKeyProtector)
 - uid: EchoHub.Client.Services.RoomKeyStore.#ctor*
   name: RoomKeyStore
   href: api/client/EchoHub.Client.Services.RoomKeyStore.html#EchoHub_Client_Services_RoomKeyStore__ctor_
@@ -2815,6 +2938,21 @@ references:
   commentId: Overload:EchoHub.Client.Services.RoomKeyStore.HasKey
   fullName: EchoHub.Client.Services.RoomKeyStore.HasKey
   nameWithType: RoomKeyStore.HasKey
+- uid: EchoHub.Client.Services.RoomKeyStore.IsChannelEncrypted(System.String)
+  name: IsChannelEncrypted(string)
+  href: api/client/EchoHub.Client.Services.RoomKeyStore.html#EchoHub_Client_Services_RoomKeyStore_IsChannelEncrypted_System_String_
+  commentId: M:EchoHub.Client.Services.RoomKeyStore.IsChannelEncrypted(System.String)
+  name.vb: IsChannelEncrypted(String)
+  fullName: EchoHub.Client.Services.RoomKeyStore.IsChannelEncrypted(string)
+  fullName.vb: EchoHub.Client.Services.RoomKeyStore.IsChannelEncrypted(String)
+  nameWithType: RoomKeyStore.IsChannelEncrypted(string)
+  nameWithType.vb: RoomKeyStore.IsChannelEncrypted(String)
+- uid: EchoHub.Client.Services.RoomKeyStore.IsChannelEncrypted*
+  name: IsChannelEncrypted
+  href: api/client/EchoHub.Client.Services.RoomKeyStore.html#EchoHub_Client_Services_RoomKeyStore_IsChannelEncrypted_
+  commentId: Overload:EchoHub.Client.Services.RoomKeyStore.IsChannelEncrypted
+  fullName: EchoHub.Client.Services.RoomKeyStore.IsChannelEncrypted
+  nameWithType: RoomKeyStore.IsChannelEncrypted
 - uid: EchoHub.Client.Services.RoomKeyStore.LoadForServer(System.String)
   name: LoadForServer(string)
   href: api/client/EchoHub.Client.Services.RoomKeyStore.html#EchoHub_Client_Services_RoomKeyStore_LoadForServer_System_String_
@@ -2830,6 +2968,21 @@ references:
   commentId: Overload:EchoHub.Client.Services.RoomKeyStore.LoadForServer
   fullName: EchoHub.Client.Services.RoomKeyStore.LoadForServer
   nameWithType: RoomKeyStore.LoadForServer
+- uid: EchoHub.Client.Services.RoomKeyStore.MarkChannelEncrypted(System.String,System.Boolean)
+  name: MarkChannelEncrypted(string, bool)
+  href: api/client/EchoHub.Client.Services.RoomKeyStore.html#EchoHub_Client_Services_RoomKeyStore_MarkChannelEncrypted_System_String_System_Boolean_
+  commentId: M:EchoHub.Client.Services.RoomKeyStore.MarkChannelEncrypted(System.String,System.Boolean)
+  name.vb: MarkChannelEncrypted(String, Boolean)
+  fullName: EchoHub.Client.Services.RoomKeyStore.MarkChannelEncrypted(string, bool)
+  fullName.vb: EchoHub.Client.Services.RoomKeyStore.MarkChannelEncrypted(String, Boolean)
+  nameWithType: RoomKeyStore.MarkChannelEncrypted(string, bool)
+  nameWithType.vb: RoomKeyStore.MarkChannelEncrypted(String, Boolean)
+- uid: EchoHub.Client.Services.RoomKeyStore.MarkChannelEncrypted*
+  name: MarkChannelEncrypted
+  href: api/client/EchoHub.Client.Services.RoomKeyStore.html#EchoHub_Client_Services_RoomKeyStore_MarkChannelEncrypted_
+  commentId: Overload:EchoHub.Client.Services.RoomKeyStore.MarkChannelEncrypted
+  fullName: EchoHub.Client.Services.RoomKeyStore.MarkChannelEncrypted
+  nameWithType: RoomKeyStore.MarkChannelEncrypted
 - uid: EchoHub.Client.Services.RoomKeyStore.RemoveKey(System.String)
   name: RemoveKey(string)
   href: api/client/EchoHub.Client.Services.RoomKeyStore.html#EchoHub_Client_Services_RoomKeyStore_RemoveKey_System_String_
@@ -2875,6 +3028,57 @@ references:
   commentId: Overload:EchoHub.Client.Services.RoomKeyStore.TryGetKey
   fullName: EchoHub.Client.Services.RoomKeyStore.TryGetKey
   nameWithType: RoomKeyStore.TryGetKey
+- uid: EchoHub.Client.Services.RoomKeyStore.TryStoreFromEnvelope(System.String,System.String,System.Byte[])
+  name: TryStoreFromEnvelope(string, string, byte[])
+  href: api/client/EchoHub.Client.Services.RoomKeyStore.html#EchoHub_Client_Services_RoomKeyStore_TryStoreFromEnvelope_System_String_System_String_System_Byte___
+  commentId: M:EchoHub.Client.Services.RoomKeyStore.TryStoreFromEnvelope(System.String,System.String,System.Byte[])
+  name.vb: TryStoreFromEnvelope(String, String, Byte())
+  fullName: EchoHub.Client.Services.RoomKeyStore.TryStoreFromEnvelope(string, string, byte[])
+  fullName.vb: EchoHub.Client.Services.RoomKeyStore.TryStoreFromEnvelope(String, String, Byte())
+  nameWithType: RoomKeyStore.TryStoreFromEnvelope(string, string, byte[])
+  nameWithType.vb: RoomKeyStore.TryStoreFromEnvelope(String, String, Byte())
+- uid: EchoHub.Client.Services.RoomKeyStore.TryStoreFromEnvelope*
+  name: TryStoreFromEnvelope
+  href: api/client/EchoHub.Client.Services.RoomKeyStore.html#EchoHub_Client_Services_RoomKeyStore_TryStoreFromEnvelope_
+  commentId: Overload:EchoHub.Client.Services.RoomKeyStore.TryStoreFromEnvelope
+  fullName: EchoHub.Client.Services.RoomKeyStore.TryStoreFromEnvelope
+  nameWithType: RoomKeyStore.TryStoreFromEnvelope
+- uid: EchoHub.Client.Services.RoomLockedException
+  name: RoomLockedException
+  href: api/client/EchoHub.Client.Services.RoomLockedException.html
+  commentId: T:EchoHub.Client.Services.RoomLockedException
+  fullName: EchoHub.Client.Services.RoomLockedException
+  nameWithType: RoomLockedException
+- uid: EchoHub.Client.Services.RoomLockedException.#ctor(System.String)
+  name: RoomLockedException(string)
+  href: api/client/EchoHub.Client.Services.RoomLockedException.html#EchoHub_Client_Services_RoomLockedException__ctor_System_String_
+  commentId: M:EchoHub.Client.Services.RoomLockedException.#ctor(System.String)
+  name.vb: New(String)
+  fullName: EchoHub.Client.Services.RoomLockedException.RoomLockedException(string)
+  fullName.vb: EchoHub.Client.Services.RoomLockedException.New(String)
+  nameWithType: RoomLockedException.RoomLockedException(string)
+  nameWithType.vb: RoomLockedException.New(String)
+- uid: EchoHub.Client.Services.RoomLockedException.#ctor*
+  name: RoomLockedException
+  href: api/client/EchoHub.Client.Services.RoomLockedException.html#EchoHub_Client_Services_RoomLockedException__ctor_
+  commentId: Overload:EchoHub.Client.Services.RoomLockedException.#ctor
+  name.vb: New
+  fullName: EchoHub.Client.Services.RoomLockedException.RoomLockedException
+  fullName.vb: EchoHub.Client.Services.RoomLockedException.New
+  nameWithType: RoomLockedException.RoomLockedException
+  nameWithType.vb: RoomLockedException.New
+- uid: EchoHub.Client.Services.RoomLockedException.ChannelName
+  name: ChannelName
+  href: api/client/EchoHub.Client.Services.RoomLockedException.html#EchoHub_Client_Services_RoomLockedException_ChannelName
+  commentId: P:EchoHub.Client.Services.RoomLockedException.ChannelName
+  fullName: EchoHub.Client.Services.RoomLockedException.ChannelName
+  nameWithType: RoomLockedException.ChannelName
+- uid: EchoHub.Client.Services.RoomLockedException.ChannelName*
+  name: ChannelName
+  href: api/client/EchoHub.Client.Services.RoomLockedException.html#EchoHub_Client_Services_RoomLockedException_ChannelName_
+  commentId: Overload:EchoHub.Client.Services.RoomLockedException.ChannelName
+  fullName: EchoHub.Client.Services.RoomLockedException.ChannelName
+  nameWithType: RoomLockedException.ChannelName
 - uid: EchoHub.Client.Services.UpdateBackupService
   name: UpdateBackupService
   href: api/client/EchoHub.Client.Services.UpdateBackupService.html
@@ -6016,15 +6220,15 @@ references:
   commentId: Overload:EchoHub.Client.UI.ListSources.ChannelListSource.ToList
   fullName: EchoHub.Client.UI.ListSources.ChannelListSource.ToList
   nameWithType: ChannelListSource.ToList
-- uid: EchoHub.Client.UI.ListSources.ChannelListSource.Update(System.Collections.Generic.List{System.String},System.Collections.Generic.Dictionary{System.String,System.Int32},System.String,System.Collections.Generic.IReadOnlySet{System.String},System.Collections.Generic.IReadOnlySet{System.String})
-  name: Update(List<string>, Dictionary<string, int>, string, IReadOnlySet<string>?, IReadOnlySet<string>?)
-  href: api/client/EchoHub.Client.UI.ListSources.ChannelListSource.html#EchoHub_Client_UI_ListSources_ChannelListSource_Update_System_Collections_Generic_List_System_String__System_Collections_Generic_Dictionary_System_String_System_Int32__System_String_System_Collections_Generic_IReadOnlySet_System_String__System_Collections_Generic_IReadOnlySet_System_String__
-  commentId: M:EchoHub.Client.UI.ListSources.ChannelListSource.Update(System.Collections.Generic.List{System.String},System.Collections.Generic.Dictionary{System.String,System.Int32},System.String,System.Collections.Generic.IReadOnlySet{System.String},System.Collections.Generic.IReadOnlySet{System.String})
-  name.vb: Update(List(Of String), Dictionary(Of String, Integer), String, IReadOnlySet(Of String), IReadOnlySet(Of String))
-  fullName: EchoHub.Client.UI.ListSources.ChannelListSource.Update(System.Collections.Generic.List<string>, System.Collections.Generic.Dictionary<string, int>, string, System.Collections.Generic.IReadOnlySet<string>?, System.Collections.Generic.IReadOnlySet<string>?)
-  fullName.vb: EchoHub.Client.UI.ListSources.ChannelListSource.Update(System.Collections.Generic.List(Of String), System.Collections.Generic.Dictionary(Of String, Integer), String, System.Collections.Generic.IReadOnlySet(Of String), System.Collections.Generic.IReadOnlySet(Of String))
-  nameWithType: ChannelListSource.Update(List<string>, Dictionary<string, int>, string, IReadOnlySet<string>?, IReadOnlySet<string>?)
-  nameWithType.vb: ChannelListSource.Update(List(Of String), Dictionary(Of String, Integer), String, IReadOnlySet(Of String), IReadOnlySet(Of String))
+- uid: EchoHub.Client.UI.ListSources.ChannelListSource.Update(System.Collections.Generic.List{System.String},System.Collections.Generic.Dictionary{System.String,System.Int32},System.String,System.Collections.Generic.IReadOnlySet{System.String},System.Collections.Generic.IReadOnlySet{System.String},System.Collections.Generic.IReadOnlySet{System.String})
+  name: Update(List<string>, Dictionary<string, int>, string, IReadOnlySet<string>?, IReadOnlySet<string>?, IReadOnlySet<string>?)
+  href: api/client/EchoHub.Client.UI.ListSources.ChannelListSource.html#EchoHub_Client_UI_ListSources_ChannelListSource_Update_System_Collections_Generic_List_System_String__System_Collections_Generic_Dictionary_System_String_System_Int32__System_String_System_Collections_Generic_IReadOnlySet_System_String__System_Collections_Generic_IReadOnlySet_System_String__System_Collections_Generic_IReadOnlySet_System_String__
+  commentId: M:EchoHub.Client.UI.ListSources.ChannelListSource.Update(System.Collections.Generic.List{System.String},System.Collections.Generic.Dictionary{System.String,System.Int32},System.String,System.Collections.Generic.IReadOnlySet{System.String},System.Collections.Generic.IReadOnlySet{System.String},System.Collections.Generic.IReadOnlySet{System.String})
+  name.vb: Update(List(Of String), Dictionary(Of String, Integer), String, IReadOnlySet(Of String), IReadOnlySet(Of String), IReadOnlySet(Of String))
+  fullName: EchoHub.Client.UI.ListSources.ChannelListSource.Update(System.Collections.Generic.List<string>, System.Collections.Generic.Dictionary<string, int>, string, System.Collections.Generic.IReadOnlySet<string>?, System.Collections.Generic.IReadOnlySet<string>?, System.Collections.Generic.IReadOnlySet<string>?)
+  fullName.vb: EchoHub.Client.UI.ListSources.ChannelListSource.Update(System.Collections.Generic.List(Of String), System.Collections.Generic.Dictionary(Of String, Integer), String, System.Collections.Generic.IReadOnlySet(Of String), System.Collections.Generic.IReadOnlySet(Of String), System.Collections.Generic.IReadOnlySet(Of String))
+  nameWithType: ChannelListSource.Update(List<string>, Dictionary<string, int>, string, IReadOnlySet<string>?, IReadOnlySet<string>?, IReadOnlySet<string>?)
+  nameWithType.vb: ChannelListSource.Update(List(Of String), Dictionary(Of String, Integer), String, IReadOnlySet(Of String), IReadOnlySet(Of String), IReadOnlySet(Of String))
 - uid: EchoHub.Client.UI.ListSources.ChannelListSource.Update*
   name: Update
   href: api/client/EchoHub.Client.UI.ListSources.ChannelListSource.html#EchoHub_Client_UI_ListSources_ChannelListSource_Update_
@@ -6520,6 +6724,18 @@ references:
   commentId: E:EchoHub.Client.UI.MainWindow.OnFileDownloadRequested
   fullName: EchoHub.Client.UI.MainWindow.OnFileDownloadRequested
   nameWithType: MainWindow.OnFileDownloadRequested
+- uid: EchoHub.Client.UI.MainWindow.OnFilesStaged
+  name: OnFilesStaged
+  href: api/client/EchoHub.Client.UI.MainWindow.html#EchoHub_Client_UI_MainWindow_OnFilesStaged
+  commentId: E:EchoHub.Client.UI.MainWindow.OnFilesStaged
+  fullName: EchoHub.Client.UI.MainWindow.OnFilesStaged
+  nameWithType: MainWindow.OnFilesStaged
+- uid: EchoHub.Client.UI.MainWindow.OnImagePasted
+  name: OnImagePasted
+  href: api/client/EchoHub.Client.UI.MainWindow.html#EchoHub_Client_UI_MainWindow_OnImagePasted
+  commentId: E:EchoHub.Client.UI.MainWindow.OnImagePasted
+  fullName: EchoHub.Client.UI.MainWindow.OnImagePasted
+  nameWithType: MainWindow.OnImagePasted
 - uid: EchoHub.Client.UI.MainWindow.OnImageSaveRequested
   name: OnImageSaveRequested
   href: api/client/EchoHub.Client.UI.MainWindow.html#EchoHub_Client_UI_MainWindow_OnImageSaveRequested
@@ -6817,6 +7033,12 @@ references:
   commentId: F:EchoHub.Core.Constants.HubConstants.EmbedMaxUrlsPerMessage
   fullName: EchoHub.Core.Constants.HubConstants.EmbedMaxUrlsPerMessage
   nameWithType: HubConstants.EmbedMaxUrlsPerMessage
+- uid: EchoHub.Core.Constants.HubConstants.IrcConnectionIdPrefix
+  name: IrcConnectionIdPrefix
+  href: api/core/EchoHub.Core.Constants.HubConstants.html#EchoHub_Core_Constants_HubConstants_IrcConnectionIdPrefix
+  commentId: F:EchoHub.Core.Constants.HubConstants.IrcConnectionIdPrefix
+  fullName: EchoHub.Core.Constants.HubConstants.IrcConnectionIdPrefix
+  nameWithType: HubConstants.IrcConnectionIdPrefix
 - uid: EchoHub.Core.Constants.HubConstants.MaxAttachmentsPerMessage
   name: MaxAttachmentsPerMessage
   href: api/core/EchoHub.Core.Constants.HubConstants.html#EchoHub_Core_Constants_HubConstants_MaxAttachmentsPerMessage
@@ -11827,15 +12049,15 @@ references:
   fullName.vb: EchoHub.Core.DTOs.MessageDto.New(EchoHub.Core.DTOs.MessageDto)
   nameWithType: MessageDto.MessageDto(MessageDto)
   nameWithType.vb: MessageDto.New(MessageDto)
-- uid: EchoHub.Core.DTOs.MessageDto.#ctor(System.Guid,System.String,System.String,System.String,System.String,System.DateTimeOffset,System.Collections.Generic.List{EchoHub.Core.DTOs.AttachmentDto},System.Collections.Generic.List{EchoHub.Core.DTOs.EmbedDto})
-  name: MessageDto(Guid, string, string, string?, string, DateTimeOffset, List<AttachmentDto>?, List<EmbedDto>?)
-  href: api/core/EchoHub.Core.DTOs.MessageDto.html#EchoHub_Core_DTOs_MessageDto__ctor_System_Guid_System_String_System_String_System_String_System_String_System_DateTimeOffset_System_Collections_Generic_List_EchoHub_Core_DTOs_AttachmentDto__System_Collections_Generic_List_EchoHub_Core_DTOs_EmbedDto__
-  commentId: M:EchoHub.Core.DTOs.MessageDto.#ctor(System.Guid,System.String,System.String,System.String,System.String,System.DateTimeOffset,System.Collections.Generic.List{EchoHub.Core.DTOs.AttachmentDto},System.Collections.Generic.List{EchoHub.Core.DTOs.EmbedDto})
-  name.vb: New(Guid, String, String, String, String, DateTimeOffset, List(Of AttachmentDto), List(Of EmbedDto))
-  fullName: EchoHub.Core.DTOs.MessageDto.MessageDto(System.Guid, string, string, string?, string, System.DateTimeOffset, System.Collections.Generic.List<EchoHub.Core.DTOs.AttachmentDto>?, System.Collections.Generic.List<EchoHub.Core.DTOs.EmbedDto>?)
-  fullName.vb: EchoHub.Core.DTOs.MessageDto.New(System.Guid, String, String, String, String, System.DateTimeOffset, System.Collections.Generic.List(Of EchoHub.Core.DTOs.AttachmentDto), System.Collections.Generic.List(Of EchoHub.Core.DTOs.EmbedDto))
-  nameWithType: MessageDto.MessageDto(Guid, string, string, string?, string, DateTimeOffset, List<AttachmentDto>?, List<EmbedDto>?)
-  nameWithType.vb: MessageDto.New(Guid, String, String, String, String, DateTimeOffset, List(Of AttachmentDto), List(Of EmbedDto))
+- uid: EchoHub.Core.DTOs.MessageDto.#ctor(System.Guid,System.String,System.String,System.String,System.String,System.DateTimeOffset,System.Collections.Generic.List{EchoHub.Core.DTOs.AttachmentDto},System.Collections.Generic.List{EchoHub.Core.DTOs.EmbedDto},System.String)
+  name: MessageDto(Guid, string, string, string?, string, DateTimeOffset, List<AttachmentDto>?, List<EmbedDto>?, string?)
+  href: api/core/EchoHub.Core.DTOs.MessageDto.html#EchoHub_Core_DTOs_MessageDto__ctor_System_Guid_System_String_System_String_System_String_System_String_System_DateTimeOffset_System_Collections_Generic_List_EchoHub_Core_DTOs_AttachmentDto__System_Collections_Generic_List_EchoHub_Core_DTOs_EmbedDto__System_String_
+  commentId: M:EchoHub.Core.DTOs.MessageDto.#ctor(System.Guid,System.String,System.String,System.String,System.String,System.DateTimeOffset,System.Collections.Generic.List{EchoHub.Core.DTOs.AttachmentDto},System.Collections.Generic.List{EchoHub.Core.DTOs.EmbedDto},System.String)
+  name.vb: New(Guid, String, String, String, String, DateTimeOffset, List(Of AttachmentDto), List(Of EmbedDto), String)
+  fullName: EchoHub.Core.DTOs.MessageDto.MessageDto(System.Guid, string, string, string?, string, System.DateTimeOffset, System.Collections.Generic.List<EchoHub.Core.DTOs.AttachmentDto>?, System.Collections.Generic.List<EchoHub.Core.DTOs.EmbedDto>?, string?)
+  fullName.vb: EchoHub.Core.DTOs.MessageDto.New(System.Guid, String, String, String, String, System.DateTimeOffset, System.Collections.Generic.List(Of EchoHub.Core.DTOs.AttachmentDto), System.Collections.Generic.List(Of EchoHub.Core.DTOs.EmbedDto), String)
+  nameWithType: MessageDto.MessageDto(Guid, string, string, string?, string, DateTimeOffset, List<AttachmentDto>?, List<EmbedDto>?, string?)
+  nameWithType.vb: MessageDto.New(Guid, String, String, String, String, DateTimeOffset, List(Of AttachmentDto), List(Of EmbedDto), String)
 - uid: EchoHub.Core.DTOs.MessageDto.#ctor*
   name: MessageDto
   href: api/core/EchoHub.Core.DTOs.MessageDto.html#EchoHub_Core_DTOs_MessageDto__ctor_
@@ -11881,15 +12103,15 @@ references:
   commentId: Overload:EchoHub.Core.DTOs.MessageDto.Content
   fullName: EchoHub.Core.DTOs.MessageDto.Content
   nameWithType: MessageDto.Content
-- uid: EchoHub.Core.DTOs.MessageDto.Deconstruct(System.Guid@,System.String@,System.String@,System.String@,System.String@,System.DateTimeOffset@,System.Collections.Generic.List{EchoHub.Core.DTOs.AttachmentDto}@,System.Collections.Generic.List{EchoHub.Core.DTOs.EmbedDto}@)
-  name: Deconstruct(out Guid, out string, out string, out string?, out string, out DateTimeOffset, out List<AttachmentDto>?, out List<EmbedDto>?)
-  href: api/core/EchoHub.Core.DTOs.MessageDto.html#EchoHub_Core_DTOs_MessageDto_Deconstruct_System_Guid__System_String__System_String__System_String__System_String__System_DateTimeOffset__System_Collections_Generic_List_EchoHub_Core_DTOs_AttachmentDto___System_Collections_Generic_List_EchoHub_Core_DTOs_EmbedDto___
-  commentId: M:EchoHub.Core.DTOs.MessageDto.Deconstruct(System.Guid@,System.String@,System.String@,System.String@,System.String@,System.DateTimeOffset@,System.Collections.Generic.List{EchoHub.Core.DTOs.AttachmentDto}@,System.Collections.Generic.List{EchoHub.Core.DTOs.EmbedDto}@)
-  name.vb: Deconstruct(Guid, String, String, String, String, DateTimeOffset, List(Of AttachmentDto), List(Of EmbedDto))
-  fullName: EchoHub.Core.DTOs.MessageDto.Deconstruct(out System.Guid, out string, out string, out string?, out string, out System.DateTimeOffset, out System.Collections.Generic.List<EchoHub.Core.DTOs.AttachmentDto>?, out System.Collections.Generic.List<EchoHub.Core.DTOs.EmbedDto>?)
-  fullName.vb: EchoHub.Core.DTOs.MessageDto.Deconstruct(System.Guid, String, String, String, String, System.DateTimeOffset, System.Collections.Generic.List(Of EchoHub.Core.DTOs.AttachmentDto), System.Collections.Generic.List(Of EchoHub.Core.DTOs.EmbedDto))
-  nameWithType: MessageDto.Deconstruct(out Guid, out string, out string, out string?, out string, out DateTimeOffset, out List<AttachmentDto>?, out List<EmbedDto>?)
-  nameWithType.vb: MessageDto.Deconstruct(Guid, String, String, String, String, DateTimeOffset, List(Of AttachmentDto), List(Of EmbedDto))
+- uid: EchoHub.Core.DTOs.MessageDto.Deconstruct(System.Guid@,System.String@,System.String@,System.String@,System.String@,System.DateTimeOffset@,System.Collections.Generic.List{EchoHub.Core.DTOs.AttachmentDto}@,System.Collections.Generic.List{EchoHub.Core.DTOs.EmbedDto}@,System.String@)
+  name: Deconstruct(out Guid, out string, out string, out string?, out string, out DateTimeOffset, out List<AttachmentDto>?, out List<EmbedDto>?, out string?)
+  href: api/core/EchoHub.Core.DTOs.MessageDto.html#EchoHub_Core_DTOs_MessageDto_Deconstruct_System_Guid__System_String__System_String__System_String__System_String__System_DateTimeOffset__System_Collections_Generic_List_EchoHub_Core_DTOs_AttachmentDto___System_Collections_Generic_List_EchoHub_Core_DTOs_EmbedDto___System_String__
+  commentId: M:EchoHub.Core.DTOs.MessageDto.Deconstruct(System.Guid@,System.String@,System.String@,System.String@,System.String@,System.DateTimeOffset@,System.Collections.Generic.List{EchoHub.Core.DTOs.AttachmentDto}@,System.Collections.Generic.List{EchoHub.Core.DTOs.EmbedDto}@,System.String@)
+  name.vb: Deconstruct(Guid, String, String, String, String, DateTimeOffset, List(Of AttachmentDto), List(Of EmbedDto), String)
+  fullName: EchoHub.Core.DTOs.MessageDto.Deconstruct(out System.Guid, out string, out string, out string?, out string, out System.DateTimeOffset, out System.Collections.Generic.List<EchoHub.Core.DTOs.AttachmentDto>?, out System.Collections.Generic.List<EchoHub.Core.DTOs.EmbedDto>?, out string?)
+  fullName.vb: EchoHub.Core.DTOs.MessageDto.Deconstruct(System.Guid, String, String, String, String, System.DateTimeOffset, System.Collections.Generic.List(Of EchoHub.Core.DTOs.AttachmentDto), System.Collections.Generic.List(Of EchoHub.Core.DTOs.EmbedDto), String)
+  nameWithType: MessageDto.Deconstruct(out Guid, out string, out string, out string?, out string, out DateTimeOffset, out List<AttachmentDto>?, out List<EmbedDto>?, out string?)
+  nameWithType.vb: MessageDto.Deconstruct(Guid, String, String, String, String, DateTimeOffset, List(Of AttachmentDto), List(Of EmbedDto), String)
 - uid: EchoHub.Core.DTOs.MessageDto.Deconstruct*
   name: Deconstruct
   href: api/core/EchoHub.Core.DTOs.MessageDto.html#EchoHub_Core_DTOs_MessageDto_Deconstruct_
@@ -11980,6 +12202,18 @@ references:
   commentId: Overload:EchoHub.Core.DTOs.MessageDto.PrintMembers
   fullName: EchoHub.Core.DTOs.MessageDto.PrintMembers
   nameWithType: MessageDto.PrintMembers
+- uid: EchoHub.Core.DTOs.MessageDto.SenderDisplayName
+  name: SenderDisplayName
+  href: api/core/EchoHub.Core.DTOs.MessageDto.html#EchoHub_Core_DTOs_MessageDto_SenderDisplayName
+  commentId: P:EchoHub.Core.DTOs.MessageDto.SenderDisplayName
+  fullName: EchoHub.Core.DTOs.MessageDto.SenderDisplayName
+  nameWithType: MessageDto.SenderDisplayName
+- uid: EchoHub.Core.DTOs.MessageDto.SenderDisplayName*
+  name: SenderDisplayName
+  href: api/core/EchoHub.Core.DTOs.MessageDto.html#EchoHub_Core_DTOs_MessageDto_SenderDisplayName_
+  commentId: Overload:EchoHub.Core.DTOs.MessageDto.SenderDisplayName
+  fullName: EchoHub.Core.DTOs.MessageDto.SenderDisplayName
+  nameWithType: MessageDto.SenderDisplayName
 - uid: EchoHub.Core.DTOs.MessageDto.SenderNicknameColor
   name: SenderNicknameColor
   href: api/core/EchoHub.Core.DTOs.MessageDto.html#EchoHub_Core_DTOs_MessageDto_SenderNicknameColor
@@ -14653,15 +14887,15 @@ references:
   fullName.vb: EchoHub.Core.DTOs.UserPresenceDto.New(EchoHub.Core.DTOs.UserPresenceDto)
   nameWithType: UserPresenceDto.UserPresenceDto(UserPresenceDto)
   nameWithType.vb: UserPresenceDto.New(UserPresenceDto)
-- uid: EchoHub.Core.DTOs.UserPresenceDto.#ctor(System.String,System.String,System.String,EchoHub.Core.Models.UserStatus,System.String,EchoHub.Core.Models.ServerRole)
-  name: UserPresenceDto(string, string?, string?, UserStatus, string?, ServerRole)
-  href: api/core/EchoHub.Core.DTOs.UserPresenceDto.html#EchoHub_Core_DTOs_UserPresenceDto__ctor_System_String_System_String_System_String_EchoHub_Core_Models_UserStatus_System_String_EchoHub_Core_Models_ServerRole_
-  commentId: M:EchoHub.Core.DTOs.UserPresenceDto.#ctor(System.String,System.String,System.String,EchoHub.Core.Models.UserStatus,System.String,EchoHub.Core.Models.ServerRole)
-  name.vb: New(String, String, String, UserStatus, String, ServerRole)
-  fullName: EchoHub.Core.DTOs.UserPresenceDto.UserPresenceDto(string, string?, string?, EchoHub.Core.Models.UserStatus, string?, EchoHub.Core.Models.ServerRole)
-  fullName.vb: EchoHub.Core.DTOs.UserPresenceDto.New(String, String, String, EchoHub.Core.Models.UserStatus, String, EchoHub.Core.Models.ServerRole)
-  nameWithType: UserPresenceDto.UserPresenceDto(string, string?, string?, UserStatus, string?, ServerRole)
-  nameWithType.vb: UserPresenceDto.New(String, String, String, UserStatus, String, ServerRole)
+- uid: EchoHub.Core.DTOs.UserPresenceDto.#ctor(System.String,System.String,System.String,EchoHub.Core.Models.UserStatus,System.String,EchoHub.Core.Models.ServerRole,System.Boolean)
+  name: UserPresenceDto(string, string?, string?, UserStatus, string?, ServerRole, bool)
+  href: api/core/EchoHub.Core.DTOs.UserPresenceDto.html#EchoHub_Core_DTOs_UserPresenceDto__ctor_System_String_System_String_System_String_EchoHub_Core_Models_UserStatus_System_String_EchoHub_Core_Models_ServerRole_System_Boolean_
+  commentId: M:EchoHub.Core.DTOs.UserPresenceDto.#ctor(System.String,System.String,System.String,EchoHub.Core.Models.UserStatus,System.String,EchoHub.Core.Models.ServerRole,System.Boolean)
+  name.vb: New(String, String, String, UserStatus, String, ServerRole, Boolean)
+  fullName: EchoHub.Core.DTOs.UserPresenceDto.UserPresenceDto(string, string?, string?, EchoHub.Core.Models.UserStatus, string?, EchoHub.Core.Models.ServerRole, bool)
+  fullName.vb: EchoHub.Core.DTOs.UserPresenceDto.New(String, String, String, EchoHub.Core.Models.UserStatus, String, EchoHub.Core.Models.ServerRole, Boolean)
+  nameWithType: UserPresenceDto.UserPresenceDto(string, string?, string?, UserStatus, string?, ServerRole, bool)
+  nameWithType.vb: UserPresenceDto.New(String, String, String, UserStatus, String, ServerRole, Boolean)
 - uid: EchoHub.Core.DTOs.UserPresenceDto.#ctor*
   name: UserPresenceDto
   href: api/core/EchoHub.Core.DTOs.UserPresenceDto.html#EchoHub_Core_DTOs_UserPresenceDto__ctor_
@@ -14671,15 +14905,15 @@ references:
   fullName.vb: EchoHub.Core.DTOs.UserPresenceDto.New
   nameWithType: UserPresenceDto.UserPresenceDto
   nameWithType.vb: UserPresenceDto.New
-- uid: EchoHub.Core.DTOs.UserPresenceDto.Deconstruct(System.String@,System.String@,System.String@,EchoHub.Core.Models.UserStatus@,System.String@,EchoHub.Core.Models.ServerRole@)
-  name: Deconstruct(out string, out string?, out string?, out UserStatus, out string?, out ServerRole)
-  href: api/core/EchoHub.Core.DTOs.UserPresenceDto.html#EchoHub_Core_DTOs_UserPresenceDto_Deconstruct_System_String__System_String__System_String__EchoHub_Core_Models_UserStatus__System_String__EchoHub_Core_Models_ServerRole__
-  commentId: M:EchoHub.Core.DTOs.UserPresenceDto.Deconstruct(System.String@,System.String@,System.String@,EchoHub.Core.Models.UserStatus@,System.String@,EchoHub.Core.Models.ServerRole@)
-  name.vb: Deconstruct(String, String, String, UserStatus, String, ServerRole)
-  fullName: EchoHub.Core.DTOs.UserPresenceDto.Deconstruct(out string, out string?, out string?, out EchoHub.Core.Models.UserStatus, out string?, out EchoHub.Core.Models.ServerRole)
-  fullName.vb: EchoHub.Core.DTOs.UserPresenceDto.Deconstruct(String, String, String, EchoHub.Core.Models.UserStatus, String, EchoHub.Core.Models.ServerRole)
-  nameWithType: UserPresenceDto.Deconstruct(out string, out string?, out string?, out UserStatus, out string?, out ServerRole)
-  nameWithType.vb: UserPresenceDto.Deconstruct(String, String, String, UserStatus, String, ServerRole)
+- uid: EchoHub.Core.DTOs.UserPresenceDto.Deconstruct(System.String@,System.String@,System.String@,EchoHub.Core.Models.UserStatus@,System.String@,EchoHub.Core.Models.ServerRole@,System.Boolean@)
+  name: Deconstruct(out string, out string?, out string?, out UserStatus, out string?, out ServerRole, out bool)
+  href: api/core/EchoHub.Core.DTOs.UserPresenceDto.html#EchoHub_Core_DTOs_UserPresenceDto_Deconstruct_System_String__System_String__System_String__EchoHub_Core_Models_UserStatus__System_String__EchoHub_Core_Models_ServerRole__System_Boolean__
+  commentId: M:EchoHub.Core.DTOs.UserPresenceDto.Deconstruct(System.String@,System.String@,System.String@,EchoHub.Core.Models.UserStatus@,System.String@,EchoHub.Core.Models.ServerRole@,System.Boolean@)
+  name.vb: Deconstruct(String, String, String, UserStatus, String, ServerRole, Boolean)
+  fullName: EchoHub.Core.DTOs.UserPresenceDto.Deconstruct(out string, out string?, out string?, out EchoHub.Core.Models.UserStatus, out string?, out EchoHub.Core.Models.ServerRole, out bool)
+  fullName.vb: EchoHub.Core.DTOs.UserPresenceDto.Deconstruct(String, String, String, EchoHub.Core.Models.UserStatus, String, EchoHub.Core.Models.ServerRole, Boolean)
+  nameWithType: UserPresenceDto.Deconstruct(out string, out string?, out string?, out UserStatus, out string?, out ServerRole, out bool)
+  nameWithType.vb: UserPresenceDto.Deconstruct(String, String, String, UserStatus, String, ServerRole, Boolean)
 - uid: EchoHub.Core.DTOs.UserPresenceDto.Deconstruct*
   name: Deconstruct
   href: api/core/EchoHub.Core.DTOs.UserPresenceDto.html#EchoHub_Core_DTOs_UserPresenceDto_Deconstruct_
@@ -14746,6 +14980,18 @@ references:
   commentId: Overload:EchoHub.Core.DTOs.UserPresenceDto.GetHashCode
   fullName: EchoHub.Core.DTOs.UserPresenceDto.GetHashCode
   nameWithType: UserPresenceDto.GetHashCode
+- uid: EchoHub.Core.DTOs.UserPresenceDto.IsIrc
+  name: IsIrc
+  href: api/core/EchoHub.Core.DTOs.UserPresenceDto.html#EchoHub_Core_DTOs_UserPresenceDto_IsIrc
+  commentId: P:EchoHub.Core.DTOs.UserPresenceDto.IsIrc
+  fullName: EchoHub.Core.DTOs.UserPresenceDto.IsIrc
+  nameWithType: UserPresenceDto.IsIrc
+- uid: EchoHub.Core.DTOs.UserPresenceDto.IsIrc*
+  name: IsIrc
+  href: api/core/EchoHub.Core.DTOs.UserPresenceDto.html#EchoHub_Core_DTOs_UserPresenceDto_IsIrc_
+  commentId: Overload:EchoHub.Core.DTOs.UserPresenceDto.IsIrc
+  fullName: EchoHub.Core.DTOs.UserPresenceDto.IsIrc
+  nameWithType: UserPresenceDto.IsIrc
 - uid: EchoHub.Core.DTOs.UserPresenceDto.NicknameColor
   name: NicknameColor
   href: api/core/EchoHub.Core.DTOs.UserPresenceDto.html#EchoHub_Core_DTOs_UserPresenceDto_NicknameColor
@@ -20305,6 +20551,21 @@ references:
   commentId: Overload:EchoHub.Server.Services.PresenceTracker.GetUsernameForConnection
   fullName: EchoHub.Server.Services.PresenceTracker.GetUsernameForConnection
   nameWithType: PresenceTracker.GetUsernameForConnection
+- uid: EchoHub.Server.Services.PresenceTracker.IsIrcOnly(System.String)
+  name: IsIrcOnly(string)
+  href: api/server/EchoHub.Server.Services.PresenceTracker.html#EchoHub_Server_Services_PresenceTracker_IsIrcOnly_System_String_
+  commentId: M:EchoHub.Server.Services.PresenceTracker.IsIrcOnly(System.String)
+  name.vb: IsIrcOnly(String)
+  fullName: EchoHub.Server.Services.PresenceTracker.IsIrcOnly(string)
+  fullName.vb: EchoHub.Server.Services.PresenceTracker.IsIrcOnly(String)
+  nameWithType: PresenceTracker.IsIrcOnly(string)
+  nameWithType.vb: PresenceTracker.IsIrcOnly(String)
+- uid: EchoHub.Server.Services.PresenceTracker.IsIrcOnly*
+  name: IsIrcOnly
+  href: api/server/EchoHub.Server.Services.PresenceTracker.html#EchoHub_Server_Services_PresenceTracker_IsIrcOnly_
+  commentId: Overload:EchoHub.Server.Services.PresenceTracker.IsIrcOnly
+  fullName: EchoHub.Server.Services.PresenceTracker.IsIrcOnly
+  nameWithType: PresenceTracker.IsIrcOnly
 - uid: EchoHub.Server.Services.PresenceTracker.IsOnline(System.String)
   name: IsOnline(string)
   href: api/server/EchoHub.Server.Services.PresenceTracker.html#EchoHub_Server_Services_PresenceTracker_IsOnline_System_String_

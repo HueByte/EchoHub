@@ -132,6 +132,13 @@ file directly instead of requiring the user to paste a raw path.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Client.Services.ClipboardImage.html">ClipboardImage</a></dt>
+      <dd><p>Reads raw image data from the OS clipboard (e.g. an image copied from a browser, or a
+Win+Shift+S screenshot), which terminals cannot paste as text. Always returns PNG bytes:
+clipboard PNG data is passed through, clipboard bitmaps (CF_DIB) are re-encoded.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Client.Services.EchoHubConnection.html">EchoHubConnection</a></dt>
       <dd></dd>
     </dl>
@@ -171,10 +178,31 @@ can run 'echohub' from any terminal session.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Client.Services.RoomKeyProtector.html">RoomKeyProtector</a></dt>
+      <dd><p>Encrypts cached room content keys at rest so the client config never holds them as
+plain base64. Windows uses DPAPI (current-user scope, format prefix &quot;dp1:&quot;). On other
+platforms the keys are AES-GCM encrypted with a per-user master key file stored next
+to the config with 0600 permissions (prefix &quot;k1:&quot;) — without an OS keychain that is
+file-permission-level protection, not zero-knowledge: anyone who can read both the
+config and the key file can recover the room keys. Values with no recognized prefix
+are legacy plain-base64 keys from older clients; they load once and are re-encrypted.
+The room passphrase itself is never stored in any form.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Client.Services.RoomKeyStore.html">RoomKeyStore</a></dt>
       <dd><p>Holds room content keys for end-to-end encrypted channels: in-memory for the
 active session, persisted per-server in the client config (like saved sessions)
-so users don't retype the passphrase every launch. Keys never leave this machine.</p>
+so users don't retype the passphrase every launch. Keys never leave this machine
+and are encrypted at rest by <a class="xref" href="EchoHub.Client.Services.RoomKeyProtector.html">RoomKeyProtector</a>. Also tracks which
+channels are known to be end-to-end encrypted, so senders can refuse to emit
+plaintext into a room whose key isn't cached yet.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Client.Services.RoomLockedException.html">RoomLockedException</a></dt>
+      <dd><p>Thrown when sending into an end-to-end encrypted channel whose room key isn't cached:
+without the key the message would leave the client as plaintext, which must never happen.</p>
 </dd>
     </dl>
     <dl class="jumplist">
