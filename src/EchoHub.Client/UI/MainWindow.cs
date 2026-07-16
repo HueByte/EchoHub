@@ -1317,8 +1317,11 @@ public sealed partial class MainWindow : Runnable
     /// </summary>
     private void RefreshChannelList()
     {
+        var privateChannels = _channelNames
+            .Where(n => _channelPublic.TryGetValue(n, out var isPublic) && !isPublic)
+            .ToHashSet();
         _channelListSource.Update(_channelNames, _messageManager.GetUnreadCounts(), _messageManager.CurrentChannel,
-            _channelProtected, _messageManager.MentionChannels);
+            _channelProtected, _messageManager.MentionChannels, privateChannels);
         _channelList.Source = _channelListSource;
 
         // Restore selection to current channel
@@ -1394,6 +1397,10 @@ public sealed partial class MainWindow : Runnable
             var text = roleTag.Length > 0
                 ? $"{statusIcon} {roleTag} {name}"
                 : $"{statusIcon} {name}";
+            // Users connected only via the IRC gateway get a tag — they lack client features
+            // (encryption, attachments, profiles), which is useful context in conversation.
+            if (u.IsIrc)
+                text += " [irc]";
             // Fall back to the deterministic per-nick palette so user-list colors
             // match the same user's messages in chat.
             var nameColor = HexColorHelper.ParseHexColor(u.NicknameColor)

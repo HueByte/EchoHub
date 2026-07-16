@@ -9,6 +9,9 @@ public static class ConfigManager
 
     private static readonly string ConfigPath = Path.Combine(ConfigDir, "config.json");
 
+    /// <summary>Directory holding the client config and local key material.</summary>
+    public static string ConfigDirectory => ConfigDir;
+
     // Load-mutate-save cycles run from both the UI thread and background tasks
     // (token refresh, room keys, last-read checkpoints) — serialize file access.
     private static readonly Lock FileLock = new();

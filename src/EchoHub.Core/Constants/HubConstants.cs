@@ -4,6 +4,12 @@ public static class HubConstants
 {
     public const string ChatHubPath = "/hubs/chat";
     public const string DefaultChannel = "general";
+
+    /// <summary>
+    /// Connection-id prefix for IRC gateway connections. The presence tracker uses it to
+    /// tell IRC-only users apart from native (SignalR) clients.
+    /// </summary>
+    public const string IrcConnectionIdPrefix = "irc-";
     public const int DefaultHistoryCount = 100;
     public const int MaxMessageLength = 2000;
     public const int MaxImageSizeBytes = 10 * 1024 * 1024; // 10 MB

@@ -112,6 +112,11 @@ internal sealed class ConnectionManager : IAsyncDisposable
 
             var channels = await _apiClient.GetChannelsAsync();
 
+            // Known E2E channels — senders consult this so a client without the room
+            // key never emits plaintext into an encrypted room
+            foreach (var channel in channels)
+                _roomKeys.MarkChannelEncrypted(channel.Name, channel.IsEncrypted);
+
             // Join default channel + fetch history
             onStatus("Joining channels...");
             _joinedChannels.Clear();
@@ -296,7 +301,11 @@ internal sealed class ConnectionManager : IAsyncDisposable
         connection.OnForceDisconnect += reason => ForceDisconnected?.Invoke(reason);
         connection.OnMessageDeleted += (ch, id) => MessageDeleted?.Invoke(ch, id);
         connection.OnChannelNuked += ch => ChannelNuked?.Invoke(ch);
-        connection.OnChannelUpdated += ch => ChannelUpdated?.Invoke(ch);
+        connection.OnChannelUpdated += ch =>
+        {
+            _roomKeys.MarkChannelEncrypted(ch.Name, ch.IsEncrypted);
+            ChannelUpdated?.Invoke(ch);
+        };
         connection.OnError += msg => Error?.Invoke(msg);
         connection.OnConnectionStateChanged += status => ConnectionStatusChanged?.Invoke(status);
         connection.OnReconnected += () => Reconnected?.Invoke();

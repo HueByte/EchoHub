@@ -1,3 +1,4 @@
+using EchoHub.Core.Constants;
 using EchoHub.Server.Services;
 using Xunit;
 
@@ -64,5 +65,49 @@ public class PresenceTrackerTests
         var channels = tracker.GetChannelsForUser("alice");
         Assert.Contains("general", channels);
         Assert.Contains("random", channels);
+    }
+
+    [Fact]
+    public void IsIrcOnly_AllConnectionsIrc_ReturnsTrue()
+    {
+        var tracker = new PresenceTracker();
+        tracker.UserConnected($"{HubConstants.IrcConnectionIdPrefix}conn1", Guid.NewGuid(), "alice");
+        Assert.True(tracker.IsIrcOnly("alice"));
+    }
+
+    [Fact]
+    public void IsIrcOnly_NativeConnection_ReturnsFalse()
+    {
+        var tracker = new PresenceTracker();
+        tracker.UserConnected("conn1", Guid.NewGuid(), "alice");
+        Assert.False(tracker.IsIrcOnly("alice"));
+    }
+
+    [Fact]
+    public void IsIrcOnly_MixedConnections_ReturnsFalse()
+    {
+        var tracker = new PresenceTracker();
+        var userId = Guid.NewGuid();
+        tracker.UserConnected($"{HubConstants.IrcConnectionIdPrefix}conn1", userId, "alice");
+        tracker.UserConnected("conn2", userId, "alice");
+        Assert.False(tracker.IsIrcOnly("alice"));
+    }
+
+    [Fact]
+    public void IsIrcOnly_OfflineUser_ReturnsFalse()
+    {
+        var tracker = new PresenceTracker();
+        Assert.False(tracker.IsIrcOnly("nobody"));
+    }
+
+    [Fact]
+    public void IsIrcOnly_NativeConnectionDisconnects_BecomesTrue()
+    {
+        var tracker = new PresenceTracker();
+        var userId = Guid.NewGuid();
+        tracker.UserConnected($"{HubConstants.IrcConnectionIdPrefix}conn1", userId, "alice");
+        tracker.UserConnected("conn2", userId, "alice");
+        tracker.UserDisconnected("conn2");
+        Assert.True(tracker.IsIrcOnly("alice"));
     }
 }
