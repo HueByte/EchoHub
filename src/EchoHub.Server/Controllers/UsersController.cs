@@ -3,6 +3,7 @@ using EchoHub.Core.Constants;
 using EchoHub.Core.Contracts;
 using EchoHub.Core.Services;
 using EchoHub.Core.DTOs;
+using EchoHub.Server.Config;
 using EchoHub.Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,11 +19,13 @@ public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
     private readonly ImageToAsciiService _asciiService;
+    private readonly UploadLimits _uploadLimits;
 
-    public UsersController(IUserService userService, ImageToAsciiService asciiService)
+    public UsersController(IUserService userService, ImageToAsciiService asciiService, UploadLimits uploadLimits)
     {
         _userService = userService;
         _asciiService = asciiService;
+        _uploadLimits = uploadLimits;
     }
 
     [HttpGet("{username}/profile")]
@@ -65,8 +68,8 @@ public class UsersController : ControllerBase
 
         var file = Request.Form.Files[0];
 
-        if (file.Length > HubConstants.MaxAvatarSizeBytes)
-            return BadRequest(new ErrorResponse($"File size exceeds maximum of {HubConstants.MaxAvatarSizeBytes / (1024 * 1024)} MB."));
+        if (file.Length > _uploadLimits.MaxAvatarSizeBytes)
+            return BadRequest(new ErrorResponse($"File size exceeds maximum of {_uploadLimits.MaxAvatarSizeBytes / (1024 * 1024)} MB."));
 
         using var stream = file.OpenReadStream();
 

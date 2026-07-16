@@ -59,6 +59,23 @@ public record CreateChannelRequest(
 public record ChannelCryptoDto(bool IsEncrypted, string? EncryptionSalt);
 
 /// <summary>
+/// Human-facing summary of a channel (the <c>/meta</c> command). For encrypted channels the
+/// server still knows these figures — count, timestamps, and stored blob sizes — even though it
+/// cannot read the content itself. <see cref="EstimatedSizeBytes"/> is the sum of stored
+/// attachment blob sizes plus message text length, so it is an estimate, not an exact on-disk total.
+/// </summary>
+public record ChannelMetaDto(
+    Guid Id,
+    string Name,
+    string? Topic,
+    bool IsEncrypted,
+    bool IsProtected,
+    int MessageCount,
+    int UniqueUserCount,
+    long EstimatedSizeBytes,
+    DateTimeOffset CreatedAt);
+
+/// <summary>
 /// Passphrase change for an encrypted channel: the client proves knowledge of the old
 /// passphrase (old auth key), then supplies the re-wrapped room key under the new one.
 /// </summary>

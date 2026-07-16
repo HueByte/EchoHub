@@ -40,6 +40,12 @@ public sealed class AppOrchestrator : IDisposable
 
     public MainWindow MainWindow => _mainWindow;
 
+    /// <summary>
+    /// Set when the user confirms an update. The host must run this after the Terminal.Gui main
+    /// loop exits (console restored), so the updater's in-place restart doesn't fight the TUI.
+    /// </summary>
+    public Func<Task>? PendingUpdate => _updateService.PendingUpdate;
+
     public AppOrchestrator(IApplication app, ClientConfig config)
     {
         _app = app;
@@ -121,6 +127,7 @@ public sealed class AppOrchestrator : IDisposable
         _commandHandler.OnLeaveChannel += HandleCmdLeaveChannel;
         _commandHandler.OnSetTopic += HandleCmdSetTopic;
         _commandHandler.OnListUsers += HandleCmdListUsers;
+        _commandHandler.OnRoomInfo += HandleCmdMeta;
         _commandHandler.OnKickUser += HandleCmdKickUser;
         _commandHandler.OnBanUser += HandleCmdBanUser;
         _commandHandler.OnUnbanUser += HandleCmdUnbanUser;
@@ -602,6 +609,46 @@ public sealed class AppOrchestrator : IDisposable
         catch (Exception ex)
         {
             InvokeUI(() => _mainWindow.ShowError($"Failed to list users: {ex.Message}"));
+        }
+    }
+
+    private async Task HandleCmdMeta()
+    {
+        if (!_conn.IsConnected || _conn.Api is null) return;
+
+        var channel = _mainWindow.CurrentChannel;
+        if (string.IsNullOrEmpty(channel)) return;
+
+        try
+        {
+            var meta = await _conn.Api.GetChannelMetaAsync(channel);
+            if (meta is null)
+            {
+                InvokeUI(() => _mainWindow.ShowError($"Channel #{channel} not found."));
+                return;
+            }
+
+            var size = meta.EstimatedSizeBytes <= 0 ? "0 B" : ChatMessageManager.FormatFileSize(meta.EstimatedSizeBytes);
+            var protection = meta.IsEncrypted ? "end-to-end encrypted"
+                : meta.IsProtected ? "password-protected"
+                : "open";
+
+            InvokeUI(() =>
+            {
+                _messageManager.AddSystemMessage(channel, $"Room info for #{meta.Name}:");
+                if (!string.IsNullOrWhiteSpace(meta.Topic))
+                    _messageManager.AddSystemMessage(channel, $"  Topic         {meta.Topic}");
+                _messageManager.AddSystemMessage(channel, $"  Room ID       {meta.Id}");
+                _messageManager.AddSystemMessage(channel, $"  Created       {meta.CreatedAt.ToLocalTime():g}");
+                _messageManager.AddSystemMessage(channel, $"  Messages      {meta.MessageCount}");
+                _messageManager.AddSystemMessage(channel, $"  Unique users  {meta.UniqueUserCount}");
+                _messageManager.AddSystemMessage(channel, $"  Est. size     {size}");
+                _messageManager.AddSystemMessage(channel, $"  Protection    {protection}");
+            });
+        }
+        catch (Exception ex)
+        {
+            InvokeUI(() => _mainWindow.ShowError($"Failed to fetch room info: {ex.Message}"));
         }
     }
 

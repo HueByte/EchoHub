@@ -5,6 +5,7 @@ using EchoHub.Core.Contracts;
 using EchoHub.Core.Services;
 using EchoHub.Core.Models;
 using EchoHub.Server.Auth;
+using EchoHub.Server.Config;
 using EchoHub.Server.Data;
 using EchoHub.Server.Hubs;
 using EchoHub.Server.Irc;
@@ -101,6 +102,14 @@ while (true)
         // ── Controllers + SignalR ────────────────────────────────────────────
         builder.Services.AddControllers();
         builder.Services.AddSignalR();
+
+        // ── Upload limits (admin-configurable via the "Uploads" section) ─────
+        var uploadLimits = builder.Configuration.GetSection("Uploads").Get<UploadLimits>() ?? new UploadLimits();
+        builder.Services.AddSingleton(uploadLimits);
+        // Raise the multipart form ceiling to match the configured limits; per-endpoint
+        // request-body limits are applied at the action from the same values.
+        builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(o =>
+            o.MultipartBodyLengthLimit = uploadLimits.MaxRequestBodyBytes);
 
         // ── Services ─────────────────────────────────────────────────────────
         builder.Services.AddSingleton<JwtTokenService>();

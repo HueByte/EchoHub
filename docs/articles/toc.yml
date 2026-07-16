@@ -10,6 +10,8 @@
       href: configuration.md
     - name: Encryption
       href: encryption.md
+    - name: Encrypted Rooms
+      href: encrypted-rooms.md
     - name: Notification Sounds
       href: notification-sounds.md
 - name: Flows

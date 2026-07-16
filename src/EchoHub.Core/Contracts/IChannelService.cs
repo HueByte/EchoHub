@@ -18,6 +18,7 @@ public interface IChannelService
     Task<(string? Topic, bool Exists)> GetChannelTopicAsync(string channelName);
     Task<List<ChannelListItem>> GetChannelListAsync();
     Task<ChannelDto?> GetChannelByNameAsync(string channelName);
+    Task<ChannelMetaDto?> GetChannelMetaAsync(string channelName);
     Task<ChannelCryptoDto?> GetChannelCryptoAsync(string channelName);
     Task<(string? EncryptionSalt, string? WrappedRoomKey)> GetChannelKeyEnvelopeAsync(string channelName);
 

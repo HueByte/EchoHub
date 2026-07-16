@@ -472,4 +472,22 @@ public class CommandHandlerTests
         Assert.True(result.Handled);
         Assert.True(quitCalled);
     }
+
+    // ── /meta ─────────────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData("/meta")]
+    [InlineData("/info")]
+    public async Task HandleAsync_Meta_RaisesRoomInfo(string input)
+    {
+        var handler = CreateHandler();
+        var raised = false;
+        handler.OnRoomInfo += () => { raised = true; return Task.CompletedTask; };
+
+        var result = await handler.HandleAsync(input);
+
+        Assert.True(result.Handled);
+        Assert.False(result.IsError);
+        Assert.True(raised);
+    }
 }
