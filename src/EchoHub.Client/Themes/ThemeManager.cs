@@ -575,7 +575,14 @@ public static class ThemeManager
             Focus = focus,
             HotNormal = normal,
             HotFocus = focus,
-            Disabled = normal
+            Disabled = normal,
+
+            // TextView/TextField draw their editable area with the Editable/ReadOnly roles. If
+            // left unset, Terminal.Gui derives an opaque background from Normal — which renders
+            // as a solid box behind the input under transparent themes. Pin them to the theme's
+            // own colors so the input matches its background (transparent stays transparent).
+            Editable = normal,
+            ReadOnly = normal
         };
     }
 
