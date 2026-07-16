@@ -45,6 +45,8 @@ public class EchoHubDbContext : DbContext
             entity.Property(c => c.Name).IsRequired().HasMaxLength(100);
             entity.Property(c => c.Topic).HasMaxLength(500);
             entity.Property(c => c.PasswordHash).HasMaxLength(100);
+            entity.Property(c => c.EncryptionSalt).HasMaxLength(64);
+            entity.Property(c => c.WrappedRoomKey).HasMaxLength(200);
 
             entity.HasMany(c => c.Messages)
                   .WithOne(m => m.Channel)

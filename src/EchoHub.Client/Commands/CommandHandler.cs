@@ -14,6 +14,7 @@ public class CommandHandler
     public event Func<string?, Task>? OnOpenProfile;
     public event Func<Task>? OnOpenServers;
     public event Func<string, string?, Task>? OnJoinChannel;
+    public event Func<string, string, Task>? OnChangeRoomPassword;
     public event Func<Task>? OnLeaveChannel;
     public event Func<string, Task>? OnSetTopic;
     public event Func<Task>? OnListUsers;
@@ -51,6 +52,7 @@ public class CommandHandler
             "avatar" => await HandleAvatar(args),
             "servers" => await HandleServers(),
             "join" => await HandleJoin(args),
+            "passwd" => await HandlePasswd(args),
             "leave" => await HandleLeave(),
             "topic" => await HandleTopic(args),
             "users" => await HandleUsers(),
@@ -204,6 +206,20 @@ public class CommandHandler
         return new CommandResult(true);
     }
 
+    private async Task<CommandResult> HandlePasswd(string args)
+    {
+        var parts = args.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (parts.Length != 2)
+            return new CommandResult(true, "Usage: /passwd <old passphrase> <new passphrase> — changes the current encrypted channel's passphrase", IsError: true);
+
+        if (parts[1].Length < 3)
+            return new CommandResult(true, "New passphrase must be at least 3 characters.", IsError: true);
+
+        if (OnChangeRoomPassword is not null)
+            await OnChangeRoomPassword(parts[0], parts[1]);
+        return new CommandResult(true);
+    }
+
     private async Task<CommandResult> HandleLeave()
     {
         if (OnLeaveChannel is not null)
@@ -347,6 +363,7 @@ public class CommandHandler
               /profile [username]                   - View a profile
               /servers                             - Open saved servers
               /join <channel> [password]           - Join a channel (password if protected)
+              /passwd <old> <new>                  - Change current encrypted channel's passphrase
               /leave                               - Leave current channel
               /topic <text>                        - Set channel topic
               /users                               - List online users

@@ -60,7 +60,7 @@ public sealed partial class MainWindow : Runnable
     private static readonly string[] SlashCommands =
     [
         "/status", "/nick", "/color", "/theme", "/send",
-        "/avatar", "/profile", "/servers", "/join", "/leave",
+        "/avatar", "/profile", "/servers", "/join", "/passwd", "/leave",
         "/topic", "/users", "/kick", "/ban", "/unban",
         "/mute", "/unmute", "/role", "/nuke", "/test-sound", "/quit", "/help"
     ];
@@ -153,6 +153,11 @@ public sealed partial class MainWindow : Runnable
     /// Fired when the user activates (Enter/click) a file message. Parameters: attachmentUrl, fileName.
     /// </summary>
     public event Action<string, string>? OnFileDownloadRequested;
+
+    /// <summary>
+    /// Fired when the user activates an image's "[save original]" line. Parameters: attachmentUrl, fileName.
+    /// </summary>
+    public event Action<string, string>? OnImageSaveRequested;
 
     /// <summary>
     /// Fired when the user activates a username (in userlist or message). Parameter is the username.
@@ -463,6 +468,13 @@ public sealed partial class MainWindow : Runnable
             if (line.Type == MessageType.File)
             {
                 OnFileDownloadRequested?.Invoke(line.AttachmentUrl, line.AttachmentFileName);
+                e.Handled = true;
+                return;
+            }
+
+            if (line.Type == MessageType.Image)
+            {
+                OnImageSaveRequested?.Invoke(line.AttachmentUrl, line.AttachmentFileName);
                 e.Handled = true;
                 return;
             }

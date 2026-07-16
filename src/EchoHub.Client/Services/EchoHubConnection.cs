@@ -1,9 +1,16 @@
 using EchoHub.Core.Constants;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
+using EchoHub.Core.Security;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace EchoHub.Client.Services;
+
+/// <summary>
+/// Result of joining a channel: decrypted history plus, for end-to-end encrypted
+/// channels, the key envelope needed to unlock the room content key.
+/// </summary>
+public sealed record JoinOutcome(List<MessageDto> History, string? EncryptionSalt, string? WrappedRoomKey);
 
 /// <summary>
 /// Thrown when joining a channel fails because a password is required or incorrect.
@@ -21,8 +28,12 @@ public sealed class ChannelPasswordRequiredException : Exception
 
 public sealed class EchoHubConnection : IAsyncDisposable
 {
+    public const string LockedMessagePlaceholder =
+        "[encrypted — rejoin this channel with its passphrase to unlock]";
+
     private readonly HubConnection _connection;
     private readonly ClientEncryptionService _encryption;
+    private readonly RoomKeyStore _roomKeys;
 
     public event Action<MessageDto>? OnMessageReceived;
     public event Action<string, string, UserPresenceDto?>? OnUserJoined;
@@ -40,9 +51,10 @@ public sealed class EchoHubConnection : IAsyncDisposable
 
     public bool IsConnected => _connection.State == HubConnectionState.Connected;
 
-    public EchoHubConnection(string serverUrl, ApiClient apiClient, ClientEncryptionService encryption)
+    public EchoHubConnection(string serverUrl, ApiClient apiClient, ClientEncryptionService encryption, RoomKeyStore roomKeys)
     {
         _encryption = encryption;
+        _roomKeys = roomKeys;
         var hubUrl = serverUrl.TrimEnd('/') + HubConstants.ChatHubPath;
 
         _connection = new HubConnectionBuilder()
@@ -79,9 +91,7 @@ public sealed class EchoHubConnection : IAsyncDisposable
     {
         _connection.On<MessageDto>(nameof(Core.Contracts.IEchoHubClient.ReceiveMessage), message =>
         {
-            // Decrypt message content received from server
-            var decrypted = message with { Content = _encryption.Decrypt(message.Content) };
-            OnMessageReceived?.Invoke(decrypted);
+            OnMessageReceived?.Invoke(DecryptMessage(message));
         });
 
         _connection.On<string, string, UserPresenceDto?>(nameof(Core.Contracts.IEchoHubClient.UserJoined), (channelName, username, presence) =>
@@ -148,7 +158,7 @@ public sealed class EchoHubConnection : IAsyncDisposable
         OnConnectionStateChanged?.Invoke("Disconnected");
     }
 
-    public async Task<List<MessageDto>> JoinChannelAsync(string channelName, string? password = null)
+    public async Task<JoinOutcome> JoinChannelAsync(string channelName, string? password = null)
     {
         var result = await _connection.InvokeAsync<JoinChannelResult>("JoinChannel", channelName, password);
         if (!result.Success)
@@ -157,7 +167,7 @@ public sealed class EchoHubConnection : IAsyncDisposable
                 throw new ChannelPasswordRequiredException(channelName, result.Error ?? "Channel is password protected.");
             throw new InvalidOperationException(result.Error ?? "Failed to join channel.");
         }
-        return DecryptMessages(result.History);
+        return new JoinOutcome(DecryptMessages(result.History), result.EncryptionSalt, result.WrappedRoomKey);
     }
 
     public async Task LeaveChannelAsync(string channelName)
@@ -167,7 +177,10 @@ public sealed class EchoHubConnection : IAsyncDisposable
 
     public async Task SendMessageAsync(string channelName, string content)
     {
-        // Encrypt content before sending to server
+        // Room layer first (end-to-end, server can't read), then transport encryption
+        if (_roomKeys.TryGetKey(channelName, out var roomKey))
+            content = RoomCrypto.EncryptText(content, roomKey);
+
         var encrypted = _encryption.Encrypt(content);
         await _connection.InvokeAsync("SendMessage", channelName, encrypted);
     }
@@ -190,7 +203,32 @@ public sealed class EchoHubConnection : IAsyncDisposable
 
     private List<MessageDto> DecryptMessages(List<MessageDto> messages)
     {
-        return messages.Select(m => m with { Content = _encryption.Decrypt(m.Content) }).ToList();
+        return messages.Select(DecryptMessage).ToList();
+    }
+
+    /// <summary>
+    /// Strips the transport encryption, then the room layer for E2E channels.
+    /// Without the room key the content is replaced by a locked placeholder —
+    /// re-fetch history after unlocking to render it.
+    /// </summary>
+    private MessageDto DecryptMessage(MessageDto message)
+    {
+        var content = _encryption.Decrypt(message.Content);
+
+        if (RoomCrypto.IsRoomCiphertext(content))
+        {
+            if (_roomKeys.TryGetKey(message.ChannelName, out var roomKey)
+                && RoomCrypto.TryDecryptText(content, roomKey, out var plaintext))
+            {
+                content = plaintext;
+            }
+            else
+            {
+                content = LockedMessagePlaceholder;
+            }
+        }
+
+        return message with { Content = content };
     }
 
     public async ValueTask DisposeAsync()

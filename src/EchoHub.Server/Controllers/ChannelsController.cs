@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using EchoHub.Core.Constants;
 using EchoHub.Core.Contracts;
+using EchoHub.Core.Services;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
 using EchoHub.Server.Data;
@@ -65,7 +66,8 @@ public class ChannelsController : ControllerBase
             return Unauthorized(new ErrorResponse("Authentication required."));
 
         var result = await _channelService.CreateChannelAsync(
-            Guid.Parse(userIdClaim), request.Name, request.Topic, request.IsPublic, request.Password);
+            Guid.Parse(userIdClaim), request.Name, request.Topic, request.IsPublic, request.Password,
+            request.EncryptionSalt, request.WrappedRoomKey);
         if (!result.IsSuccess)
             return MapChannelError(result);
 
@@ -73,6 +75,43 @@ public class ChannelsController : ControllerBase
             await _chatService.BroadcastChannelUpdatedAsync(result.Channel);
 
         return Created($"/api/channels/{result.Channel.Name}", result.Channel);
+    }
+
+    /// <summary>
+    /// Public crypto metadata for a channel: whether it is end-to-end encrypted and the
+    /// PBKDF2 salt clients need to derive their join credential. Never returns the
+    /// wrapped room key — that is only handed out after a successful join.
+    /// </summary>
+    [HttpGet("{channel}/crypto")]
+    public async Task<IActionResult> GetChannelCrypto(string channel)
+    {
+        var crypto = await _channelService.GetChannelCryptoAsync(channel);
+        if (crypto is null)
+            return NotFound(new ErrorResponse($"Channel '{channel}' does not exist."));
+
+        return Ok(crypto);
+    }
+
+    /// <summary>
+    /// Changes an encrypted channel's passphrase by re-wrapping its room key.
+    /// The caller proves knowledge of the old passphrase via the old auth key;
+    /// history is never re-encrypted (the room content key does not change).
+    /// </summary>
+    [HttpPost("{channel}/rekey")]
+    public async Task<IActionResult> RekeyChannel(string channel, [FromBody] RekeyChannelRequest request)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim is null)
+            return Unauthorized(new ErrorResponse("Authentication required."));
+
+        var result = await _channelService.RekeyChannelAsync(
+            Guid.Parse(userIdClaim), channel,
+            request.OldPassword, request.NewPassword,
+            request.NewEncryptionSalt, request.NewWrappedRoomKey);
+        if (!result.IsSuccess)
+            return MapChannelError(result);
+
+        return Ok(result.Channel);
     }
 
     [HttpPut("{channel}/topic")]
@@ -131,34 +170,68 @@ public class ChannelsController : ControllerBase
 
         var file = Request.Form.Files[0];
 
-        // Detect file type early so we can apply the correct size limit
-        using var stream = file.OpenReadStream();
-        var isImage = FileValidationHelper.IsValidImage(stream);
-        var isAudio = !isImage && FileValidationHelper.IsAudioFile(file.FileName);
-
-        var maxSize = isImage ? HubConstants.MaxImageSizeBytes
-            : isAudio ? HubConstants.MaxAudioFileSizeBytes
-            : HubConstants.MaxFileSizeBytes;
-
-        if (file.Length > maxSize)
-            return BadRequest(new ErrorResponse($"File size exceeds maximum of {maxSize / (1024 * 1024)} MB."));
-
-        var (fileId, filePath) = await _fileStorage.SaveFileAsync(stream, file.FileName);
-
-        var messageType = isImage ? MessageType.Image
-            : isAudio ? MessageType.Audio
-            : MessageType.File;
+        MessageType messageType;
         string content;
+        string fileId;
 
-        if (isImage)
+        if (channelDto.IsEncrypted)
         {
-            var (w, h) = ImageToAsciiService.GetDimensions(size);
-            using var imageStream = System.IO.File.OpenRead(filePath);
-            content = _asciiService.ConvertToAscii(imageStream, w, h);
+            // E2E-encrypted channel: the blob is ciphertext the server cannot inspect.
+            // The client declares the type and supplies pre-rendered, room-encrypted
+            // content (ASCII art for images, encrypted filename otherwise).
+            messageType = Request.Form["type"].ToString().ToLowerInvariant() switch
+            {
+                "image" => MessageType.Image,
+                "audio" => MessageType.Audio,
+                _ => MessageType.File,
+            };
+
+            var declaredMax = messageType switch
+            {
+                MessageType.Image => HubConstants.MaxImageSizeBytes,
+                MessageType.Audio => HubConstants.MaxAudioFileSizeBytes,
+                _ => HubConstants.MaxFileSizeBytes,
+            };
+            if (file.Length > declaredMax)
+                return BadRequest(new ErrorResponse($"File size exceeds maximum of {declaredMax / (1024 * 1024)} MB."));
+
+            var clientContent = Request.Form["content"].ToString();
+            content = string.IsNullOrEmpty(clientContent) ? file.FileName : clientContent;
+
+            using var encryptedStream = file.OpenReadStream();
+            (fileId, _) = await _fileStorage.SaveFileAsync(encryptedStream, file.FileName);
         }
         else
         {
-            content = file.FileName;
+            // Detect file type early so we can apply the correct size limit
+            using var stream = file.OpenReadStream();
+            var isImage = FileValidationHelper.IsValidImage(stream);
+            var isAudio = !isImage && FileValidationHelper.IsAudioFile(file.FileName);
+
+            var maxSize = isImage ? HubConstants.MaxImageSizeBytes
+                : isAudio ? HubConstants.MaxAudioFileSizeBytes
+                : HubConstants.MaxFileSizeBytes;
+
+            if (file.Length > maxSize)
+                return BadRequest(new ErrorResponse($"File size exceeds maximum of {maxSize / (1024 * 1024)} MB."));
+
+            string filePath;
+            (fileId, filePath) = await _fileStorage.SaveFileAsync(stream, file.FileName);
+
+            messageType = isImage ? MessageType.Image
+                : isAudio ? MessageType.Audio
+                : MessageType.File;
+
+            if (isImage)
+            {
+                var (w, h) = ImageToAsciiService.GetDimensions(size);
+                using var imageStream = System.IO.File.OpenRead(filePath);
+                content = _asciiService.ConvertToAscii(imageStream, w, h);
+            }
+            else
+            {
+                content = file.FileName;
+            }
         }
 
         var attachmentUrl = $"/api/files/{fileId}";
@@ -218,6 +291,10 @@ public class ChannelsController : ControllerBase
         var channelDto = await _channelService.GetChannelByNameAsync(channelName);
         if (channelDto is null)
             return NotFound(new ErrorResponse($"Channel '{channelName}' does not exist."));
+
+        if (channelDto.IsEncrypted)
+            return BadRequest(new ErrorResponse(
+                "Sending images by URL is not available in end-to-end encrypted channels — download the image and /send the file instead."));
 
         if (string.IsNullOrWhiteSpace(request.Url))
             return BadRequest(new ErrorResponse("URL is required."));

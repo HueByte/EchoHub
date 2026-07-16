@@ -255,6 +255,22 @@ public sealed class ChatMessageManager
                             lines.Add(new ChatLine($"       {trimmed}"));
                     }
                 }
+
+                // Clickable action to download the original image below the ASCII art
+                if (message.AttachmentUrl is not null)
+                {
+                    var imageName = message.AttachmentFileName ?? "image";
+                    var imageSize = FormatFileSize(message.AttachmentFileSize);
+                    var saveLine = new ChatLine(new List<ChatSegment>
+                    {
+                        new("       ", null),
+                        new($"[↓ save original] {imageName} [{imageSize}]", ChatColors.FileAttr),
+                    });
+                    saveLine.AttachmentUrl = message.AttachmentUrl;
+                    saveLine.AttachmentFileName = imageName;
+                    saveLine.Type = MessageType.Image;
+                    lines.Add(saveLine);
+                }
                 break;
 
             case MessageType.Audio:

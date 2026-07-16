@@ -288,6 +288,17 @@ public class IrcCommandHandlerTests
     }
 
     [Fact]
+    public async Task Join_EncryptedChannel_IsBlockedOverIrc()
+    {
+        _channelService.CryptoToReturn = new ChannelCryptoDto(true, "c2FsdA==");
+
+        var lines = await RunAuthenticated(["JOIN #vault"]);
+
+        Assert.Contains(lines, l => l.Contains("475") && l.Contains("#vault") && l.Contains("end-to-end encrypted"));
+        Assert.Empty(_chatService.JoinedChannels);
+    }
+
+    [Fact]
     public async Task Join_SendsTopic()
     {
         _channelService.TopicResult = ("Welcome to general!", true);

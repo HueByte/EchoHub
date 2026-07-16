@@ -23,6 +23,13 @@ public class SavedServer
     public string? RefreshToken { get; set; }
     public bool RememberMe { get; set; }
     public DateTimeOffset LastConnected { get; set; }
+
+    /// <summary>
+    /// Cached room content keys for end-to-end encrypted channels on this server,
+    /// keyed by channel name (base64). Like RefreshToken, these live only on the
+    /// user's machine — the server never sees them.
+    /// </summary>
+    public Dictionary<string, string> ChannelKeys { get; set; } = [];
 }
 
 public class AccountPreset

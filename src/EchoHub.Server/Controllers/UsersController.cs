@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using EchoHub.Core.Constants;
 using EchoHub.Core.Contracts;
+using EchoHub.Core.Services;
 using EchoHub.Core.DTOs;
 using EchoHub.Server.Services;
 using Microsoft.AspNetCore.Authorization;

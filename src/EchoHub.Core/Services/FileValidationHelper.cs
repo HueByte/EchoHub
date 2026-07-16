@@ -1,4 +1,4 @@
-namespace EchoHub.Server.Services;
+namespace EchoHub.Core.Services;
 
 public static class FileValidationHelper
 {

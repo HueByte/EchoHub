@@ -41,14 +41,16 @@ public class ChannelService : IChannelService
             .Skip(offset)
             .Take(limit)
             .Select(c => new ChannelDto(
-                c.Id, c.Name, c.Topic, c.IsPublic, c.Messages.Count, c.CreatedAt, c.PasswordHash != null))
+                c.Id, c.Name, c.Topic, c.IsPublic, c.Messages.Count, c.CreatedAt,
+                c.PasswordHash != null, c.WrappedRoomKey != null))
             .ToListAsync();
 
         return new PaginatedResponse<ChannelDto>(channels, total, offset, limit);
     }
 
     public async Task<ChannelOperationResult> CreateChannelAsync(
-        Guid creatorUserId, string name, string? topic, bool isPublic, string? password = null)
+        Guid creatorUserId, string name, string? topic, bool isPublic,
+        string? password = null, string? encryptionSalt = null, string? wrappedRoomKey = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             return ChannelOperationResult.Fail(ChannelError.ValidationFailed, "Channel name is required.");
@@ -62,6 +64,12 @@ public class ChannelService : IChannelService
         var passwordError = ValidateChannelPassword(ref password);
         if (passwordError is not null)
             return ChannelOperationResult.Fail(ChannelError.ValidationFailed, passwordError);
+
+        // The E2E envelope (client-generated) only makes sense on password-gated channels
+        var hasEnvelope = !string.IsNullOrWhiteSpace(encryptionSalt) && !string.IsNullOrWhiteSpace(wrappedRoomKey);
+        if (hasEnvelope && password is null)
+            return ChannelOperationResult.Fail(ChannelError.ValidationFailed,
+                "Encrypted channels require a password.");
 
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
@@ -77,6 +85,8 @@ public class ChannelService : IChannelService
             IsPublic = isPublic,
             CreatedByUserId = creatorUserId,
             PasswordHash = password is not null ? BCrypt.Net.BCrypt.HashPassword(password) : null,
+            EncryptionSalt = hasEnvelope ? encryptionSalt : null,
+            WrappedRoomKey = hasEnvelope ? wrappedRoomKey : null,
         };
 
         db.Channels.Add(channel);
@@ -91,7 +101,7 @@ public class ChannelService : IChannelService
         await db.SaveChangesAsync();
 
         var dto = new ChannelDto(channel.Id, channel.Name, channel.Topic, channel.IsPublic, 0, channel.CreatedAt,
-            channel.PasswordHash != null);
+            channel.PasswordHash != null, channel.WrappedRoomKey != null);
         return ChannelOperationResult.Success(dto);
     }
 
@@ -119,12 +129,14 @@ public class ChannelService : IChannelService
 
         var messageCount = await db.Messages.CountAsync(m => m.ChannelId == dbChannel.Id);
         var dto = new ChannelDto(dbChannel.Id, dbChannel.Name, dbChannel.Topic, dbChannel.IsPublic, messageCount, dbChannel.CreatedAt,
-            dbChannel.PasswordHash != null);
+            dbChannel.PasswordHash != null, dbChannel.WrappedRoomKey != null);
         return ChannelOperationResult.Success(dto);
     }
 
     /// <summary>
     /// Sets, changes, or clears (null) a channel's join password. Creator or admin only.
+    /// Not available on end-to-end encrypted channels — those change passphrase via
+    /// <see cref="RekeyChannelAsync"/> so the room key envelope stays consistent.
     /// </summary>
     public async Task<ChannelOperationResult> SetChannelPasswordAsync(Guid callerUserId, string channelName, string? password)
     {
@@ -141,6 +153,10 @@ public class ChannelService : IChannelService
         if (dbChannel is null)
             return ChannelOperationResult.Fail(ChannelError.NotFound, $"Channel '{channelName}' does not exist.");
 
+        if (dbChannel.WrappedRoomKey is not null)
+            return ChannelOperationResult.Fail(ChannelError.Protected,
+                "This channel is end-to-end encrypted — change its passphrase from the EchoHub client (/passwd).");
+
         var caller = await db.Users.FindAsync(callerUserId);
         if (dbChannel.CreatedByUserId != callerUserId && (caller is null || caller.Role < ServerRole.Admin))
             return ChannelOperationResult.Fail(ChannelError.Forbidden,
@@ -151,7 +167,55 @@ public class ChannelService : IChannelService
 
         var messageCount = await db.Messages.CountAsync(m => m.ChannelId == dbChannel.Id);
         var dto = new ChannelDto(dbChannel.Id, dbChannel.Name, dbChannel.Topic, dbChannel.IsPublic, messageCount, dbChannel.CreatedAt,
-            dbChannel.PasswordHash != null);
+            dbChannel.PasswordHash != null, dbChannel.WrappedRoomKey != null);
+        return ChannelOperationResult.Success(dto);
+    }
+
+    /// <summary>
+    /// Changes an encrypted channel's passphrase by swapping the join-gate hash and the
+    /// wrapped room key. The room content key itself never changes, so history stays
+    /// readable — the client re-wraps it under the new passphrase-derived key.
+    /// Creator only: admins cannot rekey a room whose passphrase they don't know.
+    /// </summary>
+    public async Task<ChannelOperationResult> RekeyChannelAsync(Guid callerUserId, string channelName,
+        string oldPassword, string newPassword, string newEncryptionSalt, string newWrappedRoomKey)
+    {
+        channelName = channelName.ToLowerInvariant().Trim();
+
+        string? validatedNew = newPassword;
+        var passwordError = ValidateChannelPassword(ref validatedNew);
+        if (passwordError is not null)
+            return ChannelOperationResult.Fail(ChannelError.ValidationFailed, passwordError);
+        if (validatedNew is null || string.IsNullOrWhiteSpace(newEncryptionSalt) || string.IsNullOrWhiteSpace(newWrappedRoomKey))
+            return ChannelOperationResult.Fail(ChannelError.ValidationFailed,
+                "New password, salt, and wrapped room key are required.");
+
+        using var scope = _scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
+
+        var dbChannel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
+        if (dbChannel is null)
+            return ChannelOperationResult.Fail(ChannelError.NotFound, $"Channel '{channelName}' does not exist.");
+
+        if (dbChannel.WrappedRoomKey is null || dbChannel.PasswordHash is null)
+            return ChannelOperationResult.Fail(ChannelError.ValidationFailed,
+                "This channel is not end-to-end encrypted.");
+
+        if (dbChannel.CreatedByUserId != callerUserId)
+            return ChannelOperationResult.Fail(ChannelError.Forbidden,
+                "Only the channel creator can change the passphrase.");
+
+        if (!BCrypt.Net.BCrypt.Verify(oldPassword, dbChannel.PasswordHash))
+            return ChannelOperationResult.Fail(ChannelError.Forbidden, "The current passphrase is incorrect.");
+
+        dbChannel.PasswordHash = BCrypt.Net.BCrypt.HashPassword(validatedNew);
+        dbChannel.EncryptionSalt = newEncryptionSalt;
+        dbChannel.WrappedRoomKey = newWrappedRoomKey;
+        await db.SaveChangesAsync();
+
+        var messageCount = await db.Messages.CountAsync(m => m.ChannelId == dbChannel.Id);
+        var dto = new ChannelDto(dbChannel.Id, dbChannel.Name, dbChannel.Topic, dbChannel.IsPublic, messageCount, dbChannel.CreatedAt,
+            true, true);
         return ChannelOperationResult.Success(dto);
     }
 
@@ -179,7 +243,7 @@ public class ChannelService : IChannelService
         await db.SaveChangesAsync();
 
         var dto = new ChannelDto(dbChannel.Id, dbChannel.Name, dbChannel.Topic, dbChannel.IsPublic, 0, dbChannel.CreatedAt,
-            dbChannel.PasswordHash != null);
+            dbChannel.PasswordHash != null, dbChannel.WrappedRoomKey != null);
         return ChannelOperationResult.Success(dto);
     }
 
@@ -220,7 +284,32 @@ public class ChannelService : IChannelService
         if (c is null) return null;
 
         var messageCount = await db.Messages.CountAsync(m => m.ChannelId == c.Id);
-        return new ChannelDto(c.Id, c.Name, c.Topic, c.IsPublic, messageCount, c.CreatedAt, c.PasswordHash != null);
+        return new ChannelDto(c.Id, c.Name, c.Topic, c.IsPublic, messageCount, c.CreatedAt,
+            c.PasswordHash != null, c.WrappedRoomKey != null);
+    }
+
+    public async Task<ChannelCryptoDto?> GetChannelCryptoAsync(string channelName)
+    {
+        channelName = channelName.ToLowerInvariant().Trim();
+
+        using var scope = _scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
+
+        var c = await db.Channels.FirstOrDefaultAsync(ch => ch.Name == channelName);
+        if (c is null) return null;
+
+        return new ChannelCryptoDto(c.WrappedRoomKey != null, c.EncryptionSalt);
+    }
+
+    public async Task<(string? EncryptionSalt, string? WrappedRoomKey)> GetChannelKeyEnvelopeAsync(string channelName)
+    {
+        channelName = channelName.ToLowerInvariant().Trim();
+
+        using var scope = _scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
+
+        var c = await db.Channels.FirstOrDefaultAsync(ch => ch.Name == channelName);
+        return (c?.EncryptionSalt, c?.WrappedRoomKey);
     }
 
     public async Task<(bool Success, string? Error, bool PasswordRequired)> EnsureChannelMembershipAsync(

@@ -14,9 +14,12 @@ public class ChatHub : Hub<IEchoHubClient>
     private readonly IChatService _chatService;
     private readonly ILogger<ChatHub> _logger;
 
-    public ChatHub(IChatService chatService, ILogger<ChatHub> logger)
+    private readonly IChannelService _channelService;
+
+    public ChatHub(IChatService chatService, IChannelService channelService, ILogger<ChatHub> logger)
     {
         _chatService = chatService;
+        _channelService = channelService;
         _logger = logger;
     }
 
@@ -67,7 +70,12 @@ public class ChatHub : Hub<IEchoHubClient>
                 return new JoinChannelResult(false, [], error, passwordRequired);
 
             await Groups.AddToGroupAsync(Context.ConnectionId, channelName.ToLowerInvariant().Trim());
-            return new JoinChannelResult(true, history);
+
+            // Members of encrypted channels receive the key envelope so they can unwrap
+            // the room content key with their passphrase (the server can't).
+            var (encryptionSalt, wrappedRoomKey) = await _channelService.GetChannelKeyEnvelopeAsync(channelName);
+            return new JoinChannelResult(true, history,
+                EncryptionSalt: encryptionSalt, WrappedRoomKey: wrappedRoomKey);
         }
         catch (Exception ex)
         {

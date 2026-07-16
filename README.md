@@ -99,7 +99,8 @@ graph TD
 - **Slash commands** — `/join`, `/send`, `/status`, `/theme`, etc.
 - **Colored nicknames** — pick your hex color, express yourself
 - **Clickable everything** — usernames, @mentions, #channels — just press Enter
-- **File/image sharing** — local files or URLs; drag & drop a file onto the terminal to send it
+- **File/image sharing** — local files or URLs; drag & drop a file onto the terminal to send it; save the original behind any ASCII-art image
+- **End-to-end encrypted rooms** — password-protected channels are encrypted with a passphrase-derived key that never reaches the server, so not even the server owner can read messages or files (they can still see counts and storage size)
 - **Multi-server** — save and switch between servers
 - **Auto-reconnect** — drops happen, it rejoins your channels automatically
 - **Auto-updater** — updates in-place with automatic rollback if something goes wrong
@@ -224,7 +225,8 @@ For direct TLS without a reverse proxy, the IRC gateway can terminate TLS itself
 
 | Command | Description |
 | ------- | ----------- |
-| `/join <channel> [password]` | Join a channel (password for protected channels) |
+| `/join <channel> [password]` | Join a channel (passphrase for encrypted channels) |
+| `/passwd <old> <new>` | Change the current encrypted channel's passphrase (creator only) |
 | `/leave` | Leave current channel |
 | `/topic <text>` | Set channel topic (creator only) |
 | `/send <file or URL>` | Upload a file or image |

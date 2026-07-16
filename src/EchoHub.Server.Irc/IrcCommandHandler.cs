@@ -390,6 +390,16 @@ public sealed class IrcCommandHandler
                 continue;
             }
 
+            // End-to-end encrypted channels can't be read over IRC (the gateway would
+            // have to hold the room key server-side, defeating the privacy guarantee).
+            var crypto = await _channelService.GetChannelCryptoAsync(channelName);
+            if (crypto?.IsEncrypted == true)
+            {
+                await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_BADCHANNELKEY,
+                    $"#{channelName} :Cannot join channel — end-to-end encrypted, use the EchoHub client");
+                continue;
+            }
+
             var (history, error, passwordRequired) = await _chatService.JoinChannelAsync(
                 _conn.ConnectionId, _conn.UserId!.Value, _conn.Nickname!, channelName, key);
 

@@ -8,6 +8,8 @@ using EchoHub.Client.UI.Dialogs;
 using EchoHub.Core.Constants;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
+using EchoHub.Core.Security;
+using EchoHub.Core.Services;
 using Serilog;
 using Terminal.Gui.App;
 using Terminal.Gui.Views;
@@ -88,6 +90,7 @@ public sealed class AppOrchestrator : IDisposable
         _mainWindow.OnDeleteChannelRequested += HandleDeleteChannelRequested;
         _mainWindow.OnAudioPlayRequested += HandleAudioPlayRequested;
         _mainWindow.OnFileDownloadRequested += HandleFileDownloadRequested;
+        _mainWindow.OnImageSaveRequested += HandleImageSaveRequested;
         _mainWindow.OnCheckForUpdatesRequested += HandleCheckForUpdatesRequested;
         _mainWindow.OnRollbackRequested += HandleRollbackRequested;
         _mainWindow.OnUserProfileRequested += HandleViewProfile;
@@ -109,6 +112,7 @@ public sealed class AppOrchestrator : IDisposable
         _commandHandler.OnOpenProfile += HandleCmdOpenProfile;
         _commandHandler.OnOpenServers += HandleCmdOpenServers;
         _commandHandler.OnJoinChannel += HandleCmdJoinChannel;
+        _commandHandler.OnChangeRoomPassword += HandleCmdChangeRoomPassword;
         _commandHandler.OnLeaveChannel += HandleCmdLeaveChannel;
         _commandHandler.OnSetTopic += HandleCmdSetTopic;
         _commandHandler.OnListUsers += HandleCmdListUsers;
@@ -167,10 +171,23 @@ public sealed class AppOrchestrator : IDisposable
 
         try
         {
+            var hasRoomKey = _conn.RoomKeys.TryGetKey(channel, out var roomKey);
+
             if (Uri.TryCreate(target, UriKind.Absolute, out var uri)
                 && (uri.Scheme == "http" || uri.Scheme == "https"))
             {
+                if (hasRoomKey)
+                {
+                    InvokeUI(() => _mainWindow.ShowError(
+                        "Sending by URL isn't available in encrypted channels — download the file and /send it instead."));
+                    return;
+                }
+
                 await _conn.Api!.SendUrlAsync(channel, target, size);
+            }
+            else if (hasRoomKey)
+            {
+                await UploadEncryptedFileAsync(channel, target, size, roomKey);
             }
             else
             {
@@ -184,6 +201,46 @@ public sealed class AppOrchestrator : IDisposable
             Log.Error(ex, "File send failed for {Target}", target);
             InvokeUI(() => _mainWindow.ShowError($"Send failed: {ex.Message}"));
         }
+    }
+
+    /// <summary>
+    /// Upload into an end-to-end encrypted channel: the blob is encrypted with the room
+    /// key before it leaves this machine, and for images the ASCII preview is rendered
+    /// locally and sent room-encrypted — the server never sees image or file contents.
+    /// </summary>
+    private async Task UploadEncryptedFileAsync(string channel, string path, string? size, byte[] roomKey)
+    {
+        var fileName = Path.GetFileName(path);
+        var bytes = await File.ReadAllBytesAsync(path);
+
+        string declaredType;
+        string plainContent;
+        using (var ms = new MemoryStream(bytes))
+        {
+            if (FileValidationHelper.IsValidImage(ms))
+            {
+                declaredType = "image";
+                var (w, h) = ImageToAsciiService.GetDimensions(size);
+                ms.Position = 0;
+                plainContent = new ImageToAsciiService().ConvertToAscii(ms, w, h);
+            }
+            else if (FileValidationHelper.IsAudioFile(fileName))
+            {
+                declaredType = "audio";
+                plainContent = fileName;
+            }
+            else
+            {
+                declaredType = "file";
+                plainContent = fileName;
+            }
+        }
+
+        var encryptedContent = RoomCrypto.EncryptText(plainContent, roomKey);
+        var encryptedBlob = RoomCrypto.EncryptBytes(bytes, roomKey);
+
+        await using var blobStream = new MemoryStream(encryptedBlob);
+        await _conn.Api!.UploadFileAsync(channel, blobStream, fileName, size, declaredType, encryptedContent);
     }
 
     private async Task HandleCmdSetAvatar(string target)
@@ -241,16 +298,51 @@ public sealed class AppOrchestrator : IDisposable
 
     /// <summary>
     /// Joins a channel, prompting for a password when the server requires one and
-    /// re-prompting on a wrong password. Returns the channel history, or null if
-    /// the user cancelled the prompt.
+    /// re-prompting on a wrong password. For end-to-end encrypted channels the typed
+    /// passphrase never goes to the server — a PBKDF2-derived auth key is sent instead,
+    /// and the room content key is unwrapped locally. Returns the channel history,
+    /// or null if the user cancelled the prompt.
     /// </summary>
     private async Task<List<MessageDto>?> JoinChannelWithPasswordPromptAsync(string channelName, string? password)
     {
+        ChannelCryptoDto? crypto = null;
+        try
+        {
+            crypto = await _conn.Api!.GetChannelCryptoAsync(channelName);
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "Crypto metadata unavailable for {Channel}", channelName);
+        }
+
         while (true)
         {
+            byte[]? kek = null;
+            var wirePassword = password;
+            if (password is not null && crypto is { IsEncrypted: true, EncryptionSalt: not null })
+            {
+                var derived = RoomCrypto.DeriveKeys(password, Convert.FromBase64String(crypto.EncryptionSalt));
+                wirePassword = derived.AuthKeyHex;
+                kek = derived.KeyEncryptionKey;
+            }
+
             try
             {
-                return await _conn.JoinChannelAsync(channelName, password);
+                var outcome = await _conn.JoinChannelAsync(channelName, wirePassword);
+
+                if (outcome.WrappedRoomKey is not null && !_conn.RoomKeys.HasKey(channelName))
+                {
+                    if (kek is not null && RoomCrypto.TryUnwrapRoomKey(outcome.WrappedRoomKey, kek, out var roomKey))
+                    {
+                        _conn.RoomKeys.StoreKey(channelName, roomKey);
+                        // Re-fetch so history decrypts with the now-available room key
+                        return await _conn.GetHistoryAsync(channelName);
+                    }
+
+                    return await UnlockRoomKeyAsync(channelName, outcome);
+                }
+
+                return outcome.History;
             }
             catch (ChannelPasswordRequiredException ex)
             {
@@ -261,6 +353,85 @@ public sealed class AppOrchestrator : IDisposable
                 password = await prompt.Task;
                 if (password is null) return null;
             }
+        }
+    }
+
+    /// <summary>
+    /// Member of an encrypted channel without a cached room key (e.g. a new device):
+    /// prompt for the passphrase until the room key unwraps or the user gives up.
+    /// </summary>
+    private async Task<List<MessageDto>?> UnlockRoomKeyAsync(string channelName, JoinOutcome outcome)
+    {
+        if (outcome.EncryptionSalt is null || outcome.WrappedRoomKey is null)
+            return outcome.History;
+
+        var salt = Convert.FromBase64String(outcome.EncryptionSalt);
+        var message = "Enter the passphrase to unlock messages.";
+
+        while (true)
+        {
+            var prompt = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var promptMessage = message;
+            InvokeUI(() => prompt.SetResult(ChannelPasswordDialog.Show(_app, channelName, promptMessage)));
+
+            var passphrase = await prompt.Task;
+            if (passphrase is null)
+                return outcome.History; // stays locked; placeholders render instead of content
+
+            var derived = RoomCrypto.DeriveKeys(passphrase, salt);
+            if (RoomCrypto.TryUnwrapRoomKey(outcome.WrappedRoomKey, derived.KeyEncryptionKey, out var roomKey))
+            {
+                _conn.RoomKeys.StoreKey(channelName, roomKey);
+                return await _conn.GetHistoryAsync(channelName);
+            }
+
+            message = "Wrong passphrase — try again.";
+        }
+    }
+
+    /// <summary>
+    /// Changes the current encrypted channel's passphrase: re-derives the join credential
+    /// and re-wraps the cached room content key under the new passphrase. History is
+    /// never re-encrypted — the room key itself doesn't change.
+    /// </summary>
+    private async Task HandleCmdChangeRoomPassword(string oldPassphrase, string newPassphrase)
+    {
+        if (!_conn.IsAuthenticated || !_conn.IsConnected) return;
+
+        var channel = _mainWindow.CurrentChannel;
+        if (string.IsNullOrEmpty(channel)) return;
+
+        try
+        {
+            var crypto = await _conn.Api!.GetChannelCryptoAsync(channel);
+            if (crypto is not { IsEncrypted: true } || crypto.EncryptionSalt is null)
+            {
+                InvokeUI(() => _mainWindow.ShowError($"#{channel} is not an end-to-end encrypted channel."));
+                return;
+            }
+
+            if (!_conn.RoomKeys.TryGetKey(channel, out var roomKey))
+            {
+                InvokeUI(() => _mainWindow.ShowError("Unlock this channel first (rejoin it with its passphrase), then retry."));
+                return;
+            }
+
+            var oldDerived = RoomCrypto.DeriveKeys(oldPassphrase, Convert.FromBase64String(crypto.EncryptionSalt));
+            var newSalt = RoomCrypto.GenerateSalt();
+            var newDerived = RoomCrypto.DeriveKeys(newPassphrase, newSalt);
+
+            await _conn.Api!.RekeyChannelAsync(channel, new RekeyChannelRequest(
+                oldDerived.AuthKeyHex,
+                newDerived.AuthKeyHex,
+                Convert.ToBase64String(newSalt),
+                RoomCrypto.WrapRoomKey(roomKey, newDerived.KeyEncryptionKey)));
+
+            InvokeUI(() => _messageManager.AddSystemMessage(channel,
+                "Passphrase changed. History stays readable; new members and new devices need the new passphrase."));
+        }
+        catch (Exception ex)
+        {
+            InvokeUI(() => _mainWindow.ShowError($"Passphrase change failed: {ex.Message}"));
         }
     }
 
@@ -1019,10 +1190,35 @@ public sealed class AppOrchestrator : IDisposable
 
         RunAsync(async () =>
         {
-            var channel = await _conn.Api!.CreateChannelAsync(result.Name, result.Topic, result.IsPublic, result.Password);
+            // Password rooms are end-to-end encrypted: derive the join credential and
+            // wrap a fresh room content key locally — the passphrase never leaves here.
+            string? wirePassword = null, saltB64 = null, wrappedKey = null;
+            byte[]? roomKey = null;
+            if (result.Password is not null)
+            {
+                if (result.Password.Length < ValidationConstants.MinChannelPasswordLength)
+                {
+                    InvokeUI(() => _mainWindow.ShowError(
+                        $"Channel password must be at least {ValidationConstants.MinChannelPasswordLength} characters."));
+                    return;
+                }
+
+                var salt = RoomCrypto.GenerateSalt();
+                var derived = RoomCrypto.DeriveKeys(result.Password, salt);
+                roomKey = RoomCrypto.GenerateRoomKey();
+                wirePassword = derived.AuthKeyHex;
+                saltB64 = Convert.ToBase64String(salt);
+                wrappedKey = RoomCrypto.WrapRoomKey(roomKey, derived.KeyEncryptionKey);
+            }
+
+            var channel = await _conn.Api!.CreateChannelAsync(
+                result.Name, result.Topic, result.IsPublic, wirePassword, saltB64, wrappedKey);
             if (channel is null) return;
 
-            var history = await _conn.JoinChannelAsync(channel.Name);
+            if (roomKey is not null)
+                _conn.RoomKeys.StoreKey(channel.Name, roomKey);
+
+            var history = (await _conn.JoinChannelAsync(channel.Name)).History;
 
             InvokeUI(() =>
             {
@@ -1084,9 +1280,57 @@ public sealed class AppOrchestrator : IDisposable
         RunAsync(async () =>
         {
             InvokeUI(() => _messageManager.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloading {fileName}..."));
-            var tempPath = await _conn.Api!.DownloadFileToTempAsync(attachmentUrl, fileName);
+            var tempPath = await DownloadAttachmentAsync(attachmentUrl, fileName);
             InvokeUI(() => AudioPlayerDialog.Show(_app, _audioPlayback, tempPath, fileName));
         }, "Failed to play audio");
+    }
+
+    /// <summary>
+    /// Downloads an attachment to a temp file, decrypting it locally when the current
+    /// channel is end-to-end encrypted (the server stores those blobs as ciphertext).
+    /// </summary>
+    private async Task<string> DownloadAttachmentAsync(string attachmentUrl, string fileName)
+    {
+        var tempPath = await _conn.Api!.DownloadFileToTempAsync(attachmentUrl, fileName);
+
+        var channel = _mainWindow.CurrentChannel;
+        if (!string.IsNullOrEmpty(channel) && _conn.RoomKeys.TryGetKey(channel, out var roomKey))
+        {
+            try
+            {
+                var blob = await File.ReadAllBytesAsync(tempPath);
+                await File.WriteAllBytesAsync(tempPath, RoomCrypto.DecryptBytes(blob, roomKey));
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Attachment {File} did not decrypt with the room key — keeping raw bytes", fileName);
+            }
+        }
+
+        return tempPath;
+    }
+
+    private void HandleImageSaveRequested(string attachmentUrl, string fileName)
+    {
+        if (!_conn.IsAuthenticated) return;
+
+        RunAsync(async () =>
+        {
+            InvokeUI(() => _messageManager.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloading {fileName}..."));
+            var tempPath = await DownloadAttachmentAsync(attachmentUrl, fileName);
+
+            var downloads = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+            Directory.CreateDirectory(downloads);
+
+            var stem = Path.GetFileNameWithoutExtension(fileName);
+            var ext = Path.GetExtension(fileName);
+            var destination = Path.Combine(downloads, fileName);
+            for (var i = 1; File.Exists(destination); i++)
+                destination = Path.Combine(downloads, $"{stem} ({i}){ext}");
+
+            File.Move(tempPath, destination);
+            InvokeUI(() => _messageManager.AddSystemMessage(_mainWindow.CurrentChannel, $"Image saved to: {destination}"));
+        }, "Failed to save image");
     }
 
     /// <summary>
@@ -1106,7 +1350,7 @@ public sealed class AppOrchestrator : IDisposable
         RunAsync(async () =>
         {
             InvokeUI(() => _messageManager.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloading {fileName}..."));
-            var tempPath = await _conn.Api!.DownloadFileToTempAsync(attachmentUrl, fileName);
+            var tempPath = await DownloadAttachmentAsync(attachmentUrl, fileName);
 
             var ext = Path.GetExtension(fileName);
             if (SafeOpenExtensions.Contains(ext))

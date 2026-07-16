@@ -22,7 +22,8 @@ public record ChannelDto(
     bool IsPublic,
     int MessageCount,
     DateTimeOffset CreatedAt,
-    bool IsProtected = false);
+    bool IsProtected = false,
+    bool IsEncrypted = false);
 
 public record UserDto(
     Guid Id,
@@ -34,13 +35,41 @@ public record UserDto(
 
 public record SendMessageRequest(string ChannelName, string Content);
 
-public record CreateChannelRequest(string Name, string? Topic = null, bool IsPublic = true, string? Password = null);
+public record CreateChannelRequest(
+    string Name,
+    string? Topic = null,
+    bool IsPublic = true,
+    string? Password = null,
+    string? EncryptionSalt = null,
+    string? WrappedRoomKey = null);
+
+/// <summary>
+/// Public crypto metadata for a channel — enough for a client to derive its join
+/// credential from a passphrase. Never includes the wrapped room key.
+/// </summary>
+public record ChannelCryptoDto(bool IsEncrypted, string? EncryptionSalt);
+
+/// <summary>
+/// Passphrase change for an encrypted channel: the client proves knowledge of the old
+/// passphrase (old auth key), then supplies the re-wrapped room key under the new one.
+/// </summary>
+public record RekeyChannelRequest(
+    string OldPassword,
+    string NewPassword,
+    string NewEncryptionSalt,
+    string NewWrappedRoomKey);
 
 public record UpdateTopicRequest(string? Topic);
 
 public record SendUrlRequest(string Url);
 
-public record JoinChannelResult(bool Success, List<MessageDto> History, string? Error = null, bool PasswordRequired = false);
+public record JoinChannelResult(
+    bool Success,
+    List<MessageDto> History,
+    string? Error = null,
+    bool PasswordRequired = false,
+    string? EncryptionSalt = null,
+    string? WrappedRoomKey = null);
 
 public record EmbedDto(
     string? SiteName,

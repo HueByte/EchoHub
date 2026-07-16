@@ -234,8 +234,23 @@ internal sealed class FakeChannelService : IChannelService
     public Task<PaginatedResponse<ChannelDto>> GetChannelsAsync(Guid userId, int offset, int limit) =>
         Task.FromResult(new PaginatedResponse<ChannelDto>([], 0, offset, limit));
 
-    public Task<ChannelOperationResult> CreateChannelAsync(Guid creatorUserId, string name, string? topic, bool isPublic, string? password = null) =>
+    public ChannelCryptoDto? CryptoToReturn { get; set; }
+    public ChannelOperationResult? RekeyResult { get; set; }
+    public (string? EncryptionSalt, string? WrappedRoomKey) KeyEnvelopeToReturn { get; set; }
+
+    public Task<ChannelOperationResult> CreateChannelAsync(Guid creatorUserId, string name, string? topic, bool isPublic,
+        string? password = null, string? encryptionSalt = null, string? wrappedRoomKey = null) =>
         Task.FromResult(CreateResult ?? ChannelOperationResult.Fail(ChannelError.ValidationFailed, "Not configured"));
+
+    public Task<ChannelCryptoDto?> GetChannelCryptoAsync(string channelName) =>
+        Task.FromResult(CryptoToReturn);
+
+    public Task<(string? EncryptionSalt, string? WrappedRoomKey)> GetChannelKeyEnvelopeAsync(string channelName) =>
+        Task.FromResult(KeyEnvelopeToReturn);
+
+    public Task<ChannelOperationResult> RekeyChannelAsync(Guid callerUserId, string channelName,
+        string oldPassword, string newPassword, string newEncryptionSalt, string newWrappedRoomKey) =>
+        Task.FromResult(RekeyResult ?? ChannelOperationResult.Fail(ChannelError.ValidationFailed, "Not configured"));
 
     public Task<ChannelOperationResult> UpdateTopicAsync(Guid callerUserId, string channelName, string? topic) =>
         Task.FromResult(UpdateTopicResult ?? ChannelOperationResult.Fail(ChannelError.ValidationFailed, "Not configured"));

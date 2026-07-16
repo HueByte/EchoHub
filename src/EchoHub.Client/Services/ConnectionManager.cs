@@ -24,6 +24,7 @@ internal sealed class ConnectionManager : IAsyncDisposable
     private EchoHubConnection? _connection;
     private ApiClient? _apiClient;
     private readonly ClientEncryptionService _encryption = new();
+    private readonly RoomKeyStore _roomKeys = new();
     private readonly HashSet<string> _joinedChannels = [];
 
     // ── Properties ────────────────────────────────────────────────────────
@@ -31,6 +32,7 @@ internal sealed class ConnectionManager : IAsyncDisposable
     public bool IsConnected => _connection?.IsConnected == true;
     public bool IsAuthenticated => _apiClient is not null;
     public ApiClient? Api => _apiClient;
+    public RoomKeyStore RoomKeys => _roomKeys;
 
     // ── Events (forwarded from SignalR) ───────────────────────────────────
 
@@ -101,7 +103,8 @@ internal sealed class ConnectionManager : IAsyncDisposable
             if (_connection is not null)
                 await _connection.DisposeAsync();
 
-            _connection = new EchoHubConnection(info.ServerUrl, _apiClient, _encryption);
+            _roomKeys.LoadForServer(info.ServerUrl);
+            _connection = new EchoHubConnection(info.ServerUrl, _apiClient, _encryption, _roomKeys);
             WireConnectionEvents(_connection);
             await _connection.ConnectAsync();
 
@@ -156,6 +159,7 @@ internal sealed class ConnectionManager : IAsyncDisposable
         _apiClient?.Dispose();
         _apiClient = null;
         _joinedChannels.Clear();
+        _roomKeys.Clear();
     }
 
     /// <summary>
@@ -169,14 +173,14 @@ internal sealed class ConnectionManager : IAsyncDisposable
 
     // ── Channel Operations ────────────────────────────────────────────────
 
-    public async Task<List<MessageDto>> JoinChannelAsync(string channelName, string? password = null)
+    public async Task<JoinOutcome> JoinChannelAsync(string channelName, string? password = null)
     {
         if (_connection is null) throw new InvalidOperationException("Not connected");
         try
         {
-            var history = await _connection.JoinChannelAsync(channelName, password);
+            var outcome = await _connection.JoinChannelAsync(channelName, password);
             _joinedChannels.Add(channelName);
-            return history;
+            return outcome;
         }
         catch (ChannelPasswordRequiredException)
         {

@@ -1,4 +1,4 @@
-using EchoHub.Server.Services;
+using EchoHub.Core.Services;
 using Xunit;
 
 namespace EchoHub.Tests;
