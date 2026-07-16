@@ -943,8 +943,8 @@ Call after theme changes to refresh colors.</p>
 
   <a id="EchoHub_Client_UI_MainWindow_EnsureChannelInList_" data-uid="EchoHub.Client.UI.MainWindow.EnsureChannelInList*"></a>
 
-  <h3 id="EchoHub_Client_UI_MainWindow_EnsureChannelInList_System_String_System_Nullable_System_Boolean__" data-uid="EchoHub.Client.UI.MainWindow.EnsureChannelInList(System.String,System.Nullable{System.Boolean})">
-  EnsureChannelInList(string, bool?)
+  <h3 id="EchoHub_Client_UI_MainWindow_EnsureChannelInList_System_String_System_Nullable_System_Boolean__System_Nullable_System_Boolean__" data-uid="EchoHub.Client.UI.MainWindow.EnsureChannelInList(System.String,System.Nullable{System.Boolean},System.Nullable{System.Boolean})">
+  EnsureChannelInList(string, bool?, bool?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -953,7 +953,7 @@ Call after theme changes to refresh colors.</p>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public void EnsureChannelInList(string channelName, bool? isPublic = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public void EnsureChannelInList(string channelName, bool? isPublic = null, bool? isProtected = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -961,6 +961,8 @@ Call after theme changes to refresh colors.</p>
     <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>isPublic</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a>?</dt>
+    <dd></dd>
+    <dt><code>isProtected</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a>?</dt>
     <dd></dd>
   </dl>
 
@@ -1177,6 +1179,41 @@ Call after theme changes to refresh colors.</p>
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>username</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_MainWindow_SetStagedAttachments_" data-uid="EchoHub.Client.UI.MainWindow.SetStagedAttachments*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_SetStagedAttachments_System_Collections_Generic_IReadOnlyList_System_String__System_String_" data-uid="EchoHub.Client.UI.MainWindow.SetStagedAttachments(System.Collections.Generic.IReadOnlyList{System.String},System.String)">
+  SetStagedAttachments(IReadOnlyList&lt;string&gt;, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Updates the attachment staging indicator shown on the input frame's title, including the
+current ASCII-art size for images. Passing an empty list restores the default hint.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetStagedAttachments(IReadOnlyList&lt;string&gt; fileNames, string asciiSizeLabel)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>fileNames</code> <span class="xref">IReadOnlyList</span>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+    <dt><code>asciiSizeLabel</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 
@@ -1568,6 +1605,37 @@ Call after theme changes to refresh colors.</p>
 
 
 
+  <h3 id="EchoHub_Client_UI_MainWindow_OnDeleteMessageRequested" data-uid="EchoHub.Client.UI.MainWindow.OnDeleteMessageRequested">
+  OnDeleteMessageRequested
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when the user presses Delete on the selected message. Parameter is the message id.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action&lt;Guid&gt;? OnDeleteMessageRequested</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-1">Action</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.guid">Guid</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <h3 id="EchoHub_Client_UI_MainWindow_OnDisconnectRequested" data-uid="EchoHub.Client.UI.MainWindow.OnDisconnectRequested">
   OnDisconnectRequested
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
@@ -1610,6 +1678,37 @@ Call after theme changes to refresh colors.</p>
 
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">public event Action&lt;string, string&gt;? OnFileDownloadRequested</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-2">Action</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h3 id="EchoHub_Client_UI_MainWindow_OnImageSaveRequested" data-uid="EchoHub.Client.UI.MainWindow.OnImageSaveRequested">
+  OnImageSaveRequested
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when the user activates an image's &quot;[save original]&quot; line. Parameters: attachmentUrl, fileName.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action&lt;string, string&gt;? OnImageSaveRequested</code></pre>
   </div>
 
 

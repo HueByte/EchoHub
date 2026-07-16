@@ -208,6 +208,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Services.ChannelPasswordRequiredException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Services.ChannelPasswordRequiredException.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Services.ChannelPasswordRequiredException",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.Services.ChannelPasswordRequiredException.yml\" sourcestartlinenumber=\"1\">Thrown when joining a channel fails because a password is required or incorrect.\nThe UI catches this to prompt the user and retry.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/client/EchoHub.Client.Services.ClientEncryptionService.yml",
       "output": {
         ".html": {
@@ -219,6 +233,20 @@
       "IsMRef": true,
       "Title": "EchoHub.Client.Services.ClientEncryptionService",
       "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.Services.ClientEncryptionService.yml\" sourcestartlinenumber=\"1\">Client-side encryption service. Uses the same AES-256-GCM format as the server\nso messages are encrypted end-to-end between client and server.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Services.ClipboardFiles.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Services.ClipboardFiles.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Services.ClipboardFiles",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.Services.ClipboardFiles.yml\" sourcestartlinenumber=\"1\">Reads file paths that live on the OS clipboard as a <em sourcefile=\"_api_meta/client/EchoHub.Client.Services.ClipboardFiles.yml\" sourcestartlinenumber=\"1\">file list</em> (e.g. after copying a file in\nExplorer/Finder/Nautilus), which terminals do not paste as text. Lets Ctrl+V attach a copied\nfile directly instead of requiring the user to paste a raw path.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -236,6 +264,48 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Services.FolderPickResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Services.FolderPickResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Services.FolderPickResult",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Services.JoinOutcome.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Services.JoinOutcome.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Services.JoinOutcome",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.Services.JoinOutcome.yml\" sourcestartlinenumber=\"1\">Result of joining a channel: decrypted history plus, for end-to-end encrypted\nchannels, the key envelope needed to unlock the room content key.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Services.NativeFolderPicker.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Services.NativeFolderPicker.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Services.NativeFolderPicker",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.Services.NativeFolderPicker.yml\" sourcestartlinenumber=\"1\">Opens the OS-native folder chooser (Windows Explorer, macOS Finder, Linux GTK/KDE) by shelling\nout, so the TUI doesn't need a GUI toolkit reference. Returns <xref href=\"EchoHub.Client.Services.PickerOutcome.Unavailable\" data-throw-if-not-resolved=\"false\"></xref>\nwhen no native dialog can run, so callers can fall back to a configured path.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/client/EchoHub.Client.Services.NotificationSoundService.yml",
       "output": {
         ".html": {
@@ -250,6 +320,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Services.OutgoingAttachment.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Services.OutgoingAttachment.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Services.OutgoingAttachment",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.Services.OutgoingAttachment.yml\" sourcestartlinenumber=\"1\">One file to upload as part of a message. For end-to-end encrypted channels the stream\nis already ciphertext, <xref href=\"EchoHub.Client.Services.OutgoingAttachment.DeclaredKind\" data-throw-if-not-resolved=\"false\"></xref> is set (image/audio/file), and\n<xref href=\"EchoHub.Client.Services.OutgoingAttachment.EncryptedPreview\" data-throw-if-not-resolved=\"false\"></xref> holds the room-encrypted ASCII art for images.\nFor normal channels only <xref href=\"EchoHub.Client.Services.OutgoingAttachment.Stream\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"EchoHub.Client.Services.OutgoingAttachment.FileName\" data-throw-if-not-resolved=\"false\"></xref> are set.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/client/EchoHub.Client.Services.PathSetup.yml",
       "output": {
         ".html": {
@@ -261,6 +345,34 @@
       "IsMRef": true,
       "Title": "EchoHub.Client.Services.PathSetup",
       "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.Services.PathSetup.yml\" sourcestartlinenumber=\"1\">Ensures the application's directory is on the system PATH so users\ncan run 'echohub' from any terminal session.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Services.PickerOutcome.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Services.PickerOutcome.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Services.PickerOutcome",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.Services.RoomKeyStore.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.Services.RoomKeyStore.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.Services.RoomKeyStore",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.Services.RoomKeyStore.yml\" sourcestartlinenumber=\"1\">Holds room content keys for end-to-end encrypted channels: in-memory for the\nactive session, persisted per-server in the client config (like saved sessions)\nso users don't retype the passphrase every launch. Keys never leave this machine.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -457,6 +569,20 @@
       "IsMRef": true,
       "Title": "EchoHub.Client.UI.Dialogs.AudioPlayerDialog",
       "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.ChannelPasswordDialog.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Dialogs.ChannelPasswordDialog.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Dialogs.ChannelPasswordDialog",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Dialogs.ChannelPasswordDialog.yml\" sourcestartlinenumber=\"1\">Prompts for a channel password when joining a protected channel.\nReturns the entered password, or null if the user cancels.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -681,6 +807,20 @@
       "IsMRef": true,
       "Title": "EchoHub.Client.UI.Dialogs",
       "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Helpers.DroppedFileParser.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Helpers.DroppedFileParser.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Helpers.DroppedFileParser",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Helpers.DroppedFileParser.yml\" sourcestartlinenumber=\"1\">Recognizes a dragged-and-dropped file (or files) that a terminal delivers into the input as an\nabsolute path. Terminals differ: some paste the whole path at once, others send it character by\ncharacter; either way this checks whether the current input text resolves to existing file(s).</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -1020,6 +1160,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.AttachmentDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.AttachmentDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.AttachmentDto",
+      "Summary": "<p sourcefile=\"_api_meta/core/EchoHub.Core.DTOs.AttachmentDto.yml\" sourcestartlinenumber=\"1\">A file attached to a message. <xref href=\"EchoHub.Core.DTOs.AttachmentDto.AsciiPreview\" data-throw-if-not-resolved=\"false\"></xref> holds the color-tag art for\nimages (null otherwise). For end-to-end encrypted channels the content behind\n<xref href=\"EchoHub.Core.DTOs.AttachmentDto.Url\" data-throw-if-not-resolved=\"false\"></xref> and the preview are ciphertext the server cannot read.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.AvatarUploadResponse.yml",
       "output": {
         ".html": {
@@ -1045,6 +1199,20 @@
       "IsMRef": true,
       "Title": "EchoHub.Core.DTOs.BanRequest",
       "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.ChannelCryptoDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.ChannelCryptoDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.ChannelCryptoDto",
+      "Summary": "<p sourcefile=\"_api_meta/core/EchoHub.Core.DTOs.ChannelCryptoDto.yml\" sourcestartlinenumber=\"1\">Public crypto metadata for a channel — enough for a client to derive its join\ncredential from a passphrase. Never includes the wrapped room key.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -1272,6 +1440,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.RekeyChannelRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.RekeyChannelRequest.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.RekeyChannelRequest",
+      "Summary": "<p sourcefile=\"_api_meta/core/EchoHub.Core.DTOs.RekeyChannelRequest.yml\" sourcestartlinenumber=\"1\">Passphrase change for an encrypted channel: the client proves knowledge of the old\npassphrase (old auth key), then supplies the re-wrapped room key under the new one.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.SendMessageRequest.yml",
       "output": {
         ".html": {
@@ -1440,6 +1622,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Models.Attachment.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Models.Attachment.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Models.Attachment",
+      "Summary": "<p sourcefile=\"_api_meta/core/EchoHub.Core.Models.Attachment.yml\" sourcestartlinenumber=\"1\">A file attached to a message (image, audio, or any file). A message may carry\nzero or more attachments alongside its text content (Discord-style).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Models.AttachmentKind.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Models.AttachmentKind.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Models.AttachmentKind",
+      "Summary": "<p sourcefile=\"_api_meta/core/EchoHub.Core.Models.AttachmentKind.yml\" sourcestartlinenumber=\"1\">The kind of a message attachment. Determines how the client renders it\n(ASCII preview for images, a play affordance for audio, a download line for files).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/core/EchoHub.Core.Models.Channel.yml",
       "output": {
         ".html": {
@@ -1562,6 +1772,90 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Core.Models",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Security.RoomCrypto.DerivedKeys.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Security.RoomCrypto.DerivedKeys.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Security.RoomCrypto.DerivedKeys",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Security.RoomCrypto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Security.RoomCrypto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Security.RoomCrypto",
+      "Summary": "<p sourcefile=\"_api_meta/core/EchoHub.Core.Security.RoomCrypto.yml\" sourcestartlinenumber=\"1\">Client-side envelope encryption for private (end-to-end encrypted) channels.</p>\n<p sourcefile=\"_api_meta/core/EchoHub.Core.Security.RoomCrypto.yml\" sourcestartlinenumber=\"3\">Design: at creation the client generates a random 256-bit room content key (RCK)\nthat encrypts all room content. The RCK is stored on the server <em sourcefile=\"_api_meta/core/EchoHub.Core.Security.RoomCrypto.yml\" sourcestartlinenumber=\"4\">wrapped</em>\n(AES-GCM encrypted) by a key derived from the passphrase, next to a BCrypt hash\nof a separately derived auth key used as the join gate. The passphrase, the\nkey-encryption key, and the RCK never leave the client, so the server can gate\njoins and count/measure content without being able to read it. Changing the\npassphrase only re-wraps the RCK — history is never re-encrypted.</p>\n<p sourcefile=\"_api_meta/core/EchoHub.Core.Security.RoomCrypto.yml\" sourcestartlinenumber=\"11\">Derivation: PBKDF2-SHA256(passphrase, salt, 210000 iterations) → 64 bytes;\nfirst 32 bytes are the auth key (sent to the server as lowercase hex),\nlast 32 bytes are the key-encryption key (never sent).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Security.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Security.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Security",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Services.FileValidationHelper.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Services.FileValidationHelper.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Services.FileValidationHelper",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Services.ImageToAsciiService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Services.ImageToAsciiService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Services.ImageToAsciiService",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Services.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Services.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Services",
       "Summary": null
     },
     {
@@ -1860,6 +2154,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Data.Migrations.AddChannelEncryptionEnvelope.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Data.Migrations.AddChannelEncryptionEnvelope.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Data.Migrations.AddChannelEncryptionEnvelope",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/server/EchoHub.Server.Data.Migrations.AddChannelIsPublic.yml",
       "output": {
         ".html": {
@@ -1888,6 +2196,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Data.Migrations.AddChannelPasswordHash.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Data.Migrations.AddChannelPasswordHash.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Data.Migrations.AddChannelPasswordHash",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/server/EchoHub.Server.Data.Migrations.AddEncryptionSupport.yml",
       "output": {
         ".html": {
@@ -1898,6 +2220,20 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Server.Data.Migrations.AddEncryptionSupport",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Data.Migrations.AddMessageAttachments.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Data.Migrations.AddMessageAttachments.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Data.Migrations.AddMessageAttachments",
       "Summary": null
     },
     {
@@ -2066,34 +2402,6 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Server.Services.FileStorageService",
-      "Summary": null
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.FileValidationHelper.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/server/EchoHub.Server.Services.FileValidationHelper.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Server.Services.FileValidationHelper",
-      "Summary": null
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.ImageToAsciiService.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/server/EchoHub.Server.Services.ImageToAsciiService.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Server.Services.ImageToAsciiService",
       "Summary": null
     },
     {
@@ -2522,6 +2830,16 @@
       "output": {
         ".html": {
           "relative_path": "changelog/v0.2.11.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "changelog/v0.2.12.md",
+      "output": {
+        ".html": {
+          "relative_path": "changelog/v0.2.12.html"
         }
       },
       "version": ""

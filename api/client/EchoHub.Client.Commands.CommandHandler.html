@@ -319,6 +319,66 @@ Class CommandHandler  <a class="header-action link-secondary" title="View source
 
 
 
+  <h3 id="EchoHub_Client_Commands_CommandHandler_OnChangeRoomPassword" data-uid="EchoHub.Client.Commands.CommandHandler.OnChangeRoomPassword">
+  OnChangeRoomPassword
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Commands/CommandHandler.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Func&lt;string, string, Task&gt;? OnChangeRoomPassword</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.func-3">Func</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <span class="xref">Task</span>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h3 id="EchoHub_Client_Commands_CommandHandler_OnClearAttachments" data-uid="EchoHub.Client.Commands.CommandHandler.OnClearAttachments">
+  OnClearAttachments
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Commands/CommandHandler.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Func&lt;Task&gt;? OnClearAttachments</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.func-1">Func</a>&lt;<span class="xref">Task</span>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <h3 id="EchoHub_Client_Commands_CommandHandler_OnHelp" data-uid="EchoHub.Client.Commands.CommandHandler.OnHelp">
   OnHelp
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Commands/CommandHandler.cs"><i class="bi bi-code-slash"></i></a>
@@ -358,7 +418,7 @@ Class CommandHandler  <a class="header-action link-secondary" title="View source
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public event Func&lt;string, Task&gt;? OnJoinChannel</code></pre>
+    <pre><code class="lang-csharp hljs">public event Func&lt;string, string?, Task&gt;? OnJoinChannel</code></pre>
   </div>
 
 
@@ -368,7 +428,7 @@ Class CommandHandler  <a class="header-action link-secondary" title="View source
 
   <h4 class="section">Event Type</h4>
   <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.func-2">Func</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <span class="xref">Task</span>&gt;</dt>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.func-3">Func</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <span class="xref">Task</span>&gt;</dt>
     <dd></dd>
   </dl>
 
@@ -649,6 +709,36 @@ Class CommandHandler  <a class="header-action link-secondary" title="View source
 
 
 
+  <h3 id="EchoHub_Client_Commands_CommandHandler_OnSetAsciiSize" data-uid="EchoHub.Client.Commands.CommandHandler.OnSetAsciiSize">
+  OnSetAsciiSize
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Commands/CommandHandler.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Func&lt;string, Task&gt;? OnSetAsciiSize</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.func-2">Func</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <span class="xref">Task</span>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <h3 id="EchoHub_Client_Commands_CommandHandler_OnSetAvatar" data-uid="EchoHub.Client.Commands.CommandHandler.OnSetAvatar">
   OnSetAvatar
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Commands/CommandHandler.cs"><i class="bi bi-code-slash"></i></a>
@@ -689,6 +779,36 @@ Class CommandHandler  <a class="header-action link-secondary" title="View source
 
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">public event Func&lt;string, Task&gt;? OnSetColor</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.func-2">Func</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <span class="xref">Task</span>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h3 id="EchoHub_Client_Commands_CommandHandler_OnSetDownloadPath" data-uid="EchoHub.Client.Commands.CommandHandler.OnSetDownloadPath">
+  OnSetDownloadPath
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Commands/CommandHandler.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Func&lt;string, Task&gt;? OnSetDownloadPath</code></pre>
   </div>
 
 

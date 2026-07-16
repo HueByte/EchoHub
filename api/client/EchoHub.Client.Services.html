@@ -113,9 +113,22 @@ Runs async work on a background thread and routes exceptions to the UI.</p>
       <dd></dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Client.Services.ChannelPasswordRequiredException.html">ChannelPasswordRequiredException</a></dt>
+      <dd><p>Thrown when joining a channel fails because a password is required or incorrect.
+The UI catches this to prompt the user and retry.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Client.Services.ClientEncryptionService.html">ClientEncryptionService</a></dt>
       <dd><p>Client-side encryption service. Uses the same AES-256-GCM format as the server
 so messages are encrypted end-to-end between client and server.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Client.Services.ClipboardFiles.html">ClipboardFiles</a></dt>
+      <dd><p>Reads file paths that live on the OS clipboard as a <em>file list</em> (e.g. after copying a file in
+Explorer/Finder/Nautilus), which terminals do not paste as text. Lets Ctrl+V attach a copied
+file directly instead of requiring the user to paste a raw path.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -123,13 +136,45 @@ so messages are encrypted end-to-end between client and server.</p>
       <dd></dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Client.Services.FolderPickResult.html">FolderPickResult</a></dt>
+      <dd></dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Client.Services.JoinOutcome.html">JoinOutcome</a></dt>
+      <dd><p>Result of joining a channel: decrypted history plus, for end-to-end encrypted
+channels, the key envelope needed to unlock the room content key.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Client.Services.NativeFolderPicker.html">NativeFolderPicker</a></dt>
+      <dd><p>Opens the OS-native folder chooser (Windows Explorer, macOS Finder, Linux GTK/KDE) by shelling
+out, so the TUI doesn't need a GUI toolkit reference. Returns <a class="xref" href="EchoHub.Client.Services.PickerOutcome.html#EchoHub_Client_Services_PickerOutcome_Unavailable">Unavailable</a>
+when no native dialog can run, so callers can fall back to a configured path.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Client.Services.NotificationSoundService.html">NotificationSoundService</a></dt>
       <dd></dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Client.Services.OutgoingAttachment.html">OutgoingAttachment</a></dt>
+      <dd><p>One file to upload as part of a message. For end-to-end encrypted channels the stream
+is already ciphertext, <a class="xref" href="EchoHub.Client.Services.OutgoingAttachment.html#EchoHub_Client_Services_OutgoingAttachment_DeclaredKind">DeclaredKind</a> is set (image/audio/file), and
+<a class="xref" href="EchoHub.Client.Services.OutgoingAttachment.html#EchoHub_Client_Services_OutgoingAttachment_EncryptedPreview">EncryptedPreview</a> holds the room-encrypted ASCII art for images.
+For normal channels only <a class="xref" href="EchoHub.Client.Services.OutgoingAttachment.html#EchoHub_Client_Services_OutgoingAttachment_Stream">Stream</a> and <a class="xref" href="EchoHub.Client.Services.OutgoingAttachment.html#EchoHub_Client_Services_OutgoingAttachment_FileName">FileName</a> are set.</p>
+</dd>
     </dl>
     <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Client.Services.PathSetup.html">PathSetup</a></dt>
       <dd><p>Ensures the application's directory is on the system PATH so users
 can run 'echohub' from any terminal session.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Client.Services.RoomKeyStore.html">RoomKeyStore</a></dt>
+      <dd><p>Holds room content keys for end-to-end encrypted channels: in-memory for the
+active session, persisted per-server in the client config (like saved sessions)
+so users don't retype the passphrase every launch. Keys never leave this machine.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -140,6 +185,13 @@ Backup location: ~/.echohub/update-backup/</p>
     </dl>
     <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Client.Services.UpdateChecker.html">UpdateChecker</a></dt>
+      <dd></dd>
+    </dl>
+    <h3 id="enums">
+Enums
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Client.Services.PickerOutcome.html">PickerOutcome</a></dt>
       <dd></dd>
     </dl>
 

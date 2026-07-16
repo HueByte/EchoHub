@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>v0.2.12 | EchoHub Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="v0.2.12 | EchoHub Documentation ">
+      
+      
+      <link rel="icon" href="../images/hue_icon.svg">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/blob/master/docs/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/hue_icon.svg" alt="EchoHub">
+            EchoHub
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="v0212">v0.2.12</h1>
+
+<p>Private channels are now genuinely private: password-protected channels are end-to-end encrypted, so the server (and its operators) can gate joins and measure storage but cannot read message or file contents. The IRC gateway grows real MODE/TOPIC support and channel keys, and the client gets image &quot;save original&quot;, a transparent-light theme, drag-and-drop file sending, Ctrl+V paste, and a fix for the intermittent Ctrl+W crash.</p>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><strong>End-to-end encrypted channels</strong> — creating a channel with a password now provisions a zero-knowledge room:
+<ul>
+<li>The passphrase never leaves the client. It derives (PBKDF2-SHA256, 210k iterations) two keys: an <em>auth key</em> sent to the server as the join credential, and a <em>key-encryption key</em> that never leaves the machine.</li>
+<li>A random room content key encrypts every message and file with AES-256-GCM. The server only ever stores the room key <em>wrapped</em> under the passphrase, so it can gate joins and report a channel's message count, storage size, and attachments — but cannot decrypt any of it. Even the server owner cannot read a private room's contents.</li>
+<li>Members' clients cache the derived room key locally (in the per-server config, like saved sessions) so the passphrase isn't retyped every launch; joining on a new device prompts for it once.</li>
+<li>Change the passphrase with <code>/passwd &lt;old&gt; &lt;new&gt;</code> (channel creator only). The room key is re-wrapped, not rotated, so <strong>existing history stays readable</strong> and members who join later with the new passphrase can still read older messages.</li>
+<li>Files and images are encrypted client-side before upload; for images the ASCII-art preview is rendered on the client and stored room-encrypted too. Sending images by URL is disabled in encrypted channels (the server can't fetch-and-render without the key).</li>
+<li>End-to-end encrypted channels cannot be joined over the IRC gateway (that would require the server to hold the room key) — IRC <code>JOIN</code> returns <code>475</code> directing users to the EchoHub client.</li>
+</ul>
+</li>
+<li>Password-protected channels — set an optional password when creating a channel (masked field in the Create Channel dialog, <code>password</code> on <code>POST /api/channels</code>). Passwords are BCrypt-hashed server-side; the join gate applies on first join only (existing members and the creator are unaffected). Protected channels show a <code>*</code> marker in the channel list and <code>+k</code> in the status bar</li>
+<li>Save original images — image messages now show a clickable &quot;[↓ save original]&quot; line under the ASCII-art preview that downloads the full-resolution original to your Downloads folder (decrypting locally in encrypted channels)</li>
+<li><strong>Messages with attachments (Discord-style)</strong> — a message is now text <strong>plus</strong> a list of attachments instead of being either text or a single file. One message can carry a caption and several files (images, audio, docs) together:
+<ul>
+<li>Compose with a <strong>staging tray</strong>: <code>/send &lt;file&gt;</code> or dropping files onto the terminal stages them (shown on the input bar); the next Enter sends your typed caption and all staged files as one message. <code>/clear</code> drops staged files. <code>/send &lt;URL&gt;</code> still posts an image immediately.</li>
+<li>Each image attachment renders its own ASCII preview with its own &quot;save original&quot; action; audio/file attachments each get their own play/download line.</li>
+<li>In encrypted channels every attachment is encrypted individually (blob + ASCII preview), and the caption is room-encrypted — the server still stores only ciphertext and can report count/size but not contents.</li>
+<li>Up to 10 attachments per message.</li>
+</ul>
+</li>
+<li><strong>Right-click message menu</strong> — right-click any message for a context menu: save/download/play its attachment, mention the sender, view their profile, copy the text, copy the message ID (for linking or command arguments), or delete the message. (Keyboard: F6 focuses the message list for arrow-key selection + Delete.) The selected message is now highlighted while the list is focused.</li>
+<li><strong>Message deletion</strong> — press Delete on a selected message to remove it. You can always delete your own messages; moderators and above can delete others' messages, but only from users <strong>below their own role</strong> (a mod can't delete an admin's or owner's message). Deleting a message also removes its attachment blobs from server storage.</li>
+<li><strong>Customizable download folder</strong> — <code>/downloadpath</code> opens your OS-native folder picker (Windows Explorer / macOS Finder / Linux GTK or KDE) to choose where downloaded attachments and saved images go; <code>/downloadpath &lt;path&gt;</code> sets it directly (the fallback when no native picker is available). Downloaded files now land in that folder (with automatic <code>(n)</code> de-duplication) instead of a temp directory.</li>
+<li><code>/join &lt;channel&gt; [password]</code> — join protected channels inline, or let the client prompt: joining a protected channel without a password opens a masked prompt that re-prompts on a wrong password</li>
+<li>IRC channel keys — <code>JOIN #room &lt;key&gt;</code> works against room passwords (RFC 1459 comma-paired key lists supported); keyless or wrong-key joins get <code>475 ERR_BADCHANNELKEY</code></li>
+<li>IRC <code>MODE</code> implemented — <code>MODE #chan</code> reports <code>+k</code>/<code>+</code>, <code>MODE #chan +k &lt;key&gt;</code> sets and <code>-k</code> clears the room password (channel creator or admin only), ban-list probes get a clean empty reply, and <code>CHANMODES</code> is advertised in ISUPPORT</li>
+<li>IRC <code>TOPIC</code> set support — the channel creator can change the topic from IRC; the change broadcasts to connected TUI clients (previously topic changes were rejected with a stub error)</li>
+<li>Attach a file by drag &amp; drop or by pasting — drop a file onto the terminal, or <strong>copy a file in your file manager and press Ctrl+V</strong>, to stage it as an attachment (the next Enter sends it with your caption). Multiple files at once are supported. Ctrl+V still pastes text when the clipboard holds text; Ctrl+Y is a paste alias. On Windows the copied-file paste reads the clipboard's file list directly (Windows Terminal never pastes copied files as text), with <code>xclip</code>/<code>wl-paste</code> used on Linux</li>
+<li>Pick ASCII-art size for attached images — <code>/size</code> opens a Small/Medium/Large picker (40×40 / 80×80 / 120×120) with descriptions, <code>/size &lt;s|m|l&gt;</code> sets it directly, and <code>/send &lt;file&gt; -l</code> sets it for that message. The choice is a saved preference and applies to copy-paste/drag-drop images (which have no per-file flag); the current size is shown in the staging tray</li>
+<li>New <code>TransparentLight</code> theme — dark characters on a transparent background, for light terminal color schemes (<code>/theme transparentlight</code>)</li>
+<li>Timestamps in messages are now aware of the current culture and display the short time pattern for today's messages and the short date+time pattern for older messages.</li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li>Transparent themes no longer draw an opaque box behind the message input. The input <code>TextView</code> renders with the <code>Editable</code> visual role, which Terminal.Gui derives as an opaque color when a theme leaves it unset; the themes now pin <code>Editable</code>/<code>ReadOnly</code> to their base colors so the input matches its (transparent) background.</li>
+<li>Attachments whose files have been pruned (retention cleanup deletes blobs older than <code>Storage:RetentionDays</code> but left the message rows) no longer render a dead download/preview. When channel history loads, the server checks which attachment blobs still exist: missing ones are dropped from the message, and an attachment-only message whose files are all gone is removed from the database.</li>
+<li>Fixed intermittent crash on Ctrl+W — Terminal.Gui binds Ctrl+W to clipboard-cut, and Windows clipboard contention (another app holding the clipboard) threw an unhandled <code>Win32Exception</code> that took the app down. Ctrl+W now deletes the previous word (readline behavior, no clipboard), and all clipboard shortcuts (Ctrl+X/C/V/Y) are guarded so transient clipboard failures log a warning instead of crashing</li>
+<li>Fixed emoji shortcode replacement permanently disabling itself if a cursor update threw mid-replacement</li>
+<li>IRC <code>LIST</code> no longer leaks private channels; protected channels are marked <code>[+k]</code></li>
+</ul>
+<h2 id="api-changes">API Changes</h2>
+<ul>
+<li><code>ChannelDto</code> gains <code>isProtected</code> and <code>isEncrypted</code>; <code>CreateChannelRequest</code> gains optional <code>password</code>, <code>encryptionSalt</code>, and <code>wrappedRoomKey</code>; SignalR <code>JoinChannel</code> takes an optional second <code>password</code> argument and <code>JoinChannelResult</code> gains <code>passwordRequired</code>, <code>encryptionSalt</code>, and <code>wrappedRoomKey</code> (older clients must update to join over SignalR)</li>
+<li>New endpoints: <code>GET /api/channels/{channel}/crypto</code> (public crypto metadata — salt only, never the wrapped key) and <code>POST /api/channels/{channel}/rekey</code> (creator-only passphrase change)</li>
+<li>The upload endpoint accepts <code>type</code> and <code>content</code> form fields for encrypted channels, where the client supplies the declared message type and room-encrypted content</li>
+<li><code>ImageToAsciiService</code> and <code>FileValidationHelper</code> moved from <code>EchoHub.Server</code> to <code>EchoHub.Core</code> so the client can render ASCII art and detect file types for encrypted uploads</li>
+<li><strong>Message shape change</strong>: <code>MessageDto</code> drops <code>Type</code>/<code>AttachmentUrl</code>/<code>AttachmentFileName</code>/<code>AttachmentFileSize</code> and gains <code>Attachments</code> (a list of <code>AttachmentDto { Kind, Url, FileName, FileSize, AsciiPreview }</code>, null/empty for plain text). New <code>Attachment</code> entity + table with a cascade FK to <code>Message</code></li>
+<li>New endpoint <code>POST /api/channels/{channel}/messages</code> (multipart: <code>content</code> + N <code>files</code>, plus <code>kind</code>/<code>preview</code> per file for encrypted channels) replaces the single-file <code>upload</code> endpoint; <code>DELETE /api/moderation/messages/{id}</code> now enforces the own-or-higher-role rule</li>
+<li>New EF migrations <code>AddChannelPasswordHash</code>, <code>AddChannelEncryptionEnvelope</code>, and <code>AddMessageAttachments</code> (applied automatically on server start); a one-time startup data migration folds legacy single-attachment messages into the new model</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/HueByte/EchoHub/blob/master/docs/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a></div></div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

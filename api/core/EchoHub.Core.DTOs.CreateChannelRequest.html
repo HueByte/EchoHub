@@ -182,8 +182,8 @@ Class CreateChannelRequest  <a class="header-action link-secondary" title="View 
 
   <a id="EchoHub_Core_DTOs_CreateChannelRequest__ctor_" data-uid="EchoHub.Core.DTOs.CreateChannelRequest.#ctor*"></a>
 
-  <h3 id="EchoHub_Core_DTOs_CreateChannelRequest__ctor_System_String_System_String_System_Boolean_" data-uid="EchoHub.Core.DTOs.CreateChannelRequest.#ctor(System.String,System.String,System.Boolean)">
-  CreateChannelRequest(string, string?, bool)
+  <h3 id="EchoHub_Core_DTOs_CreateChannelRequest__ctor_System_String_System_String_System_Boolean_System_String_System_String_System_String_" data-uid="EchoHub.Core.DTOs.CreateChannelRequest.#ctor(System.String,System.String,System.Boolean,System.String,System.String,System.String)">
+  CreateChannelRequest(string, string?, bool, string?, string?, string?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -191,7 +191,7 @@ Class CreateChannelRequest  <a class="header-action link-secondary" title="View 
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public CreateChannelRequest(string Name, string? Topic = null, bool IsPublic = true)</code></pre>
+    <pre><code class="lang-csharp hljs">public CreateChannelRequest(string Name, string? Topic = null, bool IsPublic = true, string? Password = null, string? EncryptionSalt = null, string? WrappedRoomKey = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -201,6 +201,12 @@ Class CreateChannelRequest  <a class="header-action link-secondary" title="View 
     <dt><code>Topic</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>IsPublic</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+    <dt><code>Password</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>EncryptionSalt</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>WrappedRoomKey</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 
@@ -217,6 +223,37 @@ Class CreateChannelRequest  <a class="header-action link-secondary" title="View 
 
   <h2 class="section" id="properties">Properties
 </h2>
+
+
+  <a id="EchoHub_Core_DTOs_CreateChannelRequest_EncryptionSalt_" data-uid="EchoHub.Core.DTOs.CreateChannelRequest.EncryptionSalt*"></a>
+
+  <h3 id="EchoHub_Core_DTOs_CreateChannelRequest_EncryptionSalt" data-uid="EchoHub.Core.DTOs.CreateChannelRequest.EncryptionSalt">
+  EncryptionSalt
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? EncryptionSalt { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
 
 
   <a id="EchoHub_Core_DTOs_CreateChannelRequest_EqualityContract_" data-uid="EchoHub.Core.DTOs.CreateChannelRequest.EqualityContract*"></a>
@@ -312,6 +349,37 @@ Class CreateChannelRequest  <a class="header-action link-secondary" title="View 
 
 
 
+  <a id="EchoHub_Core_DTOs_CreateChannelRequest_Password_" data-uid="EchoHub.Core.DTOs.CreateChannelRequest.Password*"></a>
+
+  <h3 id="EchoHub_Core_DTOs_CreateChannelRequest_Password" data-uid="EchoHub.Core.DTOs.CreateChannelRequest.Password">
+  Password
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? Password { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="EchoHub_Core_DTOs_CreateChannelRequest_Topic_" data-uid="EchoHub.Core.DTOs.CreateChannelRequest.Topic*"></a>
 
   <h3 id="EchoHub_Core_DTOs_CreateChannelRequest_Topic" data-uid="EchoHub.Core.DTOs.CreateChannelRequest.Topic">
@@ -343,14 +411,10 @@ Class CreateChannelRequest  <a class="header-action link-secondary" title="View 
 
 
 
-  <h2 class="section" id="methods">Methods
-</h2>
+  <a id="EchoHub_Core_DTOs_CreateChannelRequest_WrappedRoomKey_" data-uid="EchoHub.Core.DTOs.CreateChannelRequest.WrappedRoomKey*"></a>
 
-
-  <a id="EchoHub_Core_DTOs_CreateChannelRequest_Deconstruct_" data-uid="EchoHub.Core.DTOs.CreateChannelRequest.Deconstruct*"></a>
-
-  <h3 id="EchoHub_Core_DTOs_CreateChannelRequest_Deconstruct_System_String__System_String__System_Boolean__" data-uid="EchoHub.Core.DTOs.CreateChannelRequest.Deconstruct(System.String@,System.String@,System.Boolean@)">
-  Deconstruct(out string, out string?, out bool)
+  <h3 id="EchoHub_Core_DTOs_CreateChannelRequest_WrappedRoomKey" data-uid="EchoHub.Core.DTOs.CreateChannelRequest.WrappedRoomKey">
+  WrappedRoomKey
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -358,7 +422,42 @@ Class CreateChannelRequest  <a class="header-action link-secondary" title="View 
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public void Deconstruct(out string Name, out string? Topic, out bool IsPublic)</code></pre>
+    <pre><code class="lang-csharp hljs">public string? WrappedRoomKey { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="EchoHub_Core_DTOs_CreateChannelRequest_Deconstruct_" data-uid="EchoHub.Core.DTOs.CreateChannelRequest.Deconstruct*"></a>
+
+  <h3 id="EchoHub_Core_DTOs_CreateChannelRequest_Deconstruct_System_String__System_String__System_Boolean__System_String__System_String__System_String__" data-uid="EchoHub.Core.DTOs.CreateChannelRequest.Deconstruct(System.String@,System.String@,System.Boolean@,System.String@,System.String@,System.String@)">
+  Deconstruct(out string, out string?, out bool, out string?, out string?, out string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Deconstruct(out string Name, out string? Topic, out bool IsPublic, out string? Password, out string? EncryptionSalt, out string? WrappedRoomKey)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -368,6 +467,12 @@ Class CreateChannelRequest  <a class="header-action link-secondary" title="View 
     <dt><code>Topic</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>IsPublic</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+    <dt><code>Password</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>EncryptionSalt</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>WrappedRoomKey</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 

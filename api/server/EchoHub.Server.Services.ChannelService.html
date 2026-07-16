@@ -199,8 +199,8 @@ Class ChannelService  <a class="header-action link-secondary" title="View source
 
   <a id="EchoHub_Server_Services_ChannelService_CreateChannelAsync_" data-uid="EchoHub.Server.Services.ChannelService.CreateChannelAsync*"></a>
 
-  <h3 id="EchoHub_Server_Services_ChannelService_CreateChannelAsync_System_Guid_System_String_System_String_System_Boolean_" data-uid="EchoHub.Server.Services.ChannelService.CreateChannelAsync(System.Guid,System.String,System.String,System.Boolean)">
-  CreateChannelAsync(Guid, string, string?, bool)
+  <h3 id="EchoHub_Server_Services_ChannelService_CreateChannelAsync_System_Guid_System_String_System_String_System_Boolean_System_String_System_String_System_String_" data-uid="EchoHub.Server.Services.ChannelService.CreateChannelAsync(System.Guid,System.String,System.String,System.Boolean,System.String,System.String,System.String)">
+  CreateChannelAsync(Guid, string, string?, bool, string?, string?, string?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/ChannelService.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -208,7 +208,7 @@ Class ChannelService  <a class="header-action link-secondary" title="View source
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Task&lt;ChannelOperationResult&gt; CreateChannelAsync(Guid creatorUserId, string name, string? topic, bool isPublic)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;ChannelOperationResult&gt; CreateChannelAsync(Guid creatorUserId, string name, string? topic, bool isPublic, string? password = null, string? encryptionSalt = null, string? wrappedRoomKey = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -220,6 +220,12 @@ Class ChannelService  <a class="header-action link-secondary" title="View source
     <dt><code>topic</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>isPublic</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+    <dt><code>password</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>encryptionSalt</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>wrappedRoomKey</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 
@@ -279,8 +285,8 @@ Class ChannelService  <a class="header-action link-secondary" title="View source
 
   <a id="EchoHub_Server_Services_ChannelService_EnsureChannelMembershipAsync_" data-uid="EchoHub.Server.Services.ChannelService.EnsureChannelMembershipAsync*"></a>
 
-  <h3 id="EchoHub_Server_Services_ChannelService_EnsureChannelMembershipAsync_System_Guid_System_String_" data-uid="EchoHub.Server.Services.ChannelService.EnsureChannelMembershipAsync(System.Guid,System.String)">
-  EnsureChannelMembershipAsync(Guid, string)
+  <h3 id="EchoHub_Server_Services_ChannelService_EnsureChannelMembershipAsync_System_Guid_System_String_System_String_" data-uid="EchoHub.Server.Services.ChannelService.EnsureChannelMembershipAsync(System.Guid,System.String,System.String)">
+  EnsureChannelMembershipAsync(Guid, string, string?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/ChannelService.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -288,7 +294,7 @@ Class ChannelService  <a class="header-action link-secondary" title="View source
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Task&lt;(bool Success, string? Error)&gt; EnsureChannelMembershipAsync(Guid userId, string channelName)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;(bool Success, string? Error, bool PasswordRequired)&gt; EnsureChannelMembershipAsync(Guid userId, string channelName, string? password = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -297,11 +303,13 @@ Class ChannelService  <a class="header-action link-secondary" title="View source
     <dd></dd>
     <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
+    <dt><code>password</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
   </dl>
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
-    <dt><span class="xref">Task</span>&lt;(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.boolean,system.string-.success">Success</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.boolean,system.string-.error">Error</a>)&gt;</dt>
+    <dt><span class="xref">Task</span>&lt;(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.boolean,system.string,system.boolean-.success">Success</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.boolean,system.string,system.boolean-.error">Error</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.boolean,system.string,system.boolean-.passwordrequired">PasswordRequired</a>)&gt;</dt>
     <dd></dd>
   </dl>
 
@@ -338,6 +346,78 @@ Class ChannelService  <a class="header-action link-secondary" title="View source
   <h4 class="section">Returns</h4>
   <dl class="parameters">
     <dt><span class="xref">Task</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs">ChannelDto</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Server_Services_ChannelService_GetChannelCryptoAsync_" data-uid="EchoHub.Server.Services.ChannelService.GetChannelCryptoAsync*"></a>
+
+  <h3 id="EchoHub_Server_Services_ChannelService_GetChannelCryptoAsync_System_String_" data-uid="EchoHub.Server.Services.ChannelService.GetChannelCryptoAsync(System.String)">
+  GetChannelCryptoAsync(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/ChannelService.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;ChannelCryptoDto?&gt; GetChannelCryptoAsync(string channelName)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs">ChannelCryptoDto</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Server_Services_ChannelService_GetChannelKeyEnvelopeAsync_" data-uid="EchoHub.Server.Services.ChannelService.GetChannelKeyEnvelopeAsync*"></a>
+
+  <h3 id="EchoHub_Server_Services_ChannelService_GetChannelKeyEnvelopeAsync_System_String_" data-uid="EchoHub.Server.Services.ChannelService.GetChannelKeyEnvelopeAsync(System.String)">
+  GetChannelKeyEnvelopeAsync(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/ChannelService.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;(string? EncryptionSalt, string? WrappedRoomKey)&gt; GetChannelKeyEnvelopeAsync(string channelName)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span>&lt;(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.encryptionsalt">EncryptionSalt</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.wrappedroomkey">WrappedRoomKey</a>)&gt;</dt>
     <dd></dd>
   </dl>
 
@@ -445,6 +525,99 @@ Class ChannelService  <a class="header-action link-secondary" title="View source
   <h4 class="section">Returns</h4>
   <dl class="parameters">
     <dt><span class="xref">Task</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/CommonDtos.cs">PaginatedResponse</a>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs">ChannelDto</a>&gt;&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Server_Services_ChannelService_RekeyChannelAsync_" data-uid="EchoHub.Server.Services.ChannelService.RekeyChannelAsync*"></a>
+
+  <h3 id="EchoHub_Server_Services_ChannelService_RekeyChannelAsync_System_Guid_System_String_System_String_System_String_System_String_System_String_" data-uid="EchoHub.Server.Services.ChannelService.RekeyChannelAsync(System.Guid,System.String,System.String,System.String,System.String,System.String)">
+  RekeyChannelAsync(Guid, string, string, string, string, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/ChannelService.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Changes an encrypted channel's passphrase by swapping the join-gate hash and the
+wrapped room key. The room content key itself never changes, so history stays
+readable — the client re-wraps it under the new passphrase-derived key.
+Creator only: admins cannot rekey a room whose passphrase they don't know.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;ChannelOperationResult&gt; RekeyChannelAsync(Guid callerUserId, string channelName, string oldPassword, string newPassword, string newEncryptionSalt, string newWrappedRoomKey)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>callerUserId</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.guid">Guid</a></dt>
+    <dd></dd>
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>oldPassword</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>newPassword</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>newEncryptionSalt</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>newWrappedRoomKey</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/CommonDtos.cs">ChannelOperationResult</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Server_Services_ChannelService_SetChannelPasswordAsync_" data-uid="EchoHub.Server.Services.ChannelService.SetChannelPasswordAsync*"></a>
+
+  <h3 id="EchoHub_Server_Services_ChannelService_SetChannelPasswordAsync_System_Guid_System_String_System_String_" data-uid="EchoHub.Server.Services.ChannelService.SetChannelPasswordAsync(System.Guid,System.String,System.String)">
+  SetChannelPasswordAsync(Guid, string, string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/ChannelService.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets, changes, or clears (null) a channel's join password. Creator or admin only.
+Not available on end-to-end encrypted channels — those change passphrase via
+<a class="xref" href="EchoHub.Server.Services.ChannelService.html#EchoHub_Server_Services_ChannelService_RekeyChannelAsync_System_Guid_System_String_System_String_System_String_System_String_System_String_">RekeyChannelAsync(Guid, string, string, string, string, string)</a> so the room key envelope stays consistent.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;ChannelOperationResult&gt; SetChannelPasswordAsync(Guid callerUserId, string channelName, string? password)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>callerUserId</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.guid">Guid</a></dt>
+    <dd></dd>
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>password</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/CommonDtos.cs">ChannelOperationResult</a>&gt;</dt>
     <dd></dd>
   </dl>
 

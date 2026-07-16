@@ -163,8 +163,8 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
 
   <a id="EchoHub_Server_Hubs_ChatHub__ctor_" data-uid="EchoHub.Server.Hubs.ChatHub.#ctor*"></a>
 
-  <h3 id="EchoHub_Server_Hubs_ChatHub__ctor_EchoHub_Core_Contracts_IChatService_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Hubs_ChatHub__" data-uid="EchoHub.Server.Hubs.ChatHub.#ctor(EchoHub.Core.Contracts.IChatService,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Hubs.ChatHub})">
-  ChatHub(IChatService, ILogger&lt;ChatHub&gt;)
+  <h3 id="EchoHub_Server_Hubs_ChatHub__ctor_EchoHub_Core_Contracts_IChatService_EchoHub_Core_Contracts_IChannelService_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Hubs_ChatHub__" data-uid="EchoHub.Server.Hubs.ChatHub.#ctor(EchoHub.Core.Contracts.IChatService,EchoHub.Core.Contracts.IChannelService,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Hubs.ChatHub})">
+  ChatHub(IChatService, IChannelService, ILogger&lt;ChatHub&gt;)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Hubs/ChatHub.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -172,12 +172,14 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public ChatHub(IChatService chatService, ILogger&lt;ChatHub&gt; logger)</code></pre>
+    <pre><code class="lang-csharp hljs">public ChatHub(IChatService chatService, IChannelService channelService, ILogger&lt;ChatHub&gt; logger)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>chatService</code> <a class="xref" href="../core/EchoHub.Core.Contracts.IChatService.html">IChatService</a></dt>
+    <dd></dd>
+    <dt><code>channelService</code> <a class="xref" href="../core/EchoHub.Core.Contracts.IChannelService.html">IChannelService</a></dt>
     <dd></dd>
     <dt><code>logger</code> <span class="xref">ILogger</span>&lt;<a class="xref" href="EchoHub.Server.Hubs.ChatHub.html">ChatHub</a>&gt;</dt>
     <dd></dd>
@@ -276,8 +278,8 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
 
   <a id="EchoHub_Server_Hubs_ChatHub_JoinChannel_" data-uid="EchoHub.Server.Hubs.ChatHub.JoinChannel*"></a>
 
-  <h3 id="EchoHub_Server_Hubs_ChatHub_JoinChannel_System_String_" data-uid="EchoHub.Server.Hubs.ChatHub.JoinChannel(System.String)">
-  JoinChannel(string)
+  <h3 id="EchoHub_Server_Hubs_ChatHub_JoinChannel_System_String_System_String_" data-uid="EchoHub.Server.Hubs.ChatHub.JoinChannel(System.String,System.String)">
+  JoinChannel(string, string?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Hubs/ChatHub.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -285,12 +287,14 @@ public class ChatHub : Hub&lt;IEchoHubClient&gt;, IDisposable</code></pre>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Task&lt;JoinChannelResult&gt; JoinChannel(string channelName)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;JoinChannelResult&gt; JoinChannel(string channelName, string? password = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>password</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 

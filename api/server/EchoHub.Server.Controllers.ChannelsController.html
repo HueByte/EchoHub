@@ -159,7 +159,7 @@ public class ChannelsController : ControllerBase</code></pre>
 
   <a id="EchoHub_Server_Controllers_ChannelsController__ctor_" data-uid="EchoHub.Server.Controllers.ChannelsController.#ctor*"></a>
 
-  <h3 id="EchoHub_Server_Controllers_ChannelsController__ctor_EchoHub_Core_Contracts_IChannelService_EchoHub_Server_Data_EchoHubDbContext_EchoHub_Server_Services_FileStorageService_EchoHub_Server_Services_ImageToAsciiService_System_Net_Http_IHttpClientFactory_EchoHub_Core_Contracts_IChatService_EchoHub_Core_Contracts_IMessageEncryptionService_" data-uid="EchoHub.Server.Controllers.ChannelsController.#ctor(EchoHub.Core.Contracts.IChannelService,EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Services.FileStorageService,EchoHub.Server.Services.ImageToAsciiService,System.Net.Http.IHttpClientFactory,EchoHub.Core.Contracts.IChatService,EchoHub.Core.Contracts.IMessageEncryptionService)">
+  <h3 id="EchoHub_Server_Controllers_ChannelsController__ctor_EchoHub_Core_Contracts_IChannelService_EchoHub_Server_Data_EchoHubDbContext_EchoHub_Server_Services_FileStorageService_EchoHub_Core_Services_ImageToAsciiService_System_Net_Http_IHttpClientFactory_EchoHub_Core_Contracts_IChatService_EchoHub_Core_Contracts_IMessageEncryptionService_" data-uid="EchoHub.Server.Controllers.ChannelsController.#ctor(EchoHub.Core.Contracts.IChannelService,EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Services.FileStorageService,EchoHub.Core.Services.ImageToAsciiService,System.Net.Http.IHttpClientFactory,EchoHub.Core.Contracts.IChatService,EchoHub.Core.Contracts.IMessageEncryptionService)">
   ChannelsController(IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/ChannelsController.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
@@ -179,7 +179,7 @@ public class ChannelsController : ControllerBase</code></pre>
     <dd></dd>
     <dt><code>fileStorage</code> <a class="xref" href="EchoHub.Server.Services.FileStorageService.html">FileStorageService</a></dt>
     <dd></dd>
-    <dt><code>asciiService</code> <a class="xref" href="EchoHub.Server.Services.ImageToAsciiService.html">ImageToAsciiService</a></dt>
+    <dt><code>asciiService</code> <a class="xref" href="../core/EchoHub.Core.Services.ImageToAsciiService.html">ImageToAsciiService</a></dt>
     <dd></dd>
     <dt><code>httpClientFactory</code> <span class="xref">IHttpClientFactory</span></dt>
     <dd></dd>
@@ -278,6 +278,46 @@ public Task&lt;IActionResult&gt; DeleteChannel(string channel)</code></pre>
 
 
 
+  <a id="EchoHub_Server_Controllers_ChannelsController_GetChannelCrypto_" data-uid="EchoHub.Server.Controllers.ChannelsController.GetChannelCrypto*"></a>
+
+  <h3 id="EchoHub_Server_Controllers_ChannelsController_GetChannelCrypto_System_String_" data-uid="EchoHub.Server.Controllers.ChannelsController.GetChannelCrypto(System.String)">
+  GetChannelCrypto(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/ChannelsController.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Public crypto metadata for a channel: whether it is end-to-end encrypted and the
+PBKDF2 salt clients need to derive their join credential. Never returns the
+wrapped room key — that is only handed out after a successful join.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[HttpGet(&quot;{channel}/crypto&quot;)]
+public Task&lt;IActionResult&gt; GetChannelCrypto(string channel)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channel</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span>&lt;<span class="xref">IActionResult</span>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
   <a id="EchoHub_Server_Controllers_ChannelsController_GetChannels_" data-uid="EchoHub.Server.Controllers.ChannelsController.GetChannels*"></a>
 
   <h3 id="EchoHub_Server_Controllers_ChannelsController_GetChannels_System_Int32_System_Int32_" data-uid="EchoHub.Server.Controllers.ChannelsController.GetChannels(System.Int32,System.Int32)">
@@ -298,6 +338,95 @@ public Task&lt;IActionResult&gt; GetChannels(int offset = 0, int limit = 50)</co
     <dt><code>offset</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
     <dd></dd>
     <dt><code>limit</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span>&lt;<span class="xref">IActionResult</span>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Server_Controllers_ChannelsController_RekeyChannel_" data-uid="EchoHub.Server.Controllers.ChannelsController.RekeyChannel*"></a>
+
+  <h3 id="EchoHub_Server_Controllers_ChannelsController_RekeyChannel_System_String_EchoHub_Core_DTOs_RekeyChannelRequest_" data-uid="EchoHub.Server.Controllers.ChannelsController.RekeyChannel(System.String,EchoHub.Core.DTOs.RekeyChannelRequest)">
+  RekeyChannel(string, RekeyChannelRequest)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/ChannelsController.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Changes an encrypted channel's passphrase by re-wrapping its room key.
+The caller proves knowledge of the old passphrase via the old auth key;
+history is never re-encrypted (the room content key does not change).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[HttpPost(&quot;{channel}/rekey&quot;)]
+public Task&lt;IActionResult&gt; RekeyChannel(string channel, RekeyChannelRequest request)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channel</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>request</code> <a class="xref" href="../core/EchoHub.Core.DTOs.RekeyChannelRequest.html">RekeyChannelRequest</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span>&lt;<span class="xref">IActionResult</span>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Server_Controllers_ChannelsController_SendMessageWithAttachments_" data-uid="EchoHub.Server.Controllers.ChannelsController.SendMessageWithAttachments*"></a>
+
+  <h3 id="EchoHub_Server_Controllers_ChannelsController_SendMessageWithAttachments_System_String_System_String_" data-uid="EchoHub.Server.Controllers.ChannelsController.SendMessageWithAttachments(System.String,System.String)">
+  SendMessageWithAttachments(string, string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/ChannelsController.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sends one message carrying optional text (<code>content</code> form field) plus zero or more
+file attachments (Discord-style). For non-encrypted channels the server sniffs each file's
+kind and renders ASCII previews for images. For end-to-end encrypted channels the client
+uploads ciphertext blobs and declares each file's kind (<code>kind</code>) and pre-rendered,
+room-encrypted preview (<code>preview</code>), aligned by file order — the server never inspects them.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[HttpPost(&quot;{channel}/messages&quot;)]
+[EnableRateLimiting(&quot;upload&quot;)]
+[RequestSizeLimit(1048576000)]
+[RequestFormLimits(MultipartBodyLengthLimit = 1048576000)]
+public Task&lt;IActionResult&gt; SendMessageWithAttachments(string channel, string? size = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channel</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>size</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 
@@ -379,48 +508,6 @@ public Task&lt;IActionResult&gt; UpdateTopic(string channel, UpdateTopicRequest 
     <dt><code>channel</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>request</code> <a class="xref" href="../core/EchoHub.Core.DTOs.UpdateTopicRequest.html">UpdateTopicRequest</a></dt>
-    <dd></dd>
-  </dl>
-
-  <h4 class="section">Returns</h4>
-  <dl class="parameters">
-    <dt><span class="xref">Task</span>&lt;<span class="xref">IActionResult</span>&gt;</dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
-
-
-
-  <a id="EchoHub_Server_Controllers_ChannelsController_Upload_" data-uid="EchoHub.Server.Controllers.ChannelsController.Upload*"></a>
-
-  <h3 id="EchoHub_Server_Controllers_ChannelsController_Upload_System_String_System_String_" data-uid="EchoHub.Server.Controllers.ChannelsController.Upload(System.String,System.String)">
-  Upload(string, string?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/ChannelsController.cs"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"></div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[HttpPost(&quot;{channel}/upload&quot;)]
-[EnableRateLimiting(&quot;upload&quot;)]
-[RequestSizeLimit(104857600)]
-[RequestFormLimits(MultipartBodyLengthLimit = 104857600)]
-public Task&lt;IActionResult&gt; Upload(string channel, string? size = null)</code></pre>
-  </div>
-
-  <h4 class="section">Parameters</h4>
-  <dl class="parameters">
-    <dt><code>channel</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd></dd>
-    <dt><code>size</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 

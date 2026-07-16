@@ -254,6 +254,39 @@ Class FileStorageService  <a class="header-action link-secondary" title="View so
 
 
 
+  <a id="EchoHub_Server_Services_FileStorageService_GetStoredFileIds_" data-uid="EchoHub.Server.Services.FileStorageService.GetStoredFileIds*"></a>
+
+  <h3 id="EchoHub_Server_Services_FileStorageService_GetStoredFileIds" data-uid="EchoHub.Server.Services.FileStorageService.GetStoredFileIds">
+  GetStoredFileIds()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/FileStorageService.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the set of stored file ids (filenames without extension) currently on disk.
+One directory scan, so callers can bulk-check many attachments without a glob per file.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public HashSet&lt;string&gt; GetStoredFileIds()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">HashSet</span>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
   <a id="EchoHub_Server_Services_FileStorageService_SaveFileAsync_" data-uid="EchoHub.Server.Services.FileStorageService.SaveFileAsync*"></a>
 
   <h3 id="EchoHub_Server_Services_FileStorageService_SaveFileAsync_System_IO_Stream_System_String_" data-uid="EchoHub.Server.Services.FileStorageService.SaveFileAsync(System.IO.Stream,System.String)">
@@ -278,7 +311,7 @@ Class FileStorageService  <a class="header-action link-secondary" title="View so
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
-    <dt><span class="xref">Task</span>&lt;(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.fileid">fileId</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.filepath">filePath</a>)&gt;</dt>
+    <dt><span class="xref">Task</span>&lt;(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.encryptionsalt">EncryptionSalt</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.wrappedroomkey">WrappedRoomKey</a>)&gt;</dt>
     <dd></dd>
   </dl>
 

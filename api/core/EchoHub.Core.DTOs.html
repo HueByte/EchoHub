@@ -107,12 +107,25 @@ Classes
       <dd></dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Core.DTOs.AttachmentDto.html">AttachmentDto</a></dt>
+      <dd><p>A file attached to a message. <a class="xref" href="EchoHub.Core.DTOs.AttachmentDto.html#EchoHub_Core_DTOs_AttachmentDto_AsciiPreview">AsciiPreview</a> holds the color-tag art for
+images (null otherwise). For end-to-end encrypted channels the content behind
+<a class="xref" href="EchoHub.Core.DTOs.AttachmentDto.html#EchoHub_Core_DTOs_AttachmentDto_Url">Url</a> and the preview are ciphertext the server cannot read.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Core.DTOs.AvatarUploadResponse.html">AvatarUploadResponse</a></dt>
       <dd></dd>
     </dl>
     <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Core.DTOs.BanRequest.html">BanRequest</a></dt>
       <dd></dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Core.DTOs.ChannelCryptoDto.html">ChannelCryptoDto</a></dt>
+      <dd><p>Public crypto metadata for a channel — enough for a client to derive its join
+credential from a passphrase. Never includes the wrapped room key.</p>
+</dd>
     </dl>
     <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Core.DTOs.ChannelDto.html">ChannelDto</a></dt>
@@ -173,6 +186,12 @@ Classes
     <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Core.DTOs.RegisterRequest.html">RegisterRequest</a></dt>
       <dd></dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Core.DTOs.RekeyChannelRequest.html">RekeyChannelRequest</a></dt>
+      <dd><p>Passphrase change for an encrypted channel: the client proves knowledge of the old
+passphrase (old auth key), then supplies the re-wrapped room key under the new one.</p>
+</dd>
     </dl>
     <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Core.DTOs.SendMessageRequest.html">SendMessageRequest</a></dt>

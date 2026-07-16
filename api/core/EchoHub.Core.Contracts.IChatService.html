@@ -310,8 +310,8 @@ Interface IChatService  <a class="header-action link-secondary" title="View sour
 
   <a id="EchoHub_Core_Contracts_IChatService_JoinChannelAsync_" data-uid="EchoHub.Core.Contracts.IChatService.JoinChannelAsync*"></a>
 
-  <h3 id="EchoHub_Core_Contracts_IChatService_JoinChannelAsync_System_String_System_Guid_System_String_System_String_" data-uid="EchoHub.Core.Contracts.IChatService.JoinChannelAsync(System.String,System.Guid,System.String,System.String)">
-  JoinChannelAsync(string, Guid, string, string)
+  <h3 id="EchoHub_Core_Contracts_IChatService_JoinChannelAsync_System_String_System_Guid_System_String_System_String_System_String_" data-uid="EchoHub.Core.Contracts.IChatService.JoinChannelAsync(System.String,System.Guid,System.String,System.String,System.String)">
+  JoinChannelAsync(string, Guid, string, string, string?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/Contracts/IChatService.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -319,7 +319,7 @@ Interface IChatService  <a class="header-action link-secondary" title="View sour
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">Task&lt;(List&lt;MessageDto&gt; History, string? Error)&gt; JoinChannelAsync(string connectionId, Guid userId, string username, string channelName)</code></pre>
+    <pre><code class="lang-csharp hljs">Task&lt;(List&lt;MessageDto&gt; History, string? Error, bool PasswordRequired)&gt; JoinChannelAsync(string connectionId, Guid userId, string username, string channelName, string? password = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -332,11 +332,13 @@ Interface IChatService  <a class="header-action link-secondary" title="View sour
     <dd></dd>
     <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
+    <dt><code>password</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
   </dl>
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
-    <dt><span class="xref">Task</span>&lt;(<span class="xref">List</span>&lt;<a class="xref" href="EchoHub.Core.DTOs.MessageDto.html">MessageDto</a>&gt; <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.collections.generic.list-echohub.core.dtos.messagedto-,system.string-.history">History</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.collections.generic.list-echohub.core.dtos.messagedto-,system.string-.error">Error</a>)&gt;</dt>
+    <dt><span class="xref">Task</span>&lt;(<span class="xref">List</span>&lt;<a class="xref" href="EchoHub.Core.DTOs.MessageDto.html">MessageDto</a>&gt; <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.collections.generic.list-echohub.core.dtos.messagedto-,system.string,system.boolean-.history">History</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.collections.generic.list-echohub.core.dtos.messagedto-,system.string,system.boolean-.error">Error</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.collections.generic.list-echohub.core.dtos.messagedto-,system.string,system.boolean-.passwordrequired">PasswordRequired</a>)&gt;</dt>
     <dd></dd>
   </dl>
 

@@ -160,8 +160,8 @@ Class ChatService  <a class="header-action link-secondary" title="View source" h
 
   <a id="EchoHub_Server_Services_ChatService__ctor_" data-uid="EchoHub.Server.Services.ChatService.#ctor*"></a>
 
-  <h3 id="EchoHub_Server_Services_ChatService__ctor_Microsoft_Extensions_DependencyInjection_IServiceScopeFactory_EchoHub_Server_Services_PresenceTracker_System_Collections_Generic_IEnumerable_EchoHub_Core_Contracts_IChatBroadcaster__EchoHub_Server_Services_LinkEmbedService_EchoHub_Core_Contracts_IMessageEncryptionService_EchoHub_Core_Contracts_IChannelService_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Services_ChatService__" data-uid="EchoHub.Server.Services.ChatService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory,EchoHub.Server.Services.PresenceTracker,System.Collections.Generic.IEnumerable{EchoHub.Core.Contracts.IChatBroadcaster},EchoHub.Server.Services.LinkEmbedService,EchoHub.Core.Contracts.IMessageEncryptionService,EchoHub.Core.Contracts.IChannelService,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.ChatService})">
-  ChatService(IServiceScopeFactory, PresenceTracker, IEnumerable&lt;IChatBroadcaster&gt;, LinkEmbedService, IMessageEncryptionService, IChannelService, ILogger&lt;ChatService&gt;)
+  <h3 id="EchoHub_Server_Services_ChatService__ctor_Microsoft_Extensions_DependencyInjection_IServiceScopeFactory_EchoHub_Server_Services_PresenceTracker_System_Collections_Generic_IEnumerable_EchoHub_Core_Contracts_IChatBroadcaster__EchoHub_Server_Services_LinkEmbedService_EchoHub_Core_Contracts_IMessageEncryptionService_EchoHub_Core_Contracts_IChannelService_EchoHub_Server_Services_FileStorageService_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Services_ChatService__" data-uid="EchoHub.Server.Services.ChatService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory,EchoHub.Server.Services.PresenceTracker,System.Collections.Generic.IEnumerable{EchoHub.Core.Contracts.IChatBroadcaster},EchoHub.Server.Services.LinkEmbedService,EchoHub.Core.Contracts.IMessageEncryptionService,EchoHub.Core.Contracts.IChannelService,EchoHub.Server.Services.FileStorageService,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.ChatService})">
+  ChatService(IServiceScopeFactory, PresenceTracker, IEnumerable&lt;IChatBroadcaster&gt;, LinkEmbedService, IMessageEncryptionService, IChannelService, FileStorageService, ILogger&lt;ChatService&gt;)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/ChatService.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -169,7 +169,7 @@ Class ChatService  <a class="header-action link-secondary" title="View source" h
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public ChatService(IServiceScopeFactory scopeFactory, PresenceTracker presenceTracker, IEnumerable&lt;IChatBroadcaster&gt; broadcasters, LinkEmbedService embedService, IMessageEncryptionService encryption, IChannelService channelService, ILogger&lt;ChatService&gt; logger)</code></pre>
+    <pre><code class="lang-csharp hljs">public ChatService(IServiceScopeFactory scopeFactory, PresenceTracker presenceTracker, IEnumerable&lt;IChatBroadcaster&gt; broadcasters, LinkEmbedService embedService, IMessageEncryptionService encryption, IChannelService channelService, FileStorageService fileStorage, ILogger&lt;ChatService&gt; logger)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -185,6 +185,8 @@ Class ChatService  <a class="header-action link-secondary" title="View source" h
     <dt><code>encryption</code> <a class="xref" href="../core/EchoHub.Core.Contracts.IMessageEncryptionService.html">IMessageEncryptionService</a></dt>
     <dd></dd>
     <dt><code>channelService</code> <a class="xref" href="../core/EchoHub.Core.Contracts.IChannelService.html">IChannelService</a></dt>
+    <dd></dd>
+    <dt><code>fileStorage</code> <a class="xref" href="EchoHub.Server.Services.FileStorageService.html">FileStorageService</a></dt>
     <dd></dd>
     <dt><code>logger</code> <span class="xref">ILogger</span>&lt;<a class="xref" href="EchoHub.Server.Services.ChatService.html">ChatService</a>&gt;</dt>
     <dd></dd>
@@ -395,8 +397,8 @@ Class ChatService  <a class="header-action link-secondary" title="View source" h
 
   <a id="EchoHub_Server_Services_ChatService_JoinChannelAsync_" data-uid="EchoHub.Server.Services.ChatService.JoinChannelAsync*"></a>
 
-  <h3 id="EchoHub_Server_Services_ChatService_JoinChannelAsync_System_String_System_Guid_System_String_System_String_" data-uid="EchoHub.Server.Services.ChatService.JoinChannelAsync(System.String,System.Guid,System.String,System.String)">
-  JoinChannelAsync(string, Guid, string, string)
+  <h3 id="EchoHub_Server_Services_ChatService_JoinChannelAsync_System_String_System_Guid_System_String_System_String_System_String_" data-uid="EchoHub.Server.Services.ChatService.JoinChannelAsync(System.String,System.Guid,System.String,System.String,System.String)">
+  JoinChannelAsync(string, Guid, string, string, string?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/ChatService.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -404,7 +406,7 @@ Class ChatService  <a class="header-action link-secondary" title="View source" h
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Task&lt;(List&lt;MessageDto&gt; History, string? Error)&gt; JoinChannelAsync(string connectionId, Guid userId, string username, string channelName)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;(List&lt;MessageDto&gt; History, string? Error, bool PasswordRequired)&gt; JoinChannelAsync(string connectionId, Guid userId, string username, string channelName, string? password = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -417,11 +419,13 @@ Class ChatService  <a class="header-action link-secondary" title="View source" h
     <dd></dd>
     <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
+    <dt><code>password</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
   </dl>
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
-    <dt><span class="xref">Task</span>&lt;(<span class="xref">List</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs">MessageDto</a>&gt; <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.collections.generic.list-echohub.core.dtos.messagedto-,system.string-.history">History</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.collections.generic.list-echohub.core.dtos.messagedto-,system.string-.error">Error</a>)&gt;</dt>
+    <dt><span class="xref">Task</span>&lt;(<span class="xref">List</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs">MessageDto</a>&gt; <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.collections.generic.list-echohub.core.dtos.messagedto-,system.string,system.boolean-.history">History</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.collections.generic.list-echohub.core.dtos.messagedto-,system.string,system.boolean-.error">Error</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.collections.generic.list-echohub.core.dtos.messagedto-,system.string,system.boolean-.passwordrequired">PasswordRequired</a>)&gt;</dt>
     <dd></dd>
   </dl>
 
