@@ -630,6 +630,7 @@ public sealed partial class MainWindow : Runnable
 
         if (line.MessageId is { } messageId)
         {
+            items.Add(new MenuItem("Copy message ID", "", () => CopyToClipboard(messageId.ToString()), Key.Empty));
             items.Add(new Line());
             items.Add(new MenuItem("Delete message", "", () => ConfirmDeleteMessage(messageId), Key.Empty));
         }
