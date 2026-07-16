@@ -11,6 +11,7 @@ using Serilog;
 using Terminal.Gui.App;
 using Terminal.Gui.Configuration;
 using Terminal.Gui.Drawing;
+using Terminal.Gui.Drivers;
 using Terminal.Gui.Input;
 using Terminal.Gui.Text;
 using Terminal.Gui.ViewBase;
@@ -41,23 +42,24 @@ public sealed partial class MainWindow : Runnable
     private bool _usersPanelVisible = true;
     private const int UsersPanelWidth = 22;
     private const string DefaultInputTitle = "Message │ Enter=send │ Tab=complete │ Ctrl+K=search │ F6=pick message";
-    private static readonly Key F2Key = Key.F2;
+    private const KeyCode F2Key = KeyCode.F2;
     private bool _hasStagedAttachments;
 
     internal static readonly string AppVersion =
         typeof(MainWindow).Assembly.GetName().Version?.ToString(3) ?? "?";
 
-    // Cached Key constants — compare via .KeyCode to avoid Key.Equals (which also checks Handled)
-    private static readonly Key EnterKey = Key.Enter;
-    private static readonly Key NewlineKey = Key.N.WithCtrl;
-    private static readonly Key AltQKey = Key.Q.WithAlt;
-    private static readonly Key TabKey = Key.Tab;
-    private static readonly Key CtrlKKey = Key.K.WithCtrl;
-    private static readonly Key CtrlVKey = Key.V.WithCtrl;
-    private static readonly Key CtrlXKey = Key.X.WithCtrl;
-    private static readonly Key CtrlCKey = Key.C.WithCtrl;
-    private static readonly Key CtrlYKey = Key.Y.WithCtrl;
-    private static readonly Key F6Key = Key.F6;
+    // Key bindings as KeyCode constants: comparing raw KeyCodes avoids Key.Equals (which also
+    // checks Handled), and constants make them usable as switch case labels.
+    private const KeyCode EnterKey = KeyCode.Enter;
+    private const KeyCode NewlineKey = KeyCode.N | KeyCode.CtrlMask;
+    private const KeyCode AltQKey = KeyCode.Q | KeyCode.AltMask;
+    private const KeyCode TabKey = KeyCode.Tab;
+    private const KeyCode CtrlKKey = KeyCode.K | KeyCode.CtrlMask;
+    private const KeyCode CtrlVKey = KeyCode.V | KeyCode.CtrlMask;
+    private const KeyCode CtrlXKey = KeyCode.X | KeyCode.CtrlMask;
+    private const KeyCode CtrlCKey = KeyCode.C | KeyCode.CtrlMask;
+    private const KeyCode CtrlYKey = KeyCode.Y | KeyCode.CtrlMask;
+    private const KeyCode F6Key = KeyCode.F6;
 
     // Available slash commands for Tab autocomplete
     private static readonly string[] SlashCommands =
@@ -86,6 +88,18 @@ public sealed partial class MainWindow : Runnable
     /// Fired when the user presses Enter in the input field. Parameters: channel name, message content.
     /// </summary>
     public event Action<string, string>? OnMessageSubmitted;
+
+    /// <summary>
+    /// Fired when local files arrive via paste or drag-and-drop to be staged as attachments.
+    /// Parameters: channel name, absolute paths of existing files.
+    /// </summary>
+    public event Action<string, IReadOnlyList<string>>? OnFilesStaged;
+
+    /// <summary>
+    /// Fired when raw image data is pasted from the clipboard (e.g. copied from a browser or a
+    /// screenshot tool). Parameters: channel name, PNG-encoded image bytes.
+    /// </summary>
+    public event Action<string, byte[]>? OnImagePasted;
 
     /// <summary>
     /// Fired when the user requests to connect via the menu.
@@ -557,7 +571,7 @@ public sealed partial class MainWindow : Runnable
     private void OnMessageListKeyDown(object? sender, Key e)
     {
         // F6 returns focus to the input box.
-        if (e.KeyCode == F6Key.KeyCode)
+        if (e.KeyCode == F6Key)
         {
             _inputField.SetFocus();
             e.Handled = true;
@@ -703,66 +717,69 @@ public sealed partial class MainWindow : Runnable
 
     private void OnInputKeyDown(object? sender, Key e)
     {
-        if (e.KeyCode == TabKey.KeyCode)
+        switch (e.KeyCode)
         {
-            TryAutocompleteCommand();
-            e.Handled = true;
+            case TabKey:
+                TryAutocompleteCommand();
+                break;
+
+            case NewlineKey:
+                _inputField.InsertText("\n");
+                break;
+
+            case EnterKey:
+                var text = _inputField.Text?.Trim() ?? string.Empty;
+                // Send when there's text, or when only attachments are staged (empty caption).
+                if ((!string.IsNullOrEmpty(text) || _hasStagedAttachments)
+                    && !string.IsNullOrEmpty(_messageManager.CurrentChannel))
+                {
+                    OnMessageSubmitted?.Invoke(_messageManager.CurrentChannel, text);
+                    _inputField.Text = string.Empty;
+                }
+                break;
+
+            case AltQKey:
+                _app.RequestStop();
+                break;
+
+            case CtrlKKey:
+                ShowSearchDialog();
+                break;
+
+            case F6Key:
+                // Move focus into the message list so you can select a message (arrows) and
+                // delete it (Delete). F6 again returns focus here. (Esc is the app quit key.)
+                FocusMessageList();
+                break;
+
+            case CtrlVKey:
+            case CtrlYKey:
+                // Discord-style paste priority. Copied files in the OS file manager put a file
+                // list (not text) on the clipboard — attach them all. Copied image data (browser
+                // right-click copy, screenshot tools) is attached as a PNG. Otherwise paste text.
+                // Terminals never deliver either of the first two as text, so this is the only path.
+                if (ClipboardFiles.TryGetFiles(out var pastedFiles))
+                    StageFiles(pastedFiles);
+                else if (!string.IsNullOrEmpty(_messageManager.CurrentChannel)
+                         && ClipboardImage.TryGetPng(out var pastedPng))
+                    OnImagePasted?.Invoke(_messageManager.CurrentChannel, pastedPng);
+                else
+                    GuardedClipboardAction(() => _inputField.Paste(), "paste");
+                break;
+
+            case CtrlXKey:
+                GuardedClipboardAction(() => _inputField.Cut(), "cut");
+                break;
+
+            case CtrlCKey:
+                GuardedClipboardAction(() => _inputField.Copy(), "copy");
+                break;
+
+            default:
+                return; // not one of ours — leave e.Handled false so the key types normally
         }
-        else if (e.KeyCode == NewlineKey.KeyCode)
-        {
-            _inputField.InsertText("\n");
-            e.Handled = true;
-        }
-        else if (e.KeyCode == EnterKey.KeyCode)
-        {
-            var text = _inputField.Text?.Trim() ?? string.Empty;
-            // Send when there's text, or when only attachments are staged (empty caption).
-            if ((!string.IsNullOrEmpty(text) || _hasStagedAttachments)
-                && !string.IsNullOrEmpty(_messageManager.CurrentChannel))
-            {
-                OnMessageSubmitted?.Invoke(_messageManager.CurrentChannel, text);
-                _inputField.Text = string.Empty;
-            }
-            e.Handled = true;
-        }
-        else if (e.KeyCode == AltQKey.KeyCode)
-        {
-            _app.RequestStop();
-            e.Handled = true;
-        }
-        else if (e.KeyCode == CtrlKKey.KeyCode)
-        {
-            ShowSearchDialog();
-            e.Handled = true;
-        }
-        else if (e.KeyCode == F6Key.KeyCode)
-        {
-            // Move focus into the message list so you can select a message (arrows) and
-            // delete it (Delete). F6 again returns focus here. (Esc is the app quit key.)
-            FocusMessageList();
-            e.Handled = true;
-        }
-        else if (e.KeyCode == CtrlVKey.KeyCode || e.KeyCode == CtrlYKey.KeyCode)
-        {
-            // If a file was copied in the OS file manager, the clipboard holds a file list
-            // (not text) — attach it. Otherwise paste text. This is the reliable path on
-            // Windows Terminal, which never pastes copied files as text.
-            if (ClipboardFiles.TryGetFiles(out var pastedFiles))
-                StageFiles(pastedFiles);
-            else
-                GuardedClipboardAction(() => _inputField.Paste(), "paste");
-            e.Handled = true;
-        }
-        else if (e.KeyCode == CtrlXKey.KeyCode)
-        {
-            GuardedClipboardAction(() => _inputField.Cut(), "cut");
-            e.Handled = true;
-        }
-        else if (e.KeyCode == CtrlCKey.KeyCode)
-        {
-            GuardedClipboardAction(() => _inputField.Copy(), "copy");
-            e.Handled = true;
-        }
+
+        e.Handled = true;
     }
 
     /// <summary>
@@ -872,17 +889,16 @@ public sealed partial class MainWindow : Runnable
     }
 
     /// <summary>
-    /// Routes files (from a drop or a file-clipboard paste) through the /send pipeline, which
-    /// stages them; the next Enter sends them with any typed caption.
+    /// Stages files (from a drop or a file-clipboard paste) as attachments in one batch; the
+    /// next Enter sends them with any typed caption.
     /// </summary>
-    private void StageFiles(IEnumerable<string> files)
+    private void StageFiles(IReadOnlyList<string> files)
     {
         var channel = _messageManager.CurrentChannel;
         if (string.IsNullOrEmpty(channel))
             return;
 
-        foreach (var file in files)
-            OnMessageSubmitted?.Invoke(channel, $"/send \"{file}\"");
+        OnFilesStaged?.Invoke(channel, files);
     }
 
     private void OnChatViewportChanged()
@@ -898,21 +914,25 @@ public sealed partial class MainWindow : Runnable
 
     private void OnWindowKeyDown(object? sender, Key e)
     {
-        if (e.KeyCode == AltQKey.KeyCode)
+        switch (e.KeyCode)
         {
-            _app.RequestStop();
-            e.Handled = true;
+            case AltQKey:
+                _app.RequestStop();
+                break;
+
+            case F2Key:
+                ToggleUsersPanel();
+                break;
+
+            case CtrlKKey:
+                ShowSearchDialog();
+                break;
+
+            default:
+                return;
         }
-        else if (e.KeyCode == F2Key.KeyCode)
-        {
-            ToggleUsersPanel();
-            e.Handled = true;
-        }
-        else if (e.KeyCode == CtrlKKey.KeyCode)
-        {
-            ShowSearchDialog();
-            e.Handled = true;
-        }
+
+        e.Handled = true;
     }
 
     private void ShowSearchDialog()

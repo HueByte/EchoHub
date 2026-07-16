@@ -4,7 +4,7 @@ Release history for EchoHub.
 
 ## Releases
 
-- [v0.2.14](v0.2.14.md) - E2E Room Unlock Fixes, Encrypted Key Cache & IRC Gateway Polish
+- [v0.2.14](v0.2.14.md) - Clipboard Image & Multi-File Paste, E2E Room Unlock Fixes, Encrypted Key Cache & IRC Gateway Polish
 - [v0.2.13](v0.2.13.md) - Chat Visual Overhaul, Auto-Join All Channels & Persistent Read Positions
 - [v0.2.12](v0.2.12.md) - End-to-End Encrypted Channels, IRC Channel Keys, Image Save & Ctrl+W Crash Fix
 - [v0.2.11](v0.2.11.md) - EchoHubSpace Auth, Live Directory Updates & Server Browser Metadata
