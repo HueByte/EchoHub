@@ -3,6 +3,7 @@ using System;
 using EchoHub.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,48 +11,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EchoHub.Server.Data.Migrations
 {
     [DbContext(typeof(EchoHubDbContext))]
-    partial class EchoHubDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260715232856_AddChannelPasswordHash")]
+    partial class AddChannelPasswordHash
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.3");
-
-            modelBuilder.Entity("EchoHub.Core.Models.Attachment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("AsciiPreview")
-                        .HasMaxLength(64000)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("TEXT");
-
-                    b.Property<long>("FileSize")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Kind")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("MessageId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MessageId");
-
-                    b.ToTable("Attachments");
-                });
 
             modelBuilder.Entity("EchoHub.Core.Models.Channel", b =>
                 {
@@ -63,10 +30,6 @@ namespace EchoHub.Server.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<Guid>("CreatedByUserId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("EncryptionSalt")
-                        .HasMaxLength(64)
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsPublic")
@@ -83,10 +46,6 @@ namespace EchoHub.Server.Data.Migrations
 
                     b.Property<string>("Topic")
                         .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("WrappedRoomKey")
-                        .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -265,17 +224,6 @@ namespace EchoHub.Server.Data.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("EchoHub.Core.Models.Attachment", b =>
-                {
-                    b.HasOne("EchoHub.Core.Models.Message", "Message")
-                        .WithMany("Attachments")
-                        .HasForeignKey("MessageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Message");
-                });
-
             modelBuilder.Entity("EchoHub.Core.Models.ChannelMembership", b =>
                 {
                     b.HasOne("EchoHub.Core.Models.Channel", null)
@@ -316,11 +264,6 @@ namespace EchoHub.Server.Data.Migrations
             modelBuilder.Entity("EchoHub.Core.Models.Channel", b =>
                 {
                     b.Navigation("Messages");
-                });
-
-            modelBuilder.Entity("EchoHub.Core.Models.Message", b =>
-                {
-                    b.Navigation("Attachments");
                 });
 #pragma warning restore 612, 618
         }

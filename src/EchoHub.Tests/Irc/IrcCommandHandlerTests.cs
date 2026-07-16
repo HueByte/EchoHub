@@ -255,6 +255,50 @@ public class IrcCommandHandlerTests
     }
 
     [Fact]
+    public async Task Join_WithKey_PassesKeyToChatService()
+    {
+        _channelService.TopicResult = (null, true);
+
+        var lines = await RunAuthenticated(["JOIN #secret hunter2"]);
+
+        Assert.Contains(lines, l => l.Contains("JOIN #secret"));
+        Assert.Single(_chatService.JoinKeys);
+        Assert.Equal("hunter2", _chatService.JoinKeys[0]);
+    }
+
+    [Fact]
+    public async Task Join_MultipleChannelsWithKeys_PairsKeysByPosition()
+    {
+        _channelService.TopicResult = (null, true);
+
+        await RunAuthenticated(["JOIN #chan-a,#chan-b key1,key2"]);
+
+        Assert.Equal(["key1", "key2"], _chatService.JoinKeys);
+    }
+
+    [Fact]
+    public async Task Join_ProtectedChannelWithoutKey_GetsBadChannelKey()
+    {
+        _chatService.JoinError = "Channel 'secret' is password protected.";
+        _chatService.JoinPasswordRequired = true;
+
+        var lines = await RunAuthenticated(["JOIN #secret"]);
+
+        Assert.Contains(lines, l => l.Contains("475") && l.Contains("#secret") && l.Contains("+k"));
+    }
+
+    [Fact]
+    public async Task Join_EncryptedChannel_IsBlockedOverIrc()
+    {
+        _channelService.CryptoToReturn = new ChannelCryptoDto(true, "c2FsdA==");
+
+        var lines = await RunAuthenticated(["JOIN #vault"]);
+
+        Assert.Contains(lines, l => l.Contains("475") && l.Contains("#vault") && l.Contains("end-to-end encrypted"));
+        Assert.Empty(_chatService.JoinedChannels);
+    }
+
+    [Fact]
     public async Task Join_SendsTopic()
     {
         _channelService.TopicResult = ("Welcome to general!", true);
@@ -296,8 +340,7 @@ public class IrcCommandHandlerTests
         var encryptedContent = _encryption.Encrypt("Hello from history!");
         _chatService.HistoryToReturn =
         [
-            new(Guid.NewGuid(), encryptedContent, "bob", null, "general",
-                MessageType.Text, null, null, DateTimeOffset.UtcNow)
+            new(Guid.NewGuid(), encryptedContent, "bob", null, "general", DateTimeOffset.UtcNow)
         ];
 
         var lines = await RunAuthenticated(["JOIN #general"]);
@@ -450,11 +493,25 @@ public class IrcCommandHandlerTests
     }
 
     [Fact]
-    public async Task Topic_SetAttempt_GetsPermissionDenied()
+    public async Task Topic_SetByNonCreator_GetsPermissionDenied()
     {
+        _channelService.UpdateTopicResult = ChannelOperationResult.Fail(
+            ChannelError.Forbidden, "Only the channel creator can update the topic.");
+
         var lines = await RunAuthenticated(["TOPIC #general :New topic"]);
 
         Assert.Contains(lines, l => l.Contains("482") && l.Contains("channel creator"));
+    }
+
+    [Fact]
+    public async Task Topic_SetByCreator_UpdatesAndEchoesTopic()
+    {
+        _channelService.UpdateTopicResult = ChannelOperationResult.Success(
+            new ChannelDto(Guid.NewGuid(), "general", "New topic", true, 0, DateTimeOffset.UtcNow));
+
+        var lines = await RunAuthenticated(["TOPIC #general :New topic"]);
+
+        Assert.Contains(lines, l => l.Contains("TOPIC #general") && l.Contains("New topic"));
     }
 
     // ── WHO ──────────────────────────────────────────────────────────────
@@ -564,9 +621,45 @@ public class IrcCommandHandlerTests
     [Fact]
     public async Task Mode_Channel_ReturnsChannelModes()
     {
+        _channelService.ChannelByNameToReturn =
+            new ChannelDto(Guid.NewGuid(), "general", null, true, 0, DateTimeOffset.UtcNow);
+
         var lines = await RunAuthenticated(["MODE #general"]);
 
-        Assert.Contains(lines, l => l.Contains("324") && l.Contains("#general"));
+        Assert.Contains(lines, l => l.Contains("324") && l.Contains("#general") && l.Contains("+"));
+    }
+
+    [Fact]
+    public async Task Mode_ProtectedChannel_ReportsKeyMode()
+    {
+        _channelService.ChannelByNameToReturn =
+            new ChannelDto(Guid.NewGuid(), "secret", null, true, 0, DateTimeOffset.UtcNow, IsProtected: true);
+
+        var lines = await RunAuthenticated(["MODE #secret"]);
+
+        Assert.Contains(lines, l => l.Contains("324") && l.Contains("#secret") && l.Contains("+k"));
+    }
+
+    [Fact]
+    public async Task Mode_SetKey_ByCreator_EchoesModeChange()
+    {
+        _channelService.SetPasswordResult = ChannelOperationResult.Success(
+            new ChannelDto(Guid.NewGuid(), "secret", null, true, 0, DateTimeOffset.UtcNow, IsProtected: true));
+
+        var lines = await RunAuthenticated(["MODE #secret +k hunter2"]);
+
+        Assert.Contains(lines, l => l.Contains("MODE #secret +k hunter2"));
+    }
+
+    [Fact]
+    public async Task Mode_SetKey_ByNonCreator_GetsPermissionDenied()
+    {
+        _channelService.SetPasswordResult = ChannelOperationResult.Fail(
+            ChannelError.Forbidden, "Only the channel creator or an admin can change the channel password.");
+
+        var lines = await RunAuthenticated(["MODE #secret +k hunter2"]);
+
+        Assert.Contains(lines, l => l.Contains("482"));
     }
 
     [Fact]

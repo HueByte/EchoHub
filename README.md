@@ -95,11 +95,12 @@ graph TD
 ### Client
 
 - **Runs in your terminal** — no browser, no Electron, no 500MB of bundled Chromium
-- **13 built-in themes** — including `hacker` for when you want to feel like you're in a movie
+- **14 built-in themes** — including `hacker` for when you want to feel like you're in a movie
 - **Slash commands** — `/join`, `/send`, `/status`, `/theme`, etc.
 - **Colored nicknames** — pick your hex color, express yourself
 - **Clickable everything** — usernames, @mentions, #channels — just press Enter
-- **File/image sharing** — local files or URLs
+- **File/image sharing** — local files or URLs; drag & drop a file onto the terminal to send it; save the original behind any ASCII-art image
+- **End-to-end encrypted rooms** — password-protected channels are encrypted with a passphrase-derived key that never reaches the server, so not even the server owner can read messages or files (they can still see counts and storage size)
 - **Multi-server** — save and switch between servers
 - **Auto-reconnect** — drops happen, it rejoins your channels automatically
 - **Auto-updater** — updates in-place with automatic rollback if something goes wrong
@@ -224,7 +225,10 @@ For direct TLS without a reverse proxy, the IRC gateway can terminate TLS itself
 
 | Command | Description |
 | ------- | ----------- |
-| `/join <channel>` | Join a channel |
+| `/join <channel> [password]` | Join a channel (passphrase for encrypted channels) |
+| `/passwd <old> <new>` | Change the current encrypted channel's passphrase (creator only) |
+| `/size [s\|m\|l]` | ASCII-art size for attached images (no arg = picker) |
+| `/downloadpath [path]` | Set the download folder (no path = native folder picker) |
 | `/leave` | Leave current channel |
 | `/topic <text>` | Set channel topic (creator only) |
 | `/send <file or URL>` | Upload a file or image |
@@ -239,6 +243,8 @@ For direct TLS without a reverse proxy, the IRC gateway can terminate TLS itself
 | `/help` | Show help |
 | `/quit` | Exit |
 
+**Message actions:** **right-click a message** for a context menu — delete, save/download/play its attachment, mention the sender, view their profile, or copy the text. (Keyboard alternative: press <kbd>F6</kbd> to focus the message list, select with the arrow keys, and press <kbd>Delete</kbd>; <kbd>F6</kbd> again returns to the input.) You can always delete your own messages; moderators and above can delete others' messages, but only from users below their own role.
+
 ## Themes
 
 `/theme <name>` to switch:
@@ -247,6 +253,7 @@ For direct TLS without a reverse proxy, the IRC gateway can terminate TLS itself
 | ----- | ---- |
 | `default` | Gray on black — clean and quiet |
 | `transparent` | White on black — for fancy transparent terminals |
+| `transparentlight` | Black on transparent — dark characters for light transparent terminals |
 | `classic` | White on blue — IRC nostalgia |
 | `light` | Black on white — for the brave |
 | `hacker` | Green on black — *I'm in* |

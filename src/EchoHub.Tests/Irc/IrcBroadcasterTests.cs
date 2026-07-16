@@ -80,8 +80,7 @@ public class IrcBroadcasterTests
 
         var encryptedContent = _encryption.Encrypt("Hello world!");
         var message = new MessageDto(
-            Guid.NewGuid(), encryptedContent, "alice", null, "general",
-            MessageType.Text, null, null, DateTimeOffset.UtcNow);
+            Guid.NewGuid(), encryptedContent, "alice", null, "general", DateTimeOffset.UtcNow);
 
         await _broadcaster.SendMessageToChannelAsync("general", message);
 
@@ -97,8 +96,7 @@ public class IrcBroadcasterTests
         var (_, bobStream) = AddConnectionWithCapture("bob", "general");
 
         var message = new MessageDto(
-            Guid.NewGuid(), _encryption.Encrypt("Hi"), "alice", null, "general",
-            MessageType.Text, null, null, DateTimeOffset.UtcNow);
+            Guid.NewGuid(), _encryption.Encrypt("Hi"), "alice", null, "general", DateTimeOffset.UtcNow);
 
         await _broadcaster.SendMessageToChannelAsync("general", message);
 
@@ -116,8 +114,7 @@ public class IrcBroadcasterTests
         var (_, randomStream) = AddConnectionWithCapture("charlie", "random");
 
         var message = new MessageDto(
-            Guid.NewGuid(), _encryption.Encrypt("Hi"), "alice", null, "general",
-            MessageType.Text, null, null, DateTimeOffset.UtcNow);
+            Guid.NewGuid(), _encryption.Encrypt("Hi"), "alice", null, "general", DateTimeOffset.UtcNow);
 
         await _broadcaster.SendMessageToChannelAsync("general", message);
 

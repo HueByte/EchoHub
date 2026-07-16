@@ -18,40 +18,49 @@ public static partial class IrcMessageFormatter
         var ircChannel = $"#{message.ChannelName}";
         var prefix = $":{message.SenderUsername}!{message.SenderUsername}@echohub";
 
-        switch (message.Type)
+        // Caption text first (may be empty when the message is attachments-only)
+        if (!string.IsNullOrEmpty(message.Content))
         {
-            case MessageType.Text:
-                foreach (var chunk in SplitMessage(message.Content, MaxIrcLineContentBytes))
-                    lines.Add($"{prefix} PRIVMSG {ircChannel} :{chunk}");
+            foreach (var chunk in SplitMessage(message.Content, MaxIrcLineContentBytes))
+                lines.Add($"{prefix} PRIVMSG {ircChannel} :{chunk}");
+        }
 
-                // Append embed previews if present
-                if (message.Embeds is { Count: > 0 })
+        // One block per attachment
+        if (message.Attachments is { Count: > 0 })
+        {
+            foreach (var attachment in message.Attachments)
+            {
+                switch (attachment.Kind)
                 {
-                    foreach (var embed in message.Embeds)
-                        lines.AddRange(FormatEmbed(prefix, ircChannel, embed));
+                    case AttachmentKind.Image:
+                        lines.Add($"{prefix} PRIVMSG {ircChannel} :[Image: {attachment.FileName}] {attachment.Url}");
+                        if (attachment.AsciiPreview is not null)
+                        {
+                            foreach (var line in attachment.AsciiPreview.Split('\n'))
+                            {
+                                var trimmed = line.TrimEnd('\r');
+                                if (trimmed.Length > 0)
+                                    lines.Add($"{prefix} PRIVMSG {ircChannel} :{ColorTagsToAnsi(trimmed)}");
+                            }
+                        }
+                        break;
+
+                    case AttachmentKind.Audio:
+                        lines.Add($"{prefix} PRIVMSG {ircChannel} :\u266a [Audio: {attachment.FileName}] {attachment.Url}");
+                        break;
+
+                    default:
+                        lines.Add($"{prefix} PRIVMSG {ircChannel} :[File: {attachment.FileName}] {attachment.Url}");
+                        break;
                 }
-                break;
+            }
+        }
 
-            case MessageType.Image:
-                lines.Add($"{prefix} PRIVMSG {ircChannel} :[Image: {message.AttachmentFileName}]");
-                if (message.AttachmentUrl is not null)
-                    lines.Add($"{prefix} PRIVMSG {ircChannel} :Download: {message.AttachmentUrl}");
-
-                foreach (var line in message.Content.Split('\n'))
-                {
-                    var trimmed = line.TrimEnd('\r');
-                    if (trimmed.Length > 0)
-                        lines.Add($"{prefix} PRIVMSG {ircChannel} :{ColorTagsToAnsi(trimmed)}");
-                }
-                break;
-
-            case MessageType.File:
-                lines.Add($"{prefix} PRIVMSG {ircChannel} :[File: {message.AttachmentFileName}] {message.AttachmentUrl}");
-                break;
-
-            case MessageType.Audio:
-                lines.Add($"{prefix} PRIVMSG {ircChannel} :\u266a [Audio: {message.AttachmentFileName}] {message.AttachmentUrl}");
-                break;
+        // Append embed previews if present
+        if (message.Embeds is { Count: > 0 })
+        {
+            foreach (var embed in message.Embeds)
+                lines.AddRange(FormatEmbed(prefix, ircChannel, embed));
         }
 
         return lines;

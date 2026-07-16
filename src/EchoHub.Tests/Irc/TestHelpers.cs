@@ -155,6 +155,7 @@ internal sealed class FakeChatService : IChatService
     // Configurable results
     public List<MessageDto> HistoryToReturn { get; set; } = [];
     public string? JoinError { get; set; }
+    public bool JoinPasswordRequired { get; set; }
     public string? SendMessageError { get; set; }
     public List<string> ChannelsForUserToReturn { get; set; } = [];
     public List<UserPresenceDto> OnlineUsersToReturn { get; set; } = [];
@@ -171,11 +172,14 @@ internal sealed class FakeChatService : IChatService
         return Task.FromResult<string?>(null);
     }
 
-    public Task<(List<MessageDto> History, string? Error)> JoinChannelAsync(
-        string connectionId, Guid userId, string username, string channelName)
+    public List<string?> JoinKeys { get; } = [];
+
+    public Task<(List<MessageDto> History, string? Error, bool PasswordRequired)> JoinChannelAsync(
+        string connectionId, Guid userId, string username, string channelName, string? password = null)
     {
         JoinedChannels.Add((channelName, username));
-        return Task.FromResult((HistoryToReturn, JoinError));
+        JoinKeys.Add(password);
+        return Task.FromResult((HistoryToReturn, JoinError, JoinPasswordRequired));
     }
 
     public Task LeaveChannelAsync(string connectionId, string username, string channelName)
@@ -224,16 +228,35 @@ internal sealed class FakeChannelService : IChannelService
     public ChannelOperationResult? CreateResult { get; set; }
     public ChannelOperationResult? UpdateTopicResult { get; set; }
     public ChannelOperationResult? DeleteResult { get; set; }
-    public (bool Success, string? Error) MembershipResult { get; set; } = (true, null);
+    public ChannelOperationResult? SetPasswordResult { get; set; }
+    public (bool Success, string? Error, bool PasswordRequired) MembershipResult { get; set; } = (true, null, false);
 
     public Task<PaginatedResponse<ChannelDto>> GetChannelsAsync(Guid userId, int offset, int limit) =>
         Task.FromResult(new PaginatedResponse<ChannelDto>([], 0, offset, limit));
 
-    public Task<ChannelOperationResult> CreateChannelAsync(Guid creatorUserId, string name, string? topic, bool isPublic) =>
+    public ChannelCryptoDto? CryptoToReturn { get; set; }
+    public ChannelOperationResult? RekeyResult { get; set; }
+    public (string? EncryptionSalt, string? WrappedRoomKey) KeyEnvelopeToReturn { get; set; }
+
+    public Task<ChannelOperationResult> CreateChannelAsync(Guid creatorUserId, string name, string? topic, bool isPublic,
+        string? password = null, string? encryptionSalt = null, string? wrappedRoomKey = null) =>
         Task.FromResult(CreateResult ?? ChannelOperationResult.Fail(ChannelError.ValidationFailed, "Not configured"));
+
+    public Task<ChannelCryptoDto?> GetChannelCryptoAsync(string channelName) =>
+        Task.FromResult(CryptoToReturn);
+
+    public Task<(string? EncryptionSalt, string? WrappedRoomKey)> GetChannelKeyEnvelopeAsync(string channelName) =>
+        Task.FromResult(KeyEnvelopeToReturn);
+
+    public Task<ChannelOperationResult> RekeyChannelAsync(Guid callerUserId, string channelName,
+        string oldPassword, string newPassword, string newEncryptionSalt, string newWrappedRoomKey) =>
+        Task.FromResult(RekeyResult ?? ChannelOperationResult.Fail(ChannelError.ValidationFailed, "Not configured"));
 
     public Task<ChannelOperationResult> UpdateTopicAsync(Guid callerUserId, string channelName, string? topic) =>
         Task.FromResult(UpdateTopicResult ?? ChannelOperationResult.Fail(ChannelError.ValidationFailed, "Not configured"));
+
+    public Task<ChannelOperationResult> SetChannelPasswordAsync(Guid callerUserId, string channelName, string? password) =>
+        Task.FromResult(SetPasswordResult ?? ChannelOperationResult.Fail(ChannelError.ValidationFailed, "Not configured"));
 
     public Task<ChannelOperationResult> DeleteChannelAsync(Guid callerUserId, string channelName) =>
         Task.FromResult(DeleteResult ?? ChannelOperationResult.Fail(ChannelError.ValidationFailed, "Not configured"));
@@ -247,7 +270,7 @@ internal sealed class FakeChannelService : IChannelService
     public Task<ChannelDto?> GetChannelByNameAsync(string channelName) =>
         Task.FromResult(ChannelByNameToReturn);
 
-    public Task<(bool Success, string? Error)> EnsureChannelMembershipAsync(Guid userId, string channelName) =>
+    public Task<(bool Success, string? Error, bool PasswordRequired)> EnsureChannelMembershipAsync(Guid userId, string channelName, string? password = null) =>
         Task.FromResult(MembershipResult);
 }
 

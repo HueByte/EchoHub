@@ -101,7 +101,7 @@ public sealed class ChatMessageManager
             _channelMessages[channelName] = messages;
         }
 
-        var time = DateTimeOffset.Now.ToString("HH:mm");
+        var time = FormatDateTime(DateTimeOffset.Now);
         var textLines = text.Split('\n');
 
         messages.Add(new ChatLine(
@@ -130,7 +130,7 @@ public sealed class ChatMessageManager
     /// </summary>
     public void AddStatusMessage(string channelName, string username, string status)
     {
-        var time = DateTimeOffset.Now.ToString("HH:mm");
+        var time = FormatDateTime(DateTimeOffset.Now);
         var segments = new List<ChatSegment>
         {
             new($"[{time}] ", ChatColors.TimestampAttr),
@@ -234,74 +234,81 @@ public sealed class ChatMessageManager
 
     private List<ChatLine> FormatMessage(MessageDto message)
     {
-        var time = message.SentAt.ToLocalTime().ToString("HH:mm");
+        var time = FormatDateTime(message.SentAt);
         var senderName = message.SenderUsername + ":";
         var senderColor = HexColorHelper.ParseHexColor(message.SenderNicknameColor);
 
+        var indent = new string(' ', $"[{time}] {senderName} ".Length);
+        var pad = new string(' ', 7);
+
         var lines = new List<ChatLine>();
+        var hasContent = !string.IsNullOrWhiteSpace(message.Content);
+        var attachments = message.Attachments ?? [];
 
-        switch (message.Type)
+        // Header line: caption text, or a summary when the message is attachments-only
+        if (hasContent)
         {
-            case MessageType.Image:
-                lines.Add(BuildChatLine(time, senderName, senderColor, " [Image]"));
-                if (!string.IsNullOrWhiteSpace(message.Content))
-                {
-                    foreach (var artLine in message.Content.Split('\n'))
+            var displayContent = EmojiHelper.ReplaceEmoji(message.Content);
+            var contentLines = displayContent.Split('\n');
+            lines.Add(BuildChatLineWithMentions(time, senderName, senderColor, $" {contentLines[0].TrimEnd('\r')}"));
+            for (int i = 1; i < contentLines.Length; i++)
+                lines.Add(new ChatLine(ChatColors.SplitMentions($"{indent}{contentLines[i].TrimEnd('\r')}")));
+        }
+        else
+        {
+            var summary = attachments.Count switch
+            {
+                0 => " ",
+                1 => $" [{attachments[0].Kind.ToString().ToLowerInvariant()}]",
+                _ => $" [{attachments.Count} attachments]",
+            };
+            lines.Add(BuildChatLine(time, senderName, senderColor, summary));
+        }
+
+        foreach (var l in lines)
+            l.ContinuationIndent = indent.Length;
+
+        // One block per attachment
+        foreach (var attachment in attachments)
+        {
+            switch (attachment.Kind)
+            {
+                case Core.Models.AttachmentKind.Image:
+                    if (!string.IsNullOrWhiteSpace(attachment.AsciiPreview))
                     {
-                        var trimmed = artLine.TrimEnd('\r');
-                        if (ChatLine.HasColorTags(trimmed))
-                            lines.Add(ChatLine.FromColoredText("       " + trimmed));
-                        else
-                            lines.Add(new ChatLine($"       {trimmed}"));
+                        foreach (var artLine in attachment.AsciiPreview.Split('\n'))
+                        {
+                            var trimmed = artLine.TrimEnd('\r');
+                            lines.Add(ChatLine.HasColorTags(trimmed)
+                                ? ChatLine.FromColoredText(pad + trimmed)
+                                : new ChatLine($"{pad}{trimmed}"));
+                        }
                     }
-                }
-                break;
+                    lines.Add(AttachmentActionLine(pad,
+                        $"[↓ save original] {attachment.FileName} [{FormatFileSize(attachment.FileSize)}]",
+                        ChatColors.FileAttr, attachment));
+                    break;
 
-            case MessageType.Audio:
-                var audioName = message.AttachmentFileName ?? "unknown";
-                var audioSize = FormatFileSize(message.AttachmentFileSize);
-                var audioLine = BuildChatLineColored(time, senderName, senderColor,
-                    $" \u266a [Audio: {audioName}] [{audioSize}]", ChatColors.AudioAttr);
-                audioLine.AttachmentUrl = message.AttachmentUrl;
-                audioLine.AttachmentFileName = audioName;
-                audioLine.Type = MessageType.Audio;
-                lines.Add(audioLine);
-                break;
+                case Core.Models.AttachmentKind.Audio:
+                    lines.Add(AttachmentActionLine(pad,
+                        $"♪ [Audio: {attachment.FileName}] [{FormatFileSize(attachment.FileSize)}]",
+                        ChatColors.AudioAttr, attachment));
+                    break;
 
-            case MessageType.File:
-                var fileName = message.AttachmentFileName ?? "unknown";
-                var fileSize = FormatFileSize(message.AttachmentFileSize);
-                var fileLine = BuildChatLineColored(time, senderName, senderColor,
-                    $" [File: {fileName}] [{fileSize}]", ChatColors.FileAttr);
-                fileLine.AttachmentUrl = message.AttachmentUrl;
-                fileLine.AttachmentFileName = fileName;
-                fileLine.Type = MessageType.File;
-                lines.Add(fileLine);
-                break;
+                default:
+                    lines.Add(AttachmentActionLine(pad,
+                        $"[File: {attachment.FileName}] [{FormatFileSize(attachment.FileSize)}]",
+                        ChatColors.FileAttr, attachment));
+                    break;
+            }
+        }
 
-            case MessageType.Text:
-            default:
-                var displayContent = EmojiHelper.ReplaceEmoji(message.Content);
-                var contentLines = displayContent.Split('\n');
-                var firstLine = contentLines[0].TrimEnd('\r');
-                lines.Add(BuildChatLineWithMentions(time, senderName, senderColor, $" {firstLine}"));
-                var indent = new string(' ', $"[{time}] {senderName} ".Length);
-                for (int i = 1; i < contentLines.Length; i++)
-                {
-                    var contText = $"{indent}{contentLines[i].TrimEnd('\r')}";
-                    lines.Add(new ChatLine(ChatColors.SplitMentions(contText)));
-                }
-
-                foreach (var l in lines)
-                    l.ContinuationIndent = indent.Length;
-
-                if (message.Embeds is { Count: > 0 })
-                {
-                    var chatWidth = _chatWidth > 0 ? _chatWidth : 80;
-                    foreach (var embed in message.Embeds)
-                        lines.AddRange(FormatEmbed(embed, indent, chatWidth));
-                }
-                break;
+        // Link embeds (from caption URLs)
+        if (message.Embeds is { Count: > 0 })
+        {
+            var chatWidth = _chatWidth > 0 ? _chatWidth : 80;
+            foreach (var embed in message.Embeds)
+                lines.AddRange(FormatEmbed(embed, indent, chatWidth));
         }
 
         foreach (var line in lines)
@@ -310,7 +317,7 @@ public sealed class ChatMessageManager
             line.SenderUsername = message.SenderUsername;
         }
 
-        if (!string.IsNullOrEmpty(_currentUser) && message.Type == MessageType.Text)
+        if (hasContent && !string.IsNullOrEmpty(_currentUser))
         {
             var pattern = $@"@{Regex.Escape(_currentUser)}\b";
             if (Regex.IsMatch(message.Content, pattern, RegexOptions.IgnoreCase))
@@ -321,6 +328,23 @@ public sealed class ChatMessageManager
         }
 
         return lines;
+    }
+
+    /// <summary>
+    /// Builds a clickable attachment line carrying the metadata the message list uses to
+    /// route activation (play audio, download file, save original image).
+    /// </summary>
+    private static ChatLine AttachmentActionLine(string pad, string text, Attribute color, AttachmentDto attachment)
+    {
+        var line = new ChatLine(new List<ChatSegment>
+        {
+            new(pad, null),
+            new(text, color),
+        });
+        line.AttachmentUrl = attachment.Url;
+        line.AttachmentFileName = attachment.FileName;
+        line.AttachmentKind = attachment.Kind;
+        return line;
     }
 
     private static ChatLine BuildChatLine(string time, string senderName, Attribute? senderColor, string suffix)
@@ -423,6 +447,14 @@ public sealed class ChatMessageManager
             result.Add(currentLine);
 
         return result;
+    }
+
+    private static string FormatDateTime(DateTimeOffset timestamp)
+    {
+        if (timestamp.Date == DateTimeOffset.Now.Date)
+            return timestamp.ToLocalTime().ToString("t");
+        else
+            return timestamp.ToLocalTime().ToString("g");
     }
 
     internal static string FormatFileSize(long? bytes)

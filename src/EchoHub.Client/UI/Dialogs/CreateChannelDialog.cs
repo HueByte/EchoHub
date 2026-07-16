@@ -4,7 +4,7 @@ using Terminal.Gui.ViewBase;
 
 namespace EchoHub.Client.UI.Dialogs;
 
-public record CreateChannelResult(string Name, string? Topic, bool IsPublic);
+public record CreateChannelResult(string Name, string? Topic, bool IsPublic, string? Password);
 
 public sealed class CreateChannelDialog
 {
@@ -12,7 +12,7 @@ public sealed class CreateChannelDialog
     {
         CreateChannelResult? result = null;
 
-        var dialog = new Dialog { Title = "Create Channel", Width = 50, Height = 14, CommandsToBubbleUp = [] };
+        var dialog = new Dialog { Title = "Create Channel", Width = 50, Height = 16, CommandsToBubbleUp = [] };
 
         var nameLabel = new Label { Text = "Name:", X = 1, Y = 1 };
         var nameField = new TextField { X = 10, Y = 1, Width = Dim.Fill(2) };
@@ -20,19 +20,22 @@ public sealed class CreateChannelDialog
         var topicLabel = new Label { Text = "Topic:", X = 1, Y = 3 };
         var topicField = new TextField { X = 10, Y = 3, Width = Dim.Fill(2) };
 
+        var passwordLabel = new Label { Text = "Password:", X = 1, Y = 5 };
+        var passwordField = new TextField { X = 11, Y = 5, Width = Dim.Fill(2), Secret = true };
+
         var publicCheckbox = new CheckBox
         {
             Text = "Public (visible to all users)",
             X = 1,
-            Y = 5,
+            Y = 7,
             Value = CheckState.Checked
         };
 
         var hintLabel = new Label
         {
-            Text = "Lowercase letters, digits, hyphens, underscores (2-100 chars)",
+            Text = "Name: a-z, 0-9, -, _ (2-100 chars). Empty password = open channel.",
             X = 1,
-            Y = 7,
+            Y = 9,
         };
 
         var createButton = new Button
@@ -40,14 +43,14 @@ public sealed class CreateChannelDialog
             Text = "Create",
             IsDefault = true,
             X = Pos.Center() - 10,
-            Y = 9
+            Y = 11
         };
 
         var cancelButton = new Button
         {
             Text = "Cancel",
             X = Pos.Center() + 5,
-            Y = 9
+            Y = 11
         };
 
         createButton.Accepting += (s, e) =>
@@ -63,8 +66,12 @@ public sealed class CreateChannelDialog
             if (string.IsNullOrWhiteSpace(topic))
                 topic = null;
 
+            var password = passwordField.Text;
+            if (string.IsNullOrWhiteSpace(password))
+                password = null;
+
             var isPublic = publicCheckbox.Value == CheckState.Checked;
-            result = new CreateChannelResult(name, topic, isPublic);
+            result = new CreateChannelResult(name, topic, isPublic, password);
             e.Handled = true;
             app.RequestStop();
         };
@@ -76,7 +83,8 @@ public sealed class CreateChannelDialog
             app.RequestStop();
         };
 
-        dialog.Add(nameLabel, nameField, topicLabel, topicField, publicCheckbox, hintLabel, createButton, cancelButton);
+        dialog.Add(nameLabel, nameField, topicLabel, topicField, passwordLabel, passwordField,
+            publicCheckbox, hintLabel, createButton, cancelButton);
 
         nameField.SetFocus();
         app.Run(dialog);

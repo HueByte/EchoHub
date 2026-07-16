@@ -2,6 +2,7 @@ using System.Text;
 using System.Threading.RateLimiting;
 using EchoHub.Core.Constants;
 using EchoHub.Core.Contracts;
+using EchoHub.Core.Services;
 using EchoHub.Core.Models;
 using EchoHub.Server.Auth;
 using EchoHub.Server.Data;

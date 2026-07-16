@@ -8,22 +8,18 @@ namespace EchoHub.Tests;
 public class IrcMessageFormatterTests
 {
     private static MessageDto CreateMessage(
-        MessageType type = MessageType.Text,
         string content = "hello",
         string sender = "alice",
         string channel = "general",
-        string? attachmentUrl = null,
-        string? attachmentFileName = null,
+        List<AttachmentDto>? attachments = null,
         List<EmbedDto>? embeds = null) => new(
         Id: Guid.NewGuid(),
         Content: content,
         SenderUsername: sender,
         SenderNicknameColor: null,
         ChannelName: channel,
-        Type: type,
-        AttachmentUrl: attachmentUrl,
-        AttachmentFileName: attachmentFileName,
         SentAt: DateTimeOffset.UtcNow,
+        Attachments: attachments,
         Embeds: embeds);
 
     // ── FormatMessage ─────────────────────────────────────────────────
@@ -51,34 +47,29 @@ public class IrcMessageFormatterTests
 
         Assert.True(lines.Count >= 2);
         Assert.Contains("PRIVMSG #general :check this out", lines[0]);
-        // Embed lines contain the Unicode pipe char and site/title
         Assert.Contains("GitHub", lines[1]);
         Assert.Contains("Repo Title", lines[1]);
     }
 
     [Fact]
-    public void FormatMessage_ImageMessage_IncludesImageTagAndDownloadUrl()
+    public void FormatMessage_ImageAttachment_IncludesImageTagAndDownloadUrl()
     {
         var msg = CreateMessage(
-            type: MessageType.Image,
-            content: "{F:FF0000}\u2588{X}",
-            attachmentUrl: "/api/files/abc",
-            attachmentFileName: "photo.png");
+            content: "",
+            attachments: [new AttachmentDto(AttachmentKind.Image, "/api/files/abc", "photo.png", 0, "{F:FF0000}█{X}")]);
         var lines = IrcMessageFormatter.FormatMessage(msg);
 
         Assert.True(lines.Count >= 2);
         Assert.Contains("[Image: photo.png]", lines[0]);
-        Assert.Contains("Download: /api/files/abc", lines[1]);
+        Assert.Contains("/api/files/abc", lines[0]);
     }
 
     [Fact]
-    public void FormatMessage_FileMessage_IncludesFileTag()
+    public void FormatMessage_FileAttachment_IncludesFileTag()
     {
         var msg = CreateMessage(
-            type: MessageType.File,
-            content: "report.pdf",
-            attachmentUrl: "/api/files/xyz",
-            attachmentFileName: "report.pdf");
+            content: "",
+            attachments: [new AttachmentDto(AttachmentKind.File, "/api/files/xyz", "report.pdf", 0)]);
         var lines = IrcMessageFormatter.FormatMessage(msg);
 
         Assert.Single(lines);
@@ -87,19 +78,47 @@ public class IrcMessageFormatterTests
     }
 
     [Fact]
-    public void FormatMessage_AudioMessage_IncludesMusicNoteAndAudioTag()
+    public void FormatMessage_AudioAttachment_IncludesMusicNoteAndAudioTag()
     {
         var msg = CreateMessage(
-            type: MessageType.Audio,
-            content: "song.mp3",
-            attachmentUrl: "/api/files/def",
-            attachmentFileName: "song.mp3");
+            content: "",
+            attachments: [new AttachmentDto(AttachmentKind.Audio, "/api/files/def", "song.mp3", 0)]);
         var lines = IrcMessageFormatter.FormatMessage(msg);
 
         Assert.Single(lines);
-        Assert.Contains("\u266a", lines[0]); // ♪
+        Assert.Contains("♪", lines[0]);
         Assert.Contains("[Audio: song.mp3]", lines[0]);
         Assert.Contains("/api/files/def", lines[0]);
+    }
+
+    [Fact]
+    public void FormatMessage_CaptionWithAttachment_RendersBoth()
+    {
+        var msg = CreateMessage(
+            content: "check this photo",
+            attachments: [new AttachmentDto(AttachmentKind.Image, "/api/files/p", "pic.png", 0, null)]);
+        var lines = IrcMessageFormatter.FormatMessage(msg);
+
+        Assert.Contains(lines, l => l.Contains("check this photo"));
+        Assert.Contains(lines, l => l.Contains("[Image: pic.png]"));
+    }
+
+    [Fact]
+    public void FormatMessage_MultipleAttachments_RendersEach()
+    {
+        var msg = CreateMessage(
+            content: "",
+            attachments:
+            [
+                new AttachmentDto(AttachmentKind.Image, "/api/files/1", "a.png", 0, null),
+                new AttachmentDto(AttachmentKind.Audio, "/api/files/2", "b.mp3", 0),
+                new AttachmentDto(AttachmentKind.File, "/api/files/3", "c.pdf", 0),
+            ]);
+        var lines = IrcMessageFormatter.FormatMessage(msg);
+
+        Assert.Contains(lines, l => l.Contains("[Image: a.png]"));
+        Assert.Contains(lines, l => l.Contains("[Audio: b.mp3]"));
+        Assert.Contains(lines, l => l.Contains("[File: c.pdf]"));
     }
 
     // ── ColorTagsToAnsi ───────────────────────────────────────────────
@@ -179,7 +198,6 @@ public class IrcMessageFormatterTests
         var longWord = new string('a', 500);
         var result = IrcMessageFormatter.SplitMessage(longWord, 400);
 
-        // Single word can't be split at word boundary, so it stays as one chunk
         Assert.Single(result);
         Assert.Equal(longWord, result[0]);
     }

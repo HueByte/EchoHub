@@ -11,6 +11,7 @@ public static class HubConstants
     public const int MaxFileSizeBytes = 100 * 1024 * 1024; // 100 MB
     public const int MaxAvatarSizeBytes = 2 * 1024 * 1024; // 2 MB
     public const int MaxMessageNewlines = 30;
+    public const int MaxAttachmentsPerMessage = 10;
     public const int MaxConsecutiveNewlines = 1;
     public const int AsciiArtWidth = 80;
     public const int AsciiArtHeight = 40;

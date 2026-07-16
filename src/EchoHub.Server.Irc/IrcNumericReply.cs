@@ -42,6 +42,7 @@ public static class IrcNumericReply
     // MODE
     public const string RPL_CHANNELMODEIS = "324";
     public const string RPL_UMODEIS = "221";
+    public const string RPL_ENDOFBANLIST = "368";
 
     // Errors
     public const string ERR_NOSUCHNICK = "401";
@@ -56,6 +57,9 @@ public static class IrcNumericReply
     public const string ERR_NEEDMOREPARAMS = "461";
     public const string ERR_ALREADYREGISTERED = "462";
     public const string ERR_PASSWDMISMATCH = "464";
+    public const string ERR_KEYSET = "467";
+    public const string ERR_UNKNOWNMODE = "472";
+    public const string ERR_BADCHANNELKEY = "475";
     public const string ERR_CHANOPRIVSNEEDED = "482";
 
     // SASL

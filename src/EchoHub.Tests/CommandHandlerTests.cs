@@ -193,7 +193,7 @@ public class CommandHandlerTests
     {
         var handler = CreateHandler();
         string? capturedChannel = null;
-        handler.OnJoinChannel += ch => { capturedChannel = ch; return Task.CompletedTask; };
+        handler.OnJoinChannel += (ch, _) => { capturedChannel = ch; return Task.CompletedTask; };
 
         await handler.HandleAsync("/join #random");
         Assert.Equal("random", capturedChannel);
@@ -204,10 +204,23 @@ public class CommandHandlerTests
     {
         var handler = CreateHandler();
         string? capturedChannel = null;
-        handler.OnJoinChannel += ch => { capturedChannel = ch; return Task.CompletedTask; };
+        handler.OnJoinChannel += (ch, _) => { capturedChannel = ch; return Task.CompletedTask; };
 
         await handler.HandleAsync("/join random");
         Assert.Equal("random", capturedChannel);
+    }
+
+    [Fact]
+    public async Task HandleAsync_Join_WithPassword_PassesPassword()
+    {
+        var handler = CreateHandler();
+        string? capturedChannel = null;
+        string? capturedPassword = null;
+        handler.OnJoinChannel += (ch, pw) => { capturedChannel = ch; capturedPassword = pw; return Task.CompletedTask; };
+
+        await handler.HandleAsync("/join #secret hunter2");
+        Assert.Equal("secret", capturedChannel);
+        Assert.Equal("hunter2", capturedPassword);
     }
 
     [Fact]

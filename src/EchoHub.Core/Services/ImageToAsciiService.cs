@@ -4,7 +4,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-namespace EchoHub.Server.Services;
+namespace EchoHub.Core.Services;
 
 public class ImageToAsciiService
 {

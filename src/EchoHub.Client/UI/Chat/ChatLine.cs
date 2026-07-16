@@ -18,7 +18,7 @@ public partial class ChatLine
     public bool IsMention { get; set; }
     public string? AttachmentUrl { get; set; }
     public string? AttachmentFileName { get; set; }
-    public MessageType? Type { get; set; }
+    public AttachmentKind? AttachmentKind { get; set; }
     public string? SenderUsername { get; set; }
     /// <summary>Number of spaces to prepend on continuation lines when this line is word-wrapped.</summary>
     public int ContinuationIndent { get; set; }
@@ -124,7 +124,7 @@ public partial class ChatLine
         {
             wrapped.AttachmentUrl = AttachmentUrl;
             wrapped.AttachmentFileName = AttachmentFileName;
-            wrapped.Type = Type;
+            wrapped.AttachmentKind = AttachmentKind;
             wrapped.MessageId = MessageId;
             wrapped.SenderUsername = SenderUsername;
         }

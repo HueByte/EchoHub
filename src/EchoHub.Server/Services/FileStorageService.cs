@@ -35,6 +35,22 @@ public class FileStorageService
         return files.Length > 0 ? files[0] : null;
     }
 
+    /// <summary>
+    /// Returns the set of stored file ids (filenames without extension) currently on disk.
+    /// One directory scan, so callers can bulk-check many attachments without a glob per file.
+    /// </summary>
+    public HashSet<string> GetStoredFileIds()
+    {
+        var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (!Directory.Exists(_storagePath))
+            return ids;
+
+        foreach (var file in Directory.EnumerateFiles(_storagePath))
+            ids.Add(Path.GetFileNameWithoutExtension(file));
+
+        return ids;
+    }
+
     public void DeleteFile(string fileId)
     {
         var filePath = GetFilePath(fileId);

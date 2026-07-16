@@ -9,6 +9,7 @@ public static partial class ValidationConstants
     public const string HexColorPattern = @"^#[0-9a-fA-F]{6}$";
 
     public const int MaxPasswordLength = 128;
+    public const int MinChannelPasswordLength = 3;
     public const int MaxDisplayNameLength = 100;
     public const int MaxBioLength = 500;
     public const int MaxStatusMessageLength = 100;

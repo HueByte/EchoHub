@@ -7,6 +7,7 @@ using EchoHub.Client.UI.Helpers;
 using EchoHub.Client.UI.ListSources;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
+using Serilog;
 using Terminal.Gui.App;
 using Terminal.Gui.Configuration;
 using Terminal.Gui.Drawing;
@@ -39,7 +40,9 @@ public sealed partial class MainWindow : Runnable
     private readonly UserListSource _usersListSource;
     private bool _usersPanelVisible = true;
     private const int UsersPanelWidth = 22;
+    private const string DefaultInputTitle = "Message │ Enter=send │ Tab=complete │ Ctrl+K=search │ F6=pick message";
     private static readonly Key F2Key = Key.F2;
+    private bool _hasStagedAttachments;
 
     internal static readonly string AppVersion =
         typeof(MainWindow).Assembly.GetName().Version?.ToString(3) ?? "?";
@@ -50,12 +53,17 @@ public sealed partial class MainWindow : Runnable
     private static readonly Key AltQKey = Key.Q.WithAlt;
     private static readonly Key TabKey = Key.Tab;
     private static readonly Key CtrlKKey = Key.K.WithCtrl;
+    private static readonly Key CtrlVKey = Key.V.WithCtrl;
+    private static readonly Key CtrlXKey = Key.X.WithCtrl;
+    private static readonly Key CtrlCKey = Key.C.WithCtrl;
+    private static readonly Key CtrlYKey = Key.Y.WithCtrl;
+    private static readonly Key F6Key = Key.F6;
 
     // Available slash commands for Tab autocomplete
     private static readonly string[] SlashCommands =
     [
         "/status", "/nick", "/color", "/theme", "/send",
-        "/avatar", "/profile", "/servers", "/join", "/leave",
+        "/avatar", "/profile", "/servers", "/join", "/passwd", "/leave", "/clear", "/size", "/downloadpath",
         "/topic", "/users", "/kick", "/ban", "/unban",
         "/mute", "/unmute", "/role", "/nuke", "/test-sound", "/quit", "/help"
     ];
@@ -63,6 +71,7 @@ public sealed partial class MainWindow : Runnable
     private readonly List<string> _channelNames = [];
     private readonly Dictionary<string, string?> _channelTopics = [];
     private readonly Dictionary<string, bool> _channelPublic = [];
+    private readonly HashSet<string> _channelProtected = [];
     private readonly ChannelListSource _channelListSource;
     private readonly ChatMessageManager _messageManager;
     private string _connectionStatus = "Disconnected";
@@ -149,6 +158,16 @@ public sealed partial class MainWindow : Runnable
     public event Action<string, string>? OnFileDownloadRequested;
 
     /// <summary>
+    /// Fired when the user activates an image's "[save original]" line. Parameters: attachmentUrl, fileName.
+    /// </summary>
+    public event Action<string, string>? OnImageSaveRequested;
+
+    /// <summary>
+    /// Fired when the user presses Delete on the selected message. Parameter is the message id.
+    /// </summary>
+    public event Action<Guid>? OnDeleteMessageRequested;
+
+    /// <summary>
     /// Fired when the user activates a username (in userlist or message). Parameter is the username.
     /// </summary>
     public event Action<string>? OnUserProfileRequested;
@@ -229,6 +248,8 @@ public sealed partial class MainWindow : Runnable
         };
         _messageList.Source = new ChatListSource();
         _messageList.Accepting += OnMessageListAccepting;
+        _messageList.KeyDown += OnMessageListKeyDown;
+        _messageList.MouseEvent += OnMessageListMouseEvent;
         _messageList.VerticalScrollBar.Scrolled += OnMessageListVerticalScrollBarScrolled;
         _messageList.VerticalScrollBar.Visible = true;
 
@@ -238,7 +259,7 @@ public sealed partial class MainWindow : Runnable
         // Bottom input area
         _inputFrame = new FrameView
         {
-            Title = "Message \u2502 Enter=send \u2502 Ctrl+N=newline \u2502 Tab=complete \u2502 Ctrl+K=search",
+            Title = DefaultInputTitle,
             X = 22,
             Y = Pos.Bottom(_chatFrame),
             Width = Dim.Fill(UsersPanelWidth),
@@ -253,6 +274,10 @@ public sealed partial class MainWindow : Runnable
             Height = Dim.Fill(),
             WordWrap = true
         };
+        // Terminal.Gui binds Ctrl+W to Command.Cut, whose OS clipboard write can throw
+        // Win32Exception when another process holds the clipboard, crashing the app.
+        // Rebind it to delete-word-backward (readline behavior), which never touches the clipboard.
+        _inputField.KeyBindings.ReplaceCommands(Key.W.WithCtrl, Command.KillWordLeft);
         _inputField.KeyDown += OnInputKeyDown;
         _inputField.ContentsChanged += OnInputContentsChanged;
         _inputFrame.Add(_inputField);
@@ -304,6 +329,27 @@ public sealed partial class MainWindow : Runnable
 
         // Window-level key handling for Alt+Q (quit), F2 (toggle users panel)
         KeyDown += OnWindowKeyDown;
+    }
+
+    /// <summary>
+    /// Updates the attachment staging indicator shown on the input frame's title, including the
+    /// current ASCII-art size for images. Passing an empty list restores the default hint.
+    /// </summary>
+    public void SetStagedAttachments(IReadOnlyList<string> fileNames, string asciiSizeLabel)
+    {
+        _hasStagedAttachments = fileNames.Count > 0;
+        if (fileNames.Count == 0)
+        {
+            _inputFrame.Title = DefaultInputTitle;
+        }
+        else
+        {
+            var names = string.Join(", ", fileNames);
+            if (names.Length > 45)
+                names = names[..42] + "...";
+            _inputFrame.Title = $"📎 {fileNames.Count}: {names} │ art: {asciiSizeLabel} (/size) │ Enter=send │ /clear";
+        }
+        _inputFrame.SetNeedsDraw();
     }
 
     /// <summary>
@@ -443,16 +489,23 @@ public sealed partial class MainWindow : Runnable
         // Audio/file attachments take priority
         if (line.AttachmentUrl is not null && line.AttachmentFileName is not null)
         {
-            if (line.Type == MessageType.Audio)
+            if (line.AttachmentKind == AttachmentKind.Audio)
             {
                 OnAudioPlayRequested?.Invoke(line.AttachmentUrl, line.AttachmentFileName);
                 e.Handled = true;
                 return;
             }
 
-            if (line.Type == MessageType.File)
+            if (line.AttachmentKind == AttachmentKind.File)
             {
                 OnFileDownloadRequested?.Invoke(line.AttachmentUrl, line.AttachmentFileName);
+                e.Handled = true;
+                return;
+            }
+
+            if (line.AttachmentKind == AttachmentKind.Image)
+            {
+                OnImageSaveRequested?.Invoke(line.AttachmentUrl, line.AttachmentFileName);
                 e.Handled = true;
                 return;
             }
@@ -486,6 +539,133 @@ public sealed partial class MainWindow : Runnable
             OnUserProfileRequested?.Invoke(line.SenderUsername);
             e.Handled = true;
         }
+    }
+
+    private void OnMessageListKeyDown(object? sender, Key e)
+    {
+        // F6 returns focus to the input box.
+        if (e.KeyCode == F6Key.KeyCode)
+        {
+            _inputField.SetFocus();
+            e.Handled = true;
+            return;
+        }
+
+        if (e.KeyCode != Key.Delete.KeyCode && e.KeyCode != Key.Backspace.KeyCode)
+            return;
+
+        if (_messageList.Source is not ChatListSource source)
+            return;
+
+        var index = _messageList.SelectedItem;
+        if (!index.HasValue || index.Value < 0 || index.Value >= source.Count)
+            return;
+
+        var line = source.GetLine(index.Value);
+        if (line?.MessageId is not { } messageId)
+            return;
+
+        // Server enforces the real permission (own message, or Mod+ over a lower role);
+        // the client just confirms intent and lets the server reject if disallowed.
+        ConfirmDeleteMessage(messageId);
+        e.Handled = true;
+    }
+
+    private void OnMessageListMouseEvent(object? sender, Mouse e)
+    {
+        if (!e.Flags.HasFlag(MouseFlags.RightButtonClicked))
+            return;
+
+        if (_messageList.Source is not ChatListSource source || source.Count == 0 || e.Position is not { } pos)
+            return;
+
+        var index = _messageList.TopItem + pos.Y;
+        if (index < 0 || index >= source.Count)
+            return;
+
+        // Select the right-clicked row (so the menu acts on it and it highlights), then show the menu.
+        _messageList.SelectedItem = index;
+        _messageList.SetFocus();
+
+        var line = source.GetLine(index);
+        if (line is null)
+            return;
+
+        ShowMessageContextMenu(line, e.ScreenPosition);
+        e.Handled = true;
+    }
+
+    /// <summary>
+    /// Builds and shows a right-click context menu for a message line: attachment actions,
+    /// mention/profile for the sender, copy, and delete (permission enforced server-side).
+    /// </summary>
+    private void ShowMessageContextMenu(ChatLine line, System.Drawing.Point screenPosition)
+    {
+        var items = new List<View>();
+        var sender = line.SenderUsername;
+
+        if (line.AttachmentKind is { } kind && line.AttachmentUrl is { } url && line.AttachmentFileName is { } name)
+        {
+            switch (kind)
+            {
+                case AttachmentKind.Image:
+                    items.Add(new MenuItem("Save original image", "", () => OnImageSaveRequested?.Invoke(url, name), Key.Empty));
+                    break;
+                case AttachmentKind.Audio:
+                    items.Add(new MenuItem("Play audio", "", () => OnAudioPlayRequested?.Invoke(url, name), Key.Empty));
+                    break;
+                default:
+                    items.Add(new MenuItem("Download file", "", () => OnFileDownloadRequested?.Invoke(url, name), Key.Empty));
+                    break;
+            }
+        }
+
+        if (sender is not null)
+        {
+            items.Add(new MenuItem($"Mention @{sender}", "", () => MentionUser(sender), Key.Empty));
+            items.Add(new MenuItem($"View {sender}'s profile", "", () => OnUserProfileRequested?.Invoke(sender), Key.Empty));
+        }
+
+        items.Add(new MenuItem("Copy text", "", () => CopyToClipboard(line.ToString()), Key.Empty));
+
+        if (line.MessageId is { } messageId)
+        {
+            items.Add(new MenuItem("Copy message ID", "", () => CopyToClipboard(messageId.ToString()), Key.Empty));
+            items.Add(new Line());
+            items.Add(new MenuItem("Delete message", "", () => ConfirmDeleteMessage(messageId), Key.Empty));
+        }
+
+        if (items.Count == 0)
+            return;
+
+        var menu = new PopoverMenu(items);
+        _app.Popovers?.Register(menu);
+        menu.MakeVisible(screenPosition);
+    }
+
+    private void MentionUser(string username)
+    {
+        _inputField.InsertText($"@{username} ");
+        _inputField.SetFocus();
+    }
+
+    private void CopyToClipboard(string text)
+    {
+        try
+        {
+            _app.Clipboard?.TrySetClipboardData(text);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Copy to clipboard failed");
+        }
+    }
+
+    private void ConfirmDeleteMessage(Guid messageId)
+    {
+        var confirm = MessageBox.Query(_app, "Delete Message", "Delete this message?", "Delete", "Cancel");
+        if (confirm == 0)
+            OnDeleteMessageRequested?.Invoke(messageId);
     }
 
     private void OnMessageListVerticalScrollBarScrolled(object? sender, EventArgs<int> e)
@@ -523,7 +703,9 @@ public sealed partial class MainWindow : Runnable
         else if (e.KeyCode == EnterKey.KeyCode)
         {
             var text = _inputField.Text?.Trim() ?? string.Empty;
-            if (!string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(_messageManager.CurrentChannel))
+            // Send when there's text, or when only attachments are staged (empty caption).
+            if ((!string.IsNullOrEmpty(text) || _hasStagedAttachments)
+                && !string.IsNullOrEmpty(_messageManager.CurrentChannel))
             {
                 OnMessageSubmitted?.Invoke(_messageManager.CurrentChannel, text);
                 _inputField.Text = string.Empty;
@@ -540,6 +722,51 @@ public sealed partial class MainWindow : Runnable
             ShowSearchDialog();
             e.Handled = true;
         }
+        else if (e.KeyCode == F6Key.KeyCode)
+        {
+            // Move focus into the message list so you can select a message (arrows) and
+            // delete it (Delete). F6 again returns focus here. (Esc is the app quit key.)
+            FocusMessageList();
+            e.Handled = true;
+        }
+        else if (e.KeyCode == CtrlVKey.KeyCode || e.KeyCode == CtrlYKey.KeyCode)
+        {
+            // If a file was copied in the OS file manager, the clipboard holds a file list
+            // (not text) — attach it. Otherwise paste text. This is the reliable path on
+            // Windows Terminal, which never pastes copied files as text.
+            if (ClipboardFiles.TryGetFiles(out var pastedFiles))
+                StageFiles(pastedFiles);
+            else
+                GuardedClipboardAction(() => _inputField.Paste(), "paste");
+            e.Handled = true;
+        }
+        else if (e.KeyCode == CtrlXKey.KeyCode)
+        {
+            GuardedClipboardAction(() => _inputField.Cut(), "cut");
+            e.Handled = true;
+        }
+        else if (e.KeyCode == CtrlCKey.KeyCode)
+        {
+            GuardedClipboardAction(() => _inputField.Copy(), "copy");
+            e.Handled = true;
+        }
+    }
+
+    /// <summary>
+    /// Runs a clipboard-backed edit action, swallowing transient OS clipboard failures
+    /// (e.g. another process holding the Windows clipboard) that would otherwise
+    /// propagate out of the input loop and crash the app.
+    /// </summary>
+    private static void GuardedClipboardAction(Action action, string operation)
+    {
+        try
+        {
+            action();
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Clipboard {Operation} failed", operation);
+        }
     }
 
     private bool _suppressEmojiReplace;
@@ -553,6 +780,27 @@ public sealed partial class MainWindow : Runnable
         if (string.IsNullOrEmpty(text))
             return;
 
+        // A file dropped onto the terminal is delivered as its absolute path inserted into the
+        // input — often character by character (this Terminal.Gui build has no bracketed-paste
+        // coalescing). As soon as the input resolves to existing file path(s), route them
+        // through /send (which stages them) instead of leaving a raw path to be sent as a message.
+        if (DroppedFileParser.LooksLikePath(text) && DroppedFileParser.TryGetFiles(text, out var droppedFiles)
+            && !string.IsNullOrEmpty(_messageManager.CurrentChannel))
+        {
+            _suppressEmojiReplace = true;
+            try
+            {
+                _inputField.Text = string.Empty;
+            }
+            finally
+            {
+                _suppressEmojiReplace = false;
+            }
+
+            StageFiles(droppedFiles);
+            return;
+        }
+
         var replaced = EmojiHelper.ReplaceEmoji(text);
         if (replaced == text)
             return;
@@ -562,9 +810,15 @@ public sealed partial class MainWindow : Runnable
         var newCol = Math.Max(0, _inputField.CurrentColumn + lengthDelta);
 
         _suppressEmojiReplace = true;
-        _inputField.Text = replaced;
-        _inputField.InsertionPoint = new System.Drawing.Point(newCol, _inputField.CurrentRow);
-        _suppressEmojiReplace = false;
+        try
+        {
+            _inputField.Text = replaced;
+            _inputField.InsertionPoint = new System.Drawing.Point(newCol, _inputField.CurrentRow);
+        }
+        finally
+        {
+            _suppressEmojiReplace = false;
+        }
     }
 
     /// <summary>
@@ -602,6 +856,20 @@ public sealed partial class MainWindow : Runnable
 
         // Move cursor to end after autocomplete
         _inputField.InsertionPoint = new System.Drawing.Point(_inputField.Text?.Length ?? 0, 0);
+    }
+
+    /// <summary>
+    /// Routes files (from a drop or a file-clipboard paste) through the /send pipeline, which
+    /// stages them; the next Enter sends them with any typed caption.
+    /// </summary>
+    private void StageFiles(IEnumerable<string> files)
+    {
+        var channel = _messageManager.CurrentChannel;
+        if (string.IsNullOrEmpty(channel))
+            return;
+
+        foreach (var file in files)
+            OnMessageSubmitted?.Invoke(channel, $"/send \"{file}\"");
     }
 
     private void OnChatViewportChanged()
@@ -675,11 +943,14 @@ public sealed partial class MainWindow : Runnable
         _channelNames.Clear();
         _channelTopics.Clear();
         _channelPublic.Clear();
+        _channelProtected.Clear();
         foreach (var ch in channels)
         {
             _channelNames.Add(ch.Name);
             _channelTopics[ch.Name] = ch.Topic;
             _channelPublic[ch.Name] = ch.IsPublic;
+            if (ch.IsProtected)
+                _channelProtected.Add(ch.Name);
         }
         RefreshChannelList();
     }
@@ -687,13 +958,23 @@ public sealed partial class MainWindow : Runnable
     /// <summary>
     /// Ensure a channel exists in the left panel list (used for private channels joined via /join).
     /// </summary>
-    public void EnsureChannelInList(string channelName, bool? isPublic = null)
+    public void EnsureChannelInList(string channelName, bool? isPublic = null, bool? isProtected = null)
     {
         if (isPublic.HasValue)
             _channelPublic[channelName] = isPublic.Value;
 
+        if (isProtected.HasValue)
+        {
+            if (isProtected.Value) _channelProtected.Add(channelName);
+            else _channelProtected.Remove(channelName);
+        }
+
         if (_channelNames.Contains(channelName))
+        {
+            if (isProtected.HasValue)
+                RefreshChannelList();
             return;
+        }
 
         _channelNames.Add(channelName);
         RefreshChannelList();
@@ -707,6 +988,7 @@ public sealed partial class MainWindow : Runnable
         _channelNames.Remove(channelName);
         _channelTopics.Remove(channelName);
         _channelPublic.Remove(channelName);
+        _channelProtected.Remove(channelName);
         RefreshChannelList();
     }
 
@@ -792,6 +1074,8 @@ public sealed partial class MainWindow : Runnable
         {
             _channelPublic.TryGetValue(currentChannel, out var isPublic);
             var typeSuffix = isPublic ? "public" : "private";
+            if (_channelProtected.Contains(currentChannel))
+                typeSuffix += " +k";
             Write($" \u2502 #{currentChannel} - {typeSuffix}", normalAttr);
         }
 
@@ -855,6 +1139,7 @@ public sealed partial class MainWindow : Runnable
         _messageManager.ClearAll();
         _channelTopics.Clear();
         _channelPublic.Clear();
+        _channelProtected.Clear();
         _channelListSource.Update([], [], string.Empty);
         _channelList.Source = _channelListSource;
         _chatFrame.Title = "Chat";
@@ -872,6 +1157,26 @@ public sealed partial class MainWindow : Runnable
     public void FocusInput()
     {
         _inputField.SetFocus();
+    }
+
+    /// <summary>
+    /// Moves focus into the message list for selection (arrows) and deletion (Delete). Selects the
+    /// most recent message when nothing is selected. No-op when the channel has no messages.
+    /// </summary>
+    private void FocusMessageList()
+    {
+        if (_messageList.Source is not ChatListSource source || source.Count == 0)
+            return;
+
+        if (!_messageList.SelectedItem.HasValue
+            || _messageList.SelectedItem < 0
+            || _messageList.SelectedItem >= source.Count)
+        {
+            _messageList.SelectedItem = source.Count - 1;
+        }
+
+        _messageList.SetFocus();
+        _messageList.SetNeedsDraw();
     }
 
     private void RefreshMessages()
@@ -915,7 +1220,7 @@ public sealed partial class MainWindow : Runnable
     /// </summary>
     private void RefreshChannelList()
     {
-        _channelListSource.Update(_channelNames, _messageManager.GetUnreadCounts(), _messageManager.CurrentChannel);
+        _channelListSource.Update(_channelNames, _messageManager.GetUnreadCounts(), _messageManager.CurrentChannel, _channelProtected);
         _channelList.Source = _channelListSource;
 
         // Restore selection to current channel

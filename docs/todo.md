@@ -3,7 +3,7 @@
 - [ ] fix the chat trailing; when user scrolls up, and somebody sends a message – the chat instantly "teleports" to the very bottom
 - [x] disable the autorun of files (maybe keep for mp4? gotta do some sec research on it)
 - [x] when user creates a new channel, he gets moved to that channel; but the userlist does not refresh the state on that – it refreshes when user re-enters the channel again
-- [ ] password protected rooms
+- [x] password protected rooms (end-to-end encrypted — server cannot read contents)
 - [ ] better audio lib, current one (NetCoreAudio) does not support seek or other audio actions
 - [ ] Use options pattern for both client & server
   - ref: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-10.0

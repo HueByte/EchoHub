@@ -20,6 +20,7 @@ public static partial class DataMigrationService
         await EnsureDefaultChannelsPublicAsync(db, logger);
         await MigrateAnsiMessagesAsync(db, logger);
         await MigrateEmbedJsonToArrayAsync(db, logger);
+        await MigrateLegacyAttachmentsAsync(db, logger);
         await EnsureConfiguredAdminsAsync(db, config, logger);
     }
 
@@ -96,6 +97,59 @@ public static partial class DataMigrationService
 
     [GeneratedRegex(@"\x1b\[(?:(0)|(?:(38;2|48;2);(\d{1,3});(\d{1,3});(\d{1,3})))m")]
     private static partial Regex AnsiColorRegex();
+
+    /// <summary>
+    /// Fold legacy single-attachment messages (which stored the file on the message row and,
+    /// for images, the ASCII art in Content) into the new Attachments model. Idempotent:
+    /// only migrates messages that still have a legacy AttachmentUrl and no Attachment rows.
+    /// After migrating, Content becomes empty (the ASCII art moves to the attachment preview)
+    /// and the legacy columns are nulled out.
+    /// </summary>
+    private static async Task MigrateLegacyAttachmentsAsync(EchoHubDbContext db, ILogger logger)
+    {
+        var legacy = await db.Messages
+            .Where(m => m.AttachmentUrl != null && m.Attachments.Count == 0)
+            .ToListAsync();
+
+        if (legacy.Count == 0)
+            return;
+
+        logger.LogInformation("Migrating {Count} legacy single-attachment messages to the attachments model...", legacy.Count);
+
+        foreach (var message in legacy)
+        {
+            var kind = message.Type switch
+            {
+                Core.Models.MessageType.Image => AttachmentKind.Image,
+                Core.Models.MessageType.Audio => AttachmentKind.Audio,
+                _ => AttachmentKind.File,
+            };
+
+            // For images the ASCII art lived in Content; for audio/file Content was just the
+            // filename (now redundant with the attachment). Either way the caption becomes empty.
+            var preview = kind == AttachmentKind.Image ? message.Content : null;
+
+            db.Attachments.Add(new Attachment
+            {
+                Id = Guid.NewGuid(),
+                MessageId = message.Id,
+                Kind = kind,
+                Url = message.AttachmentUrl!,
+                FileName = message.AttachmentFileName ?? "file",
+                FileSize = message.AttachmentFileSize ?? 0,
+                AsciiPreview = preview,
+            });
+
+            message.Content = string.Empty;
+            message.AttachmentUrl = null;
+            message.AttachmentFileName = null;
+            message.AttachmentFileSize = null;
+            message.Type = Core.Models.MessageType.Text;
+        }
+
+        await db.SaveChangesAsync();
+        logger.LogInformation("Migrated {Count} legacy attachments.", legacy.Count);
+    }
 
     /// <summary>
     /// Ensure usernames listed in Server:Admins config are at least Admin role.

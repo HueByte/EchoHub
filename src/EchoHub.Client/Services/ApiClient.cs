@@ -185,17 +185,35 @@ public sealed class ApiClient : IDisposable
         return result?.AvatarAscii;
     }
 
-    public async Task<MessageDto?> UploadFileAsync(string channelName, Stream fileStream, string fileName, string? size = null)
+    /// <summary>
+    /// Sends one message with optional text and one or more file attachments.
+    /// For end-to-end encrypted channels each attachment carries a declared kind and a
+    /// room-encrypted preview (empty when none); the caption is likewise room-encrypted.
+    /// </summary>
+    public async Task<MessageDto?> SendMessageWithAttachmentsAsync(
+        string channelName, string content, IReadOnlyList<OutgoingAttachment> attachments, string? size = null)
     {
         EnsureAuthenticated();
-        using var content = new MultipartFormDataContent();
-        using var streamContent = new StreamContent(fileStream);
-        streamContent.Headers.ContentType = new MediaTypeHeaderValue(GetContentType(fileName));
-        content.Add(streamContent, "file", fileName);
+        using var form = new MultipartFormDataContent { { new StringContent(content), "content" } };
+
+        foreach (var att in attachments)
+        {
+            var streamContent = new StreamContent(att.Stream);
+            streamContent.Headers.ContentType = new MediaTypeHeaderValue(GetContentType(att.FileName));
+            form.Add(streamContent, "file", att.FileName);
+
+            // Encrypted channels: one kind + preview per file, in the same order, to keep
+            // the server's index alignment (empty preview string for non-images).
+            if (att.DeclaredKind is not null)
+            {
+                form.Add(new StringContent(att.DeclaredKind), "kind");
+                form.Add(new StringContent(att.EncryptedPreview ?? string.Empty), "preview");
+            }
+        }
 
         var sizeQuery = size is not null ? $"?size={size}" : "";
         using var response = await AuthenticatedRequestAsync(() =>
-            _http.PostAsync($"/api/channels/{Uri.EscapeDataString(channelName)}/upload{sizeQuery}", content));
+            _http.PostAsync($"/api/channels/{Uri.EscapeDataString(channelName)}/messages{sizeQuery}", form));
         await EnsureSuccessAsync(response);
         return await response.Content.ReadFromJsonAsync<MessageDto>();
     }
@@ -228,12 +246,36 @@ public sealed class ApiClient : IDisposable
         return tempPath;
     }
 
-    public async Task<ChannelDto?> CreateChannelAsync(string name, string? topic = null, bool isPublic = true)
+    public async Task<ChannelDto?> CreateChannelAsync(string name, string? topic = null, bool isPublic = true,
+        string? password = null, string? encryptionSalt = null, string? wrappedRoomKey = null)
     {
         EnsureAuthenticated();
-        var request = new CreateChannelRequest(name, topic, isPublic);
+        var request = new CreateChannelRequest(name, topic, isPublic, password, encryptionSalt, wrappedRoomKey);
         using var response = await AuthenticatedRequestAsync(() =>
             _http.PostAsJsonAsync("/api/channels", request));
+        await EnsureSuccessAsync(response);
+        return await response.Content.ReadFromJsonAsync<ChannelDto>();
+    }
+
+    /// <summary>
+    /// Fetches a channel's public crypto metadata (whether it's E2E-encrypted and its
+    /// key-derivation salt). Returns null when the channel doesn't exist.
+    /// </summary>
+    public async Task<ChannelCryptoDto?> GetChannelCryptoAsync(string channelName)
+    {
+        EnsureAuthenticated();
+        using var response = await AuthenticatedGetAsync($"/api/channels/{Uri.EscapeDataString(channelName)}/crypto");
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            return null;
+        await EnsureSuccessAsync(response);
+        return await response.Content.ReadFromJsonAsync<ChannelCryptoDto>();
+    }
+
+    public async Task<ChannelDto?> RekeyChannelAsync(string channelName, RekeyChannelRequest request)
+    {
+        EnsureAuthenticated();
+        using var response = await AuthenticatedRequestAsync(() =>
+            _http.PostAsJsonAsync($"/api/channels/{Uri.EscapeDataString(channelName)}/rekey", request));
         await EnsureSuccessAsync(response);
         return await response.Content.ReadFromJsonAsync<ChannelDto>();
     }

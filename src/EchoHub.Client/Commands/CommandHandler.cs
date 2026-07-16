@@ -13,7 +13,11 @@ public class CommandHandler
     public event Func<string, string?, Task>? OnSendFile;
     public event Func<string?, Task>? OnOpenProfile;
     public event Func<Task>? OnOpenServers;
-    public event Func<string, Task>? OnJoinChannel;
+    public event Func<string, string?, Task>? OnJoinChannel;
+    public event Func<string, string, Task>? OnChangeRoomPassword;
+    public event Func<Task>? OnClearAttachments;
+    public event Func<string, Task>? OnSetDownloadPath;
+    public event Func<string, Task>? OnSetAsciiSize;
     public event Func<Task>? OnLeaveChannel;
     public event Func<string, Task>? OnSetTopic;
     public event Func<Task>? OnListUsers;
@@ -47,10 +51,14 @@ public class CommandHandler
             "color" => await HandleColor(args),
             "theme" => await HandleTheme(args),
             "send" => await HandleSend(args),
+            "clear" => await HandleClear(),
+            "size" or "asciisize" => await HandleAsciiSize(args),
+            "downloadpath" or "downloads" => await HandleDownloadPath(args),
             "profile" => await HandleProfile(args),
             "avatar" => await HandleAvatar(args),
             "servers" => await HandleServers(),
             "join" => await HandleJoin(args),
+            "passwd" => await HandlePasswd(args),
             "leave" => await HandleLeave(),
             "topic" => await HandleTopic(args),
             "users" => await HandleUsers(),
@@ -126,7 +134,7 @@ public class CommandHandler
     private async Task<CommandResult> HandleTheme(string args)
     {
         if (string.IsNullOrWhiteSpace(args))
-            return new CommandResult(true, "Usage: /theme <name> (Default, Dark, Light, Hacker, Solarized)", IsError: true);
+            return new CommandResult(true, "Usage: /theme <name> — pick one from the User menu's theme list (e.g. Default, Transparent, TransparentLight, Hacker)", IsError: true);
 
         if (OnSetTheme is not null)
             await OnSetTheme(args.Trim());
@@ -163,6 +171,29 @@ public class CommandHandler
         return new CommandResult(true, $"Uploading: {Path.GetFileName(target)}...");
     }
 
+    private async Task<CommandResult> HandleClear()
+    {
+        if (OnClearAttachments is not null)
+            await OnClearAttachments();
+        return new CommandResult(true, "Cleared staged attachments.");
+    }
+
+    private async Task<CommandResult> HandleAsciiSize(string args)
+    {
+        // No argument → open the size picker; an argument (s/m/l or small/medium/large) sets it.
+        if (OnSetAsciiSize is not null)
+            await OnSetAsciiSize(args.Trim());
+        return new CommandResult(true);
+    }
+
+    private async Task<CommandResult> HandleDownloadPath(string args)
+    {
+        // No argument → open the native folder picker; an argument sets the path directly.
+        if (OnSetDownloadPath is not null)
+            await OnSetDownloadPath(args.Trim());
+        return new CommandResult(true);
+    }
+
     private async Task<CommandResult> HandleProfile(string args)
     {
         var username = string.IsNullOrWhiteSpace(args) ? null : args.Trim();
@@ -193,11 +224,28 @@ public class CommandHandler
     private async Task<CommandResult> HandleJoin(string args)
     {
         if (string.IsNullOrWhiteSpace(args))
-            return new CommandResult(true, "Usage: /join <channel>", IsError: true);
+            return new CommandResult(true, "Usage: /join <channel> [password]", IsError: true);
 
-        var channel = args.Trim().TrimStart('#');
+        var parts = args.Trim().Split(' ', 2, StringSplitOptions.TrimEntries);
+        var channel = parts[0].TrimStart('#');
+        var password = parts.Length > 1 && !string.IsNullOrWhiteSpace(parts[1]) ? parts[1] : null;
+
         if (OnJoinChannel is not null)
-            await OnJoinChannel(channel);
+            await OnJoinChannel(channel, password);
+        return new CommandResult(true);
+    }
+
+    private async Task<CommandResult> HandlePasswd(string args)
+    {
+        var parts = args.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (parts.Length != 2)
+            return new CommandResult(true, "Usage: /passwd <old passphrase> <new passphrase> — changes the current encrypted channel's passphrase", IsError: true);
+
+        if (parts[1].Length < 3)
+            return new CommandResult(true, "New passphrase must be at least 3 characters.", IsError: true);
+
+        if (OnChangeRoomPassword is not null)
+            await OnChangeRoomPassword(parts[0], parts[1]);
         return new CommandResult(true);
     }
 
@@ -339,11 +387,19 @@ public class CommandHandler
               /nick <name>                         - Set display name
               /color <#hex>                        - Set nickname color
               /theme <name>                        - Switch theme
-              /send <filepath or URL> [-s|-m|-l]      - Send file/image/audio (size flag for images)
+              /send <filepath> [-s|-m|-l]          - Stage a file to attach (Enter sends with your text)
+              /send <URL> [-s|-m|-l]               - Send an image URL immediately
+              /clear                               - Drop all staged attachments
+              /size [s|m|l]                        - ASCII art size for attached images (no arg = picker)
+            (Tip: copy a file and press Ctrl+V, or drag a file onto the window, to attach it.)
+            (Tip: right-click a message for actions — delete, save/download/play attachment,
+                  mention, view profile, copy. Or press F6 to pick a message, then Delete.)
+              /downloadpath [path]                 - Set download folder (no path = native folder picker)
               /avatar <URL or filepath>             - Set your avatar
               /profile [username]                   - View a profile
               /servers                             - Open saved servers
-              /join <channel>                      - Join a channel
+              /join <channel> [password]           - Join a channel (password if protected)
+              /passwd <old> <new>                  - Change current encrypted channel's passphrase
               /leave                               - Leave current channel
               /topic <text>                        - Set channel topic
               /users                               - List online users
