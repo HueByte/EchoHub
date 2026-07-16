@@ -32,17 +32,17 @@ public class DroppedFileParserTests
     // ── TryGetFiles (injected existence check) ────────────────────────
 
     [Fact]
-    public void TryGetFiles_SingleWindowsPath_Detected()
+    public void TryGetFiles_SingleAbsolutePath_Detected()
     {
-        var exists = Exists("C:\\Users\\me\\cat.png");
-        Assert.True(DroppedFileParser.TryGetFiles("C:\\Users\\me\\cat.png", out var files, exists));
-        Assert.Equal(["C:\\Users\\me\\cat.png"], files);
+        var path = Abs("Users", "me", "cat.png");
+        Assert.True(DroppedFileParser.TryGetFiles(path, out var files, Exists(path)));
+        Assert.Equal([path], files);
     }
 
     [Fact]
     public void TryGetFiles_QuotedPathWithSpaces_StripsQuotes()
     {
-        var path = "C:\\My Files\\a b.png";
+        var path = Abs("My Files", "a b.png");
         Assert.True(DroppedFileParser.TryGetFiles($"\"{path}\"", out var files, Exists(path)));
         Assert.Equal([path], files);
     }
@@ -50,8 +50,8 @@ public class DroppedFileParserTests
     [Fact]
     public void TryGetFiles_MultipleQuotedPaths_Detected()
     {
-        var a = "C:\\a.png";
-        var b = "C:\\b.mp3";
+        var a = Abs("a.png");
+        var b = Abs("b.mp3");
         Assert.True(DroppedFileParser.TryGetFiles($"\"{a}\" \"{b}\"", out var files, Exists(a, b)));
         Assert.Equal([a, b], files);
     }
@@ -71,24 +71,26 @@ public class DroppedFileParserTests
     [Fact]
     public void TryGetFiles_NonExistentPath_ReturnsFalse()
     {
-        Assert.False(DroppedFileParser.TryGetFiles("C:\\nope\\missing.png", out _, _ => false));
+        Assert.False(DroppedFileParser.TryGetFiles(Abs("nope", "missing.png"), out _, _ => false));
     }
 
     [Fact]
     public void TryGetFiles_PartialPathDuringTyping_ReturnsFalseUntilComplete()
     {
         // Only the fully typed path exists; prefixes do not.
-        var full = "C:\\Users\\me\\cat.png";
+        var full = Abs("Users", "me", "cat.png");
+        var partial = Abs("Users", "me", "ca");
         var exists = Exists(full);
-        Assert.False(DroppedFileParser.TryGetFiles("C:\\Users\\me\\ca", out _, exists));
+        Assert.False(DroppedFileParser.TryGetFiles(partial, out _, exists));
         Assert.True(DroppedFileParser.TryGetFiles(full, out _, exists));
     }
 
     [Fact]
     public void TryGetFiles_OneMissingAmongMultiple_ReturnsFalse()
     {
-        var a = "C:\\a.png";
-        Assert.False(DroppedFileParser.TryGetFiles($"\"{a}\" \"C:\\gone.png\"", out _, Exists(a)));
+        var a = Abs("a.png");
+        var gone = Abs("gone.png");
+        Assert.False(DroppedFileParser.TryGetFiles($"\"{a}\" \"{gone}\"", out _, Exists(a)));
     }
 
     [Fact]
@@ -113,4 +115,13 @@ public class DroppedFileParserTests
         var set = new HashSet<string>(existing, StringComparer.OrdinalIgnoreCase);
         return set.Contains;
     }
+
+    /// <summary>
+    /// Builds an absolute path that <see cref="Path.IsPathFullyQualified"/> accepts on the current
+    /// OS — <c>C:\a\b</c> on Windows, <c>/a/b</c> elsewhere — so these tests run on any platform (CI is Linux).
+    /// </summary>
+    private static string Abs(params string[] segments) =>
+        OperatingSystem.IsWindows()
+            ? "C:\\" + string.Join('\\', segments)
+            : "/" + string.Join('/', segments);
 }
