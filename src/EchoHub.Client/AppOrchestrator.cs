@@ -67,6 +67,8 @@ public sealed class AppOrchestrator : IDisposable
 
     public void Dispose()
     {
+        // Quit while still connected — capture read positions before tearing down
+        PersistLastReads();
         _conn.DisposeAsync().AsTask().GetAwaiter().GetResult();
         _updateService.Dispose();
     }
@@ -384,6 +386,10 @@ public sealed class AppOrchestrator : IDisposable
             var history = await JoinChannelWithPasswordPromptAsync(channelName, password);
             if (history is null) return; // user cancelled the password prompt
 
+            // A deliberate join cancels any earlier /leave exclusion
+            UpdateServerConfig(server =>
+                server.LeftChannels.RemoveAll(c => c.Equals(channelName, StringComparison.OrdinalIgnoreCase)));
+
             InvokeUI(() =>
             {
                 _mainWindow.EnsureChannelInList(channelName);
@@ -553,6 +559,14 @@ public sealed class AppOrchestrator : IDisposable
         try
         {
             await _conn.LeaveChannelAsync(channel);
+
+            // Remember the leave so the connect-time auto-join doesn't pull us back in
+            UpdateServerConfig(server =>
+            {
+                if (!server.LeftChannels.Contains(channel, StringComparer.OrdinalIgnoreCase))
+                    server.LeftChannels.Add(channel);
+            });
+
             InvokeUI(() => _messageManager.AddSystemMessage(channel, $"You left #{channel}"));
         }
         catch (Exception ex)
@@ -957,13 +971,28 @@ public sealed class AppOrchestrator : IDisposable
 
             _session.Username = result.Login.Username;
 
+            // Persisted last-read markers for this server — used to seed unread counts,
+            // mention highlights, and "new messages" markers from the fetched histories.
+            var lastReads = ConfigManager.Load().SavedServers
+                .FirstOrDefault(s => string.Equals(s.Url, dialogResult.ServerUrl, StringComparison.OrdinalIgnoreCase))
+                ?.LastReadMessages ?? [];
+
             InvokeUI(() =>
             {
                 _mainWindow.SetCurrentUser(result.Login.DisplayName ?? result.Login.Username);
                 _mainWindow.SetChannels(result.Channels);
                 _mainWindow.SwitchToChannel(HubConstants.DefaultChannel);
-                if (result.DefaultHistory.Count > 0)
-                    _messageManager.LoadHistory(HubConstants.DefaultChannel, result.DefaultHistory);
+
+                foreach (var (channel, history) in result.Histories)
+                {
+                    if (history.Count == 0)
+                        continue;
+
+                    Guid? lastRead = lastReads.TryGetValue(channel, out var idText)
+                        && Guid.TryParse(idText, out var id) ? id : null;
+                    _messageManager.LoadHistory(channel, history, lastRead);
+                }
+
                 _mainWindow.FocusInput();
                 FetchAndUpdateOnlineUsers();
             });
@@ -975,6 +1004,7 @@ public sealed class AppOrchestrator : IDisposable
     {
         Log.Information("Disconnecting from server");
         lock (_channelUsersLock) _channelUsers.Clear();
+        PersistLastReads();
 
         RunAsync(async () =>
         {
@@ -990,6 +1020,7 @@ public sealed class AppOrchestrator : IDisposable
     private void HandleLogout()
     {
         Log.Information("Logging out from server");
+        PersistLastReads();
 
         RunAsync(async () =>
         {
@@ -1061,6 +1092,9 @@ public sealed class AppOrchestrator : IDisposable
     {
         if (!_conn.IsConnected) return;
 
+        // Checkpoint read positions — the previous channel was just marked read
+        PersistLastReads();
+
         RunAsync(async () =>
         {
             if (_conn.TrackChannel(channelName))
@@ -1073,6 +1107,10 @@ public sealed class AppOrchestrator : IDisposable
                     InvokeUI(() => _mainWindow.SwitchToChannel(HubConstants.DefaultChannel));
                     return;
                 }
+
+                // A deliberate join cancels any earlier /leave exclusion
+                UpdateServerConfig(server =>
+                    server.LeftChannels.RemoveAll(c => c.Equals(channelName, StringComparison.OrdinalIgnoreCase)));
             }
 
             try
@@ -1667,18 +1705,61 @@ public sealed class AppOrchestrator : IDisposable
 
     private void SaveServerToConfig(ConnectDialogResult result)
     {
-        var savedServer = new SavedServer
+        // Update the existing entry in place (never replace it) — the per-server entry also
+        // carries cached room keys, left channels, and last-read markers that must survive.
+        var config = ConfigManager.Load();
+        var server = config.SavedServers.FirstOrDefault(s =>
+            string.Equals(s.Url, result.ServerUrl, StringComparison.OrdinalIgnoreCase));
+
+        if (server is null)
         {
-            Name = new Uri(result.ServerUrl).Host,
-            Url = result.ServerUrl,
-            Username = result.Username,
-            RefreshToken = result.RememberMe ? _conn.Api!.RefreshToken : null,
-            RememberMe = result.RememberMe,
-            LastConnected = DateTimeOffset.Now
-        };
-        ConfigManager.SaveServer(savedServer);
-        _config = ConfigManager.Load();
+            server = new SavedServer { Name = new Uri(result.ServerUrl).Host, Url = result.ServerUrl };
+            config.SavedServers.Add(server);
+        }
+
+        server.Username = result.Username;
+        server.RefreshToken = result.RememberMe ? _conn.Api!.RefreshToken : null;
+        server.RememberMe = result.RememberMe;
+        server.LastConnected = DateTimeOffset.Now;
+
+        ConfigManager.Save(config);
+        _config = config;
         Log.Information("Connected successfully to {Url}", result.ServerUrl);
+    }
+
+    /// <summary>
+    /// Mutates the current server's config entry and persists it. No-op when not
+    /// authenticated or the server isn't saved.
+    /// </summary>
+    private void UpdateServerConfig(Action<SavedServer> mutate)
+    {
+        var url = _conn.Api?.BaseUrl;
+        if (url is null) return;
+
+        var config = ConfigManager.Load();
+        var server = config.SavedServers.FirstOrDefault(s =>
+            string.Equals(s.Url, url, StringComparison.OrdinalIgnoreCase));
+        if (server is null) return;
+
+        mutate(server);
+        ConfigManager.Save(config);
+        _config = config;
+    }
+
+    /// <summary>
+    /// Persists the in-memory last-read message ids to the current server's config entry,
+    /// so unread/mention state can be reconstructed on the next connect.
+    /// </summary>
+    private void PersistLastReads()
+    {
+        var lastReads = _messageManager.LastReadIds;
+        if (lastReads.Count == 0) return;
+
+        UpdateServerConfig(server =>
+        {
+            foreach (var (channel, id) in lastReads)
+                server.LastReadMessages[channel] = id.ToString();
+        });
     }
 
     private void ClearSavedToken(string serverUrl)

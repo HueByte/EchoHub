@@ -28,6 +28,8 @@ public sealed class ChatMessageManager
     private readonly HashSet<string> _markedChannels = [];
     private readonly Dictionary<string, Guid> _markerAnchor = [];
     private readonly HashSet<string> _mentionChannels = [];
+    private readonly Dictionary<string, Guid> _lastRead = [];
+    private readonly Dictionary<string, Guid> _channelNewestId = [];
 
     private string _currentUser = string.Empty;
     private string _currentChannel = string.Empty;
@@ -50,8 +52,10 @@ public sealed class ChatMessageManager
                 return;
 
             // Leaving a channel consumes its "new messages" marker so the next
-            // unread burst gets a fresh one (irssi behavior).
+            // unread burst gets a fresh one (irssi behavior), and everything
+            // visible up to now counts as read.
             RemoveUnreadMarker(_currentChannel);
+            MarkRead(_currentChannel);
             _currentChannel = value;
         }
     }
@@ -78,6 +82,19 @@ public sealed class ChatMessageManager
     {
         _channelUnread[channelName] = 0;
         _mentionChannels.Remove(channelName);
+        MarkRead(channelName);
+    }
+
+    /// <summary>
+    /// Last message the user has read per channel — persisted by the orchestrator so
+    /// unread/mention state can be seeded from history on the next connect.
+    /// </summary>
+    public IReadOnlyDictionary<string, Guid> LastReadIds => _lastRead;
+
+    private void MarkRead(string channelName)
+    {
+        if (!string.IsNullOrEmpty(channelName) && _channelNewestId.TryGetValue(channelName, out var newest))
+            _lastRead[channelName] = newest;
     }
 
     internal Dictionary<string, int> GetUnreadCounts() => _channelUnread;
@@ -108,6 +125,9 @@ public sealed class ChatMessageManager
         }
 
         var isCurrent = message.ChannelName == _currentChannel;
+        _channelNewestId[message.ChannelName] = message.Id;
+        if (isCurrent)
+            _lastRead[message.ChannelName] = message.Id;
 
         // First unread message in an inactive channel → "new messages" marker,
         // anchored to this message so a history reload can re-place it
@@ -213,10 +233,16 @@ public sealed class ChatMessageManager
 
     /// <summary>
     /// Load historical messages into a channel, replacing any existing messages.
+    /// When <paramref name="lastReadId"/> is given (persisted from a previous session),
+    /// messages after it seed the unread count, @mention highlight, and the
+    /// "new messages" marker — so activity that happened while offline still lights up.
     /// </summary>
-    public void LoadHistory(string channelName, List<MessageDto> messages)
+    public void LoadHistory(string channelName, List<MessageDto> messages, Guid? lastReadId = null)
     {
         var formatted = FormatWithDateRules(messages, out var lastDate);
+
+        if (messages.Count > 0)
+            _channelNewestId[channelName] = messages[^1].Id;
 
         // Re-place the "new messages" marker at its anchor — channel selection
         // reloads history, which would otherwise wipe the marker right when the
@@ -237,6 +263,10 @@ public sealed class ChatMessageManager
                 _markerAnchor.Remove(channelName);
             }
         }
+        else if (lastReadId is { } lastRead && messages.Count > 0)
+        {
+            SeedUnreadFromHistory(channelName, messages, formatted, lastRead);
+        }
 
         _channelMessages[channelName] = formatted;
 
@@ -245,8 +275,46 @@ public sealed class ChatMessageManager
         else
             _channelLastDate.Remove(channelName);
 
+        MessagesChanged?.Invoke(channelName);
+    }
+
+    /// <summary>
+    /// Reconstructs unread state from a persisted last-read message id: places the
+    /// "new messages" marker before the first unread message and, for inactive
+    /// channels, seeds the unread count and @mention highlight. A last-read id that
+    /// is no longer inside the fetched window treats the whole window as unread.
+    /// </summary>
+    private void SeedUnreadFromHistory(string channelName, List<MessageDto> messages,
+        List<ChatLine> formatted, Guid lastReadId)
+    {
+        // FindIndex miss (-1 → 0) means the last-read message is older than the fetched
+        // window: everything in the window counts as unread.
+        var firstUnread = messages.FindIndex(m => m.Id == lastReadId) + 1;
+        if (firstUnread >= messages.Count)
+            return; // everything read
+
+        var anchor = messages[firstUnread];
+        var lineIdx = formatted.FindIndex(l => l.MessageId == anchor.Id);
+        if (lineIdx < 0)
+            return;
+
+        formatted.Insert(lineIdx, UnreadMarkerRule());
+        _markedChannels.Add(channelName);
+        _markerAnchor[channelName] = anchor.Id;
+
+        // The active channel shows the marker but is being read right now —
+        // badges and mention highlights are only for background channels.
         if (channelName == _currentChannel)
-            MessagesChanged?.Invoke(channelName);
+            return;
+
+        _channelUnread[channelName] = messages.Count - firstUnread;
+
+        if (!string.IsNullOrEmpty(_currentUser))
+        {
+            var pattern = $@"@{Regex.Escape(_currentUser)}\b";
+            if (messages.Skip(firstUnread).Any(m => Regex.IsMatch(m.Content, pattern, RegexOptions.IgnoreCase)))
+                _mentionChannels.Add(channelName);
+        }
     }
 
     /// <summary>
@@ -302,6 +370,8 @@ public sealed class ChatMessageManager
         _markedChannels.Clear();
         _markerAnchor.Clear();
         _mentionChannels.Clear();
+        _lastRead.Clear();
+        _channelNewestId.Clear();
         _currentChannel = string.Empty;
         _currentUser = string.Empty;
     }

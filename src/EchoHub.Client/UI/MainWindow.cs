@@ -366,6 +366,7 @@ public sealed partial class MainWindow : Runnable
     {
         var baseScheme = SchemeManager.GetScheme("Base");
         var menuScheme = SchemeManager.GetScheme("Menu");
+        var borderScheme = SchemeManager.GetScheme("Border") ?? baseScheme;
 
         if (baseScheme is not null)
         {
@@ -376,6 +377,12 @@ public sealed partial class MainWindow : Runnable
             {
                 if (sub != _menuBar && sub != _statusLabel && sub != _topicLabel)
                     sub.SetScheme(baseScheme);
+
+                // Frame borders (and their titles) take the theme's border colors, so
+                // themes can tone them down independently of text (e.g. transparent
+                // themes use dim gray instead of eye-catching white)
+                if (sub is FrameView frame && borderScheme is not null)
+                    frame.Border?.SetScheme(borderScheme);
             }
         }
 
@@ -919,6 +926,9 @@ public sealed partial class MainWindow : Runnable
             RefreshMessages();
         else
             RefreshChannelList();
+
+        // Background-channel activity feeds the status bar's Act segment
+        _statusLabel.SetNeedsDraw();
     }
 
     private void OnHistoryPrepended(string channelName)

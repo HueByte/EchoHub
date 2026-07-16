@@ -442,6 +442,14 @@ public static class ThemeManager
             Background = "None",
             FocusForeground = "Gray",
             FocusBackground = "None"
+        },
+        // Dim, grayish borders — bright white frames fight the glassy transparent look
+        Border = new ThemeColors
+        {
+            Foreground = "#6E6E6E",
+            Background = "None",
+            FocusForeground = "#8A8A8A",
+            FocusBackground = "None"
         }
     };
 
@@ -474,6 +482,14 @@ public static class ThemeManager
             Foreground = "DarkGray",
             Background = "None",
             FocusForeground = "DarkGray",
+            FocusBackground = "None"
+        },
+        // Softer gray borders against light terminal backgrounds
+        Border = new ThemeColors
+        {
+            Foreground = "#8F8F8F",
+            Background = "None",
+            FocusForeground = "#6E6E6E",
             FocusBackground = "None"
         }
     };
@@ -546,6 +562,8 @@ public static class ThemeManager
         SchemeManager.AddScheme("Base", BuildColorScheme(theme.Base));
         SchemeManager.AddScheme("Menu", BuildColorScheme(theme.Menu));
         SchemeManager.AddScheme("Dialog", BuildColorScheme(theme.Dialog));
+        // Frame borders/titles; themes without an explicit Border section keep Base
+        SchemeManager.AddScheme("Border", BuildColorScheme(theme.Border ?? theme.Base));
     }
 
     public static void SaveTheme(Theme theme)
