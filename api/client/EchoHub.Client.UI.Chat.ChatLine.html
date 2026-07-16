@@ -341,6 +341,40 @@ Class ChatLine  <a class="header-action link-secondary" title="View source" href
 
 
 
+  <a id="EchoHub_Client_UI_Chat_ChatLine_ContinuationPrefixSegments_" data-uid="EchoHub.Client.UI.Chat.ChatLine.ContinuationPrefixSegments*"></a>
+
+  <h3 id="EchoHub_Client_UI_Chat_ChatLine_ContinuationPrefixSegments" data-uid="EchoHub.Client.UI.Chat.ChatLine.ContinuationPrefixSegments">
+  ContinuationPrefixSegments
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatLine.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Colored segments to prepend on continuation lines instead of plain spaces
+(e.g. the nick-column rail &quot;                   │ &quot;). When set, takes
+precedence over <a class="xref" href="EchoHub.Client.UI.Chat.ChatLine.html#EchoHub_Client_UI_Chat_ChatLine_ContinuationIndent">ContinuationIndent</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public List&lt;ChatSegment&gt;? ContinuationPrefixSegments { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><span class="xref">List</span>&lt;<a class="xref" href="EchoHub.Client.UI.Chat.ChatSegment.html">ChatSegment</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="EchoHub_Client_UI_Chat_ChatLine_IsMention_" data-uid="EchoHub.Client.UI.Chat.ChatLine.IsMention*"></a>
 
   <h3 id="EchoHub_Client_UI_Chat_ChatLine_IsMention" data-uid="EchoHub.Client.UI.Chat.ChatLine.IsMention">
@@ -353,6 +387,38 @@ Class ChatLine  <a class="header-action link-secondary" title="View source" href
 
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">public bool IsMention { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_Chat_ChatLine_IsUnreadMarker_" data-uid="EchoHub.Client.UI.Chat.ChatLine.IsUnreadMarker*"></a>
+
+  <h3 id="EchoHub_Client_UI_Chat_ChatLine_IsUnreadMarker" data-uid="EchoHub.Client.UI.Chat.ChatLine.IsUnreadMarker">
+  IsUnreadMarker
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatLine.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>True for the &quot;new messages&quot; unread-marker rule so it can be removed on channel switch.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsUnreadMarker { get; set; }</code></pre>
   </div>
 
 
@@ -393,6 +459,71 @@ Class ChatLine  <a class="header-action link-secondary" title="View source" href
   <h4 class="section">Property Value</h4>
   <dl class="parameters">
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.guid">Guid</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_Chat_ChatLine_RuleAttr_" data-uid="EchoHub.Client.UI.Chat.ChatLine.RuleAttr*"></a>
+
+  <h3 id="EchoHub_Client_UI_Chat_ChatLine_RuleAttr" data-uid="EchoHub.Client.UI.Chat.ChatLine.RuleAttr">
+  RuleAttr
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatLine.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Color for a rule line; null falls back to <a class="xref" href="EchoHub.Client.UI.Chat.ChatColors.html#EchoHub_Client_UI_Chat_ChatColors_DateRuleAttr">DateRuleAttr</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Attribute? RuleAttr { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Attribute</span>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_Chat_ChatLine_RuleLabel_" data-uid="EchoHub.Client.UI.Chat.ChatLine.RuleLabel*"></a>
+
+  <h3 id="EchoHub_Client_UI_Chat_ChatLine_RuleLabel" data-uid="EchoHub.Client.UI.Chat.ChatLine.RuleLabel">
+  RuleLabel
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatLine.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>When set, this line is a horizontal separator rule (date change, unread marker).
+The view regenerates it to the current viewport width instead of word-wrapping.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? RuleLabel { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 

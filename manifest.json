@@ -782,20 +782,6 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.UpdateProgressDialog.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/client/EchoHub.Client.UI.Dialogs.UpdateProgressDialog.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "EchoHub.Client.UI.Dialogs.UpdateProgressDialog",
-      "Summary": null
-    },
-    {
-      "type": "ManagedReference",
       "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Dialogs.yml",
       "output": {
         ".html": {
@@ -849,6 +835,20 @@
       "IsMRef": true,
       "Title": "EchoHub.Client.UI.Helpers.HexColorHelper",
       "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Helpers.HexColorHelper.yml\" sourcestartlinenumber=\"1\">Helper to parse hex colors to Terminal.Gui Attributes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Helpers.NickColorHelper.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Helpers.NickColorHelper.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Helpers.NickColorHelper",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Helpers.NickColorHelper.yml\" sourcestartlinenumber=\"1\">Deterministic per-nick colors for users who haven't picked a nickname color.\nThe same nick always maps to the same palette entry (classic IRC client behavior),\nso a busy channel stays scannable without any configuration.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -1241,6 +1241,20 @@
       "IsMRef": true,
       "Title": "EchoHub.Core.DTOs.ChannelError",
       "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.ChannelMetaDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.ChannelMetaDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.ChannelMetaDto",
+      "Summary": "<p sourcefile=\"_api_meta/core/EchoHub.Core.DTOs.ChannelMetaDto.yml\" sourcestartlinenumber=\"1\">Human-facing summary of a channel (the <code>/meta</code> command). For encrypted channels the\nserver still knows these figures — count, timestamps, and stored blob sizes — even though it\ncannot read the content itself. <xref href=\"EchoHub.Core.DTOs.ChannelMetaDto.EstimatedSizeBytes\" data-throw-if-not-resolved=\"false\"></xref> is the sum of stored\nattachment blob sizes plus message text length, so it is an estimate, not an exact on-disk total.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -2028,6 +2042,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Config.UploadLimits.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Config.UploadLimits.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Config.UploadLimits",
+      "Summary": "<p sourcefile=\"_api_meta/server/EchoHub.Server.Config.UploadLimits.yml\" sourcestartlinenumber=\"1\">Admin-configurable upload limits, bound from the <code>Uploads</code> configuration section.\nSizes are expressed in megabytes in configuration; the <code>*Bytes</code> accessors convert them\nfor enforcement. Every default mirrors <xref href=\"EchoHub.Core.Constants.HubConstants\" data-throw-if-not-resolved=\"false\"></xref> so an absent or partial\n<code>Uploads</code> section preserves the historical built-in limits.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Config.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Config.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Config",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/server/EchoHub.Server.Controllers.AuthController.yml",
       "output": {
         ".html": {
@@ -2710,6 +2752,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "articles/encrypted-rooms.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/encrypted-rooms.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "articles/encryption.md",
       "output": {
         ".html": {
@@ -2840,6 +2892,16 @@
       "output": {
         ".html": {
           "relative_path": "changelog/v0.2.12.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "changelog/v0.2.13.md",
+      "output": {
+        ".html": {
+          "relative_path": "changelog/v0.2.13.html"
         }
       },
       "version": ""

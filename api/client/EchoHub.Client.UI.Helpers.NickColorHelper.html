@@ -2,11 +2,11 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Class UpdateProgressDialog | EchoHub Documentation </title>
+      <title>Class NickColorHelper | EchoHub Documentation </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Class UpdateProgressDialog | EchoHub Documentation ">
+      <meta name="title" content="Class NickColorHelper | EchoHub Documentation ">
       
-      
+      <meta name="description" content="Deterministic per-nick colors for users who haven&#39;t picked a nickname color. The same nick always maps to the same palette entry (classic IRC client behavior), so a busy channel stays scannable without any configuration.">
       <link rel="icon" href="../../images/hue_icon.svg">
       <link rel="stylesheet" href="../../public/docfx.min.css">
       <link rel="stylesheet" href="../../public/main.css">
@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/new/master/apiSpec/new?filename=EchoHub_Client_UI_Dialogs_UpdateProgressDialog.md&amp;value=---%0Auid%3A%20EchoHub.Client.UI.Dialogs.UpdateProgressDialog%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/new/master/apiSpec/new?filename=EchoHub_Client_UI_Helpers_NickColorHelper.md&amp;value=---%0Auid%3A%20EchoHub.Client.UI.Helpers.NickColorHelper%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -84,24 +84,27 @@
           <nav id="breadcrumb"></nav>
         </div>
 
-        <article data-uid="EchoHub.Client.UI.Dialogs.UpdateProgressDialog">
+        <article data-uid="EchoHub.Client.UI.Helpers.NickColorHelper">
 
 
 
-  <h1 id="EchoHub_Client_UI_Dialogs_UpdateProgressDialog" data-uid="EchoHub.Client.UI.Dialogs.UpdateProgressDialog" class="text-break">
-Class UpdateProgressDialog  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Dialogs/UpdateProgressDialog.cs"><i class="bi bi-code-slash"></i></a>
+  <h1 id="EchoHub_Client_UI_Helpers_NickColorHelper" data-uid="EchoHub.Client.UI.Helpers.NickColorHelper" class="text-break">
+Class NickColorHelper  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Helpers/NickColorHelper.cs"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
-    <dl><dt>Namespace</dt><dd><a class="xref" href="EchoHub.html">EchoHub</a>.<a class="xref" href="EchoHub.Client.html">Client</a>.<a class="xref" href="EchoHub.Client.UI.html">UI</a>.<a class="xref" href="EchoHub.Client.UI.Dialogs.html">Dialogs</a></dd></dl>
+    <dl><dt>Namespace</dt><dd><a class="xref" href="EchoHub.html">EchoHub</a>.<a class="xref" href="EchoHub.Client.html">Client</a>.<a class="xref" href="EchoHub.Client.UI.html">UI</a>.<a class="xref" href="EchoHub.Client.UI.Helpers.html">Helpers</a></dd></dl>
   <dl><dt>Assembly</dt><dd>EchoHub.Client.dll</dd></dl>
   </div>
 
-  <div class="markdown summary"></div>
+  <div class="markdown summary"><p>Deterministic per-nick colors for users who haven't picked a nickname color.
+The same nick always maps to the same palette entry (classic IRC client behavior),
+so a busy channel stays scannable without any configuration.</p>
+</div>
   <div class="markdown conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public sealed class UpdateProgressDialog</code></pre>
+    <pre><code class="lang-csharp hljs">public static class NickColorHelper</code></pre>
   </div>
 
 
@@ -111,7 +114,7 @@ Class UpdateProgressDialog  <a class="header-action link-secondary" title="View 
     <dt>Inheritance</dt>
     <dd>
       <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
-      <div><span class="xref">UpdateProgressDialog</span></div>
+      <div><span class="xref">NickColorHelper</span></div>
     </dd>
   </dl>
 
@@ -122,6 +125,9 @@ Class UpdateProgressDialog  <a class="header-action link-secondary" title="View 
     <dd>
     <div>
       <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
     </div>
     <div>
       <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
@@ -145,121 +151,78 @@ Class UpdateProgressDialog  <a class="header-action link-secondary" title="View 
 
 
 
-  <h2 class="section" id="constructors">Constructors
-</h2>
-
-
-  <a id="EchoHub_Client_UI_Dialogs_UpdateProgressDialog__ctor_" data-uid="EchoHub.Client.UI.Dialogs.UpdateProgressDialog.#ctor*"></a>
-
-  <h3 id="EchoHub_Client_UI_Dialogs_UpdateProgressDialog__ctor_Terminal_Gui_App_IApplication_System_String_" data-uid="EchoHub.Client.UI.Dialogs.UpdateProgressDialog.#ctor(Terminal.Gui.App.IApplication,System.String)">
-  UpdateProgressDialog(IApplication, string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Dialogs/UpdateProgressDialog.cs"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"></div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public UpdateProgressDialog(IApplication app, string newVersion)</code></pre>
-  </div>
-
-  <h4 class="section">Parameters</h4>
-  <dl class="parameters">
-    <dt><code>app</code> <span class="xref">IApplication</span></dt>
-    <dd></dd>
-    <dt><code>newVersion</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
-
-
-
-
   <h2 class="section" id="methods">Methods
 </h2>
 
 
-  <a id="EchoHub_Client_UI_Dialogs_UpdateProgressDialog_Close_" data-uid="EchoHub.Client.UI.Dialogs.UpdateProgressDialog.Close*"></a>
+  <a id="EchoHub_Client_UI_Helpers_NickColorHelper_GetAttribute_" data-uid="EchoHub.Client.UI.Helpers.NickColorHelper.GetAttribute*"></a>
 
-  <h3 id="EchoHub_Client_UI_Dialogs_UpdateProgressDialog_Close" data-uid="EchoHub.Client.UI.Dialogs.UpdateProgressDialog.Close">
-  Close()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Dialogs/UpdateProgressDialog.cs"><i class="bi bi-code-slash"></i></a>
+  <h3 id="EchoHub_Client_UI_Helpers_NickColorHelper_GetAttribute_System_String_" data-uid="EchoHub.Client.UI.Helpers.NickColorHelper.GetAttribute(System.String)">
+  GetAttribute(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Helpers/NickColorHelper.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 summary"><p>The color attribute for a nick. Used as a fallback when the user has no
+explicit nickname color set.</p>
+</div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public void Close()</code></pre>
-  </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-  <a id="EchoHub_Client_UI_Dialogs_UpdateProgressDialog_Show_" data-uid="EchoHub.Client.UI.Dialogs.UpdateProgressDialog.Show*"></a>
-
-  <h3 id="EchoHub_Client_UI_Dialogs_UpdateProgressDialog_Show" data-uid="EchoHub.Client.UI.Dialogs.UpdateProgressDialog.Show">
-  Show()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Dialogs/UpdateProgressDialog.cs"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"></div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public void Show()</code></pre>
-  </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-  <a id="EchoHub_Client_UI_Dialogs_UpdateProgressDialog_UpdateProgress_" data-uid="EchoHub.Client.UI.Dialogs.UpdateProgressDialog.UpdateProgress*"></a>
-
-  <h3 id="EchoHub_Client_UI_Dialogs_UpdateProgressDialog_UpdateProgress_System_Single_System_String_" data-uid="EchoHub.Client.UI.Dialogs.UpdateProgressDialog.UpdateProgress(System.Single,System.String)">
-  UpdateProgress(float, string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Dialogs/UpdateProgressDialog.cs"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"></div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public void UpdateProgress(float fraction, string statusText)</code></pre>
+    <pre><code class="lang-csharp hljs">public static Attribute GetAttribute(string nick)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
-    <dt><code>fraction</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
-    <dd></dd>
-    <dt><code>statusText</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dt><code>nick</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Attribute</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_Helpers_NickColorHelper_GetPaletteIndex_" data-uid="EchoHub.Client.UI.Helpers.NickColorHelper.GetPaletteIndex*"></a>
+
+  <h3 id="EchoHub_Client_UI_Helpers_NickColorHelper_GetPaletteIndex_System_String_System_Int32_" data-uid="EchoHub.Client.UI.Helpers.NickColorHelper.GetPaletteIndex(System.String,System.Int32)">
+  GetPaletteIndex(string, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Helpers/NickColorHelper.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Stable palette index for a nick: case-insensitive FNV-1a over the nick,
+reduced modulo <code class="paramref">paletteSize</code>. Pure function (no Terminal.Gui
+types) so it is unit-testable without a display driver.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static int GetPaletteIndex(string nick, int paletteSize)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>nick</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>paletteSize</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
 
 
 
@@ -275,7 +238,7 @@ Class UpdateProgressDialog  <a class="header-action link-secondary" title="View 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Dialogs/UpdateProgressDialog.cs" class="edit-link">Edit this page</a>
+          <a href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Helpers/NickColorHelper.cs" class="edit-link">Edit this page</a>
         </div>
 
 

@@ -178,6 +178,72 @@ so the UI layer can refresh.</p>
 
 
 
+  <h2 class="section" id="fields">Fields
+</h2>
+
+
+
+  <h3 id="EchoHub_Client_UI_Chat_ChatMessageManager_ContentIndentCols" data-uid="EchoHub.Client.UI.Chat.ChatMessageManager.ContentIndentCols">
+  ContentIndentCols
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatMessageManager.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Columns before message text starts: &quot;HH:mm &quot; + nick column + &quot; │ &quot;.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const int ContentIndentCols = 21</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="EchoHub_Client_UI_Chat_ChatMessageManager_NickColWidth" data-uid="EchoHub.Client.UI.Chat.ChatMessageManager.NickColWidth">
+  NickColWidth
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatMessageManager.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Columns reserved for the right-aligned nick column (WeeChat-style).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const int NickColWidth = 12</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
   <h2 class="section" id="properties">Properties
 </h2>
 
@@ -235,6 +301,71 @@ so the UI layer can refresh.</p>
   <h4 class="section">Property Value</h4>
   <dl class="parameters">
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_Chat_ChatMessageManager_LastReadIds_" data-uid="EchoHub.Client.UI.Chat.ChatMessageManager.LastReadIds*"></a>
+
+  <h3 id="EchoHub_Client_UI_Chat_ChatMessageManager_LastReadIds" data-uid="EchoHub.Client.UI.Chat.ChatMessageManager.LastReadIds">
+  LastReadIds
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatMessageManager.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Last message the user has read per channel — persisted by the orchestrator so
+unread/mention state can be seeded from history on the next connect.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyDictionary&lt;string, Guid&gt; LastReadIds { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><span class="xref">IReadOnlyDictionary</span>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.guid">Guid</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_Chat_ChatMessageManager_MentionChannels_" data-uid="EchoHub.Client.UI.Chat.ChatMessageManager.MentionChannels*"></a>
+
+  <h3 id="EchoHub_Client_UI_Chat_ChatMessageManager_MentionChannels" data-uid="EchoHub.Client.UI.Chat.ChatMessageManager.MentionChannels">
+  MentionChannels
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatMessageManager.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Channels with an unread @mention of the current user (cleared by <a class="xref" href="EchoHub.Client.UI.Chat.ChatMessageManager.html#EchoHub_Client_UI_Chat_ChatMessageManager_ClearUnread_System_String_">ClearUnread(string)</a>).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlySet&lt;string&gt; MentionChannels { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><span class="xref">IReadOnlySet</span>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
     <dd></dd>
   </dl>
 
@@ -515,17 +646,20 @@ so the UI layer can refresh.</p>
 
   <a id="EchoHub_Client_UI_Chat_ChatMessageManager_LoadHistory_" data-uid="EchoHub.Client.UI.Chat.ChatMessageManager.LoadHistory*"></a>
 
-  <h3 id="EchoHub_Client_UI_Chat_ChatMessageManager_LoadHistory_System_String_System_Collections_Generic_List_EchoHub_Core_DTOs_MessageDto__" data-uid="EchoHub.Client.UI.Chat.ChatMessageManager.LoadHistory(System.String,System.Collections.Generic.List{EchoHub.Core.DTOs.MessageDto})">
-  LoadHistory(string, List&lt;MessageDto&gt;)
+  <h3 id="EchoHub_Client_UI_Chat_ChatMessageManager_LoadHistory_System_String_System_Collections_Generic_List_EchoHub_Core_DTOs_MessageDto__System_Nullable_System_Guid__" data-uid="EchoHub.Client.UI.Chat.ChatMessageManager.LoadHistory(System.String,System.Collections.Generic.List{EchoHub.Core.DTOs.MessageDto},System.Nullable{System.Guid})">
+  LoadHistory(string, List&lt;MessageDto&gt;, Guid?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Chat/ChatMessageManager.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Load historical messages into a channel, replacing any existing messages.</p>
+  <div class="markdown level1 summary"><p>Load historical messages into a channel, replacing any existing messages.
+When <code class="paramref">lastReadId</code> is given (persisted from a previous session),
+messages after it seed the unread count, @mention highlight, and the
+&quot;new messages&quot; marker — so activity that happened while offline still lights up.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public void LoadHistory(string channelName, List&lt;MessageDto&gt; messages)</code></pre>
+    <pre><code class="lang-csharp hljs">public void LoadHistory(string channelName, List&lt;MessageDto&gt; messages, Guid? lastReadId = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -533,6 +667,8 @@ so the UI layer can refresh.</p>
     <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>messages</code> <span class="xref">List</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs">MessageDto</a>&gt;</dt>
+    <dd></dd>
+    <dt><code>lastReadId</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.guid">Guid</a>?</dt>
     <dd></dd>
   </dl>
 

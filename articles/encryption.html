@@ -197,7 +197,7 @@
 <h3 id="limitations">Limitations</h3>
 <ul>
 <li><strong>TLS-inspecting proxies</strong> — if a corporate proxy terminates TLS with a trusted root CA, it can intercept the key exchange (<code>GET /api/server/encryption-key</code>) and read all traffic. A future upgrade to ECDH key exchange would address this.</li>
-<li><strong>Server has full access</strong> — the server decrypts all messages for processing. This is not end-to-end encryption between users; it's transport encryption between client and server.</li>
+<li><strong>Server has full access</strong> — the server decrypts all messages for processing. This is not end-to-end encryption between users; it's transport encryption between client and server. For true end-to-end encryption where the server cannot read content, use <a href="encrypted-rooms.html">encrypted rooms</a>.</li>
 <li><strong>IRC clients receive plaintext</strong> — IRC is an open protocol and third-party clients cannot participate in the encryption scheme.</li>
 </ul>
 <h2 id="troubleshooting">Troubleshooting</h2>

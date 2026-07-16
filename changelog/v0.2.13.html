@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>v0.2.13 | EchoHub Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="v0.2.13 | EchoHub Documentation ">
+      
+      
+      <link rel="icon" href="../images/hue_icon.svg">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/blob/master/docs/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/hue_icon.svg" alt="EchoHub">
+            EchoHub
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="v0213">v0.2.13</h1>
+
+<p>A visual overhaul of the chat client — WeeChat-style column layout, per-user nick colors, date rules, unread markers, an activity status segment, and an ASCII welcome banner — plus reliable cross-channel notifications: the client now joins all your channels at connect so unread counts and @mentions light up everywhere, and read positions persist across restarts so activity that happened while you were offline still shows. Modern polish, old IRC soul.</p>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><strong>Aligned message layout (WeeChat-style)</strong> — every message renders as <code>HH:mm  nickname │ text</code>: a dim timestamp, the nick right-aligned in a fixed 12-column gutter, and a dim <code>│</code> rail separating names from content. Word-wrapped continuation lines, multi-line messages, attachments, ASCII-art image previews, and link embeds all align under the text column and extend the rail, so conversations read as a clean two-column grid. Over-long nicks are truncated with <code>…</code> in the gutter only — profiles, mentions, and the users panel always use the full name. System and status lines (<code>joined</code>, <code>is now Away</code>, …) show <code>--</code> in the nick column, replacing the old <code>**</code> prefix.</li>
+<li><strong>Deterministic nickname colors</strong> — users who haven't picked a <code>/color</code> now get an automatic, stable color derived from their nick (12-entry palette chosen to stay readable on dark and light backgrounds). The same user is the same color in message headers and the online-users panel, on every client, every session. An explicitly chosen nickname color still takes priority.</li>
+<li><strong>Date separator rules</strong> — a full-width <code>── Wed, Jul 16 2026 ─────</code> rule is inserted whenever the calendar day changes (live, in loaded history, and when scrolling back through older messages). Timestamps are now a compact <code>HH:mm</code> — the date lives in the rules instead of being repeated on every line.</li>
+<li><strong>&quot;New messages&quot; marker</strong> — the first message that arrives in a channel you're not viewing gets an orange <code>── new messages ──</code> rule above it (irssi-style). Switch to the channel and the marker shows exactly where you left off; it survives the history reload on channel switch and is consumed when you move away again.</li>
+<li><strong>Status bar activity segment</strong> — channels with unread messages appear in the status bar as <code>│ Act: #dev,#random</code> (up to 4, <code>+n</code> overflow). Channels where you were @mentioned show in orange, others in cyan.</li>
+<li><strong>Connecting spinner</strong> — transitional connection states (Connecting, Reconnecting, Authenticating…) now animate a braille spinner in the status bar instead of sitting on static text.</li>
+<li><strong>Mention-aware channel list</strong> — a channel where you were @mentioned turns orange in the channel list (name and unread badge), escalating above the cyan plain-unread highlight. The highlight clears when you view the channel.</li>
+<li><strong>Welcome banner</strong> — with no channel selected (fresh start, or after disconnecting) the chat pane shows a gold-gradient ASCII &quot;ECHOHUB&quot; logo with the version and key hints, instead of an empty box. Narrow panes get a compact variant.</li>
+<li><strong>Rounded frame borders</strong> — the channels, chat, input, and users panels draw with rounded corners.</li>
+<li><strong>Auto-join all channels at connect</strong> — the client now joins every channel it lists for you (public channels and prior memberships) as part of connecting, so message events flow for all of them: unread badges, @mention highlights, and the status-bar activity segment work without having to open each channel first. Protected channels you've never entered are skipped silently (joining them stays a prompted, manual action), and channels you <code>/leave</code> are remembered and excluded until you join them again.</li>
+<li><strong>Read positions survive restarts</strong> — the client persists the last message you read per channel (locally, per server). On the next connect it compares that against fetched history, so messages that arrived while you were offline still produce unread counts, mention highlights, and a correctly placed &quot;new messages&quot; marker.</li>
+<li><strong>Theme-tinted frame borders</strong> — themes can now color the window frame borders independently of text via a new optional <code>border</code> section (hex values supported). The Transparent and TransparentLight themes use it to draw dim gray borders instead of stark white ones, for a subtler, glassier look. Custom theme JSON files without a <code>border</code> section keep their base colors.</li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li>The @mention highlight no longer drops off the second and later lines of a long mention message — wrapped continuation lines now inherit the highlight.</li>
+<li>The unread-position marker is re-anchored after a channel switch reloads history, instead of being wiped by the reload before you could see it.</li>
+<li>Cached room keys for end-to-end encrypted channels no longer disappear from the config on reconnect. Saving the server entry after a successful connect replaced it wholesale, wiping the cached keys (and forcing a passphrase re-entry on the next launch); the entry is now updated in place.</li>
+<li>A failed channel rejoin after a reconnect (e.g. a channel deleted while you were away) no longer aborts rejoining the remaining channels.</li>
+<li>Client config file access is now serialized across threads (token refresh, room-key cache, and read-position checkpoints all write it), preventing rare config corruption.</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/HueByte/EchoHub/blob/master/docs/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a></div></div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -159,8 +159,8 @@ public class UsersController : ControllerBase</code></pre>
 
   <a id="EchoHub_Server_Controllers_UsersController__ctor_" data-uid="EchoHub.Server.Controllers.UsersController.#ctor*"></a>
 
-  <h3 id="EchoHub_Server_Controllers_UsersController__ctor_EchoHub_Core_Contracts_IUserService_EchoHub_Core_Services_ImageToAsciiService_" data-uid="EchoHub.Server.Controllers.UsersController.#ctor(EchoHub.Core.Contracts.IUserService,EchoHub.Core.Services.ImageToAsciiService)">
-  UsersController(IUserService, ImageToAsciiService)
+  <h3 id="EchoHub_Server_Controllers_UsersController__ctor_EchoHub_Core_Contracts_IUserService_EchoHub_Core_Services_ImageToAsciiService_EchoHub_Server_Config_UploadLimits_" data-uid="EchoHub.Server.Controllers.UsersController.#ctor(EchoHub.Core.Contracts.IUserService,EchoHub.Core.Services.ImageToAsciiService,EchoHub.Server.Config.UploadLimits)">
+  UsersController(IUserService, ImageToAsciiService, UploadLimits)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/UsersController.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -168,7 +168,7 @@ public class UsersController : ControllerBase</code></pre>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public UsersController(IUserService userService, ImageToAsciiService asciiService)</code></pre>
+    <pre><code class="lang-csharp hljs">public UsersController(IUserService userService, ImageToAsciiService asciiService, UploadLimits uploadLimits)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -176,6 +176,8 @@ public class UsersController : ControllerBase</code></pre>
     <dt><code>userService</code> <a class="xref" href="../core/EchoHub.Core.Contracts.IUserService.html">IUserService</a></dt>
     <dd></dd>
     <dt><code>asciiService</code> <a class="xref" href="../core/EchoHub.Core.Services.ImageToAsciiService.html">ImageToAsciiService</a></dt>
+    <dd></dd>
+    <dt><code>uploadLimits</code> <a class="xref" href="EchoHub.Server.Config.UploadLimits.html">UploadLimits</a></dt>
     <dd></dd>
   </dl>
 

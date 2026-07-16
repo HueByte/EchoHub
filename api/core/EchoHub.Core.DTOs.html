@@ -132,6 +132,14 @@ credential from a passphrase. Never includes the wrapped room key.</p>
       <dd></dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Core.DTOs.ChannelMetaDto.html">ChannelMetaDto</a></dt>
+      <dd><p>Human-facing summary of a channel (the <code>/meta</code> command). For encrypted channels the
+server still knows these figures — count, timestamps, and stored blob sizes — even though it
+cannot read the content itself. <a class="xref" href="EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_EstimatedSizeBytes">EstimatedSizeBytes</a> is the sum of stored
+attachment blob sizes plus message text length, so it is an estimate, not an exact on-disk total.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Core.DTOs.ChannelOperationResult.html">ChannelOperationResult</a></dt>
       <dd></dd>
     </dl>

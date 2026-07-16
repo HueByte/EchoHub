@@ -159,8 +159,8 @@ public class ChannelsController : ControllerBase</code></pre>
 
   <a id="EchoHub_Server_Controllers_ChannelsController__ctor_" data-uid="EchoHub.Server.Controllers.ChannelsController.#ctor*"></a>
 
-  <h3 id="EchoHub_Server_Controllers_ChannelsController__ctor_EchoHub_Core_Contracts_IChannelService_EchoHub_Server_Data_EchoHubDbContext_EchoHub_Server_Services_FileStorageService_EchoHub_Core_Services_ImageToAsciiService_System_Net_Http_IHttpClientFactory_EchoHub_Core_Contracts_IChatService_EchoHub_Core_Contracts_IMessageEncryptionService_" data-uid="EchoHub.Server.Controllers.ChannelsController.#ctor(EchoHub.Core.Contracts.IChannelService,EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Services.FileStorageService,EchoHub.Core.Services.ImageToAsciiService,System.Net.Http.IHttpClientFactory,EchoHub.Core.Contracts.IChatService,EchoHub.Core.Contracts.IMessageEncryptionService)">
-  ChannelsController(IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService)
+  <h3 id="EchoHub_Server_Controllers_ChannelsController__ctor_EchoHub_Core_Contracts_IChannelService_EchoHub_Server_Data_EchoHubDbContext_EchoHub_Server_Services_FileStorageService_EchoHub_Core_Services_ImageToAsciiService_System_Net_Http_IHttpClientFactory_EchoHub_Core_Contracts_IChatService_EchoHub_Core_Contracts_IMessageEncryptionService_EchoHub_Server_Config_UploadLimits_" data-uid="EchoHub.Server.Controllers.ChannelsController.#ctor(EchoHub.Core.Contracts.IChannelService,EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Services.FileStorageService,EchoHub.Core.Services.ImageToAsciiService,System.Net.Http.IHttpClientFactory,EchoHub.Core.Contracts.IChatService,EchoHub.Core.Contracts.IMessageEncryptionService,EchoHub.Server.Config.UploadLimits)">
+  ChannelsController(IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService, UploadLimits)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/ChannelsController.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -168,7 +168,7 @@ public class ChannelsController : ControllerBase</code></pre>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public ChannelsController(IChannelService channelService, EchoHubDbContext db, FileStorageService fileStorage, ImageToAsciiService asciiService, IHttpClientFactory httpClientFactory, IChatService chatService, IMessageEncryptionService encryption)</code></pre>
+    <pre><code class="lang-csharp hljs">public ChannelsController(IChannelService channelService, EchoHubDbContext db, FileStorageService fileStorage, ImageToAsciiService asciiService, IHttpClientFactory httpClientFactory, IChatService chatService, IMessageEncryptionService encryption, UploadLimits uploadLimits)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -186,6 +186,8 @@ public class ChannelsController : ControllerBase</code></pre>
     <dt><code>chatService</code> <a class="xref" href="../core/EchoHub.Core.Contracts.IChatService.html">IChatService</a></dt>
     <dd></dd>
     <dt><code>encryption</code> <a class="xref" href="../core/EchoHub.Core.Contracts.IMessageEncryptionService.html">IMessageEncryptionService</a></dt>
+    <dd></dd>
+    <dt><code>uploadLimits</code> <a class="xref" href="EchoHub.Server.Config.UploadLimits.html">UploadLimits</a></dt>
     <dd></dd>
   </dl>
 
@@ -318,6 +320,46 @@ public Task&lt;IActionResult&gt; GetChannelCrypto(string channel)</code></pre>
 
 
 
+  <a id="EchoHub_Server_Controllers_ChannelsController_GetChannelMeta_" data-uid="EchoHub.Server.Controllers.ChannelsController.GetChannelMeta*"></a>
+
+  <h3 id="EchoHub_Server_Controllers_ChannelsController_GetChannelMeta_System_String_" data-uid="EchoHub.Server.Controllers.ChannelsController.GetChannelMeta(System.String)">
+  GetChannelMeta(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/ChannelsController.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Human-facing summary of a channel (message count, unique posters, estimated size,
+created date, room id). Available for encrypted channels too — these are metadata the
+server tracks even though it cannot read the messages themselves.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[HttpGet(&quot;{channel}/meta&quot;)]
+public Task&lt;IActionResult&gt; GetChannelMeta(string channel)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channel</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span>&lt;<span class="xref">IActionResult</span>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
   <a id="EchoHub_Server_Controllers_ChannelsController_GetChannels_" data-uid="EchoHub.Server.Controllers.ChannelsController.GetChannels*"></a>
 
   <h3 id="EchoHub_Server_Controllers_ChannelsController_GetChannels_System_Int32_System_Int32_" data-uid="EchoHub.Server.Controllers.ChannelsController.GetChannels(System.Int32,System.Int32)">
@@ -417,8 +459,6 @@ room-encrypted preview (<code>preview</code>), aligned by file order — the ser
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">[HttpPost(&quot;{channel}/messages&quot;)]
 [EnableRateLimiting(&quot;upload&quot;)]
-[RequestSizeLimit(1048576000)]
-[RequestFormLimits(MultipartBodyLengthLimit = 1048576000)]
 public Task&lt;IActionResult&gt; SendMessageWithAttachments(string channel, string? size = null)</code></pre>
   </div>
 

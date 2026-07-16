@@ -55,6 +55,18 @@ references:
   commentId: Overload:EchoHub.Client.AppOrchestrator.MainWindow
   fullName: EchoHub.Client.AppOrchestrator.MainWindow
   nameWithType: AppOrchestrator.MainWindow
+- uid: EchoHub.Client.AppOrchestrator.PendingUpdate
+  name: PendingUpdate
+  href: api/client/EchoHub.Client.AppOrchestrator.html#EchoHub_Client_AppOrchestrator_PendingUpdate
+  commentId: P:EchoHub.Client.AppOrchestrator.PendingUpdate
+  fullName: EchoHub.Client.AppOrchestrator.PendingUpdate
+  nameWithType: AppOrchestrator.PendingUpdate
+- uid: EchoHub.Client.AppOrchestrator.PendingUpdate*
+  name: PendingUpdate
+  href: api/client/EchoHub.Client.AppOrchestrator.html#EchoHub_Client_AppOrchestrator_PendingUpdate_
+  commentId: Overload:EchoHub.Client.AppOrchestrator.PendingUpdate
+  fullName: EchoHub.Client.AppOrchestrator.PendingUpdate
+  nameWithType: AppOrchestrator.PendingUpdate
 - uid: EchoHub.Client.Commands
   name: EchoHub.Client.Commands
   href: api/client/EchoHub.Client.Commands.html
@@ -199,6 +211,12 @@ references:
   commentId: E:EchoHub.Client.Commands.CommandHandler.OnQuit
   fullName: EchoHub.Client.Commands.CommandHandler.OnQuit
   nameWithType: CommandHandler.OnQuit
+- uid: EchoHub.Client.Commands.CommandHandler.OnRoomInfo
+  name: OnRoomInfo
+  href: api/client/EchoHub.Client.Commands.CommandHandler.html#EchoHub_Client_Commands_CommandHandler_OnRoomInfo
+  commentId: E:EchoHub.Client.Commands.CommandHandler.OnRoomInfo
+  fullName: EchoHub.Client.Commands.CommandHandler.OnRoomInfo
+  nameWithType: CommandHandler.OnRoomInfo
 - uid: EchoHub.Client.Commands.CommandHandler.OnSendFile
   name: OnSendFile
   href: api/client/EchoHub.Client.Commands.CommandHandler.html#EchoHub_Client_Commands_CommandHandler_OnSendFile
@@ -790,6 +808,30 @@ references:
   commentId: Overload:EchoHub.Client.Config.SavedServer.LastConnected
   fullName: EchoHub.Client.Config.SavedServer.LastConnected
   nameWithType: SavedServer.LastConnected
+- uid: EchoHub.Client.Config.SavedServer.LastReadMessages
+  name: LastReadMessages
+  href: api/client/EchoHub.Client.Config.SavedServer.html#EchoHub_Client_Config_SavedServer_LastReadMessages
+  commentId: P:EchoHub.Client.Config.SavedServer.LastReadMessages
+  fullName: EchoHub.Client.Config.SavedServer.LastReadMessages
+  nameWithType: SavedServer.LastReadMessages
+- uid: EchoHub.Client.Config.SavedServer.LastReadMessages*
+  name: LastReadMessages
+  href: api/client/EchoHub.Client.Config.SavedServer.html#EchoHub_Client_Config_SavedServer_LastReadMessages_
+  commentId: Overload:EchoHub.Client.Config.SavedServer.LastReadMessages
+  fullName: EchoHub.Client.Config.SavedServer.LastReadMessages
+  nameWithType: SavedServer.LastReadMessages
+- uid: EchoHub.Client.Config.SavedServer.LeftChannels
+  name: LeftChannels
+  href: api/client/EchoHub.Client.Config.SavedServer.html#EchoHub_Client_Config_SavedServer_LeftChannels
+  commentId: P:EchoHub.Client.Config.SavedServer.LeftChannels
+  fullName: EchoHub.Client.Config.SavedServer.LeftChannels
+  nameWithType: SavedServer.LeftChannels
+- uid: EchoHub.Client.Config.SavedServer.LeftChannels*
+  name: LeftChannels
+  href: api/client/EchoHub.Client.Config.SavedServer.html#EchoHub_Client_Config_SavedServer_LeftChannels_
+  commentId: Overload:EchoHub.Client.Config.SavedServer.LeftChannels
+  fullName: EchoHub.Client.Config.SavedServer.LeftChannels
+  nameWithType: SavedServer.LeftChannels
 - uid: EchoHub.Client.Config.SavedServer.Name
   name: Name
   href: api/client/EchoHub.Client.Config.SavedServer.html#EchoHub_Client_Config_SavedServer_Name
@@ -1006,6 +1048,21 @@ references:
   commentId: Overload:EchoHub.Client.Services.ApiClient.GetChannelCryptoAsync
   fullName: EchoHub.Client.Services.ApiClient.GetChannelCryptoAsync
   nameWithType: ApiClient.GetChannelCryptoAsync
+- uid: EchoHub.Client.Services.ApiClient.GetChannelMetaAsync(System.String)
+  name: GetChannelMetaAsync(string)
+  href: api/client/EchoHub.Client.Services.ApiClient.html#EchoHub_Client_Services_ApiClient_GetChannelMetaAsync_System_String_
+  commentId: M:EchoHub.Client.Services.ApiClient.GetChannelMetaAsync(System.String)
+  name.vb: GetChannelMetaAsync(String)
+  fullName: EchoHub.Client.Services.ApiClient.GetChannelMetaAsync(string)
+  fullName.vb: EchoHub.Client.Services.ApiClient.GetChannelMetaAsync(String)
+  nameWithType: ApiClient.GetChannelMetaAsync(string)
+  nameWithType.vb: ApiClient.GetChannelMetaAsync(String)
+- uid: EchoHub.Client.Services.ApiClient.GetChannelMetaAsync*
+  name: GetChannelMetaAsync
+  href: api/client/EchoHub.Client.Services.ApiClient.html#EchoHub_Client_Services_ApiClient_GetChannelMetaAsync_
+  commentId: Overload:EchoHub.Client.Services.ApiClient.GetChannelMetaAsync
+  fullName: EchoHub.Client.Services.ApiClient.GetChannelMetaAsync
+  nameWithType: ApiClient.GetChannelMetaAsync
 - uid: EchoHub.Client.Services.ApiClient.GetChannelsAsync
   name: GetChannelsAsync()
   href: api/client/EchoHub.Client.Services.ApiClient.html#EchoHub_Client_Services_ApiClient_GetChannelsAsync
@@ -2956,6 +3013,18 @@ references:
   commentId: Overload:EchoHub.Client.Services.UpdateChecker.Dispose
   fullName: EchoHub.Client.Services.UpdateChecker.Dispose
   nameWithType: UpdateChecker.Dispose
+- uid: EchoHub.Client.Services.UpdateChecker.PendingUpdate
+  name: PendingUpdate
+  href: api/client/EchoHub.Client.Services.UpdateChecker.html#EchoHub_Client_Services_UpdateChecker_PendingUpdate
+  commentId: P:EchoHub.Client.Services.UpdateChecker.PendingUpdate
+  fullName: EchoHub.Client.Services.UpdateChecker.PendingUpdate
+  nameWithType: UpdateChecker.PendingUpdate
+- uid: EchoHub.Client.Services.UpdateChecker.PendingUpdate*
+  name: PendingUpdate
+  href: api/client/EchoHub.Client.Services.UpdateChecker.html#EchoHub_Client_Services_UpdateChecker_PendingUpdate_
+  commentId: Overload:EchoHub.Client.Services.UpdateChecker.PendingUpdate
+  fullName: EchoHub.Client.Services.UpdateChecker.PendingUpdate
+  nameWithType: UpdateChecker.PendingUpdate
 - uid: EchoHub.Client.Services.UpdateChecker.Start
   name: Start()
   href: api/client/EchoHub.Client.Services.UpdateChecker.html#EchoHub_Client_Services_UpdateChecker_Start
@@ -3010,6 +3079,18 @@ references:
   commentId: Overload:EchoHub.Client.Themes.Theme.Base
   fullName: EchoHub.Client.Themes.Theme.Base
   nameWithType: Theme.Base
+- uid: EchoHub.Client.Themes.Theme.Border
+  name: Border
+  href: api/client/EchoHub.Client.Themes.Theme.html#EchoHub_Client_Themes_Theme_Border
+  commentId: P:EchoHub.Client.Themes.Theme.Border
+  fullName: EchoHub.Client.Themes.Theme.Border
+  nameWithType: Theme.Border
+- uid: EchoHub.Client.Themes.Theme.Border*
+  name: Border
+  href: api/client/EchoHub.Client.Themes.Theme.html#EchoHub_Client_Themes_Theme_Border_
+  commentId: Overload:EchoHub.Client.Themes.Theme.Border
+  fullName: EchoHub.Client.Themes.Theme.Border
+  nameWithType: Theme.Border
 - uid: EchoHub.Client.Themes.Theme.Dialog
   name: Dialog
   href: api/client/EchoHub.Client.Themes.Theme.html#EchoHub_Client_Themes_Theme_Dialog
@@ -3217,6 +3298,12 @@ references:
   commentId: F:EchoHub.Client.UI.Chat.ChatColors.ChannelRefAttr
   fullName: EchoHub.Client.UI.Chat.ChatColors.ChannelRefAttr
   nameWithType: ChatColors.ChannelRefAttr
+- uid: EchoHub.Client.UI.Chat.ChatColors.DateRuleAttr
+  name: DateRuleAttr
+  href: api/client/EchoHub.Client.UI.Chat.ChatColors.html#EchoHub_Client_UI_Chat_ChatColors_DateRuleAttr
+  commentId: F:EchoHub.Client.UI.Chat.ChatColors.DateRuleAttr
+  fullName: EchoHub.Client.UI.Chat.ChatColors.DateRuleAttr
+  nameWithType: ChatColors.DateRuleAttr
 - uid: EchoHub.Client.UI.Chat.ChatColors.EmbedBorderAttr
   name: EmbedBorderAttr
   href: api/client/EchoHub.Client.UI.Chat.ChatColors.html#EchoHub_Client_UI_Chat_ChatColors_EmbedBorderAttr
@@ -3259,6 +3346,12 @@ references:
   commentId: F:EchoHub.Client.UI.Chat.ChatColors.MentionTextAttr
   fullName: EchoHub.Client.UI.Chat.ChatColors.MentionTextAttr
   nameWithType: ChatColors.MentionTextAttr
+- uid: EchoHub.Client.UI.Chat.ChatColors.RailAttr
+  name: RailAttr
+  href: api/client/EchoHub.Client.UI.Chat.ChatColors.html#EchoHub_Client_UI_Chat_ChatColors_RailAttr
+  commentId: F:EchoHub.Client.UI.Chat.ChatColors.RailAttr
+  fullName: EchoHub.Client.UI.Chat.ChatColors.RailAttr
+  nameWithType: ChatColors.RailAttr
 - uid: EchoHub.Client.UI.Chat.ChatColors.SplitMentions(System.String,System.Nullable{Terminal.Gui.Drawing.Attribute})
   name: SplitMentions(string, Attribute?)
   href: api/client/EchoHub.Client.UI.Chat.ChatColors.html#EchoHub_Client_UI_Chat_ChatColors_SplitMentions_System_String_System_Nullable_Terminal_Gui_Drawing_Attribute__
@@ -3286,6 +3379,12 @@ references:
   commentId: F:EchoHub.Client.UI.Chat.ChatColors.TimestampAttr
   fullName: EchoHub.Client.UI.Chat.ChatColors.TimestampAttr
   nameWithType: ChatColors.TimestampAttr
+- uid: EchoHub.Client.UI.Chat.ChatColors.UnreadMarkerAttr
+  name: UnreadMarkerAttr
+  href: api/client/EchoHub.Client.UI.Chat.ChatColors.html#EchoHub_Client_UI_Chat_ChatColors_UnreadMarkerAttr
+  commentId: F:EchoHub.Client.UI.Chat.ChatColors.UnreadMarkerAttr
+  fullName: EchoHub.Client.UI.Chat.ChatColors.UnreadMarkerAttr
+  nameWithType: ChatColors.UnreadMarkerAttr
 - uid: EchoHub.Client.UI.Chat.ChatLine
   name: ChatLine
   href: api/client/EchoHub.Client.UI.Chat.ChatLine.html
@@ -3367,6 +3466,18 @@ references:
   commentId: Overload:EchoHub.Client.UI.Chat.ChatLine.ContinuationIndent
   fullName: EchoHub.Client.UI.Chat.ChatLine.ContinuationIndent
   nameWithType: ChatLine.ContinuationIndent
+- uid: EchoHub.Client.UI.Chat.ChatLine.ContinuationPrefixSegments
+  name: ContinuationPrefixSegments
+  href: api/client/EchoHub.Client.UI.Chat.ChatLine.html#EchoHub_Client_UI_Chat_ChatLine_ContinuationPrefixSegments
+  commentId: P:EchoHub.Client.UI.Chat.ChatLine.ContinuationPrefixSegments
+  fullName: EchoHub.Client.UI.Chat.ChatLine.ContinuationPrefixSegments
+  nameWithType: ChatLine.ContinuationPrefixSegments
+- uid: EchoHub.Client.UI.Chat.ChatLine.ContinuationPrefixSegments*
+  name: ContinuationPrefixSegments
+  href: api/client/EchoHub.Client.UI.Chat.ChatLine.html#EchoHub_Client_UI_Chat_ChatLine_ContinuationPrefixSegments_
+  commentId: Overload:EchoHub.Client.UI.Chat.ChatLine.ContinuationPrefixSegments
+  fullName: EchoHub.Client.UI.Chat.ChatLine.ContinuationPrefixSegments
+  nameWithType: ChatLine.ContinuationPrefixSegments
 - uid: EchoHub.Client.UI.Chat.ChatLine.FromColoredText(System.String,System.Nullable{Terminal.Gui.Drawing.Attribute})
   name: FromColoredText(string, Attribute?)
   href: api/client/EchoHub.Client.UI.Chat.ChatLine.html#EchoHub_Client_UI_Chat_ChatLine_FromColoredText_System_String_System_Nullable_Terminal_Gui_Drawing_Attribute__
@@ -3409,6 +3520,18 @@ references:
   commentId: Overload:EchoHub.Client.UI.Chat.ChatLine.IsMention
   fullName: EchoHub.Client.UI.Chat.ChatLine.IsMention
   nameWithType: ChatLine.IsMention
+- uid: EchoHub.Client.UI.Chat.ChatLine.IsUnreadMarker
+  name: IsUnreadMarker
+  href: api/client/EchoHub.Client.UI.Chat.ChatLine.html#EchoHub_Client_UI_Chat_ChatLine_IsUnreadMarker
+  commentId: P:EchoHub.Client.UI.Chat.ChatLine.IsUnreadMarker
+  fullName: EchoHub.Client.UI.Chat.ChatLine.IsUnreadMarker
+  nameWithType: ChatLine.IsUnreadMarker
+- uid: EchoHub.Client.UI.Chat.ChatLine.IsUnreadMarker*
+  name: IsUnreadMarker
+  href: api/client/EchoHub.Client.UI.Chat.ChatLine.html#EchoHub_Client_UI_Chat_ChatLine_IsUnreadMarker_
+  commentId: Overload:EchoHub.Client.UI.Chat.ChatLine.IsUnreadMarker
+  fullName: EchoHub.Client.UI.Chat.ChatLine.IsUnreadMarker
+  nameWithType: ChatLine.IsUnreadMarker
 - uid: EchoHub.Client.UI.Chat.ChatLine.MessageId
   name: MessageId
   href: api/client/EchoHub.Client.UI.Chat.ChatLine.html#EchoHub_Client_UI_Chat_ChatLine_MessageId
@@ -3421,6 +3544,30 @@ references:
   commentId: Overload:EchoHub.Client.UI.Chat.ChatLine.MessageId
   fullName: EchoHub.Client.UI.Chat.ChatLine.MessageId
   nameWithType: ChatLine.MessageId
+- uid: EchoHub.Client.UI.Chat.ChatLine.RuleAttr
+  name: RuleAttr
+  href: api/client/EchoHub.Client.UI.Chat.ChatLine.html#EchoHub_Client_UI_Chat_ChatLine_RuleAttr
+  commentId: P:EchoHub.Client.UI.Chat.ChatLine.RuleAttr
+  fullName: EchoHub.Client.UI.Chat.ChatLine.RuleAttr
+  nameWithType: ChatLine.RuleAttr
+- uid: EchoHub.Client.UI.Chat.ChatLine.RuleAttr*
+  name: RuleAttr
+  href: api/client/EchoHub.Client.UI.Chat.ChatLine.html#EchoHub_Client_UI_Chat_ChatLine_RuleAttr_
+  commentId: Overload:EchoHub.Client.UI.Chat.ChatLine.RuleAttr
+  fullName: EchoHub.Client.UI.Chat.ChatLine.RuleAttr
+  nameWithType: ChatLine.RuleAttr
+- uid: EchoHub.Client.UI.Chat.ChatLine.RuleLabel
+  name: RuleLabel
+  href: api/client/EchoHub.Client.UI.Chat.ChatLine.html#EchoHub_Client_UI_Chat_ChatLine_RuleLabel
+  commentId: P:EchoHub.Client.UI.Chat.ChatLine.RuleLabel
+  fullName: EchoHub.Client.UI.Chat.ChatLine.RuleLabel
+  nameWithType: ChatLine.RuleLabel
+- uid: EchoHub.Client.UI.Chat.ChatLine.RuleLabel*
+  name: RuleLabel
+  href: api/client/EchoHub.Client.UI.Chat.ChatLine.html#EchoHub_Client_UI_Chat_ChatLine_RuleLabel_
+  commentId: Overload:EchoHub.Client.UI.Chat.ChatLine.RuleLabel
+  fullName: EchoHub.Client.UI.Chat.ChatLine.RuleLabel
+  nameWithType: ChatLine.RuleLabel
 - uid: EchoHub.Client.UI.Chat.ChatLine.Segments
   name: Segments
   href: api/client/EchoHub.Client.UI.Chat.ChatLine.html#EchoHub_Client_UI_Chat_ChatLine_Segments
@@ -3811,6 +3958,12 @@ references:
   commentId: Overload:EchoHub.Client.UI.Chat.ChatMessageManager.ClearUnread
   fullName: EchoHub.Client.UI.Chat.ChatMessageManager.ClearUnread
   nameWithType: ChatMessageManager.ClearUnread
+- uid: EchoHub.Client.UI.Chat.ChatMessageManager.ContentIndentCols
+  name: ContentIndentCols
+  href: api/client/EchoHub.Client.UI.Chat.ChatMessageManager.html#EchoHub_Client_UI_Chat_ChatMessageManager_ContentIndentCols
+  commentId: F:EchoHub.Client.UI.Chat.ChatMessageManager.ContentIndentCols
+  fullName: EchoHub.Client.UI.Chat.ChatMessageManager.ContentIndentCols
+  nameWithType: ChatMessageManager.ContentIndentCols
 - uid: EchoHub.Client.UI.Chat.ChatMessageManager.CurrentChannel
   name: CurrentChannel
   href: api/client/EchoHub.Client.UI.Chat.ChatMessageManager.html#EchoHub_Client_UI_Chat_ChatMessageManager_CurrentChannel
@@ -3871,27 +4024,57 @@ references:
   commentId: E:EchoHub.Client.UI.Chat.ChatMessageManager.HistoryPrepended
   fullName: EchoHub.Client.UI.Chat.ChatMessageManager.HistoryPrepended
   nameWithType: ChatMessageManager.HistoryPrepended
-- uid: EchoHub.Client.UI.Chat.ChatMessageManager.LoadHistory(System.String,System.Collections.Generic.List{EchoHub.Core.DTOs.MessageDto})
-  name: LoadHistory(string, List<MessageDto>)
-  href: api/client/EchoHub.Client.UI.Chat.ChatMessageManager.html#EchoHub_Client_UI_Chat_ChatMessageManager_LoadHistory_System_String_System_Collections_Generic_List_EchoHub_Core_DTOs_MessageDto__
-  commentId: M:EchoHub.Client.UI.Chat.ChatMessageManager.LoadHistory(System.String,System.Collections.Generic.List{EchoHub.Core.DTOs.MessageDto})
-  name.vb: LoadHistory(String, List(Of MessageDto))
-  fullName: EchoHub.Client.UI.Chat.ChatMessageManager.LoadHistory(string, System.Collections.Generic.List<EchoHub.Core.DTOs.MessageDto>)
-  fullName.vb: EchoHub.Client.UI.Chat.ChatMessageManager.LoadHistory(String, System.Collections.Generic.List(Of EchoHub.Core.DTOs.MessageDto))
-  nameWithType: ChatMessageManager.LoadHistory(string, List<MessageDto>)
-  nameWithType.vb: ChatMessageManager.LoadHistory(String, List(Of MessageDto))
+- uid: EchoHub.Client.UI.Chat.ChatMessageManager.LastReadIds
+  name: LastReadIds
+  href: api/client/EchoHub.Client.UI.Chat.ChatMessageManager.html#EchoHub_Client_UI_Chat_ChatMessageManager_LastReadIds
+  commentId: P:EchoHub.Client.UI.Chat.ChatMessageManager.LastReadIds
+  fullName: EchoHub.Client.UI.Chat.ChatMessageManager.LastReadIds
+  nameWithType: ChatMessageManager.LastReadIds
+- uid: EchoHub.Client.UI.Chat.ChatMessageManager.LastReadIds*
+  name: LastReadIds
+  href: api/client/EchoHub.Client.UI.Chat.ChatMessageManager.html#EchoHub_Client_UI_Chat_ChatMessageManager_LastReadIds_
+  commentId: Overload:EchoHub.Client.UI.Chat.ChatMessageManager.LastReadIds
+  fullName: EchoHub.Client.UI.Chat.ChatMessageManager.LastReadIds
+  nameWithType: ChatMessageManager.LastReadIds
+- uid: EchoHub.Client.UI.Chat.ChatMessageManager.LoadHistory(System.String,System.Collections.Generic.List{EchoHub.Core.DTOs.MessageDto},System.Nullable{System.Guid})
+  name: LoadHistory(string, List<MessageDto>, Guid?)
+  href: api/client/EchoHub.Client.UI.Chat.ChatMessageManager.html#EchoHub_Client_UI_Chat_ChatMessageManager_LoadHistory_System_String_System_Collections_Generic_List_EchoHub_Core_DTOs_MessageDto__System_Nullable_System_Guid__
+  commentId: M:EchoHub.Client.UI.Chat.ChatMessageManager.LoadHistory(System.String,System.Collections.Generic.List{EchoHub.Core.DTOs.MessageDto},System.Nullable{System.Guid})
+  name.vb: LoadHistory(String, List(Of MessageDto), Guid?)
+  fullName: EchoHub.Client.UI.Chat.ChatMessageManager.LoadHistory(string, System.Collections.Generic.List<EchoHub.Core.DTOs.MessageDto>, System.Guid?)
+  fullName.vb: EchoHub.Client.UI.Chat.ChatMessageManager.LoadHistory(String, System.Collections.Generic.List(Of EchoHub.Core.DTOs.MessageDto), System.Guid?)
+  nameWithType: ChatMessageManager.LoadHistory(string, List<MessageDto>, Guid?)
+  nameWithType.vb: ChatMessageManager.LoadHistory(String, List(Of MessageDto), Guid?)
 - uid: EchoHub.Client.UI.Chat.ChatMessageManager.LoadHistory*
   name: LoadHistory
   href: api/client/EchoHub.Client.UI.Chat.ChatMessageManager.html#EchoHub_Client_UI_Chat_ChatMessageManager_LoadHistory_
   commentId: Overload:EchoHub.Client.UI.Chat.ChatMessageManager.LoadHistory
   fullName: EchoHub.Client.UI.Chat.ChatMessageManager.LoadHistory
   nameWithType: ChatMessageManager.LoadHistory
+- uid: EchoHub.Client.UI.Chat.ChatMessageManager.MentionChannels
+  name: MentionChannels
+  href: api/client/EchoHub.Client.UI.Chat.ChatMessageManager.html#EchoHub_Client_UI_Chat_ChatMessageManager_MentionChannels
+  commentId: P:EchoHub.Client.UI.Chat.ChatMessageManager.MentionChannels
+  fullName: EchoHub.Client.UI.Chat.ChatMessageManager.MentionChannels
+  nameWithType: ChatMessageManager.MentionChannels
+- uid: EchoHub.Client.UI.Chat.ChatMessageManager.MentionChannels*
+  name: MentionChannels
+  href: api/client/EchoHub.Client.UI.Chat.ChatMessageManager.html#EchoHub_Client_UI_Chat_ChatMessageManager_MentionChannels_
+  commentId: Overload:EchoHub.Client.UI.Chat.ChatMessageManager.MentionChannels
+  fullName: EchoHub.Client.UI.Chat.ChatMessageManager.MentionChannels
+  nameWithType: ChatMessageManager.MentionChannels
 - uid: EchoHub.Client.UI.Chat.ChatMessageManager.MessagesChanged
   name: MessagesChanged
   href: api/client/EchoHub.Client.UI.Chat.ChatMessageManager.html#EchoHub_Client_UI_Chat_ChatMessageManager_MessagesChanged
   commentId: E:EchoHub.Client.UI.Chat.ChatMessageManager.MessagesChanged
   fullName: EchoHub.Client.UI.Chat.ChatMessageManager.MessagesChanged
   nameWithType: ChatMessageManager.MessagesChanged
+- uid: EchoHub.Client.UI.Chat.ChatMessageManager.NickColWidth
+  name: NickColWidth
+  href: api/client/EchoHub.Client.UI.Chat.ChatMessageManager.html#EchoHub_Client_UI_Chat_ChatMessageManager_NickColWidth
+  commentId: F:EchoHub.Client.UI.Chat.ChatMessageManager.NickColWidth
+  fullName: EchoHub.Client.UI.Chat.ChatMessageManager.NickColWidth
+  nameWithType: ChatMessageManager.NickColWidth
 - uid: EchoHub.Client.UI.Chat.ChatMessageManager.PrependHistory(System.String,System.Collections.Generic.List{EchoHub.Core.DTOs.MessageDto})
   name: PrependHistory(string, List<MessageDto>)
   href: api/client/EchoHub.Client.UI.Chat.ChatMessageManager.html#EchoHub_Client_UI_Chat_ChatMessageManager_PrependHistory_System_String_System_Collections_Generic_List_EchoHub_Core_DTOs_MessageDto__
@@ -5557,69 +5740,6 @@ references:
   commentId: Overload:EchoHub.Client.UI.Dialogs.UpdateConfirmDialog.Show
   fullName: EchoHub.Client.UI.Dialogs.UpdateConfirmDialog.Show
   nameWithType: UpdateConfirmDialog.Show
-- uid: EchoHub.Client.UI.Dialogs.UpdateProgressDialog
-  name: UpdateProgressDialog
-  href: api/client/EchoHub.Client.UI.Dialogs.UpdateProgressDialog.html
-  commentId: T:EchoHub.Client.UI.Dialogs.UpdateProgressDialog
-  fullName: EchoHub.Client.UI.Dialogs.UpdateProgressDialog
-  nameWithType: UpdateProgressDialog
-- uid: EchoHub.Client.UI.Dialogs.UpdateProgressDialog.#ctor(Terminal.Gui.App.IApplication,System.String)
-  name: UpdateProgressDialog(IApplication, string)
-  href: api/client/EchoHub.Client.UI.Dialogs.UpdateProgressDialog.html#EchoHub_Client_UI_Dialogs_UpdateProgressDialog__ctor_Terminal_Gui_App_IApplication_System_String_
-  commentId: M:EchoHub.Client.UI.Dialogs.UpdateProgressDialog.#ctor(Terminal.Gui.App.IApplication,System.String)
-  name.vb: New(IApplication, String)
-  fullName: EchoHub.Client.UI.Dialogs.UpdateProgressDialog.UpdateProgressDialog(Terminal.Gui.App.IApplication, string)
-  fullName.vb: EchoHub.Client.UI.Dialogs.UpdateProgressDialog.New(Terminal.Gui.App.IApplication, String)
-  nameWithType: UpdateProgressDialog.UpdateProgressDialog(IApplication, string)
-  nameWithType.vb: UpdateProgressDialog.New(IApplication, String)
-- uid: EchoHub.Client.UI.Dialogs.UpdateProgressDialog.#ctor*
-  name: UpdateProgressDialog
-  href: api/client/EchoHub.Client.UI.Dialogs.UpdateProgressDialog.html#EchoHub_Client_UI_Dialogs_UpdateProgressDialog__ctor_
-  commentId: Overload:EchoHub.Client.UI.Dialogs.UpdateProgressDialog.#ctor
-  name.vb: New
-  fullName: EchoHub.Client.UI.Dialogs.UpdateProgressDialog.UpdateProgressDialog
-  fullName.vb: EchoHub.Client.UI.Dialogs.UpdateProgressDialog.New
-  nameWithType: UpdateProgressDialog.UpdateProgressDialog
-  nameWithType.vb: UpdateProgressDialog.New
-- uid: EchoHub.Client.UI.Dialogs.UpdateProgressDialog.Close
-  name: Close()
-  href: api/client/EchoHub.Client.UI.Dialogs.UpdateProgressDialog.html#EchoHub_Client_UI_Dialogs_UpdateProgressDialog_Close
-  commentId: M:EchoHub.Client.UI.Dialogs.UpdateProgressDialog.Close
-  fullName: EchoHub.Client.UI.Dialogs.UpdateProgressDialog.Close()
-  nameWithType: UpdateProgressDialog.Close()
-- uid: EchoHub.Client.UI.Dialogs.UpdateProgressDialog.Close*
-  name: Close
-  href: api/client/EchoHub.Client.UI.Dialogs.UpdateProgressDialog.html#EchoHub_Client_UI_Dialogs_UpdateProgressDialog_Close_
-  commentId: Overload:EchoHub.Client.UI.Dialogs.UpdateProgressDialog.Close
-  fullName: EchoHub.Client.UI.Dialogs.UpdateProgressDialog.Close
-  nameWithType: UpdateProgressDialog.Close
-- uid: EchoHub.Client.UI.Dialogs.UpdateProgressDialog.Show
-  name: Show()
-  href: api/client/EchoHub.Client.UI.Dialogs.UpdateProgressDialog.html#EchoHub_Client_UI_Dialogs_UpdateProgressDialog_Show
-  commentId: M:EchoHub.Client.UI.Dialogs.UpdateProgressDialog.Show
-  fullName: EchoHub.Client.UI.Dialogs.UpdateProgressDialog.Show()
-  nameWithType: UpdateProgressDialog.Show()
-- uid: EchoHub.Client.UI.Dialogs.UpdateProgressDialog.Show*
-  name: Show
-  href: api/client/EchoHub.Client.UI.Dialogs.UpdateProgressDialog.html#EchoHub_Client_UI_Dialogs_UpdateProgressDialog_Show_
-  commentId: Overload:EchoHub.Client.UI.Dialogs.UpdateProgressDialog.Show
-  fullName: EchoHub.Client.UI.Dialogs.UpdateProgressDialog.Show
-  nameWithType: UpdateProgressDialog.Show
-- uid: EchoHub.Client.UI.Dialogs.UpdateProgressDialog.UpdateProgress(System.Single,System.String)
-  name: UpdateProgress(float, string)
-  href: api/client/EchoHub.Client.UI.Dialogs.UpdateProgressDialog.html#EchoHub_Client_UI_Dialogs_UpdateProgressDialog_UpdateProgress_System_Single_System_String_
-  commentId: M:EchoHub.Client.UI.Dialogs.UpdateProgressDialog.UpdateProgress(System.Single,System.String)
-  name.vb: UpdateProgress(Single, String)
-  fullName: EchoHub.Client.UI.Dialogs.UpdateProgressDialog.UpdateProgress(float, string)
-  fullName.vb: EchoHub.Client.UI.Dialogs.UpdateProgressDialog.UpdateProgress(Single, String)
-  nameWithType: UpdateProgressDialog.UpdateProgress(float, string)
-  nameWithType.vb: UpdateProgressDialog.UpdateProgress(Single, String)
-- uid: EchoHub.Client.UI.Dialogs.UpdateProgressDialog.UpdateProgress*
-  name: UpdateProgress
-  href: api/client/EchoHub.Client.UI.Dialogs.UpdateProgressDialog.html#EchoHub_Client_UI_Dialogs_UpdateProgressDialog_UpdateProgress_
-  commentId: Overload:EchoHub.Client.UI.Dialogs.UpdateProgressDialog.UpdateProgress
-  fullName: EchoHub.Client.UI.Dialogs.UpdateProgressDialog.UpdateProgress
-  nameWithType: UpdateProgressDialog.UpdateProgress
 - uid: EchoHub.Client.UI.Helpers
   name: EchoHub.Client.UI.Helpers
   href: api/client/EchoHub.Client.UI.Helpers.html
@@ -5719,6 +5839,42 @@ references:
   commentId: Overload:EchoHub.Client.UI.Helpers.HexColorHelper.ParseHexToColor
   fullName: EchoHub.Client.UI.Helpers.HexColorHelper.ParseHexToColor
   nameWithType: HexColorHelper.ParseHexToColor
+- uid: EchoHub.Client.UI.Helpers.NickColorHelper
+  name: NickColorHelper
+  href: api/client/EchoHub.Client.UI.Helpers.NickColorHelper.html
+  commentId: T:EchoHub.Client.UI.Helpers.NickColorHelper
+  fullName: EchoHub.Client.UI.Helpers.NickColorHelper
+  nameWithType: NickColorHelper
+- uid: EchoHub.Client.UI.Helpers.NickColorHelper.GetAttribute(System.String)
+  name: GetAttribute(string)
+  href: api/client/EchoHub.Client.UI.Helpers.NickColorHelper.html#EchoHub_Client_UI_Helpers_NickColorHelper_GetAttribute_System_String_
+  commentId: M:EchoHub.Client.UI.Helpers.NickColorHelper.GetAttribute(System.String)
+  name.vb: GetAttribute(String)
+  fullName: EchoHub.Client.UI.Helpers.NickColorHelper.GetAttribute(string)
+  fullName.vb: EchoHub.Client.UI.Helpers.NickColorHelper.GetAttribute(String)
+  nameWithType: NickColorHelper.GetAttribute(string)
+  nameWithType.vb: NickColorHelper.GetAttribute(String)
+- uid: EchoHub.Client.UI.Helpers.NickColorHelper.GetAttribute*
+  name: GetAttribute
+  href: api/client/EchoHub.Client.UI.Helpers.NickColorHelper.html#EchoHub_Client_UI_Helpers_NickColorHelper_GetAttribute_
+  commentId: Overload:EchoHub.Client.UI.Helpers.NickColorHelper.GetAttribute
+  fullName: EchoHub.Client.UI.Helpers.NickColorHelper.GetAttribute
+  nameWithType: NickColorHelper.GetAttribute
+- uid: EchoHub.Client.UI.Helpers.NickColorHelper.GetPaletteIndex(System.String,System.Int32)
+  name: GetPaletteIndex(string, int)
+  href: api/client/EchoHub.Client.UI.Helpers.NickColorHelper.html#EchoHub_Client_UI_Helpers_NickColorHelper_GetPaletteIndex_System_String_System_Int32_
+  commentId: M:EchoHub.Client.UI.Helpers.NickColorHelper.GetPaletteIndex(System.String,System.Int32)
+  name.vb: GetPaletteIndex(String, Integer)
+  fullName: EchoHub.Client.UI.Helpers.NickColorHelper.GetPaletteIndex(string, int)
+  fullName.vb: EchoHub.Client.UI.Helpers.NickColorHelper.GetPaletteIndex(String, Integer)
+  nameWithType: NickColorHelper.GetPaletteIndex(string, int)
+  nameWithType.vb: NickColorHelper.GetPaletteIndex(String, Integer)
+- uid: EchoHub.Client.UI.Helpers.NickColorHelper.GetPaletteIndex*
+  name: GetPaletteIndex
+  href: api/client/EchoHub.Client.UI.Helpers.NickColorHelper.html#EchoHub_Client_UI_Helpers_NickColorHelper_GetPaletteIndex_
+  commentId: Overload:EchoHub.Client.UI.Helpers.NickColorHelper.GetPaletteIndex
+  fullName: EchoHub.Client.UI.Helpers.NickColorHelper.GetPaletteIndex
+  nameWithType: NickColorHelper.GetPaletteIndex
 - uid: EchoHub.Client.UI.ListSources
   name: EchoHub.Client.UI.ListSources
   href: api/client/EchoHub.Client.UI.ListSources.html
@@ -5860,15 +6016,15 @@ references:
   commentId: Overload:EchoHub.Client.UI.ListSources.ChannelListSource.ToList
   fullName: EchoHub.Client.UI.ListSources.ChannelListSource.ToList
   nameWithType: ChannelListSource.ToList
-- uid: EchoHub.Client.UI.ListSources.ChannelListSource.Update(System.Collections.Generic.List{System.String},System.Collections.Generic.Dictionary{System.String,System.Int32},System.String,System.Collections.Generic.IReadOnlySet{System.String})
-  name: Update(List<string>, Dictionary<string, int>, string, IReadOnlySet<string>?)
-  href: api/client/EchoHub.Client.UI.ListSources.ChannelListSource.html#EchoHub_Client_UI_ListSources_ChannelListSource_Update_System_Collections_Generic_List_System_String__System_Collections_Generic_Dictionary_System_String_System_Int32__System_String_System_Collections_Generic_IReadOnlySet_System_String__
-  commentId: M:EchoHub.Client.UI.ListSources.ChannelListSource.Update(System.Collections.Generic.List{System.String},System.Collections.Generic.Dictionary{System.String,System.Int32},System.String,System.Collections.Generic.IReadOnlySet{System.String})
-  name.vb: Update(List(Of String), Dictionary(Of String, Integer), String, IReadOnlySet(Of String))
-  fullName: EchoHub.Client.UI.ListSources.ChannelListSource.Update(System.Collections.Generic.List<string>, System.Collections.Generic.Dictionary<string, int>, string, System.Collections.Generic.IReadOnlySet<string>?)
-  fullName.vb: EchoHub.Client.UI.ListSources.ChannelListSource.Update(System.Collections.Generic.List(Of String), System.Collections.Generic.Dictionary(Of String, Integer), String, System.Collections.Generic.IReadOnlySet(Of String))
-  nameWithType: ChannelListSource.Update(List<string>, Dictionary<string, int>, string, IReadOnlySet<string>?)
-  nameWithType.vb: ChannelListSource.Update(List(Of String), Dictionary(Of String, Integer), String, IReadOnlySet(Of String))
+- uid: EchoHub.Client.UI.ListSources.ChannelListSource.Update(System.Collections.Generic.List{System.String},System.Collections.Generic.Dictionary{System.String,System.Int32},System.String,System.Collections.Generic.IReadOnlySet{System.String},System.Collections.Generic.IReadOnlySet{System.String})
+  name: Update(List<string>, Dictionary<string, int>, string, IReadOnlySet<string>?, IReadOnlySet<string>?)
+  href: api/client/EchoHub.Client.UI.ListSources.ChannelListSource.html#EchoHub_Client_UI_ListSources_ChannelListSource_Update_System_Collections_Generic_List_System_String__System_Collections_Generic_Dictionary_System_String_System_Int32__System_String_System_Collections_Generic_IReadOnlySet_System_String__System_Collections_Generic_IReadOnlySet_System_String__
+  commentId: M:EchoHub.Client.UI.ListSources.ChannelListSource.Update(System.Collections.Generic.List{System.String},System.Collections.Generic.Dictionary{System.String,System.Int32},System.String,System.Collections.Generic.IReadOnlySet{System.String},System.Collections.Generic.IReadOnlySet{System.String})
+  name.vb: Update(List(Of String), Dictionary(Of String, Integer), String, IReadOnlySet(Of String), IReadOnlySet(Of String))
+  fullName: EchoHub.Client.UI.ListSources.ChannelListSource.Update(System.Collections.Generic.List<string>, System.Collections.Generic.Dictionary<string, int>, string, System.Collections.Generic.IReadOnlySet<string>?, System.Collections.Generic.IReadOnlySet<string>?)
+  fullName.vb: EchoHub.Client.UI.ListSources.ChannelListSource.Update(System.Collections.Generic.List(Of String), System.Collections.Generic.Dictionary(Of String, Integer), String, System.Collections.Generic.IReadOnlySet(Of String), System.Collections.Generic.IReadOnlySet(Of String))
+  nameWithType: ChannelListSource.Update(List<string>, Dictionary<string, int>, string, IReadOnlySet<string>?, IReadOnlySet<string>?)
+  nameWithType.vb: ChannelListSource.Update(List(Of String), Dictionary(Of String, Integer), String, IReadOnlySet(Of String), IReadOnlySet(Of String))
 - uid: EchoHub.Client.UI.ListSources.ChannelListSource.Update*
   name: Update
   href: api/client/EchoHub.Client.UI.ListSources.ChannelListSource.html#EchoHub_Client_UI_ListSources_ChannelListSource_Update_
@@ -7141,6 +7297,21 @@ references:
   commentId: Overload:EchoHub.Core.Contracts.IChannelService.GetChannelListAsync
   fullName: EchoHub.Core.Contracts.IChannelService.GetChannelListAsync
   nameWithType: IChannelService.GetChannelListAsync
+- uid: EchoHub.Core.Contracts.IChannelService.GetChannelMetaAsync(System.String)
+  name: GetChannelMetaAsync(string)
+  href: api/core/EchoHub.Core.Contracts.IChannelService.html#EchoHub_Core_Contracts_IChannelService_GetChannelMetaAsync_System_String_
+  commentId: M:EchoHub.Core.Contracts.IChannelService.GetChannelMetaAsync(System.String)
+  name.vb: GetChannelMetaAsync(String)
+  fullName: EchoHub.Core.Contracts.IChannelService.GetChannelMetaAsync(string)
+  fullName.vb: EchoHub.Core.Contracts.IChannelService.GetChannelMetaAsync(String)
+  nameWithType: IChannelService.GetChannelMetaAsync(string)
+  nameWithType.vb: IChannelService.GetChannelMetaAsync(String)
+- uid: EchoHub.Core.Contracts.IChannelService.GetChannelMetaAsync*
+  name: GetChannelMetaAsync
+  href: api/core/EchoHub.Core.Contracts.IChannelService.html#EchoHub_Core_Contracts_IChannelService_GetChannelMetaAsync_
+  commentId: Overload:EchoHub.Core.Contracts.IChannelService.GetChannelMetaAsync
+  fullName: EchoHub.Core.Contracts.IChannelService.GetChannelMetaAsync
+  nameWithType: IChannelService.GetChannelMetaAsync
 - uid: EchoHub.Core.Contracts.IChannelService.GetChannelTopicAsync(System.String)
   name: GetChannelTopicAsync(string)
   href: api/core/EchoHub.Core.Contracts.IChannelService.html#EchoHub_Core_Contracts_IChannelService_GetChannelTopicAsync_System_String_
@@ -7726,6 +7897,12 @@ references:
   commentId: T:EchoHub.Core.Contracts.IMessageEncryptionService
   fullName: EchoHub.Core.Contracts.IMessageEncryptionService
   nameWithType: IMessageEncryptionService
+- uid: EchoHub.Core.Contracts.IMessageEncryptionService.CiphertextPrefix
+  name: CiphertextPrefix
+  href: api/core/EchoHub.Core.Contracts.IMessageEncryptionService.html#EchoHub_Core_Contracts_IMessageEncryptionService_CiphertextPrefix
+  commentId: F:EchoHub.Core.Contracts.IMessageEncryptionService.CiphertextPrefix
+  fullName: EchoHub.Core.Contracts.IMessageEncryptionService.CiphertextPrefix
+  nameWithType: IMessageEncryptionService.CiphertextPrefix
 - uid: EchoHub.Core.Contracts.IMessageEncryptionService.Decrypt(System.String)
   name: Decrypt(string)
   href: api/core/EchoHub.Core.Contracts.IMessageEncryptionService.html#EchoHub_Core_Contracts_IMessageEncryptionService_Decrypt_System_String_
@@ -9532,6 +9709,270 @@ references:
   commentId: F:EchoHub.Core.DTOs.ChannelError.ValidationFailed
   fullName: EchoHub.Core.DTOs.ChannelError.ValidationFailed
   nameWithType: ChannelError.ValidationFailed
+- uid: EchoHub.Core.DTOs.ChannelMetaDto
+  name: ChannelMetaDto
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html
+  commentId: T:EchoHub.Core.DTOs.ChannelMetaDto
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto
+  nameWithType: ChannelMetaDto
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.#ctor(EchoHub.Core.DTOs.ChannelMetaDto)
+  name: ChannelMetaDto(ChannelMetaDto)
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto__ctor_EchoHub_Core_DTOs_ChannelMetaDto_
+  commentId: M:EchoHub.Core.DTOs.ChannelMetaDto.#ctor(EchoHub.Core.DTOs.ChannelMetaDto)
+  name.vb: New(ChannelMetaDto)
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.ChannelMetaDto(EchoHub.Core.DTOs.ChannelMetaDto)
+  fullName.vb: EchoHub.Core.DTOs.ChannelMetaDto.New(EchoHub.Core.DTOs.ChannelMetaDto)
+  nameWithType: ChannelMetaDto.ChannelMetaDto(ChannelMetaDto)
+  nameWithType.vb: ChannelMetaDto.New(ChannelMetaDto)
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.#ctor(System.Guid,System.String,System.String,System.Boolean,System.Boolean,System.Int32,System.Int32,System.Int64,System.DateTimeOffset)
+  name: ChannelMetaDto(Guid, string, string?, bool, bool, int, int, long, DateTimeOffset)
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto__ctor_System_Guid_System_String_System_String_System_Boolean_System_Boolean_System_Int32_System_Int32_System_Int64_System_DateTimeOffset_
+  commentId: M:EchoHub.Core.DTOs.ChannelMetaDto.#ctor(System.Guid,System.String,System.String,System.Boolean,System.Boolean,System.Int32,System.Int32,System.Int64,System.DateTimeOffset)
+  name.vb: New(Guid, String, String, Boolean, Boolean, Integer, Integer, Long, DateTimeOffset)
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.ChannelMetaDto(System.Guid, string, string?, bool, bool, int, int, long, System.DateTimeOffset)
+  fullName.vb: EchoHub.Core.DTOs.ChannelMetaDto.New(System.Guid, String, String, Boolean, Boolean, Integer, Integer, Long, System.DateTimeOffset)
+  nameWithType: ChannelMetaDto.ChannelMetaDto(Guid, string, string?, bool, bool, int, int, long, DateTimeOffset)
+  nameWithType.vb: ChannelMetaDto.New(Guid, String, String, Boolean, Boolean, Integer, Integer, Long, DateTimeOffset)
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.#ctor*
+  name: ChannelMetaDto
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto__ctor_
+  commentId: Overload:EchoHub.Core.DTOs.ChannelMetaDto.#ctor
+  name.vb: New
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.ChannelMetaDto
+  fullName.vb: EchoHub.Core.DTOs.ChannelMetaDto.New
+  nameWithType: ChannelMetaDto.ChannelMetaDto
+  nameWithType.vb: ChannelMetaDto.New
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.CreatedAt
+  name: CreatedAt
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_CreatedAt
+  commentId: P:EchoHub.Core.DTOs.ChannelMetaDto.CreatedAt
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.CreatedAt
+  nameWithType: ChannelMetaDto.CreatedAt
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.CreatedAt*
+  name: CreatedAt
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_CreatedAt_
+  commentId: Overload:EchoHub.Core.DTOs.ChannelMetaDto.CreatedAt
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.CreatedAt
+  nameWithType: ChannelMetaDto.CreatedAt
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.Deconstruct(System.Guid@,System.String@,System.String@,System.Boolean@,System.Boolean@,System.Int32@,System.Int32@,System.Int64@,System.DateTimeOffset@)
+  name: Deconstruct(out Guid, out string, out string?, out bool, out bool, out int, out int, out long, out DateTimeOffset)
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_Deconstruct_System_Guid__System_String__System_String__System_Boolean__System_Boolean__System_Int32__System_Int32__System_Int64__System_DateTimeOffset__
+  commentId: M:EchoHub.Core.DTOs.ChannelMetaDto.Deconstruct(System.Guid@,System.String@,System.String@,System.Boolean@,System.Boolean@,System.Int32@,System.Int32@,System.Int64@,System.DateTimeOffset@)
+  name.vb: Deconstruct(Guid, String, String, Boolean, Boolean, Integer, Integer, Long, DateTimeOffset)
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.Deconstruct(out System.Guid, out string, out string?, out bool, out bool, out int, out int, out long, out System.DateTimeOffset)
+  fullName.vb: EchoHub.Core.DTOs.ChannelMetaDto.Deconstruct(System.Guid, String, String, Boolean, Boolean, Integer, Integer, Long, System.DateTimeOffset)
+  nameWithType: ChannelMetaDto.Deconstruct(out Guid, out string, out string?, out bool, out bool, out int, out int, out long, out DateTimeOffset)
+  nameWithType.vb: ChannelMetaDto.Deconstruct(Guid, String, String, Boolean, Boolean, Integer, Integer, Long, DateTimeOffset)
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.Deconstruct*
+  name: Deconstruct
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_Deconstruct_
+  commentId: Overload:EchoHub.Core.DTOs.ChannelMetaDto.Deconstruct
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.Deconstruct
+  nameWithType: ChannelMetaDto.Deconstruct
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.EqualityContract
+  name: EqualityContract
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_EqualityContract
+  commentId: P:EchoHub.Core.DTOs.ChannelMetaDto.EqualityContract
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.EqualityContract
+  nameWithType: ChannelMetaDto.EqualityContract
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.EqualityContract*
+  name: EqualityContract
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_EqualityContract_
+  commentId: Overload:EchoHub.Core.DTOs.ChannelMetaDto.EqualityContract
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.EqualityContract
+  nameWithType: ChannelMetaDto.EqualityContract
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.Equals(EchoHub.Core.DTOs.ChannelMetaDto)
+  name: Equals(ChannelMetaDto?)
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_Equals_EchoHub_Core_DTOs_ChannelMetaDto_
+  commentId: M:EchoHub.Core.DTOs.ChannelMetaDto.Equals(EchoHub.Core.DTOs.ChannelMetaDto)
+  name.vb: Equals(ChannelMetaDto)
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.Equals(EchoHub.Core.DTOs.ChannelMetaDto?)
+  fullName.vb: EchoHub.Core.DTOs.ChannelMetaDto.Equals(EchoHub.Core.DTOs.ChannelMetaDto)
+  nameWithType: ChannelMetaDto.Equals(ChannelMetaDto?)
+  nameWithType.vb: ChannelMetaDto.Equals(ChannelMetaDto)
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.Equals(System.Object)
+  name: Equals(object?)
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_Equals_System_Object_
+  commentId: M:EchoHub.Core.DTOs.ChannelMetaDto.Equals(System.Object)
+  name.vb: Equals(Object)
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.Equals(object?)
+  fullName.vb: EchoHub.Core.DTOs.ChannelMetaDto.Equals(Object)
+  nameWithType: ChannelMetaDto.Equals(object?)
+  nameWithType.vb: ChannelMetaDto.Equals(Object)
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.Equals*
+  name: Equals
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_Equals_
+  commentId: Overload:EchoHub.Core.DTOs.ChannelMetaDto.Equals
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.Equals
+  nameWithType: ChannelMetaDto.Equals
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.EstimatedSizeBytes
+  name: EstimatedSizeBytes
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_EstimatedSizeBytes
+  commentId: P:EchoHub.Core.DTOs.ChannelMetaDto.EstimatedSizeBytes
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.EstimatedSizeBytes
+  nameWithType: ChannelMetaDto.EstimatedSizeBytes
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.EstimatedSizeBytes*
+  name: EstimatedSizeBytes
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_EstimatedSizeBytes_
+  commentId: Overload:EchoHub.Core.DTOs.ChannelMetaDto.EstimatedSizeBytes
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.EstimatedSizeBytes
+  nameWithType: ChannelMetaDto.EstimatedSizeBytes
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.GetHashCode
+  name: GetHashCode()
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_GetHashCode
+  commentId: M:EchoHub.Core.DTOs.ChannelMetaDto.GetHashCode
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.GetHashCode()
+  nameWithType: ChannelMetaDto.GetHashCode()
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.GetHashCode*
+  name: GetHashCode
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_GetHashCode_
+  commentId: Overload:EchoHub.Core.DTOs.ChannelMetaDto.GetHashCode
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.GetHashCode
+  nameWithType: ChannelMetaDto.GetHashCode
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.Id
+  name: Id
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_Id
+  commentId: P:EchoHub.Core.DTOs.ChannelMetaDto.Id
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.Id
+  nameWithType: ChannelMetaDto.Id
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.Id*
+  name: Id
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_Id_
+  commentId: Overload:EchoHub.Core.DTOs.ChannelMetaDto.Id
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.Id
+  nameWithType: ChannelMetaDto.Id
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.IsEncrypted
+  name: IsEncrypted
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_IsEncrypted
+  commentId: P:EchoHub.Core.DTOs.ChannelMetaDto.IsEncrypted
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.IsEncrypted
+  nameWithType: ChannelMetaDto.IsEncrypted
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.IsEncrypted*
+  name: IsEncrypted
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_IsEncrypted_
+  commentId: Overload:EchoHub.Core.DTOs.ChannelMetaDto.IsEncrypted
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.IsEncrypted
+  nameWithType: ChannelMetaDto.IsEncrypted
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.IsProtected
+  name: IsProtected
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_IsProtected
+  commentId: P:EchoHub.Core.DTOs.ChannelMetaDto.IsProtected
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.IsProtected
+  nameWithType: ChannelMetaDto.IsProtected
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.IsProtected*
+  name: IsProtected
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_IsProtected_
+  commentId: Overload:EchoHub.Core.DTOs.ChannelMetaDto.IsProtected
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.IsProtected
+  nameWithType: ChannelMetaDto.IsProtected
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.MessageCount
+  name: MessageCount
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_MessageCount
+  commentId: P:EchoHub.Core.DTOs.ChannelMetaDto.MessageCount
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.MessageCount
+  nameWithType: ChannelMetaDto.MessageCount
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.MessageCount*
+  name: MessageCount
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_MessageCount_
+  commentId: Overload:EchoHub.Core.DTOs.ChannelMetaDto.MessageCount
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.MessageCount
+  nameWithType: ChannelMetaDto.MessageCount
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.Name
+  name: Name
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_Name
+  commentId: P:EchoHub.Core.DTOs.ChannelMetaDto.Name
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.Name
+  nameWithType: ChannelMetaDto.Name
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.Name*
+  name: Name
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_Name_
+  commentId: Overload:EchoHub.Core.DTOs.ChannelMetaDto.Name
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.Name
+  nameWithType: ChannelMetaDto.Name
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.PrintMembers(System.Text.StringBuilder)
+  name: PrintMembers(StringBuilder)
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_PrintMembers_System_Text_StringBuilder_
+  commentId: M:EchoHub.Core.DTOs.ChannelMetaDto.PrintMembers(System.Text.StringBuilder)
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.PrintMembers(System.Text.StringBuilder)
+  nameWithType: ChannelMetaDto.PrintMembers(StringBuilder)
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.PrintMembers*
+  name: PrintMembers
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_PrintMembers_
+  commentId: Overload:EchoHub.Core.DTOs.ChannelMetaDto.PrintMembers
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.PrintMembers
+  nameWithType: ChannelMetaDto.PrintMembers
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.ToString
+  name: ToString()
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_ToString
+  commentId: M:EchoHub.Core.DTOs.ChannelMetaDto.ToString
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.ToString()
+  nameWithType: ChannelMetaDto.ToString()
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.ToString*
+  name: ToString
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_ToString_
+  commentId: Overload:EchoHub.Core.DTOs.ChannelMetaDto.ToString
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.ToString
+  nameWithType: ChannelMetaDto.ToString
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.Topic
+  name: Topic
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_Topic
+  commentId: P:EchoHub.Core.DTOs.ChannelMetaDto.Topic
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.Topic
+  nameWithType: ChannelMetaDto.Topic
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.Topic*
+  name: Topic
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_Topic_
+  commentId: Overload:EchoHub.Core.DTOs.ChannelMetaDto.Topic
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.Topic
+  nameWithType: ChannelMetaDto.Topic
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.UniqueUserCount
+  name: UniqueUserCount
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_UniqueUserCount
+  commentId: P:EchoHub.Core.DTOs.ChannelMetaDto.UniqueUserCount
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.UniqueUserCount
+  nameWithType: ChannelMetaDto.UniqueUserCount
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.UniqueUserCount*
+  name: UniqueUserCount
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_UniqueUserCount_
+  commentId: Overload:EchoHub.Core.DTOs.ChannelMetaDto.UniqueUserCount
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.UniqueUserCount
+  nameWithType: ChannelMetaDto.UniqueUserCount
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.op_Equality(EchoHub.Core.DTOs.ChannelMetaDto,EchoHub.Core.DTOs.ChannelMetaDto)
+  name: operator ==(ChannelMetaDto?, ChannelMetaDto?)
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_op_Equality_EchoHub_Core_DTOs_ChannelMetaDto_EchoHub_Core_DTOs_ChannelMetaDto_
+  commentId: M:EchoHub.Core.DTOs.ChannelMetaDto.op_Equality(EchoHub.Core.DTOs.ChannelMetaDto,EchoHub.Core.DTOs.ChannelMetaDto)
+  name.vb: =(ChannelMetaDto, ChannelMetaDto)
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.operator ==(EchoHub.Core.DTOs.ChannelMetaDto?, EchoHub.Core.DTOs.ChannelMetaDto?)
+  fullName.vb: EchoHub.Core.DTOs.ChannelMetaDto.=(EchoHub.Core.DTOs.ChannelMetaDto, EchoHub.Core.DTOs.ChannelMetaDto)
+  nameWithType: ChannelMetaDto.operator ==(ChannelMetaDto?, ChannelMetaDto?)
+  nameWithType.vb: ChannelMetaDto.=(ChannelMetaDto, ChannelMetaDto)
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.op_Equality*
+  name: operator ==
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_op_Equality_
+  commentId: Overload:EchoHub.Core.DTOs.ChannelMetaDto.op_Equality
+  name.vb: =
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.operator ==
+  fullName.vb: EchoHub.Core.DTOs.ChannelMetaDto.=
+  nameWithType: ChannelMetaDto.operator ==
+  nameWithType.vb: ChannelMetaDto.=
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.op_Inequality(EchoHub.Core.DTOs.ChannelMetaDto,EchoHub.Core.DTOs.ChannelMetaDto)
+  name: operator !=(ChannelMetaDto?, ChannelMetaDto?)
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_op_Inequality_EchoHub_Core_DTOs_ChannelMetaDto_EchoHub_Core_DTOs_ChannelMetaDto_
+  commentId: M:EchoHub.Core.DTOs.ChannelMetaDto.op_Inequality(EchoHub.Core.DTOs.ChannelMetaDto,EchoHub.Core.DTOs.ChannelMetaDto)
+  name.vb: <>(ChannelMetaDto, ChannelMetaDto)
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.operator !=(EchoHub.Core.DTOs.ChannelMetaDto?, EchoHub.Core.DTOs.ChannelMetaDto?)
+  fullName.vb: EchoHub.Core.DTOs.ChannelMetaDto.<>(EchoHub.Core.DTOs.ChannelMetaDto, EchoHub.Core.DTOs.ChannelMetaDto)
+  nameWithType: ChannelMetaDto.operator !=(ChannelMetaDto?, ChannelMetaDto?)
+  nameWithType.vb: ChannelMetaDto.<>(ChannelMetaDto, ChannelMetaDto)
+- uid: EchoHub.Core.DTOs.ChannelMetaDto.op_Inequality*
+  name: operator !=
+  href: api/core/EchoHub.Core.DTOs.ChannelMetaDto.html#EchoHub_Core_DTOs_ChannelMetaDto_op_Inequality_
+  commentId: Overload:EchoHub.Core.DTOs.ChannelMetaDto.op_Inequality
+  name.vb: <>
+  fullName: EchoHub.Core.DTOs.ChannelMetaDto.operator !=
+  fullName.vb: EchoHub.Core.DTOs.ChannelMetaDto.<>
+  nameWithType: ChannelMetaDto.operator !=
+  nameWithType.vb: ChannelMetaDto.<>
 - uid: EchoHub.Core.DTOs.ChannelOperationResult
   name: ChannelOperationResult
   href: api/core/EchoHub.Core.DTOs.ChannelOperationResult.html
@@ -16168,6 +16609,168 @@ references:
   commentId: F:EchoHub.Server.Auth.JwtTokenService.RefreshTokenLifetime
   fullName: EchoHub.Server.Auth.JwtTokenService.RefreshTokenLifetime
   nameWithType: JwtTokenService.RefreshTokenLifetime
+- uid: EchoHub.Server.Config
+  name: EchoHub.Server.Config
+  href: api/server/EchoHub.Server.Config.html
+  commentId: N:EchoHub.Server.Config
+  fullName: EchoHub.Server.Config
+  nameWithType: EchoHub.Server.Config
+- uid: EchoHub.Server.Config.UploadLimits
+  name: UploadLimits
+  href: api/server/EchoHub.Server.Config.UploadLimits.html
+  commentId: T:EchoHub.Server.Config.UploadLimits
+  fullName: EchoHub.Server.Config.UploadLimits
+  nameWithType: UploadLimits
+- uid: EchoHub.Server.Config.UploadLimits.#ctor
+  name: UploadLimits()
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits__ctor
+  commentId: M:EchoHub.Server.Config.UploadLimits.#ctor
+  name.vb: New()
+  fullName: EchoHub.Server.Config.UploadLimits.UploadLimits()
+  fullName.vb: EchoHub.Server.Config.UploadLimits.New()
+  nameWithType: UploadLimits.UploadLimits()
+  nameWithType.vb: UploadLimits.New()
+- uid: EchoHub.Server.Config.UploadLimits.#ctor*
+  name: UploadLimits
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits__ctor_
+  commentId: Overload:EchoHub.Server.Config.UploadLimits.#ctor
+  name.vb: New
+  fullName: EchoHub.Server.Config.UploadLimits.UploadLimits
+  fullName.vb: EchoHub.Server.Config.UploadLimits.New
+  nameWithType: UploadLimits.UploadLimits
+  nameWithType.vb: UploadLimits.New
+- uid: EchoHub.Server.Config.UploadLimits.MaxAttachmentsPerMessage
+  name: MaxAttachmentsPerMessage
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxAttachmentsPerMessage
+  commentId: P:EchoHub.Server.Config.UploadLimits.MaxAttachmentsPerMessage
+  fullName: EchoHub.Server.Config.UploadLimits.MaxAttachmentsPerMessage
+  nameWithType: UploadLimits.MaxAttachmentsPerMessage
+- uid: EchoHub.Server.Config.UploadLimits.MaxAttachmentsPerMessage*
+  name: MaxAttachmentsPerMessage
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxAttachmentsPerMessage_
+  commentId: Overload:EchoHub.Server.Config.UploadLimits.MaxAttachmentsPerMessage
+  fullName: EchoHub.Server.Config.UploadLimits.MaxAttachmentsPerMessage
+  nameWithType: UploadLimits.MaxAttachmentsPerMessage
+- uid: EchoHub.Server.Config.UploadLimits.MaxAudioSizeBytes
+  name: MaxAudioSizeBytes
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxAudioSizeBytes
+  commentId: P:EchoHub.Server.Config.UploadLimits.MaxAudioSizeBytes
+  fullName: EchoHub.Server.Config.UploadLimits.MaxAudioSizeBytes
+  nameWithType: UploadLimits.MaxAudioSizeBytes
+- uid: EchoHub.Server.Config.UploadLimits.MaxAudioSizeBytes*
+  name: MaxAudioSizeBytes
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxAudioSizeBytes_
+  commentId: Overload:EchoHub.Server.Config.UploadLimits.MaxAudioSizeBytes
+  fullName: EchoHub.Server.Config.UploadLimits.MaxAudioSizeBytes
+  nameWithType: UploadLimits.MaxAudioSizeBytes
+- uid: EchoHub.Server.Config.UploadLimits.MaxAudioSizeMB
+  name: MaxAudioSizeMB
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxAudioSizeMB
+  commentId: P:EchoHub.Server.Config.UploadLimits.MaxAudioSizeMB
+  fullName: EchoHub.Server.Config.UploadLimits.MaxAudioSizeMB
+  nameWithType: UploadLimits.MaxAudioSizeMB
+- uid: EchoHub.Server.Config.UploadLimits.MaxAudioSizeMB*
+  name: MaxAudioSizeMB
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxAudioSizeMB_
+  commentId: Overload:EchoHub.Server.Config.UploadLimits.MaxAudioSizeMB
+  fullName: EchoHub.Server.Config.UploadLimits.MaxAudioSizeMB
+  nameWithType: UploadLimits.MaxAudioSizeMB
+- uid: EchoHub.Server.Config.UploadLimits.MaxAvatarSizeBytes
+  name: MaxAvatarSizeBytes
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxAvatarSizeBytes
+  commentId: P:EchoHub.Server.Config.UploadLimits.MaxAvatarSizeBytes
+  fullName: EchoHub.Server.Config.UploadLimits.MaxAvatarSizeBytes
+  nameWithType: UploadLimits.MaxAvatarSizeBytes
+- uid: EchoHub.Server.Config.UploadLimits.MaxAvatarSizeBytes*
+  name: MaxAvatarSizeBytes
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxAvatarSizeBytes_
+  commentId: Overload:EchoHub.Server.Config.UploadLimits.MaxAvatarSizeBytes
+  fullName: EchoHub.Server.Config.UploadLimits.MaxAvatarSizeBytes
+  nameWithType: UploadLimits.MaxAvatarSizeBytes
+- uid: EchoHub.Server.Config.UploadLimits.MaxAvatarSizeMB
+  name: MaxAvatarSizeMB
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxAvatarSizeMB
+  commentId: P:EchoHub.Server.Config.UploadLimits.MaxAvatarSizeMB
+  fullName: EchoHub.Server.Config.UploadLimits.MaxAvatarSizeMB
+  nameWithType: UploadLimits.MaxAvatarSizeMB
+- uid: EchoHub.Server.Config.UploadLimits.MaxAvatarSizeMB*
+  name: MaxAvatarSizeMB
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxAvatarSizeMB_
+  commentId: Overload:EchoHub.Server.Config.UploadLimits.MaxAvatarSizeMB
+  fullName: EchoHub.Server.Config.UploadLimits.MaxAvatarSizeMB
+  nameWithType: UploadLimits.MaxAvatarSizeMB
+- uid: EchoHub.Server.Config.UploadLimits.MaxFileSizeBytes
+  name: MaxFileSizeBytes
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxFileSizeBytes
+  commentId: P:EchoHub.Server.Config.UploadLimits.MaxFileSizeBytes
+  fullName: EchoHub.Server.Config.UploadLimits.MaxFileSizeBytes
+  nameWithType: UploadLimits.MaxFileSizeBytes
+- uid: EchoHub.Server.Config.UploadLimits.MaxFileSizeBytes*
+  name: MaxFileSizeBytes
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxFileSizeBytes_
+  commentId: Overload:EchoHub.Server.Config.UploadLimits.MaxFileSizeBytes
+  fullName: EchoHub.Server.Config.UploadLimits.MaxFileSizeBytes
+  nameWithType: UploadLimits.MaxFileSizeBytes
+- uid: EchoHub.Server.Config.UploadLimits.MaxFileSizeMB
+  name: MaxFileSizeMB
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxFileSizeMB
+  commentId: P:EchoHub.Server.Config.UploadLimits.MaxFileSizeMB
+  fullName: EchoHub.Server.Config.UploadLimits.MaxFileSizeMB
+  nameWithType: UploadLimits.MaxFileSizeMB
+- uid: EchoHub.Server.Config.UploadLimits.MaxFileSizeMB*
+  name: MaxFileSizeMB
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxFileSizeMB_
+  commentId: Overload:EchoHub.Server.Config.UploadLimits.MaxFileSizeMB
+  fullName: EchoHub.Server.Config.UploadLimits.MaxFileSizeMB
+  nameWithType: UploadLimits.MaxFileSizeMB
+- uid: EchoHub.Server.Config.UploadLimits.MaxForKind(EchoHub.Core.Models.AttachmentKind)
+  name: MaxForKind(AttachmentKind)
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxForKind_EchoHub_Core_Models_AttachmentKind_
+  commentId: M:EchoHub.Server.Config.UploadLimits.MaxForKind(EchoHub.Core.Models.AttachmentKind)
+  fullName: EchoHub.Server.Config.UploadLimits.MaxForKind(EchoHub.Core.Models.AttachmentKind)
+  nameWithType: UploadLimits.MaxForKind(AttachmentKind)
+- uid: EchoHub.Server.Config.UploadLimits.MaxForKind*
+  name: MaxForKind
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxForKind_
+  commentId: Overload:EchoHub.Server.Config.UploadLimits.MaxForKind
+  fullName: EchoHub.Server.Config.UploadLimits.MaxForKind
+  nameWithType: UploadLimits.MaxForKind
+- uid: EchoHub.Server.Config.UploadLimits.MaxImageSizeBytes
+  name: MaxImageSizeBytes
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxImageSizeBytes
+  commentId: P:EchoHub.Server.Config.UploadLimits.MaxImageSizeBytes
+  fullName: EchoHub.Server.Config.UploadLimits.MaxImageSizeBytes
+  nameWithType: UploadLimits.MaxImageSizeBytes
+- uid: EchoHub.Server.Config.UploadLimits.MaxImageSizeBytes*
+  name: MaxImageSizeBytes
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxImageSizeBytes_
+  commentId: Overload:EchoHub.Server.Config.UploadLimits.MaxImageSizeBytes
+  fullName: EchoHub.Server.Config.UploadLimits.MaxImageSizeBytes
+  nameWithType: UploadLimits.MaxImageSizeBytes
+- uid: EchoHub.Server.Config.UploadLimits.MaxImageSizeMB
+  name: MaxImageSizeMB
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxImageSizeMB
+  commentId: P:EchoHub.Server.Config.UploadLimits.MaxImageSizeMB
+  fullName: EchoHub.Server.Config.UploadLimits.MaxImageSizeMB
+  nameWithType: UploadLimits.MaxImageSizeMB
+- uid: EchoHub.Server.Config.UploadLimits.MaxImageSizeMB*
+  name: MaxImageSizeMB
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxImageSizeMB_
+  commentId: Overload:EchoHub.Server.Config.UploadLimits.MaxImageSizeMB
+  fullName: EchoHub.Server.Config.UploadLimits.MaxImageSizeMB
+  nameWithType: UploadLimits.MaxImageSizeMB
+- uid: EchoHub.Server.Config.UploadLimits.MaxRequestBodyBytes
+  name: MaxRequestBodyBytes
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxRequestBodyBytes
+  commentId: P:EchoHub.Server.Config.UploadLimits.MaxRequestBodyBytes
+  fullName: EchoHub.Server.Config.UploadLimits.MaxRequestBodyBytes
+  nameWithType: UploadLimits.MaxRequestBodyBytes
+- uid: EchoHub.Server.Config.UploadLimits.MaxRequestBodyBytes*
+  name: MaxRequestBodyBytes
+  href: api/server/EchoHub.Server.Config.UploadLimits.html#EchoHub_Server_Config_UploadLimits_MaxRequestBodyBytes_
+  commentId: Overload:EchoHub.Server.Config.UploadLimits.MaxRequestBodyBytes
+  fullName: EchoHub.Server.Config.UploadLimits.MaxRequestBodyBytes
+  nameWithType: UploadLimits.MaxRequestBodyBytes
 - uid: EchoHub.Server.Controllers
   name: EchoHub.Server.Controllers
   href: api/server/EchoHub.Server.Controllers.html
@@ -16252,15 +16855,15 @@ references:
   commentId: T:EchoHub.Server.Controllers.ChannelsController
   fullName: EchoHub.Server.Controllers.ChannelsController
   nameWithType: ChannelsController
-- uid: EchoHub.Server.Controllers.ChannelsController.#ctor(EchoHub.Core.Contracts.IChannelService,EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Services.FileStorageService,EchoHub.Core.Services.ImageToAsciiService,System.Net.Http.IHttpClientFactory,EchoHub.Core.Contracts.IChatService,EchoHub.Core.Contracts.IMessageEncryptionService)
-  name: ChannelsController(IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService)
-  href: api/server/EchoHub.Server.Controllers.ChannelsController.html#EchoHub_Server_Controllers_ChannelsController__ctor_EchoHub_Core_Contracts_IChannelService_EchoHub_Server_Data_EchoHubDbContext_EchoHub_Server_Services_FileStorageService_EchoHub_Core_Services_ImageToAsciiService_System_Net_Http_IHttpClientFactory_EchoHub_Core_Contracts_IChatService_EchoHub_Core_Contracts_IMessageEncryptionService_
-  commentId: M:EchoHub.Server.Controllers.ChannelsController.#ctor(EchoHub.Core.Contracts.IChannelService,EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Services.FileStorageService,EchoHub.Core.Services.ImageToAsciiService,System.Net.Http.IHttpClientFactory,EchoHub.Core.Contracts.IChatService,EchoHub.Core.Contracts.IMessageEncryptionService)
-  name.vb: New(IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService)
-  fullName: EchoHub.Server.Controllers.ChannelsController.ChannelsController(EchoHub.Core.Contracts.IChannelService, EchoHub.Server.Data.EchoHubDbContext, EchoHub.Server.Services.FileStorageService, EchoHub.Core.Services.ImageToAsciiService, System.Net.Http.IHttpClientFactory, EchoHub.Core.Contracts.IChatService, EchoHub.Core.Contracts.IMessageEncryptionService)
-  fullName.vb: EchoHub.Server.Controllers.ChannelsController.New(EchoHub.Core.Contracts.IChannelService, EchoHub.Server.Data.EchoHubDbContext, EchoHub.Server.Services.FileStorageService, EchoHub.Core.Services.ImageToAsciiService, System.Net.Http.IHttpClientFactory, EchoHub.Core.Contracts.IChatService, EchoHub.Core.Contracts.IMessageEncryptionService)
-  nameWithType: ChannelsController.ChannelsController(IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService)
-  nameWithType.vb: ChannelsController.New(IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService)
+- uid: EchoHub.Server.Controllers.ChannelsController.#ctor(EchoHub.Core.Contracts.IChannelService,EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Services.FileStorageService,EchoHub.Core.Services.ImageToAsciiService,System.Net.Http.IHttpClientFactory,EchoHub.Core.Contracts.IChatService,EchoHub.Core.Contracts.IMessageEncryptionService,EchoHub.Server.Config.UploadLimits)
+  name: ChannelsController(IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService, UploadLimits)
+  href: api/server/EchoHub.Server.Controllers.ChannelsController.html#EchoHub_Server_Controllers_ChannelsController__ctor_EchoHub_Core_Contracts_IChannelService_EchoHub_Server_Data_EchoHubDbContext_EchoHub_Server_Services_FileStorageService_EchoHub_Core_Services_ImageToAsciiService_System_Net_Http_IHttpClientFactory_EchoHub_Core_Contracts_IChatService_EchoHub_Core_Contracts_IMessageEncryptionService_EchoHub_Server_Config_UploadLimits_
+  commentId: M:EchoHub.Server.Controllers.ChannelsController.#ctor(EchoHub.Core.Contracts.IChannelService,EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Services.FileStorageService,EchoHub.Core.Services.ImageToAsciiService,System.Net.Http.IHttpClientFactory,EchoHub.Core.Contracts.IChatService,EchoHub.Core.Contracts.IMessageEncryptionService,EchoHub.Server.Config.UploadLimits)
+  name.vb: New(IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService, UploadLimits)
+  fullName: EchoHub.Server.Controllers.ChannelsController.ChannelsController(EchoHub.Core.Contracts.IChannelService, EchoHub.Server.Data.EchoHubDbContext, EchoHub.Server.Services.FileStorageService, EchoHub.Core.Services.ImageToAsciiService, System.Net.Http.IHttpClientFactory, EchoHub.Core.Contracts.IChatService, EchoHub.Core.Contracts.IMessageEncryptionService, EchoHub.Server.Config.UploadLimits)
+  fullName.vb: EchoHub.Server.Controllers.ChannelsController.New(EchoHub.Core.Contracts.IChannelService, EchoHub.Server.Data.EchoHubDbContext, EchoHub.Server.Services.FileStorageService, EchoHub.Core.Services.ImageToAsciiService, System.Net.Http.IHttpClientFactory, EchoHub.Core.Contracts.IChatService, EchoHub.Core.Contracts.IMessageEncryptionService, EchoHub.Server.Config.UploadLimits)
+  nameWithType: ChannelsController.ChannelsController(IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService, UploadLimits)
+  nameWithType.vb: ChannelsController.New(IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService, UploadLimits)
 - uid: EchoHub.Server.Controllers.ChannelsController.#ctor*
   name: ChannelsController
   href: api/server/EchoHub.Server.Controllers.ChannelsController.html#EchoHub_Server_Controllers_ChannelsController__ctor_
@@ -16312,6 +16915,21 @@ references:
   commentId: Overload:EchoHub.Server.Controllers.ChannelsController.GetChannelCrypto
   fullName: EchoHub.Server.Controllers.ChannelsController.GetChannelCrypto
   nameWithType: ChannelsController.GetChannelCrypto
+- uid: EchoHub.Server.Controllers.ChannelsController.GetChannelMeta(System.String)
+  name: GetChannelMeta(string)
+  href: api/server/EchoHub.Server.Controllers.ChannelsController.html#EchoHub_Server_Controllers_ChannelsController_GetChannelMeta_System_String_
+  commentId: M:EchoHub.Server.Controllers.ChannelsController.GetChannelMeta(System.String)
+  name.vb: GetChannelMeta(String)
+  fullName: EchoHub.Server.Controllers.ChannelsController.GetChannelMeta(string)
+  fullName.vb: EchoHub.Server.Controllers.ChannelsController.GetChannelMeta(String)
+  nameWithType: ChannelsController.GetChannelMeta(string)
+  nameWithType.vb: ChannelsController.GetChannelMeta(String)
+- uid: EchoHub.Server.Controllers.ChannelsController.GetChannelMeta*
+  name: GetChannelMeta
+  href: api/server/EchoHub.Server.Controllers.ChannelsController.html#EchoHub_Server_Controllers_ChannelsController_GetChannelMeta_
+  commentId: Overload:EchoHub.Server.Controllers.ChannelsController.GetChannelMeta
+  fullName: EchoHub.Server.Controllers.ChannelsController.GetChannelMeta
+  nameWithType: ChannelsController.GetChannelMeta
 - uid: EchoHub.Server.Controllers.ChannelsController.GetChannels(System.Int32,System.Int32)
   name: GetChannels(int, int)
   href: api/server/EchoHub.Server.Controllers.ChannelsController.html#EchoHub_Server_Controllers_ChannelsController_GetChannels_System_Int32_System_Int32_
@@ -16630,15 +17248,15 @@ references:
   commentId: T:EchoHub.Server.Controllers.UsersController
   fullName: EchoHub.Server.Controllers.UsersController
   nameWithType: UsersController
-- uid: EchoHub.Server.Controllers.UsersController.#ctor(EchoHub.Core.Contracts.IUserService,EchoHub.Core.Services.ImageToAsciiService)
-  name: UsersController(IUserService, ImageToAsciiService)
-  href: api/server/EchoHub.Server.Controllers.UsersController.html#EchoHub_Server_Controllers_UsersController__ctor_EchoHub_Core_Contracts_IUserService_EchoHub_Core_Services_ImageToAsciiService_
-  commentId: M:EchoHub.Server.Controllers.UsersController.#ctor(EchoHub.Core.Contracts.IUserService,EchoHub.Core.Services.ImageToAsciiService)
-  name.vb: New(IUserService, ImageToAsciiService)
-  fullName: EchoHub.Server.Controllers.UsersController.UsersController(EchoHub.Core.Contracts.IUserService, EchoHub.Core.Services.ImageToAsciiService)
-  fullName.vb: EchoHub.Server.Controllers.UsersController.New(EchoHub.Core.Contracts.IUserService, EchoHub.Core.Services.ImageToAsciiService)
-  nameWithType: UsersController.UsersController(IUserService, ImageToAsciiService)
-  nameWithType.vb: UsersController.New(IUserService, ImageToAsciiService)
+- uid: EchoHub.Server.Controllers.UsersController.#ctor(EchoHub.Core.Contracts.IUserService,EchoHub.Core.Services.ImageToAsciiService,EchoHub.Server.Config.UploadLimits)
+  name: UsersController(IUserService, ImageToAsciiService, UploadLimits)
+  href: api/server/EchoHub.Server.Controllers.UsersController.html#EchoHub_Server_Controllers_UsersController__ctor_EchoHub_Core_Contracts_IUserService_EchoHub_Core_Services_ImageToAsciiService_EchoHub_Server_Config_UploadLimits_
+  commentId: M:EchoHub.Server.Controllers.UsersController.#ctor(EchoHub.Core.Contracts.IUserService,EchoHub.Core.Services.ImageToAsciiService,EchoHub.Server.Config.UploadLimits)
+  name.vb: New(IUserService, ImageToAsciiService, UploadLimits)
+  fullName: EchoHub.Server.Controllers.UsersController.UsersController(EchoHub.Core.Contracts.IUserService, EchoHub.Core.Services.ImageToAsciiService, EchoHub.Server.Config.UploadLimits)
+  fullName.vb: EchoHub.Server.Controllers.UsersController.New(EchoHub.Core.Contracts.IUserService, EchoHub.Core.Services.ImageToAsciiService, EchoHub.Server.Config.UploadLimits)
+  nameWithType: UsersController.UsersController(IUserService, ImageToAsciiService, UploadLimits)
+  nameWithType.vb: UsersController.New(IUserService, ImageToAsciiService, UploadLimits)
 - uid: EchoHub.Server.Controllers.UsersController.#ctor*
   name: UsersController
   href: api/server/EchoHub.Server.Controllers.UsersController.html#EchoHub_Server_Controllers_UsersController__ctor_
@@ -18883,6 +19501,21 @@ references:
   commentId: Overload:EchoHub.Server.Services.ChannelService.GetChannelListAsync
   fullName: EchoHub.Server.Services.ChannelService.GetChannelListAsync
   nameWithType: ChannelService.GetChannelListAsync
+- uid: EchoHub.Server.Services.ChannelService.GetChannelMetaAsync(System.String)
+  name: GetChannelMetaAsync(string)
+  href: api/server/EchoHub.Server.Services.ChannelService.html#EchoHub_Server_Services_ChannelService_GetChannelMetaAsync_System_String_
+  commentId: M:EchoHub.Server.Services.ChannelService.GetChannelMetaAsync(System.String)
+  name.vb: GetChannelMetaAsync(String)
+  fullName: EchoHub.Server.Services.ChannelService.GetChannelMetaAsync(string)
+  fullName.vb: EchoHub.Server.Services.ChannelService.GetChannelMetaAsync(String)
+  nameWithType: ChannelService.GetChannelMetaAsync(string)
+  nameWithType.vb: ChannelService.GetChannelMetaAsync(String)
+- uid: EchoHub.Server.Services.ChannelService.GetChannelMetaAsync*
+  name: GetChannelMetaAsync
+  href: api/server/EchoHub.Server.Services.ChannelService.html#EchoHub_Server_Services_ChannelService_GetChannelMetaAsync_
+  commentId: Overload:EchoHub.Server.Services.ChannelService.GetChannelMetaAsync
+  fullName: EchoHub.Server.Services.ChannelService.GetChannelMetaAsync
+  nameWithType: ChannelService.GetChannelMetaAsync
 - uid: EchoHub.Server.Services.ChannelService.GetChannelTopicAsync(System.String)
   name: GetChannelTopicAsync(string)
   href: api/server/EchoHub.Server.Services.ChannelService.html#EchoHub_Server_Services_ChannelService_GetChannelTopicAsync_System_String_
