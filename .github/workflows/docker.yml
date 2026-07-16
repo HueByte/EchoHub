@@ -1,7 +1,11 @@
 name: Docker
 
+# Runs only after the CI workflow completes, so an image is never pushed for a commit
+# whose formatting, lint, build, or tests failed.
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches: [master]
   workflow_dispatch:
 
@@ -15,23 +19,29 @@ env:
 jobs:
   docker:
     name: Build & Push Docker Image
+    # Proceed only for a successful CI run on a master push, or a manual dispatch.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'master')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # The exact commit CI tested (workflow_run), or the current tip (manual dispatch).
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Check for src/ changes
         id: changes
-        env:
-          BEFORE: ${{ github.event.before }}
         run: |
-          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
-            echo "src_changed=true" >> "$GITHUB_OUTPUT"
+          if git rev-parse HEAD~1 >/dev/null 2>&1; then
+            CHANGED=$(git diff --name-only HEAD~1 HEAD -- 'src/' | wc -l)
           else
-            CHANGED=$(git diff --name-only "$BEFORE" HEAD -- 'src/' | wc -l)
-            [ "$CHANGED" -gt 0 ] && echo "src_changed=true" >> "$GITHUB_OUTPUT" || echo "src_changed=false" >> "$GITHUB_OUTPUT"
+            CHANGED=1
           fi
+          [ "$CHANGED" -gt 0 ] && echo "src_changed=true" >> "$GITHUB_OUTPUT" || echo "src_changed=false" >> "$GITHUB_OUTPUT"
 
       - name: Read version
         if: steps.changes.outputs.src_changed == 'true'

@@ -8,7 +8,7 @@ namespace EchoHub.Server.Services;
 
 public class MessageEncryptionService : IMessageEncryptionService
 {
-    private const string EncryptionPrefix = "$ENC$v1$";
+    private const string EncryptionPrefix = IMessageEncryptionService.CiphertextPrefix;
     private const int NonceSizeBytes = 12;
     private const int TagSizeBytes = 16;
 

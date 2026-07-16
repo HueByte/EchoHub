@@ -17,6 +17,7 @@ public class ChannelListSource : IListDataSource
     private readonly List<string> _channelNames = [];
     private readonly Dictionary<string, int> _unreadCounts = [];
     private readonly HashSet<string> _protectedChannels = [];
+    private readonly HashSet<string> _mentionChannels = [];
     private string _activeChannel = string.Empty;
 
     public event NotifyCollectionChangedEventHandler? CollectionChanged;
@@ -28,9 +29,10 @@ public class ChannelListSource : IListDataSource
     private static readonly Attribute UnreadAttr = new(Color.BrightCyan, Color.None);
     private static readonly Attribute NormalAttr = new(Color.DarkGray, Color.None);
     private static readonly Attribute BadgeAttr = new(Color.BrightYellow, Color.None);
+    private static readonly Attribute MentionAttr = new(new Color(230, 140, 60), Color.None);
 
     public void Update(List<string> channels, Dictionary<string, int> unread, string activeChannel,
-        IReadOnlySet<string>? protectedChannels = null)
+        IReadOnlySet<string>? protectedChannels = null, IReadOnlySet<string>? mentionChannels = null)
     {
         _channelNames.Clear();
         _channelNames.AddRange(channels);
@@ -40,6 +42,9 @@ public class ChannelListSource : IListDataSource
         _protectedChannels.Clear();
         if (protectedChannels is not null)
             _protectedChannels.UnionWith(protectedChannels);
+        _mentionChannels.Clear();
+        if (mentionChannels is not null)
+            _mentionChannels.UnionWith(mentionChannels);
         _activeChannel = activeChannel;
         MaxItemLength = channels.Count > 0 ? channels.Max(c => c.Length + 6) : 0;
         if (!SuspendCollectionChangedEvent)
@@ -82,12 +87,18 @@ public class ChannelListSource : IListDataSource
             listView.SetAttribute(Resolve(isActive ? ActiveAttr : NormalAttr));
             drawnChars = RenderHelpers.WriteText(listView, prefix, drawnChars, width);
 
-            listView.SetAttribute(Resolve(isActive ? ActiveAttr : hasUnread ? UnreadAttr : NormalAttr));
+            // Mentions escalate above plain unread: the whole entry turns orange
+            var hasMention = _mentionChannels.Contains(name);
+            var nameAttr = isActive ? ActiveAttr
+                : hasMention ? MentionAttr
+                : hasUnread ? UnreadAttr
+                : NormalAttr;
+            listView.SetAttribute(Resolve(nameAttr));
             drawnChars = RenderHelpers.WriteText(listView, channelText, drawnChars, width);
 
             if (hasUnread)
             {
-                listView.SetAttribute(Resolve(BadgeAttr));
+                listView.SetAttribute(Resolve(hasMention ? MentionAttr : BadgeAttr));
                 drawnChars = RenderHelpers.WriteText(listView, badge, drawnChars, width);
             }
         }

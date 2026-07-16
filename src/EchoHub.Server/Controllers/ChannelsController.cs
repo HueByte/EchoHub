@@ -5,9 +5,11 @@ using EchoHub.Core.Security;
 using EchoHub.Core.Services;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
+using EchoHub.Server.Config;
 using EchoHub.Server.Data;
 using EchoHub.Server.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -26,6 +28,7 @@ public class ChannelsController : ControllerBase
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IChatService _chatService;
     private readonly IMessageEncryptionService _encryption;
+    private readonly UploadLimits _uploadLimits;
 
     public ChannelsController(
         IChannelService channelService,
@@ -34,7 +37,8 @@ public class ChannelsController : ControllerBase
         ImageToAsciiService asciiService,
         IHttpClientFactory httpClientFactory,
         IChatService chatService,
-        IMessageEncryptionService encryption)
+        IMessageEncryptionService encryption,
+        UploadLimits uploadLimits)
     {
         _channelService = channelService;
         _db = db;
@@ -43,6 +47,7 @@ public class ChannelsController : ControllerBase
         _httpClientFactory = httpClientFactory;
         _chatService = chatService;
         _encryption = encryption;
+        _uploadLimits = uploadLimits;
     }
 
     [HttpGet]
@@ -91,6 +96,21 @@ public class ChannelsController : ControllerBase
             return NotFound(new ErrorResponse($"Channel '{channel}' does not exist."));
 
         return Ok(crypto);
+    }
+
+    /// <summary>
+    /// Human-facing summary of a channel (message count, unique posters, estimated size,
+    /// created date, room id). Available for encrypted channels too — these are metadata the
+    /// server tracks even though it cannot read the messages themselves.
+    /// </summary>
+    [HttpGet("{channel}/meta")]
+    public async Task<IActionResult> GetChannelMeta(string channel)
+    {
+        var meta = await _channelService.GetChannelMetaAsync(channel);
+        if (meta is null)
+            return NotFound(new ErrorResponse($"Channel '{channel}' does not exist."));
+
+        return Ok(meta);
     }
 
     /// <summary>
@@ -152,12 +172,18 @@ public class ChannelsController : ControllerBase
     /// uploads ciphertext blobs and declares each file's kind (<c>kind</c>) and pre-rendered,
     /// room-encrypted preview (<c>preview</c>), aligned by file order — the server never inspects them.
     /// </summary>
+    // Request-body and multipart limits are applied at runtime from the configured UploadLimits
+    // (see below) rather than via [RequestSizeLimit]/[RequestFormLimits], which require
+    // compile-time constants and so couldn't honor the "Uploads" configuration section.
     [HttpPost("{channel}/messages")]
     [EnableRateLimiting("upload")]
-    [RequestSizeLimit((long)HubConstants.MaxFileSizeBytes * HubConstants.MaxAttachmentsPerMessage)]
-    [RequestFormLimits(MultipartBodyLengthLimit = (long)HubConstants.MaxFileSizeBytes * HubConstants.MaxAttachmentsPerMessage)]
     public async Task<IActionResult> SendMessageWithAttachments(string channel, [FromQuery] string? size = null)
     {
+        // Raise this request's body ceiling to the configured maximum before the body is read.
+        var bodySizeFeature = HttpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
+        if (bodySizeFeature is not null && !bodySizeFeature.IsReadOnly)
+            bodySizeFeature.MaxRequestBodySize = _uploadLimits.MaxRequestBodyBytes;
+
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var usernameClaim = User.FindFirstValue("username");
         if (userIdClaim is null || usernameClaim is null)
@@ -179,8 +205,8 @@ public class ChannelsController : ControllerBase
         var files = Request.Form.Files;
         if (files.Count == 0)
             return BadRequest(new ErrorResponse("At least one attachment is required. Send plain text over the chat connection."));
-        if (files.Count > HubConstants.MaxAttachmentsPerMessage)
-            return BadRequest(new ErrorResponse($"A message may carry at most {HubConstants.MaxAttachmentsPerMessage} attachments."));
+        if (files.Count > _uploadLimits.MaxAttachmentsPerMessage)
+            return BadRequest(new ErrorResponse($"A message may carry at most {_uploadLimits.MaxAttachmentsPerMessage} attachments."));
 
         var sender = await _db.Users.FindAsync(userId);
         if (sender is not null && sender.IsMuted && (sender.MutedUntil is null || sender.MutedUntil > DateTimeOffset.UtcNow))
@@ -215,7 +241,7 @@ public class ChannelsController : ControllerBase
                 if (string.IsNullOrEmpty(previewPlain))
                     previewPlain = null;
 
-                if (file.Length > MaxForKind(kind))
+                if (file.Length > _uploadLimits.MaxForKind(kind))
                     return BadRequest(new ErrorResponse($"'{file.FileName}' exceeds the maximum size."));
 
                 using var encryptedStream = file.OpenReadStream();
@@ -228,8 +254,8 @@ public class ChannelsController : ControllerBase
                 var isAudio = !isImage && FileValidationHelper.IsAudioFile(file.FileName);
                 kind = isImage ? AttachmentKind.Image : isAudio ? AttachmentKind.Audio : AttachmentKind.File;
 
-                if (file.Length > MaxForKind(kind))
-                    return BadRequest(new ErrorResponse($"'{file.FileName}' exceeds the maximum size of {MaxForKind(kind) / (1024 * 1024)} MB."));
+                if (file.Length > _uploadLimits.MaxForKind(kind))
+                    return BadRequest(new ErrorResponse($"'{file.FileName}' exceeds the maximum size of {_uploadLimits.MaxForKind(kind) / (1024 * 1024)} MB."));
 
                 string filePath;
                 (fileId, filePath) = await _fileStorage.SaveFileAsync(stream, file.FileName);
@@ -296,13 +322,6 @@ public class ChannelsController : ControllerBase
         _ => AttachmentKind.File,
     };
 
-    private static long MaxForKind(AttachmentKind kind) => kind switch
-    {
-        AttachmentKind.Image => HubConstants.MaxImageSizeBytes,
-        AttachmentKind.Audio => HubConstants.MaxAudioFileSizeBytes,
-        _ => HubConstants.MaxFileSizeBytes,
-    };
-
     [HttpPost("{channel}/send-url")]
     [EnableRateLimiting("upload")]
     public async Task<IActionResult> SendUrl(string channel, [FromBody] SendUrlRequest request, [FromQuery] string? size = null)
@@ -343,13 +362,13 @@ public class ChannelsController : ControllerBase
             response.EnsureSuccessStatusCode();
 
             var contentLength = response.Content.Headers.ContentLength;
-            if (contentLength > HubConstants.MaxImageSizeBytes)
-                return BadRequest(new ErrorResponse($"File size exceeds maximum of {HubConstants.MaxImageSizeBytes / (1024 * 1024)} MB."));
+            if (contentLength > _uploadLimits.MaxImageSizeBytes)
+                return BadRequest(new ErrorResponse($"File size exceeds maximum of {_uploadLimits.MaxImageSizeBytes / (1024 * 1024)} MB."));
 
             imageBytes = await response.Content.ReadAsByteArrayAsync();
 
-            if (imageBytes.Length > HubConstants.MaxImageSizeBytes)
-                return BadRequest(new ErrorResponse($"File size exceeds maximum of {HubConstants.MaxImageSizeBytes / (1024 * 1024)} MB."));
+            if (imageBytes.Length > _uploadLimits.MaxImageSizeBytes)
+                return BadRequest(new ErrorResponse($"File size exceeds maximum of {_uploadLimits.MaxImageSizeBytes / (1024 * 1024)} MB."));
 
             fileName = Path.GetFileName(uri.LocalPath);
             if (string.IsNullOrWhiteSpace(fileName) || !fileName.Contains('.'))

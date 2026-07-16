@@ -23,6 +23,25 @@ public partial class ChatLine
     /// <summary>Number of spaces to prepend on continuation lines when this line is word-wrapped.</summary>
     public int ContinuationIndent { get; set; }
 
+    /// <summary>
+    /// Colored segments to prepend on continuation lines instead of plain spaces
+    /// (e.g. the nick-column rail "                   │ "). When set, takes
+    /// precedence over <see cref="ContinuationIndent"/>.
+    /// </summary>
+    public List<ChatSegment>? ContinuationPrefixSegments { get; set; }
+
+    /// <summary>
+    /// When set, this line is a horizontal separator rule (date change, unread marker).
+    /// The view regenerates it to the current viewport width instead of word-wrapping.
+    /// </summary>
+    public string? RuleLabel { get; set; }
+
+    /// <summary>Color for a rule line; null falls back to <see cref="ChatColors.DateRuleAttr"/>.</summary>
+    public Attribute? RuleAttr { get; set; }
+
+    /// <summary>True for the "new messages" unread-marker rule so it can be removed on channel switch.</summary>
+    public bool IsUnreadMarker { get; set; }
+
     public ChatLine(string plainText)
     {
         Segments = [new ChatSegment(plainText, null)];
@@ -43,8 +62,13 @@ public partial class ChatLine
     /// </summary>
     public List<ChatLine> Wrap(int width, int continuationIndent = 0)
     {
-        if (width <= 0 || TextLength <= width)
+        // Rules are regenerated to viewport width by the view; never word-wrap them.
+        if (RuleLabel is not null || width <= 0 || TextLength <= width)
             return [this];
+
+        var prefixSegments = ContinuationPrefixSegments;
+        if (prefixSegments is not null)
+            continuationIndent = prefixSegments.Sum(s => s.Text.GetColumns());
 
         var tokens = new List<(string grapheme, Attribute? color)>();
         foreach (var segment in Segments)
@@ -91,8 +115,13 @@ public partial class ChatLine
             }
 
             var segments = new List<ChatSegment>();
-            if (!firstLine && continuationIndent > 0)
-                segments.Add(new ChatSegment(new string(' ', continuationIndent), null));
+            if (!firstLine)
+            {
+                if (prefixSegments is not null)
+                    segments.AddRange(prefixSegments);
+                else if (continuationIndent > 0)
+                    segments.Add(new ChatSegment(new string(' ', continuationIndent), null));
+            }
 
             // Rebuild segments by grouping consecutive same-color tokens.
             var sb = new StringBuilder();
@@ -120,6 +149,7 @@ public partial class ChatLine
             return [this];
 
         // Propagate metadata to all wrapped lines so they remain clickable
+        // and keep the mention highlight across continuation lines
         foreach (var wrapped in results)
         {
             wrapped.AttachmentUrl = AttachmentUrl;
@@ -127,6 +157,7 @@ public partial class ChatLine
             wrapped.AttachmentKind = AttachmentKind;
             wrapped.MessageId = MessageId;
             wrapped.SenderUsername = SenderUsername;
+            wrapped.IsMention = IsMention;
         }
 
         return results;

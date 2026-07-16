@@ -271,6 +271,20 @@ public sealed class ApiClient : IDisposable
         return await response.Content.ReadFromJsonAsync<ChannelCryptoDto>();
     }
 
+    /// <summary>
+    /// Fetches a channel's human-facing metadata (message count, unique posters, estimated
+    /// size, created date, room id) for the <c>/meta</c> command. Returns null if it doesn't exist.
+    /// </summary>
+    public async Task<ChannelMetaDto?> GetChannelMetaAsync(string channelName)
+    {
+        EnsureAuthenticated();
+        using var response = await AuthenticatedGetAsync($"/api/channels/{Uri.EscapeDataString(channelName)}/meta");
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            return null;
+        await EnsureSuccessAsync(response);
+        return await response.Content.ReadFromJsonAsync<ChannelMetaDto>();
+    }
+
     public async Task<ChannelDto?> RekeyChannelAsync(string channelName, RekeyChannelRequest request)
     {
         EnsureAuthenticated();

@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.RegularExpressions;
 using EchoHub.Client.UI.Helpers;
 using EchoHub.Core.DTOs;
@@ -15,8 +16,20 @@ namespace EchoHub.Client.UI.Chat;
 /// </summary>
 public sealed class ChatMessageManager
 {
+    /// <summary>Columns reserved for the right-aligned nick column (WeeChat-style).</summary>
+    public const int NickColWidth = 12;
+
+    /// <summary>Columns before message text starts: "HH:mm " + nick column + " │ ".</summary>
+    public const int ContentIndentCols = 6 + NickColWidth + 3;
+
     private readonly Dictionary<string, List<ChatLine>> _channelMessages = [];
     private readonly Dictionary<string, int> _channelUnread = [];
+    private readonly Dictionary<string, DateTime> _channelLastDate = [];
+    private readonly HashSet<string> _markedChannels = [];
+    private readonly Dictionary<string, Guid> _markerAnchor = [];
+    private readonly HashSet<string> _mentionChannels = [];
+    private readonly Dictionary<string, Guid> _lastRead = [];
+    private readonly Dictionary<string, Guid> _channelNewestId = [];
 
     private string _currentUser = string.Empty;
     private string _currentChannel = string.Empty;
@@ -33,7 +46,18 @@ public sealed class ChatMessageManager
     public string CurrentChannel
     {
         get => _currentChannel;
-        set => _currentChannel = value;
+        set
+        {
+            if (_currentChannel == value)
+                return;
+
+            // Leaving a channel consumes its "new messages" marker so the next
+            // unread burst gets a fresh one (irssi behavior), and everything
+            // visible up to now counts as read.
+            RemoveUnreadMarker(_currentChannel);
+            MarkRead(_currentChannel);
+            _currentChannel = value;
+        }
     }
 
     public string CurrentUser => _currentUser;
@@ -57,9 +81,26 @@ public sealed class ChatMessageManager
     public void ClearUnread(string channelName)
     {
         _channelUnread[channelName] = 0;
+        _mentionChannels.Remove(channelName);
+        MarkRead(channelName);
+    }
+
+    /// <summary>
+    /// Last message the user has read per channel — persisted by the orchestrator so
+    /// unread/mention state can be seeded from history on the next connect.
+    /// </summary>
+    public IReadOnlyDictionary<string, Guid> LastReadIds => _lastRead;
+
+    private void MarkRead(string channelName)
+    {
+        if (!string.IsNullOrEmpty(channelName) && _channelNewestId.TryGetValue(channelName, out var newest))
+            _lastRead[channelName] = newest;
     }
 
     internal Dictionary<string, int> GetUnreadCounts() => _channelUnread;
+
+    /// <summary>Channels with an unread @mention of the current user (cleared by <see cref="ClearUnread"/>).</summary>
+    public IReadOnlySet<string> MentionChannels => _mentionChannels;
 
     // ── Mutations ────────────────────────────────────────────────────
 
@@ -75,19 +116,39 @@ public sealed class ChatMessageManager
             _channelMessages[message.ChannelName] = messages;
         }
 
+        // Day boundary → horizontal date rule
+        var msgDate = message.SentAt.ToLocalTime().Date;
+        if (!_channelLastDate.TryGetValue(message.ChannelName, out var lastDate) || lastDate != msgDate)
+        {
+            messages.Add(DateRule(msgDate));
+            _channelLastDate[message.ChannelName] = msgDate;
+        }
+
+        var isCurrent = message.ChannelName == _currentChannel;
+        _channelNewestId[message.ChannelName] = message.Id;
+        if (isCurrent)
+            _lastRead[message.ChannelName] = message.Id;
+
+        // First unread message in an inactive channel → "new messages" marker,
+        // anchored to this message so a history reload can re-place it
+        if (!isCurrent && _markedChannels.Add(message.ChannelName))
+        {
+            messages.Add(UnreadMarkerRule());
+            _markerAnchor[message.ChannelName] = message.Id;
+        }
+
         foreach (var line in lines)
             messages.Add(line);
 
-        if (message.ChannelName == _currentChannel)
-        {
-            MessagesChanged?.Invoke(message.ChannelName);
-        }
-        else
+        if (!isCurrent)
         {
             _channelUnread.TryGetValue(message.ChannelName, out var count);
             _channelUnread[message.ChannelName] = count + 1;
-            MessagesChanged?.Invoke(message.ChannelName);
+            if (lines.Any(l => l.IsMention))
+                _mentionChannels.Add(message.ChannelName);
         }
+
+        MessagesChanged?.Invoke(message.ChannelName);
     }
 
     /// <summary>
@@ -101,24 +162,20 @@ public sealed class ChatMessageManager
             _channelMessages[channelName] = messages;
         }
 
-        var time = FormatDateTime(DateTimeOffset.Now);
+        var time = FormatTime(DateTimeOffset.Now);
         var textLines = text.Split('\n');
 
-        messages.Add(new ChatLine(
-        [
-            new($"[{time}] ", ChatColors.TimestampAttr),
-            new($"** {textLines[0].TrimEnd('\r')}", ChatColors.SystemAttr)
-        ]));
+        var header = SystemHeaderSegments(time);
+        header.Add(new(textLines[0].TrimEnd('\r'), ChatColors.SystemAttr));
+        messages.Add(new ChatLine(header) { ContinuationPrefixSegments = RailPrefix() });
 
-        var indent = new string(' ', $"[{time}] ** ".Length);
         for (int i = 1; i < textLines.Length; i++)
         {
             var line = textLines[i].TrimEnd('\r');
             if (string.IsNullOrWhiteSpace(line)) continue;
-            messages.Add(new ChatLine(
-            [
-                new($"{indent}{line}", ChatColors.SystemAttr)
-            ]));
+            var segments = RailPrefix();
+            segments.Add(new(line, ChatColors.SystemAttr));
+            messages.Add(new ChatLine(segments) { ContinuationPrefixSegments = RailPrefix() });
         }
 
         if (channelName == _currentChannel)
@@ -130,19 +187,16 @@ public sealed class ChatMessageManager
     /// </summary>
     public void AddStatusMessage(string channelName, string username, string status)
     {
-        var time = FormatDateTime(DateTimeOffset.Now);
-        var segments = new List<ChatSegment>
-        {
-            new($"[{time}] ", ChatColors.TimestampAttr),
-            new($"** {username} is now {status}", ChatColors.SystemAttr)
-        };
+        var time = FormatTime(DateTimeOffset.Now);
+        var segments = SystemHeaderSegments(time);
+        segments.Add(new($"{username} is now {status}", ChatColors.SystemAttr));
 
         if (!_channelMessages.TryGetValue(channelName, out var messages))
         {
             messages = [];
             _channelMessages[channelName] = messages;
         }
-        messages.Add(new ChatLine(segments));
+        messages.Add(new ChatLine(segments) { ContinuationPrefixSegments = RailPrefix() });
 
         if (channelName == _currentChannel)
             MessagesChanged?.Invoke(channelName);
@@ -169,6 +223,9 @@ public sealed class ChatMessageManager
         if (_channelMessages.TryGetValue(channelName, out var messages))
         {
             messages.Clear();
+            _channelLastDate.Remove(channelName);
+            _markedChannels.Remove(channelName);
+            _markerAnchor.Remove(channelName);
             if (channelName == _currentChannel)
                 MessagesChanged?.Invoke(channelName);
         }
@@ -176,14 +233,88 @@ public sealed class ChatMessageManager
 
     /// <summary>
     /// Load historical messages into a channel, replacing any existing messages.
+    /// When <paramref name="lastReadId"/> is given (persisted from a previous session),
+    /// messages after it seed the unread count, @mention highlight, and the
+    /// "new messages" marker — so activity that happened while offline still lights up.
     /// </summary>
-    public void LoadHistory(string channelName, List<MessageDto> messages)
+    public void LoadHistory(string channelName, List<MessageDto> messages, Guid? lastReadId = null)
     {
-        var formatted = messages.SelectMany(FormatMessage).ToList();
+        var formatted = FormatWithDateRules(messages, out var lastDate);
+
+        if (messages.Count > 0)
+            _channelNewestId[channelName] = messages[^1].Id;
+
+        // Re-place the "new messages" marker at its anchor — channel selection
+        // reloads history, which would otherwise wipe the marker right when the
+        // user switches in to read the unread backlog.
+        if (_markedChannels.Contains(channelName))
+        {
+            var anchorIdx = _markerAnchor.TryGetValue(channelName, out var anchorId)
+                ? formatted.FindIndex(l => l.MessageId == anchorId)
+                : -1;
+            if (anchorIdx >= 0)
+            {
+                formatted.Insert(anchorIdx, UnreadMarkerRule());
+            }
+            else
+            {
+                // Anchor fell outside the fetched history window — drop the marker
+                _markedChannels.Remove(channelName);
+                _markerAnchor.Remove(channelName);
+            }
+        }
+        else if (lastReadId is { } lastRead && messages.Count > 0)
+        {
+            SeedUnreadFromHistory(channelName, messages, formatted, lastRead);
+        }
+
         _channelMessages[channelName] = formatted;
 
+        if (lastDate is { } date)
+            _channelLastDate[channelName] = date;
+        else
+            _channelLastDate.Remove(channelName);
+
+        MessagesChanged?.Invoke(channelName);
+    }
+
+    /// <summary>
+    /// Reconstructs unread state from a persisted last-read message id: places the
+    /// "new messages" marker before the first unread message and, for inactive
+    /// channels, seeds the unread count and @mention highlight. A last-read id that
+    /// is no longer inside the fetched window treats the whole window as unread.
+    /// </summary>
+    private void SeedUnreadFromHistory(string channelName, List<MessageDto> messages,
+        List<ChatLine> formatted, Guid lastReadId)
+    {
+        // FindIndex miss (-1 → 0) means the last-read message is older than the fetched
+        // window: everything in the window counts as unread.
+        var firstUnread = messages.FindIndex(m => m.Id == lastReadId) + 1;
+        if (firstUnread >= messages.Count)
+            return; // everything read
+
+        var anchor = messages[firstUnread];
+        var lineIdx = formatted.FindIndex(l => l.MessageId == anchor.Id);
+        if (lineIdx < 0)
+            return;
+
+        formatted.Insert(lineIdx, UnreadMarkerRule());
+        _markedChannels.Add(channelName);
+        _markerAnchor[channelName] = anchor.Id;
+
+        // The active channel shows the marker but is being read right now —
+        // badges and mention highlights are only for background channels.
         if (channelName == _currentChannel)
-            MessagesChanged?.Invoke(channelName);
+            return;
+
+        _channelUnread[channelName] = messages.Count - firstUnread;
+
+        if (!string.IsNullOrEmpty(_currentUser))
+        {
+            var pattern = $@"@{Regex.Escape(_currentUser)}\b";
+            if (messages.Skip(firstUnread).Any(m => Regex.IsMatch(m.Content, pattern, RegexOptions.IgnoreCase)))
+                _mentionChannels.Add(channelName);
+        }
     }
 
     /// <summary>
@@ -200,13 +331,22 @@ public sealed class ChatMessageManager
             .Select(l => l.MessageId!.Value)
             .ToHashSet();
 
-        var newLines = olderMessages
-            .Where(m => !existingIds.Contains(m.Id))
-            .SelectMany(FormatMessage)
-            .ToList();
+        var fresh = olderMessages.Where(m => !existingIds.Contains(m.Id)).ToList();
+        var newLines = FormatWithDateRules(fresh, out var lastBatchDate);
 
         if (newLines.Count == 0)
             return;
+
+        // The buffer's leading date rule is redundant when the prepended batch
+        // ends on the same day — the batch already carries that day's rule.
+        if (lastBatchDate is { } batchDate
+            && existing.Count > 0
+            && existing[0].RuleLabel is { } label
+            && !existing[0].IsUnreadMarker
+            && label == DateRuleLabel(batchDate))
+        {
+            existing.RemoveAt(0);
+        }
 
         existing.InsertRange(0, newLines);
 
@@ -226,6 +366,12 @@ public sealed class ChatMessageManager
     {
         _channelMessages.Clear();
         _channelUnread.Clear();
+        _channelLastDate.Clear();
+        _markedChannels.Clear();
+        _markerAnchor.Clear();
+        _mentionChannels.Clear();
+        _lastRead.Clear();
+        _channelNewestId.Clear();
         _currentChannel = string.Empty;
         _currentUser = string.Empty;
     }
@@ -234,12 +380,9 @@ public sealed class ChatMessageManager
 
     private List<ChatLine> FormatMessage(MessageDto message)
     {
-        var time = FormatDateTime(message.SentAt);
-        var senderName = message.SenderUsername + ":";
-        var senderColor = HexColorHelper.ParseHexColor(message.SenderNicknameColor);
-
-        var indent = new string(' ', $"[{time}] {senderName} ".Length);
-        var pad = new string(' ', 7);
+        var time = FormatTime(message.SentAt);
+        var senderColor = HexColorHelper.ParseHexColor(message.SenderNicknameColor)
+            ?? NickColorHelper.GetAttribute(message.SenderUsername);
 
         var lines = new List<ChatLine>();
         var hasContent = !string.IsNullOrWhiteSpace(message.Content);
@@ -250,25 +393,35 @@ public sealed class ChatMessageManager
         {
             var displayContent = EmojiHelper.ReplaceEmoji(message.Content);
             var contentLines = displayContent.Split('\n');
-            lines.Add(BuildChatLineWithMentions(time, senderName, senderColor, $" {contentLines[0].TrimEnd('\r')}"));
+
+            var header = HeaderSegments(time, message.SenderUsername, senderColor);
+            header.AddRange(ChatColors.SplitMentions(contentLines[0].TrimEnd('\r')));
+            lines.Add(new ChatLine(header));
+
             for (int i = 1; i < contentLines.Length; i++)
-                lines.Add(new ChatLine(ChatColors.SplitMentions($"{indent}{contentLines[i].TrimEnd('\r')}")));
+            {
+                var segments = RailPrefix();
+                segments.AddRange(ChatColors.SplitMentions(contentLines[i].TrimEnd('\r')));
+                lines.Add(new ChatLine(segments));
+            }
         }
         else
         {
             var summary = attachments.Count switch
             {
                 0 => " ",
-                1 => $" [{attachments[0].Kind.ToString().ToLowerInvariant()}]",
-                _ => $" [{attachments.Count} attachments]",
+                1 => $"[{attachments[0].Kind.ToString().ToLowerInvariant()}]",
+                _ => $"[{attachments.Count} attachments]",
             };
-            lines.Add(BuildChatLine(time, senderName, senderColor, summary));
+            var header = HeaderSegments(time, message.SenderUsername, senderColor);
+            header.Add(new(summary, null));
+            lines.Add(new ChatLine(header));
         }
 
         foreach (var l in lines)
-            l.ContinuationIndent = indent.Length;
+            l.ContinuationPrefixSegments = RailPrefix();
 
-        // One block per attachment
+        // One block per attachment — every block hangs off the nick-column rail
         foreach (var attachment in attachments)
         {
             switch (attachment.Kind)
@@ -279,24 +432,27 @@ public sealed class ChatMessageManager
                         foreach (var artLine in attachment.AsciiPreview.Split('\n'))
                         {
                             var trimmed = artLine.TrimEnd('\r');
-                            lines.Add(ChatLine.HasColorTags(trimmed)
-                                ? ChatLine.FromColoredText(pad + trimmed)
-                                : new ChatLine($"{pad}{trimmed}"));
+                            var segments = RailPrefix();
+                            if (ChatLine.HasColorTags(trimmed))
+                                segments.AddRange(ChatLine.FromColoredText(trimmed).Segments);
+                            else
+                                segments.Add(new(trimmed, null));
+                            lines.Add(new ChatLine(segments));
                         }
                     }
-                    lines.Add(AttachmentActionLine(pad,
+                    lines.Add(AttachmentActionLine(
                         $"[↓ save original] {attachment.FileName} [{FormatFileSize(attachment.FileSize)}]",
                         ChatColors.FileAttr, attachment));
                     break;
 
                 case Core.Models.AttachmentKind.Audio:
-                    lines.Add(AttachmentActionLine(pad,
+                    lines.Add(AttachmentActionLine(
                         $"♪ [Audio: {attachment.FileName}] [{FormatFileSize(attachment.FileSize)}]",
                         ChatColors.AudioAttr, attachment));
                     break;
 
                 default:
-                    lines.Add(AttachmentActionLine(pad,
+                    lines.Add(AttachmentActionLine(
                         $"[File: {attachment.FileName}] [{FormatFileSize(attachment.FileSize)}]",
                         ChatColors.FileAttr, attachment));
                     break;
@@ -308,7 +464,7 @@ public sealed class ChatMessageManager
         {
             var chatWidth = _chatWidth > 0 ? _chatWidth : 80;
             foreach (var embed in message.Embeds)
-                lines.AddRange(FormatEmbed(embed, indent, chatWidth));
+                lines.AddRange(FormatEmbed(embed, chatWidth));
         }
 
         foreach (var line in lines)
@@ -334,71 +490,142 @@ public sealed class ChatMessageManager
     /// Builds a clickable attachment line carrying the metadata the message list uses to
     /// route activation (play audio, download file, save original image).
     /// </summary>
-    private static ChatLine AttachmentActionLine(string pad, string text, Attribute color, AttachmentDto attachment)
+    private static ChatLine AttachmentActionLine(string text, Attribute color, AttachmentDto attachment)
     {
-        var line = new ChatLine(new List<ChatSegment>
+        var segments = RailPrefix();
+        segments.Add(new(text, color));
+        return new ChatLine(segments)
         {
-            new(pad, null),
-            new(text, color),
-        });
-        line.AttachmentUrl = attachment.Url;
-        line.AttachmentFileName = attachment.FileName;
-        line.AttachmentKind = attachment.Kind;
-        return line;
-    }
-
-    private static ChatLine BuildChatLine(string time, string senderName, Attribute? senderColor, string suffix)
-    {
-        var segments = new List<ChatSegment>
-        {
-            new($"[{time}] ", ChatColors.TimestampAttr),
-            new(senderName, senderColor),
-            new(suffix, null)
+            AttachmentUrl = attachment.Url,
+            AttachmentFileName = attachment.FileName,
+            AttachmentKind = attachment.Kind,
+            ContinuationPrefixSegments = RailPrefix(),
         };
-        return new ChatLine(segments);
     }
 
-    private static ChatLine BuildChatLineColored(string time, string senderName, Attribute? senderColor, string suffix, Attribute suffixColor)
+    /// <summary>
+    /// Leading segments of a message header line: dim "HH:mm ", the right-aligned
+    /// nick column, and the " │ " rail. Message text follows at <see cref="ContentIndentCols"/>.
+    /// </summary>
+    private static List<ChatSegment> HeaderSegments(string time, string nick, Attribute? nickColor) =>
+    [
+        new($"{time} ", ChatColors.TimestampAttr),
+        new(PadNick(nick), nickColor),
+        new(" │ ", ChatColors.RailAttr),
+    ];
+
+    /// <summary>Header variant for system/status lines: "--" in the nick column.</summary>
+    private static List<ChatSegment> SystemHeaderSegments(string time) =>
+    [
+        new($"{time} ", ChatColors.TimestampAttr),
+        new(PadNick("--"), ChatColors.TimestampAttr),
+        new(" │ ", ChatColors.RailAttr),
+    ];
+
+    /// <summary>
+    /// Indent segments aligning continuation/attachment/embed lines under the message
+    /// text, extending the │ rail. Returns a fresh mutable list each call.
+    /// </summary>
+    private static List<ChatSegment> RailPrefix() =>
+    [
+        new(new string(' ', 6 + NickColWidth + 1), null),
+        new("│ ", ChatColors.RailAttr),
+    ];
+
+    /// <summary>
+    /// Right-aligns a nick into the fixed nick column, truncating over-long nicks
+    /// with an ellipsis. Grapheme/column aware.
+    /// </summary>
+    internal static string PadNick(string nick)
     {
-        var segments = new List<ChatSegment>
+        var cols = nick.GetColumns();
+        if (cols > NickColWidth)
         {
-            new($"[{time}] ", ChatColors.TimestampAttr),
-            new(senderName, senderColor),
-            new(suffix, suffixColor)
-        };
-        return new ChatLine(segments);
+            var sb = new StringBuilder();
+            int used = 0;
+            foreach (var g in GraphemeHelper.GetGraphemes(nick))
+            {
+                var gCols = Math.Max(g.GetColumns(), 1);
+                if (used + gCols > NickColWidth - 1) break;
+                sb.Append(g);
+                used += gCols;
+            }
+            sb.Append('…');
+            nick = sb.ToString();
+            cols = used + 1;
+        }
+        return new string(' ', NickColWidth - cols) + nick;
     }
 
-    private static ChatLine BuildChatLineWithMentions(string time, string senderName, Attribute? senderColor, string suffix)
+    internal static string DateRuleLabel(DateTime date) => date.ToString("ddd, MMM d yyyy");
+
+    private static ChatLine DateRule(DateTime date)
     {
-        var segments = new List<ChatSegment>
+        var label = DateRuleLabel(date);
+        return new ChatLine([new($"── {label} ──", ChatColors.DateRuleAttr)])
         {
-            new($"[{time}] ", ChatColors.TimestampAttr),
-            new(senderName, senderColor),
+            RuleLabel = label,
+            RuleAttr = ChatColors.DateRuleAttr,
         };
-        segments.AddRange(ChatColors.SplitMentions(suffix));
-        return new ChatLine(segments);
     }
 
-    private static List<ChatLine> FormatEmbed(EmbedDto embed, string indent, int chatWidth)
+    private static ChatLine UnreadMarkerRule() =>
+        new([new("── new messages ──", ChatColors.UnreadMarkerAttr)])
+        {
+            RuleLabel = "new messages",
+            RuleAttr = ChatColors.UnreadMarkerAttr,
+            IsUnreadMarker = true,
+        };
+
+    private void RemoveUnreadMarker(string channel)
+    {
+        if (string.IsNullOrEmpty(channel) || !_markedChannels.Remove(channel))
+            return;
+
+        _markerAnchor.Remove(channel);
+        if (_channelMessages.TryGetValue(channel, out var messages))
+            messages.RemoveAll(l => l.IsUnreadMarker);
+    }
+
+    /// <summary>
+    /// Formats a chronological batch of messages, inserting a date rule before the
+    /// first message and at every day boundary. Outputs the batch's last local date.
+    /// </summary>
+    private List<ChatLine> FormatWithDateRules(List<MessageDto> messages, out DateTime? lastDate)
+    {
+        var lines = new List<ChatLine>();
+        lastDate = null;
+
+        foreach (var message in messages)
+        {
+            var date = message.SentAt.ToLocalTime().Date;
+            if (lastDate != date)
+            {
+                lines.Add(DateRule(date));
+                lastDate = date;
+            }
+            lines.AddRange(FormatMessage(message));
+        }
+
+        return lines;
+    }
+
+    private static List<ChatLine> FormatEmbed(EmbedDto embed, int chatWidth)
     {
         var lines = new List<ChatLine>();
         const string border = "\u258f "; // ▏ + space
         const int borderCols = 2;
-        int indentCols = indent.GetColumns();
-        int textWidth = chatWidth - indentCols - borderCols;
+        int textWidth = chatWidth - ContentIndentCols - borderCols;
         if (textWidth < 20) textWidth = 20;
 
         var borderAttr = HexColorHelper.ParseHexColor(embed.ThemeColor) ?? ChatColors.EmbedBorderAttr;
 
         void AddTextLine(string text, Attribute? color)
         {
-            lines.Add(new ChatLine(
-            [
-                new ChatSegment(indent, null),
-                new ChatSegment(border, borderAttr),
-                new ChatSegment(text, color)
-            ]));
+            var segments = RailPrefix();
+            segments.Add(new ChatSegment(border, borderAttr));
+            segments.Add(new ChatSegment(text, color));
+            lines.Add(new ChatLine(segments));
         }
 
         if (!string.IsNullOrWhiteSpace(embed.SiteName))
@@ -449,13 +676,11 @@ public sealed class ChatMessageManager
         return result;
     }
 
-    private static string FormatDateTime(DateTimeOffset timestamp)
-    {
-        if (timestamp.Date == DateTimeOffset.Now.Date)
-            return timestamp.ToLocalTime().ToString("t");
-        else
-            return timestamp.ToLocalTime().ToString("g");
-    }
+    // Timestamps are compact HH:mm — the calendar day is carried by date rules,
+    // inserted at every local-day boundary. Convert to local first so a message
+    // near midnight lands under the right date rule.
+    private static string FormatTime(DateTimeOffset timestamp) =>
+        timestamp.ToLocalTime().ToString("HH:mm");
 
     internal static string FormatFileSize(long? bytes)
     {

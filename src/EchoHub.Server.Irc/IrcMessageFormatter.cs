@@ -1,7 +1,9 @@
 using System.Text;
 using System.Text.RegularExpressions;
+using EchoHub.Core.Contracts;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
+using EchoHub.Core.Security;
 
 namespace EchoHub.Server.Irc;
 
@@ -34,7 +36,7 @@ public static partial class IrcMessageFormatter
                 {
                     case AttachmentKind.Image:
                         lines.Add($"{prefix} PRIVMSG {ircChannel} :[Image: {attachment.FileName}] {attachment.Url}");
-                        if (attachment.AsciiPreview is not null)
+                        if (attachment.AsciiPreview is not null && !IsCiphertext(attachment.AsciiPreview))
                         {
                             foreach (var line in attachment.AsciiPreview.Split('\n'))
                             {
@@ -65,6 +67,15 @@ public static partial class IrcMessageFormatter
 
         return lines;
     }
+
+    /// <summary>
+    /// True when a preview is still encrypted — transport ($ENC$v1$) if a broadcast path
+    /// forgot to decrypt it, or E2E room ciphertext ($RC1$) the server cannot decrypt.
+    /// Emitting it would flood IRC clients with a multi-KB base64 blob.
+    /// </summary>
+    private static bool IsCiphertext(string text) =>
+        text.StartsWith(IMessageEncryptionService.CiphertextPrefix, StringComparison.Ordinal)
+        || text.StartsWith(RoomCrypto.CiphertextPrefix, StringComparison.Ordinal);
 
     /// <summary>
     /// Format a link embed as IRC PRIVMSG lines (text-only, no ASCII thumbnail).

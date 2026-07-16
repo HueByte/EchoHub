@@ -288,6 +288,42 @@ public class ChannelService : IChannelService
             c.PasswordHash != null, c.WrappedRoomKey != null);
     }
 
+    public async Task<ChannelMetaDto?> GetChannelMetaAsync(string channelName)
+    {
+        channelName = channelName.ToLowerInvariant().Trim();
+
+        using var scope = _scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
+
+        var c = await db.Channels.FirstOrDefaultAsync(ch => ch.Name == channelName);
+        if (c is null) return null;
+
+        var messageCount = await db.Messages.CountAsync(m => m.ChannelId == c.Id);
+
+        // Distinct senders that have posted here. Works the same for encrypted channels —
+        // sender identity is metadata the server keeps even when it can't read the messages.
+        var uniqueUsers = await db.Messages
+            .Where(m => m.ChannelId == c.Id)
+            .Select(m => m.SenderUserId)
+            .Distinct()
+            .CountAsync();
+
+        // Estimated footprint: stored attachment blob sizes + message text length. For encrypted
+        // channels these are the ciphertext sizes, which is the server's real on-disk cost.
+        var attachmentBytes = await db.Messages
+            .Where(m => m.ChannelId == c.Id)
+            .SelectMany(m => m.Attachments)
+            .SumAsync(a => (long?)a.FileSize) ?? 0;
+        var textBytes = await db.Messages
+            .Where(m => m.ChannelId == c.Id)
+            .SumAsync(m => (long?)m.Content.Length) ?? 0;
+
+        return new ChannelMetaDto(
+            c.Id, c.Name, c.Topic,
+            c.WrappedRoomKey != null, c.PasswordHash != null,
+            messageCount, uniqueUsers, attachmentBytes + textBytes, c.CreatedAt);
+    }
+
     public async Task<ChannelCryptoDto?> GetChannelCryptoAsync(string channelName)
     {
         channelName = channelName.ToLowerInvariant().Trim();

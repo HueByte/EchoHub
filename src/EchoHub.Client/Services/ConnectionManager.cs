@@ -9,11 +9,13 @@ namespace EchoHub.Client.Services;
 
 /// <summary>
 /// Result of a successful connection, returned to AppOrchestrator for UI updates.
+/// <paramref name="Histories"/> holds the initial history of every auto-joined channel
+/// (keyed by channel name, always including the default channel).
 /// </summary>
 internal record ConnectResult(
     LoginResponse Login,
     List<ChannelDto> Channels,
-    List<MessageDto> DefaultHistory);
+    Dictionary<string, List<MessageDto>> Histories);
 
 /// <summary>
 /// Owns connection lifecycle, authentication, SignalR event wiring, and channel tracking.
@@ -109,24 +111,54 @@ internal sealed class ConnectionManager : IAsyncDisposable
             await _connection.ConnectAsync();
 
             var channels = await _apiClient.GetChannelsAsync();
-            onStatus("Connected");
 
             // Join default channel + fetch history
+            onStatus("Joining channels...");
             _joinedChannels.Clear();
             _joinedChannels.Add(HubConstants.DefaultChannel);
             await _connection.JoinChannelAsync(HubConstants.DefaultChannel);
 
-            List<MessageDto> history = [];
+            var histories = new Dictionary<string, List<MessageDto>>(StringComparer.OrdinalIgnoreCase);
             try
             {
-                history = await _connection.GetHistoryAsync(HubConstants.DefaultChannel);
+                histories[HubConstants.DefaultChannel] = await _connection.GetHistoryAsync(HubConstants.DefaultChannel);
             }
             catch
             {
                 // History might not be available
             }
 
-            return new ConnectResult(loginResponse, channels, history);
+            // Auto-join every other channel the server lists for this user (public +
+            // prior memberships) so message events — unread counts, @mentions — flow for
+            // all of them, not just channels opened this session. Channels the user left
+            // with /leave stay out until rejoined; protected channels we can't enter
+            // silently (no cached membership) are skipped, never prompted for.
+            var leftChannels = FindServer(ConfigManager.Load(), info.ServerUrl)?.LeftChannels ?? [];
+            foreach (var channel in channels)
+            {
+                if (channel.Name.Equals(HubConstants.DefaultChannel, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                if (leftChannels.Contains(channel.Name, StringComparer.OrdinalIgnoreCase))
+                    continue;
+
+                try
+                {
+                    var outcome = await _connection.JoinChannelAsync(channel.Name);
+                    _joinedChannels.Add(channel.Name);
+                    histories[channel.Name] = outcome.History;
+                }
+                catch (ChannelPasswordRequiredException)
+                {
+                    // First-time protected channel — joining stays a manual, prompted action
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, "Auto-join failed for #{Channel}", channel.Name);
+                }
+            }
+
+            onStatus("Connected");
+            return new ConnectResult(loginResponse, channels, histories);
         }
         catch
         {
@@ -236,11 +268,19 @@ internal sealed class ConnectionManager : IAsyncDisposable
 
         foreach (var channel in channels)
         {
-            _joinedChannels.Add(channel);
-            await _connection.JoinChannelAsync(channel);
+            // One channel gone bad (deleted, membership revoked) must not stop the rest
+            try
+            {
+                await _connection.JoinChannelAsync(channel);
+                _joinedChannels.Add(channel);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Rejoin failed for #{Channel}", channel);
+            }
         }
 
-        Log.Information("Rejoined {Count} channel(s) after reconnect", channels.Count);
+        Log.Information("Rejoined {Count} channel(s) after reconnect", _joinedChannels.Count);
     }
 
     // ── SignalR Event Wiring ──────────────────────────────────────────────
@@ -268,14 +308,17 @@ internal sealed class ConnectionManager : IAsyncDisposable
     {
         if (_apiClient?.RefreshToken is null) return;
         var config = ConfigManager.Load();
-        var server = config.SavedServers.FirstOrDefault(s =>
-            string.Equals(s.Url, _apiClient.BaseUrl, StringComparison.OrdinalIgnoreCase));
+        var server = FindServer(config, _apiClient.BaseUrl);
         if (server is not null && server.RememberMe)
         {
             server.RefreshToken = _apiClient.RefreshToken;
             ConfigManager.Save(config);
         }
     }
+
+    private static SavedServer? FindServer(ClientConfig config, string url) =>
+        config.SavedServers.FirstOrDefault(s =>
+            string.Equals(s.Url, url, StringComparison.OrdinalIgnoreCase));
 
     // ── Dispose ───────────────────────────────────────────────────────────
 

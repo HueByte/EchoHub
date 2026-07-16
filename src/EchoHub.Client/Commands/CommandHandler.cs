@@ -21,6 +21,7 @@ public class CommandHandler
     public event Func<Task>? OnLeaveChannel;
     public event Func<string, Task>? OnSetTopic;
     public event Func<Task>? OnListUsers;
+    public event Func<Task>? OnRoomInfo;
     public event Func<string, Task>? OnSetAvatar;
     public event Func<string, string?, Task>? OnKickUser;
     public event Func<string, string?, Task>? OnBanUser;
@@ -62,6 +63,7 @@ public class CommandHandler
             "leave" => await HandleLeave(),
             "topic" => await HandleTopic(args),
             "users" => await HandleUsers(),
+            "meta" or "info" => await HandleMeta(),
             "kick" => await HandleKick(args),
             "ban" => await HandleBan(args),
             "unban" => await HandleUnban(args),
@@ -273,6 +275,13 @@ public class CommandHandler
         return new CommandResult(true);
     }
 
+    private async Task<CommandResult> HandleMeta()
+    {
+        if (OnRoomInfo is not null)
+            await OnRoomInfo();
+        return new CommandResult(true);
+    }
+
     private async Task<CommandResult> HandleQuit()
     {
         if (OnQuit is not null)
@@ -403,6 +412,7 @@ public class CommandHandler
               /leave                               - Leave current channel
               /topic <text>                        - Set channel topic
               /users                               - List online users
+              /meta                                - Show room info (size, messages, users, created, id)
             Moderation:
               /kick <user> [reason]                - Kick a user (Mod+)
               /ban <user> [reason]                 - Ban a user (Admin+)

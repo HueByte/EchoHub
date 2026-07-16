@@ -90,6 +90,27 @@ public class IrcBroadcasterTests
     }
 
     [Fact]
+    public async Task SendMessage_DecryptsAttachmentAsciiPreview()
+    {
+        var (_, stream) = AddConnectionWithCapture("bob", "general");
+
+        var attachment = new AttachmentDto(
+            AttachmentKind.Image, "/api/files/abc", "photo.png", 1234,
+            _encryption.Encrypt("line1\nline2"));
+        var message = new MessageDto(
+            Guid.NewGuid(), _encryption.Encrypt("look at this"), "alice", null, "general",
+            DateTimeOffset.UtcNow, [attachment]);
+
+        await _broadcaster.SendMessageToChannelAsync("general", message);
+
+        var output = stream.GetOutputLines();
+        Assert.Contains(output, l => l.Contains("[Image: photo.png]"));
+        Assert.Contains(output, l => l.Contains("line1"));
+        Assert.Contains(output, l => l.Contains("line2"));
+        Assert.DoesNotContain(output, l => l.Contains("$ENC$"));
+    }
+
+    [Fact]
     public async Task SendMessage_SkipsSender()
     {
         var (_, aliceStream) = AddConnectionWithCapture("alice", "general");

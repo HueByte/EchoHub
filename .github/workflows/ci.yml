@@ -33,6 +33,8 @@ jobs:
 
   build-and-test:
     name: Build & Test
+    # Run the cheap, fast checks first; only spend build/test compute if they pass.
+    needs: [format-check, lint-markdown]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

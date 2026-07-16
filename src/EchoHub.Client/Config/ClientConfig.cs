@@ -42,6 +42,18 @@ public class SavedServer
     /// user's machine — the server never sees them.
     /// </summary>
     public Dictionary<string, string> ChannelKeys { get; set; } = [];
+
+    /// <summary>
+    /// Channels the user explicitly left with /leave. Excluded from the automatic
+    /// join-all-channels pass at connect until the user joins them again.
+    /// </summary>
+    public List<string> LeftChannels { get; set; } = [];
+
+    /// <summary>
+    /// Last message the user has read per channel (message id as string), persisted so
+    /// unread counts, @mention highlights, and the "new messages" marker survive restarts.
+    /// </summary>
+    public Dictionary<string, string> LastReadMessages { get; set; } = [];
 }
 
 public class AccountPreset
