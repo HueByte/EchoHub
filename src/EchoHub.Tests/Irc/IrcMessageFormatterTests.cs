@@ -138,6 +138,19 @@ public class IrcMessageFormatterTests
         Assert.Equal(2, asciiLines.Count);
     }
 
+    [Theory]
+    [InlineData("$ENC$v1$abc123$def456")] // transport ciphertext a broadcast path forgot to decrypt
+    [InlineData("$RC1$abc123def456")]     // E2E room ciphertext the server cannot decrypt
+    public void FormatMessage_ImageMessage_SkipsCiphertextPreview(string ciphertextPreview)
+    {
+        var msg = CreateImageMessage(ciphertextPreview, "photo.jpg", "https://example.com/photo.jpg");
+        var lines = IrcMessageFormatter.FormatMessage(msg);
+
+        // Only the [Image: ...] header line — never the ciphertext blob
+        Assert.Single(lines);
+        Assert.Contains("[Image: photo.jpg]", lines[0]);
+    }
+
     [Fact]
     public void FormatMessage_FileMessage_FormatsCorrectly()
     {

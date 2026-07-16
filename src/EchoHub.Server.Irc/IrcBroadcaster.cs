@@ -16,8 +16,16 @@ public class IrcBroadcaster : IChatBroadcaster
 
     public async Task SendMessageToChannelAsync(string channelName, MessageDto message)
     {
-        // Decrypt content for IRC clients (they can't handle app-layer encryption)
-        var decryptedMessage = message with { Content = _encryption.Decrypt(message.Content) };
+        // Decrypt content and attachment previews for IRC clients (they can't handle
+        // app-layer encryption). E2E room ciphertext ($RC1$) passes through untouched;
+        // the formatter drops previews that are still ciphertext.
+        var decryptedMessage = message with
+        {
+            Content = _encryption.Decrypt(message.Content),
+            Attachments = message.Attachments?
+                .Select(a => a with { AsciiPreview = _encryption.DecryptNullable(a.AsciiPreview) })
+                .ToList(),
+        };
         var lines = IrcMessageFormatter.FormatMessage(decryptedMessage);
 
         foreach (var conn in _gateway.GetConnectionsInChannel(channelName))
