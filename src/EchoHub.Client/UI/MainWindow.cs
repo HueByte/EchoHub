@@ -88,6 +88,18 @@ public sealed partial class MainWindow : Runnable
     public event Action<string, string>? OnMessageSubmitted;
 
     /// <summary>
+    /// Fired when local files arrive via paste or drag-and-drop to be staged as attachments.
+    /// Parameters: channel name, absolute paths of existing files.
+    /// </summary>
+    public event Action<string, IReadOnlyList<string>>? OnFilesStaged;
+
+    /// <summary>
+    /// Fired when raw image data is pasted from the clipboard (e.g. copied from a browser or a
+    /// screenshot tool). Parameters: channel name, PNG-encoded image bytes.
+    /// </summary>
+    public event Action<string, byte[]>? OnImagePasted;
+
+    /// <summary>
     /// Fired when the user requests to connect via the menu.
     /// </summary>
     public event Action? OnConnectRequested;
@@ -744,11 +756,15 @@ public sealed partial class MainWindow : Runnable
         }
         else if (e.KeyCode == CtrlVKey.KeyCode || e.KeyCode == CtrlYKey.KeyCode)
         {
-            // If a file was copied in the OS file manager, the clipboard holds a file list
-            // (not text) — attach it. Otherwise paste text. This is the reliable path on
-            // Windows Terminal, which never pastes copied files as text.
+            // Discord-style paste priority. Copied files in the OS file manager put a file
+            // list (not text) on the clipboard — attach them all. Copied image data (browser
+            // right-click copy, screenshot tools) is attached as a PNG. Otherwise paste text.
+            // Terminals never deliver either of the first two as text, so this is the only path.
             if (ClipboardFiles.TryGetFiles(out var pastedFiles))
                 StageFiles(pastedFiles);
+            else if (!string.IsNullOrEmpty(_messageManager.CurrentChannel)
+                     && ClipboardImage.TryGetPng(out var pastedPng))
+                OnImagePasted?.Invoke(_messageManager.CurrentChannel, pastedPng);
             else
                 GuardedClipboardAction(() => _inputField.Paste(), "paste");
             e.Handled = true;
@@ -872,17 +888,16 @@ public sealed partial class MainWindow : Runnable
     }
 
     /// <summary>
-    /// Routes files (from a drop or a file-clipboard paste) through the /send pipeline, which
-    /// stages them; the next Enter sends them with any typed caption.
+    /// Stages files (from a drop or a file-clipboard paste) as attachments in one batch; the
+    /// next Enter sends them with any typed caption.
     /// </summary>
-    private void StageFiles(IEnumerable<string> files)
+    private void StageFiles(IReadOnlyList<string> files)
     {
         var channel = _messageManager.CurrentChannel;
         if (string.IsNullOrEmpty(channel))
             return;
 
-        foreach (var file in files)
-            OnMessageSubmitted?.Invoke(channel, $"/send \"{file}\"");
+        OnFilesStaged?.Invoke(channel, files);
     }
 
     private void OnChatViewportChanged()
