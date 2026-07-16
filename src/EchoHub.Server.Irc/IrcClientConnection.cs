@@ -1,5 +1,6 @@
 using System.Net.Sockets;
 using System.Text;
+using EchoHub.Core.Constants;
 
 namespace EchoHub.Server.Irc;
 
@@ -14,7 +15,7 @@ public sealed class IrcClientConnection : IAsyncDisposable
     private readonly SemaphoreSlim _writeLock = new(1, 1);
 
     // Connection identity
-    public string ConnectionId { get; } = $"irc-{Guid.NewGuid()}";
+    public string ConnectionId { get; } = $"{HubConstants.IrcConnectionIdPrefix}{Guid.NewGuid()}";
 
     // Registration state
     public string? Nickname { get; set; }

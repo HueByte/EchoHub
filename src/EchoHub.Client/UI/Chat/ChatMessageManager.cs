@@ -381,6 +381,9 @@ public sealed class ChatMessageManager
     private List<ChatLine> FormatMessage(MessageDto message)
     {
         var time = FormatTime(message.SentAt);
+        // Show the display name, but keep color + click identity keyed to the username
+        // so they stay consistent with the user list and profile lookups.
+        var senderName = message.SenderDisplayName ?? message.SenderUsername;
         var senderColor = HexColorHelper.ParseHexColor(message.SenderNicknameColor)
             ?? NickColorHelper.GetAttribute(message.SenderUsername);
 
@@ -394,7 +397,7 @@ public sealed class ChatMessageManager
             var displayContent = EmojiHelper.ReplaceEmoji(message.Content);
             var contentLines = displayContent.Split('\n');
 
-            var header = HeaderSegments(time, message.SenderUsername, senderColor);
+            var header = HeaderSegments(time, senderName, senderColor);
             header.AddRange(ChatColors.SplitMentions(contentLines[0].TrimEnd('\r')));
             lines.Add(new ChatLine(header));
 
@@ -413,7 +416,7 @@ public sealed class ChatMessageManager
                 1 => $"[{attachments[0].Kind.ToString().ToLowerInvariant()}]",
                 _ => $"[{attachments.Count} attachments]",
             };
-            var header = HeaderSegments(time, message.SenderUsername, senderColor);
+            var header = HeaderSegments(time, senderName, senderColor);
             header.Add(new(summary, null));
             lines.Add(new ChatLine(header));
         }

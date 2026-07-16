@@ -10,7 +10,8 @@ public record MessageDto(
     string ChannelName,
     DateTimeOffset SentAt,
     List<AttachmentDto>? Attachments = null,
-    List<EmbedDto>? Embeds = null);
+    List<EmbedDto>? Embeds = null,
+    string? SenderDisplayName = null);
 
 /// <summary>
 /// A file attached to a message. <see cref="AsciiPreview"/> holds the color-tag art for

@@ -308,7 +308,8 @@ public class ChannelsController : ControllerBase
             sender?.NicknameColor,
             channelName,
             message.SentAt,
-            attachmentDtos);
+            attachmentDtos,
+            SenderDisplayName: sender?.DisplayName);
 
         await _chatService.BroadcastMessageAsync(channelName, messageDto);
 
@@ -444,7 +445,8 @@ public class ChannelsController : ControllerBase
             sender?.NicknameColor,
             channelName,
             message.SentAt,
-            [new AttachmentDto(AttachmentKind.Image, attachmentUrl, fileName, imageBytes.Length, _encryption.Encrypt(preview))]);
+            [new AttachmentDto(AttachmentKind.Image, attachmentUrl, fileName, imageBytes.Length, _encryption.Encrypt(preview))],
+            SenderDisplayName: sender?.DisplayName);
 
         await _chatService.BroadcastMessageAsync(channelName, messageDto);
 

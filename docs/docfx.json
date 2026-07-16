@@ -46,7 +46,7 @@
     "content": [
       {
         "files": ["**/*.{md,yml}"],
-        "exclude": ["_site/**", "_api_meta/**"]
+        "exclude": ["_site/**", "_api_meta/**", "auriondocs/**"]
       },
       {
         "src": "_api_meta/core",
@@ -75,7 +75,7 @@
     ],
     "resource": [
       {
-        "files": ["images/**"]
+        "files": ["images/**", "auriondocs/**"]
       }
     ],
     "output": "_site",

@@ -35,6 +35,14 @@ public sealed class AppOrchestrator : IDisposable
     private readonly HashSet<string> _channelsLoadingMore = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<string> _stagedAttachments = [];
 
+    // Temp PNGs created for clipboard-image pastes; deleted once their message is sent
+    // (or the staging tray is cleared) so pasted screenshots don't pile up in %TEMP%.
+    private readonly HashSet<string> _tempPastedFiles = [];
+
+    // E2E channels whose unlock prompt the user cancelled — don't nag on every reselect.
+    // Cleared on connect/reconnect; an explicit /join or a send attempt re-offers the prompt.
+    private readonly HashSet<string> _declinedUnlocks = new(StringComparer.OrdinalIgnoreCase);
+
     private ClientConfig _config;
     private readonly UserSession _session = new();
 
@@ -90,6 +98,8 @@ public sealed class AppOrchestrator : IDisposable
         _mainWindow.OnDisconnectRequested += HandleDisconnect;
         _mainWindow.OnLogoutRequested += HandleLogout;
         _mainWindow.OnMessageSubmitted += HandleMessageSubmitted;
+        _mainWindow.OnFilesStaged += HandleFilesStaged;
+        _mainWindow.OnImagePasted += HandleImagePasted;
         _mainWindow.OnChannelSelected += HandleChannelSelected;
         _mainWindow.OnProfileRequested += HandleProfileRequested;
         _mainWindow.OnStatusRequested += HandleStatusRequested;
@@ -187,7 +197,8 @@ public sealed class AppOrchestrator : IDisposable
         if (Uri.TryCreate(target, UriKind.Absolute, out var uri)
             && (uri.Scheme == "http" || uri.Scheme == "https"))
         {
-            if (_conn.RoomKeys.HasKey(channel))
+            // Also blocks locked E2E channels (no cached key) — a URL send would be plaintext
+            if (_conn.RoomKeys.HasKey(channel) || _conn.RoomKeys.IsChannelEncrypted(channel))
             {
                 InvokeUI(() => _mainWindow.ShowError(
                     "Sending by URL isn't available in encrypted channels — download the file and /send it instead."));
@@ -216,9 +227,87 @@ public sealed class AppOrchestrator : IDisposable
 
     private Task HandleCmdClearAttachments()
     {
+        var temps = _stagedAttachments.Where(_tempPastedFiles.Contains).ToList();
+        _tempPastedFiles.ExceptWith(temps);
+        CleanupPastedTempFiles(temps);
+
         _stagedAttachments.Clear();
         InvokeUI(RefreshStagingTray);
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Stages a batch of local files (multi-file paste or drag-and-drop) as attachments of the
+    /// next message. Runs synchronously on the UI thread — unlike routing each file through a
+    /// fire-and-forget /send command, a 10-file paste can't race the staging list.
+    /// </summary>
+    private void HandleFilesStaged(string channel, IReadOnlyList<string> files)
+    {
+        if (!_conn.IsAuthenticated || !_conn.IsConnected)
+            return;
+
+        var slotsLeft = HubConstants.MaxAttachmentsPerMessage - _stagedAttachments.Count;
+        _stagedAttachments.AddRange(files.Take(Math.Max(0, slotsLeft)));
+
+        if (files.Count > slotsLeft)
+            _mainWindow.ShowError($"You can attach at most {HubConstants.MaxAttachmentsPerMessage} files per message.");
+
+        RefreshStagingTray();
+    }
+
+    /// <summary>
+    /// Stages an image pasted as raw clipboard data (copied from a browser, a screenshot tool,
+    /// or an image editor). The PNG is written to a per-paste temp folder so it flows through
+    /// the same path-based staging/encryption pipeline as regular files, and the temp file is
+    /// deleted once the message is sent.
+    /// </summary>
+    private void HandleImagePasted(string channel, byte[] png)
+    {
+        if (!_conn.IsAuthenticated || !_conn.IsConnected)
+            return;
+
+        if (_stagedAttachments.Count >= HubConstants.MaxAttachmentsPerMessage)
+        {
+            _mainWindow.ShowError($"You can attach at most {HubConstants.MaxAttachmentsPerMessage} files per message.");
+            return;
+        }
+
+        try
+        {
+            // A unique folder per paste keeps the Discord-style "image.png" display name
+            // while letting several pasted images coexist in one message.
+            var dir = Path.Combine(Path.GetTempPath(), "EchoHub", "pasted", Guid.NewGuid().ToString("N")[..8]);
+            Directory.CreateDirectory(dir);
+            var path = Path.Combine(dir, "image.png");
+            File.WriteAllBytes(path, png);
+
+            _tempPastedFiles.Add(path);
+            _stagedAttachments.Add(path);
+            RefreshStagingTray();
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Staging a pasted clipboard image failed");
+            _mainWindow.ShowError($"Pasting image failed: {ex.Message}");
+        }
+    }
+
+    /// <summary>Best-effort removal of pasted-image temp files and their per-paste folders.</summary>
+    private static void CleanupPastedTempFiles(IReadOnlyList<string> files)
+    {
+        foreach (var file in files)
+        {
+            try
+            {
+                File.Delete(file);
+                if (Path.GetDirectoryName(file) is { } dir)
+                    Directory.Delete(dir);
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "Could not delete pasted-image temp file {File}", file);
+            }
+        }
     }
 
     /// <summary>
@@ -290,24 +379,41 @@ public sealed class AppOrchestrator : IDisposable
     /// </summary>
     private void SendStagedMessage(string channel, string content)
     {
-        var staged = _stagedAttachments.ToList();
-        _stagedAttachments.Clear();
-        InvokeUI(RefreshStagingTray);
-
-        var hasRoomKey = _conn.RoomKeys.TryGetKey(channel, out var roomKey);
         var size = _config.DefaultAsciiSize;
 
         RunAsync(async () =>
         {
-            var outgoing = new List<OutgoingAttachment>();
-            foreach (var path in staged)
-                outgoing.Add(await BuildOutgoingAttachmentAsync(path, hasRoomKey ? roomKey : null, size));
+            // Locked E2E channel: block the send and keep the files staged for after the unlock
+            if (!await EnsureRoomUnlockedForSendAsync(channel))
+                return;
 
-            var wireContent = hasRoomKey && !string.IsNullOrEmpty(content)
-                ? RoomCrypto.EncryptText(content, roomKey)
-                : content;
+            var staged = _stagedAttachments.ToList();
+            _stagedAttachments.Clear();
+            InvokeUI(RefreshStagingTray);
 
-            await _conn.Api!.SendMessageWithAttachmentsAsync(channel, wireContent, outgoing, size);
+            // Pasted clipboard images live in temp files; once this send owns them they are
+            // deleted whether the upload succeeds or fails (the tray is already cleared).
+            var tempFiles = staged.Where(_tempPastedFiles.Contains).ToList();
+            _tempPastedFiles.ExceptWith(tempFiles);
+
+            try
+            {
+                var hasRoomKey = _conn.RoomKeys.TryGetKey(channel, out var roomKey);
+
+                var outgoing = new List<OutgoingAttachment>();
+                foreach (var path in staged)
+                    outgoing.Add(await BuildOutgoingAttachmentAsync(path, hasRoomKey ? roomKey : null, size));
+
+                var wireContent = hasRoomKey && !string.IsNullOrEmpty(content)
+                    ? RoomCrypto.EncryptText(content, roomKey)
+                    : content;
+
+                await _conn.Api!.SendMessageWithAttachmentsAsync(channel, wireContent, outgoing, size);
+            }
+            finally
+            {
+                CleanupPastedTempFiles(tempFiles);
+            }
         }, "Send failed");
     }
 
@@ -417,6 +523,8 @@ public sealed class AppOrchestrator : IDisposable
         try
         {
             crypto = await _conn.Api!.GetChannelCryptoAsync(channelName);
+            if (crypto is not null)
+                _conn.RoomKeys.MarkChannelEncrypted(channelName, crypto.IsEncrypted);
         }
         catch (Exception ex)
         {
@@ -438,16 +546,20 @@ public sealed class AppOrchestrator : IDisposable
             {
                 var outcome = await _conn.JoinChannelAsync(channelName, wirePassword);
 
-                if (outcome.WrappedRoomKey is not null && !_conn.RoomKeys.HasKey(channelName))
+                if (outcome.WrappedRoomKey is not null)
                 {
-                    if (kek is not null && RoomCrypto.TryUnwrapRoomKey(outcome.WrappedRoomKey, kek, out var roomKey))
+                    // A typed passphrase always wins over the cache: unwrap the fresh envelope
+                    // and overwrite any stale key (e.g. the channel was deleted and recreated
+                    // under the same name — the old key would encrypt for nobody).
+                    if (kek is not null && _conn.RoomKeys.TryStoreFromEnvelope(channelName, outcome.WrappedRoomKey, kek))
                     {
-                        _conn.RoomKeys.StoreKey(channelName, roomKey);
+                        lock (_declinedUnlocks) _declinedUnlocks.Remove(channelName);
                         // Re-fetch so history decrypts with the now-available room key
                         return await _conn.GetHistoryAsync(channelName);
                     }
 
-                    return await UnlockRoomKeyAsync(channelName, outcome);
+                    if (!_conn.RoomKeys.HasKey(channelName))
+                        return await UnlockRoomKeyAsync(channelName, outcome);
                 }
 
                 return outcome.History;
@@ -484,17 +596,82 @@ public sealed class AppOrchestrator : IDisposable
 
             var passphrase = await prompt.Task;
             if (passphrase is null)
-                return outcome.History; // stays locked; placeholders render instead of content
+            {
+                // Stays locked; placeholders render instead of content. Remember the decline
+                // so reselecting the channel doesn't nag every time.
+                lock (_declinedUnlocks) _declinedUnlocks.Add(channelName);
+                return outcome.History;
+            }
 
             var derived = RoomCrypto.DeriveKeys(passphrase, salt);
-            if (RoomCrypto.TryUnwrapRoomKey(outcome.WrappedRoomKey, derived.KeyEncryptionKey, out var roomKey))
+            if (_conn.RoomKeys.TryStoreFromEnvelope(channelName, outcome.WrappedRoomKey, derived.KeyEncryptionKey))
             {
-                _conn.RoomKeys.StoreKey(channelName, roomKey);
+                lock (_declinedUnlocks) _declinedUnlocks.Remove(channelName);
                 return await _conn.GetHistoryAsync(channelName);
             }
 
             message = "Wrong passphrase — try again.";
         }
+    }
+
+    /// <summary>
+    /// True when a channel is end-to-end encrypted, its room key isn't cached, and the
+    /// user hasn't already declined the unlock prompt this session.
+    /// </summary>
+    private bool NeedsUnlockPrompt(string channelName)
+    {
+        if (!_conn.RoomKeys.IsChannelEncrypted(channelName) || _conn.RoomKeys.HasKey(channelName))
+            return false;
+
+        lock (_declinedUnlocks) return !_declinedUnlocks.Contains(channelName);
+    }
+
+    /// <summary>
+    /// Unlock flow for a channel that is already hub-joined (auto-join/reconnect discard
+    /// the key envelope): rejoin — members pass the gate without a password and the join
+    /// result carries the envelope — then run the passphrase prompt. On success the
+    /// decrypted history replaces the locked placeholders. Returns true when unlocked.
+    /// </summary>
+    private async Task<bool> UnlockTrackedChannelAsync(string channelName)
+    {
+        try
+        {
+            var outcome = await _conn.JoinChannelAsync(channelName, null);
+            if (outcome.WrappedRoomKey is null)
+                return false; // not an E2E channel after all
+
+            var history = await UnlockRoomKeyAsync(channelName, outcome);
+            if (!_conn.RoomKeys.HasKey(channelName))
+                return false; // cancelled or never unwrapped
+
+            if (history is not null)
+                InvokeUI(() => _messageManager.LoadHistory(channelName, history));
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Unlock flow failed for #{Channel}", channelName);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Send guard for end-to-end encrypted channels: without the cached room key nothing
+    /// may leave the client (it would be plaintext in a room others read as encrypted).
+    /// Offers the unlock prompt right away — even after an earlier decline, since the user
+    /// is actively trying to talk here. Returns true when sending is safe.
+    /// </summary>
+    private async Task<bool> EnsureRoomUnlockedForSendAsync(string channelName)
+    {
+        if (!_conn.RoomKeys.IsChannelEncrypted(channelName) || _conn.RoomKeys.HasKey(channelName))
+            return true;
+
+        if (await UnlockTrackedChannelAsync(channelName))
+            return true;
+
+        InvokeUI(() => _mainWindow.ShowError(
+            $"#{channelName} is end-to-end encrypted and locked — nothing was sent. Enter its passphrase to unlock it first."));
+        return false;
     }
 
     /// <summary>
@@ -922,6 +1099,7 @@ public sealed class AppOrchestrator : IDisposable
         _conn.Reconnected += () =>
         {
             lock (_channelUsersLock) _channelUsers.Clear();
+            lock (_declinedUnlocks) _declinedUnlocks.Clear();
             RunAsync(
                 async () => await _conn.RejoinChannelsAsync(),
                 "Failed to rejoin channels after reconnect");
@@ -970,6 +1148,7 @@ public sealed class AppOrchestrator : IDisposable
             }
 
             _session.Username = result.Login.Username;
+            lock (_declinedUnlocks) _declinedUnlocks.Clear();
 
             // Persisted last-read markers for this server — used to seed unread counts,
             // mention highlights, and "new messages" markers from the fetched histories.
@@ -1073,9 +1252,12 @@ public sealed class AppOrchestrator : IDisposable
             return;
         }
 
-        RunAsync(
-            async () => await _conn.SendMessageAsync(channelName, content),
-            "Send failed");
+        RunAsync(async () =>
+        {
+            if (!await EnsureRoomUnlockedForSendAsync(channelName))
+                return;
+            await _conn.SendMessageAsync(channelName, content);
+        }, "Send failed");
     }
 
     private void HandleDeleteMessageRequested(Guid messageId)
@@ -1111,6 +1293,12 @@ public sealed class AppOrchestrator : IDisposable
                 // A deliberate join cancels any earlier /leave exclusion
                 UpdateServerConfig(server =>
                     server.LeftChannels.RemoveAll(c => c.Equals(channelName, StringComparison.OrdinalIgnoreCase)));
+            }
+            else if (NeedsUnlockPrompt(channelName))
+            {
+                // Auto-join/reconnect already hub-joined this E2E channel but discarded the
+                // key envelope — selecting it is the user's cue to unlock it.
+                await UnlockTrackedChannelAsync(channelName);
             }
 
             try

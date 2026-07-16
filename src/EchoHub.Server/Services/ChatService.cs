@@ -121,7 +121,8 @@ public class ChatService : IChatService
                 {
                     presence = new UserPresenceDto(
                         user.Username, user.DisplayName, user.NicknameColor,
-                        user.Status, user.StatusMessage, user.Role);
+                        user.Status, user.StatusMessage, user.Role,
+                        _presenceTracker.IsIrcOnly(user.Username));
                 }
             }
             catch (Exception ex)
@@ -236,7 +237,8 @@ public class ChatService : IChatService
             sender?.NicknameColor,
             channelName,
             message.SentAt,
-            Embeds: embeds);
+            Embeds: embeds,
+            SenderDisplayName: sender?.DisplayName);
 
         await BroadcastToAllAsync(b => b.SendMessageToChannelAsync(channelName, messageDto));
 
@@ -279,7 +281,8 @@ public class ChatService : IChatService
             user.NicknameColor,
             status,
             statusMessage,
-            user.Role);
+            user.Role,
+            _presenceTracker.IsIrcOnly(user.Username));
 
         var channels = _presenceTracker.GetChannelsForUser(username);
         await BroadcastToAllAsync(b => b.SendUserStatusChangedAsync(channels, presence));
@@ -295,16 +298,20 @@ public class ChatService : IChatService
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
-        return await db.Users
+        var users = await db.Users
             .Where(u => onlineUsernames.Contains(u.Username) && u.Status != UserStatus.Invisible)
-            .Select(u => new UserPresenceDto(
+            .ToListAsync();
+
+        // IsIrcOnly comes from the in-memory tracker, so map outside the EF query
+        return users.Select(u => new UserPresenceDto(
                 u.Username,
                 u.DisplayName,
                 u.NicknameColor,
                 u.Status,
                 u.StatusMessage,
-                u.Role))
-            .ToListAsync();
+                u.Role,
+                _presenceTracker.IsIrcOnly(u.Username)))
+            .ToList();
     }
 
     public Task BroadcastMessageAsync(string channelName, MessageDto message)
@@ -380,7 +387,7 @@ public class ChatService : IChatService
             .Join(db.Users,
                 m => m.SenderUserId,
                 u => u.Id,
-                (m, u) => new { m, u.NicknameColor })
+                (m, u) => new { m, u.NicknameColor, u.DisplayName })
             .ToListAsync();
 
         raw.Reverse();
@@ -448,7 +455,8 @@ public class ChatService : IChatService
                 channelName,
                 x.m.SentAt,
                 attachments,
-                embeds));
+                embeds,
+                x.DisplayName));
         }
 
         // Lazily delete the pruned messages (+ their attachment rows) as they're encountered.

@@ -38,7 +38,8 @@ public class SavedServer
 
     /// <summary>
     /// Cached room content keys for end-to-end encrypted channels on this server,
-    /// keyed by channel name (base64). Like RefreshToken, these live only on the
+    /// keyed by channel name and encrypted at rest (see RoomKeyProtector; legacy
+    /// entries were plain base64). Like RefreshToken, these live only on the
     /// user's machine — the server never sees them.
     /// </summary>
     public Dictionary<string, string> ChannelKeys { get; set; } = [];

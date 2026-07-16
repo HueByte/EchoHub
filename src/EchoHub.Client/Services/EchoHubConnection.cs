@@ -26,6 +26,21 @@ public sealed class ChannelPasswordRequiredException : Exception
     }
 }
 
+/// <summary>
+/// Thrown when sending into an end-to-end encrypted channel whose room key isn't cached:
+/// without the key the message would leave the client as plaintext, which must never happen.
+/// </summary>
+public sealed class RoomLockedException : Exception
+{
+    public string ChannelName { get; }
+
+    public RoomLockedException(string channelName)
+        : base($"#{channelName} is end-to-end encrypted and locked — enter its passphrase to unlock it before sending.")
+    {
+        ChannelName = channelName;
+    }
+}
+
 public sealed class EchoHubConnection : IAsyncDisposable
 {
     public const string LockedMessagePlaceholder =
@@ -167,6 +182,8 @@ public sealed class EchoHubConnection : IAsyncDisposable
                 throw new ChannelPasswordRequiredException(channelName, result.Error ?? "Channel is password protected.");
             throw new InvalidOperationException(result.Error ?? "Failed to join channel.");
         }
+        if (result.WrappedRoomKey is not null)
+            _roomKeys.MarkChannelEncrypted(channelName, true);
         return new JoinOutcome(DecryptMessages(result.History), result.EncryptionSalt, result.WrappedRoomKey);
     }
 
@@ -180,6 +197,8 @@ public sealed class EchoHubConnection : IAsyncDisposable
         // Room layer first (end-to-end, server can't read), then transport encryption
         if (_roomKeys.TryGetKey(channelName, out var roomKey))
             content = RoomCrypto.EncryptText(content, roomKey);
+        else if (_roomKeys.IsChannelEncrypted(channelName))
+            throw new RoomLockedException(channelName); // never fall through to plaintext
 
         var encrypted = _encryption.Encrypt(content);
         await _connection.InvokeAsync("SendMessage", channelName, encrypted);
