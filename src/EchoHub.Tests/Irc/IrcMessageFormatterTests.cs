@@ -11,32 +11,31 @@ public class IrcMessageFormatterTests
         string channel = "general", List<EmbedDto>? embeds = null)
     {
         return new MessageDto(
-            Guid.NewGuid(), content, sender, null, channel,
-            MessageType.Text, null, null, DateTimeOffset.UtcNow, Embeds: embeds);
+            Guid.NewGuid(), content, sender, null, channel, DateTimeOffset.UtcNow, Embeds: embeds);
     }
 
     private static MessageDto CreateImageMessage(string asciiArt, string fileName = "image.png",
         string url = "https://example.com/image.png", string sender = "alice", string channel = "general")
     {
         return new MessageDto(
-            Guid.NewGuid(), asciiArt, sender, null, channel,
-            MessageType.Image, url, fileName, DateTimeOffset.UtcNow);
+            Guid.NewGuid(), "", sender, null, channel, DateTimeOffset.UtcNow,
+            [new AttachmentDto(AttachmentKind.Image, url, fileName, 0, asciiArt)]);
     }
 
     private static MessageDto CreateFileMessage(string fileName = "doc.pdf",
         string url = "https://example.com/doc.pdf", string sender = "alice", string channel = "general")
     {
         return new MessageDto(
-            Guid.NewGuid(), "", sender, null, channel,
-            MessageType.File, url, fileName, DateTimeOffset.UtcNow);
+            Guid.NewGuid(), "", sender, null, channel, DateTimeOffset.UtcNow,
+            [new AttachmentDto(AttachmentKind.File, url, fileName, 0)]);
     }
 
     private static MessageDto CreateAudioMessage(string fileName = "song.mp3",
         string url = "https://example.com/song.mp3", string sender = "alice", string channel = "general")
     {
         return new MessageDto(
-            Guid.NewGuid(), "", sender, null, channel,
-            MessageType.Audio, url, fileName, DateTimeOffset.UtcNow);
+            Guid.NewGuid(), "", sender, null, channel, DateTimeOffset.UtcNow,
+            [new AttachmentDto(AttachmentKind.Audio, url, fileName, 0)]);
     }
 
     // ── FormatMessage ────────────────────────────────────────────────────
@@ -115,8 +114,7 @@ public class IrcMessageFormatterTests
         var msg = CreateImageMessage("##\n##", "photo.jpg", "https://example.com/photo.jpg");
         var lines = IrcMessageFormatter.FormatMessage(msg);
 
-        Assert.Contains(lines, l => l.Contains("[Image: photo.jpg]"));
-        Assert.Contains(lines, l => l.Contains("Download: https://example.com/photo.jpg"));
+        Assert.Contains(lines, l => l.Contains("[Image: photo.jpg]") && l.Contains("https://example.com/photo.jpg"));
     }
 
     [Fact]

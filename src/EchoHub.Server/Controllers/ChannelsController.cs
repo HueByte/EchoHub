@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using EchoHub.Core.Constants;
 using EchoHub.Core.Contracts;
+using EchoHub.Core.Security;
 using EchoHub.Core.Services;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
@@ -144,11 +145,18 @@ public class ChannelsController : ControllerBase
         return NoContent();
     }
 
-    [HttpPost("{channel}/upload")]
+    /// <summary>
+    /// Sends one message carrying optional text (<c>content</c> form field) plus zero or more
+    /// file attachments (Discord-style). For non-encrypted channels the server sniffs each file's
+    /// kind and renders ASCII previews for images. For end-to-end encrypted channels the client
+    /// uploads ciphertext blobs and declares each file's kind (<c>kind</c>) and pre-rendered,
+    /// room-encrypted preview (<c>preview</c>), aligned by file order — the server never inspects them.
+    /// </summary>
+    [HttpPost("{channel}/messages")]
     [EnableRateLimiting("upload")]
-    [RequestSizeLimit(HubConstants.MaxFileSizeBytes)]
-    [RequestFormLimits(MultipartBodyLengthLimit = HubConstants.MaxFileSizeBytes)]
-    public async Task<IActionResult> Upload(string channel, [FromQuery] string? size = null)
+    [RequestSizeLimit((long)HubConstants.MaxFileSizeBytes * HubConstants.MaxAttachmentsPerMessage)]
+    [RequestFormLimits(MultipartBodyLengthLimit = (long)HubConstants.MaxFileSizeBytes * HubConstants.MaxAttachmentsPerMessage)]
+    public async Task<IActionResult> SendMessageWithAttachments(string channel, [FromQuery] string? size = null)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var usernameClaim = User.FindFirstValue("username");
@@ -165,113 +173,135 @@ public class ChannelsController : ControllerBase
         if (channelDto is null)
             return NotFound(new ErrorResponse($"Channel '{channelName}' does not exist."));
 
-        if (!Request.HasFormContentType || Request.Form.Files.Count == 0)
-            return BadRequest(new ErrorResponse("No file uploaded."));
+        if (!Request.HasFormContentType)
+            return BadRequest(new ErrorResponse("Expected multipart form data."));
 
-        var file = Request.Form.Files[0];
+        var files = Request.Form.Files;
+        if (files.Count == 0)
+            return BadRequest(new ErrorResponse("At least one attachment is required. Send plain text over the chat connection."));
+        if (files.Count > HubConstants.MaxAttachmentsPerMessage)
+            return BadRequest(new ErrorResponse($"A message may carry at most {HubConstants.MaxAttachmentsPerMessage} attachments."));
 
-        MessageType messageType;
-        string content;
-        string fileId;
+        var sender = await _db.Users.FindAsync(userId);
+        if (sender is not null && sender.IsMuted && (sender.MutedUntil is null || sender.MutedUntil > DateTimeOffset.UtcNow))
+            return StatusCode(403, new ErrorResponse("You are muted and cannot send messages."));
 
-        if (channelDto.IsEncrypted)
+        // Caption: plaintext for normal channels, $RC1$ room-ciphertext for encrypted ones.
+        // Decrypt() is a pass-through when there is no transport prefix.
+        var content = _encryption.Decrypt(Request.Form["content"].ToString());
+        var isRoomCiphertext = RoomCrypto.IsRoomCiphertext(content);
+        if (!isRoomCiphertext && content.Length > HubConstants.MaxMessageLength)
+            return BadRequest(new ErrorResponse($"Message exceeds maximum length of {HubConstants.MaxMessageLength} characters."));
+
+        var declaredKinds = Request.Form["kind"];
+        var declaredPreviews = Request.Form["preview"];
+
+        var attachmentEntities = new List<Attachment>();
+        var attachmentDtos = new List<AttachmentDto>();
+
+        for (var i = 0; i < files.Count; i++)
         {
-            // E2E-encrypted channel: the blob is ciphertext the server cannot inspect.
-            // The client declares the type and supplies pre-rendered, room-encrypted
-            // content (ASCII art for images, encrypted filename otherwise).
-            messageType = Request.Form["type"].ToString().ToLowerInvariant() switch
+            var file = files[i];
+            AttachmentKind kind;
+            string? previewPlain;
+            string fileId;
+
+            if (channelDto.IsEncrypted)
             {
-                "image" => MessageType.Image,
-                "audio" => MessageType.Audio,
-                _ => MessageType.File,
-            };
+                // Ciphertext blob — trust the client's declared kind + room-encrypted preview.
+                // Client sends one kind + preview per file in order; empty preview means none.
+                kind = ParseKind(i < declaredKinds.Count ? declaredKinds[i] : null);
+                previewPlain = i < declaredPreviews.Count ? declaredPreviews[i] : null;
+                if (string.IsNullOrEmpty(previewPlain))
+                    previewPlain = null;
 
-            var declaredMax = messageType switch
-            {
-                MessageType.Image => HubConstants.MaxImageSizeBytes,
-                MessageType.Audio => HubConstants.MaxAudioFileSizeBytes,
-                _ => HubConstants.MaxFileSizeBytes,
-            };
-            if (file.Length > declaredMax)
-                return BadRequest(new ErrorResponse($"File size exceeds maximum of {declaredMax / (1024 * 1024)} MB."));
+                if (file.Length > MaxForKind(kind))
+                    return BadRequest(new ErrorResponse($"'{file.FileName}' exceeds the maximum size."));
 
-            var clientContent = Request.Form["content"].ToString();
-            content = string.IsNullOrEmpty(clientContent) ? file.FileName : clientContent;
-
-            using var encryptedStream = file.OpenReadStream();
-            (fileId, _) = await _fileStorage.SaveFileAsync(encryptedStream, file.FileName);
-        }
-        else
-        {
-            // Detect file type early so we can apply the correct size limit
-            using var stream = file.OpenReadStream();
-            var isImage = FileValidationHelper.IsValidImage(stream);
-            var isAudio = !isImage && FileValidationHelper.IsAudioFile(file.FileName);
-
-            var maxSize = isImage ? HubConstants.MaxImageSizeBytes
-                : isAudio ? HubConstants.MaxAudioFileSizeBytes
-                : HubConstants.MaxFileSizeBytes;
-
-            if (file.Length > maxSize)
-                return BadRequest(new ErrorResponse($"File size exceeds maximum of {maxSize / (1024 * 1024)} MB."));
-
-            string filePath;
-            (fileId, filePath) = await _fileStorage.SaveFileAsync(stream, file.FileName);
-
-            messageType = isImage ? MessageType.Image
-                : isAudio ? MessageType.Audio
-                : MessageType.File;
-
-            if (isImage)
-            {
-                var (w, h) = ImageToAsciiService.GetDimensions(size);
-                using var imageStream = System.IO.File.OpenRead(filePath);
-                content = _asciiService.ConvertToAscii(imageStream, w, h);
+                using var encryptedStream = file.OpenReadStream();
+                (fileId, _) = await _fileStorage.SaveFileAsync(encryptedStream, file.FileName);
             }
             else
             {
-                content = file.FileName;
+                using var stream = file.OpenReadStream();
+                var isImage = FileValidationHelper.IsValidImage(stream);
+                var isAudio = !isImage && FileValidationHelper.IsAudioFile(file.FileName);
+                kind = isImage ? AttachmentKind.Image : isAudio ? AttachmentKind.Audio : AttachmentKind.File;
+
+                if (file.Length > MaxForKind(kind))
+                    return BadRequest(new ErrorResponse($"'{file.FileName}' exceeds the maximum size of {MaxForKind(kind) / (1024 * 1024)} MB."));
+
+                string filePath;
+                (fileId, filePath) = await _fileStorage.SaveFileAsync(stream, file.FileName);
+
+                if (isImage)
+                {
+                    var (w, h) = ImageToAsciiService.GetDimensions(size);
+                    using var imageStream = System.IO.File.OpenRead(filePath);
+                    previewPlain = _asciiService.ConvertToAscii(imageStream, w, h);
+                }
+                else
+                {
+                    previewPlain = null;
+                }
             }
+
+            var url = $"/api/files/{fileId}";
+            attachmentEntities.Add(new Attachment
+            {
+                Id = Guid.NewGuid(),
+                Kind = kind,
+                Url = url,
+                FileName = file.FileName,
+                FileSize = file.Length,
+                AsciiPreview = _encryption.EncryptDatabaseEnabled ? _encryption.EncryptNullable(previewPlain) : previewPlain,
+            });
+            attachmentDtos.Add(new AttachmentDto(kind, url, file.FileName, file.Length,
+                _encryption.EncryptNullable(previewPlain)));
         }
 
-        var attachmentUrl = $"/api/files/{fileId}";
-        var sender = await _db.Users.FindAsync(userId);
         var dbContent = _encryption.EncryptDatabaseEnabled ? _encryption.Encrypt(content) : content;
-
         var message = new Message
         {
             Id = Guid.NewGuid(),
             Content = dbContent,
-            Type = messageType,
-            AttachmentUrl = attachmentUrl,
-            AttachmentFileName = file.FileName,
-            AttachmentFileSize = file.Length,
             SentAt = DateTimeOffset.UtcNow,
             ChannelId = channelDto.Id,
             SenderUserId = userId,
             SenderUsername = usernameClaim,
+            Attachments = attachmentEntities,
         };
 
         _db.Messages.Add(message);
         await _db.SaveChangesAsync();
 
-        // Encrypt for transport — clients decrypt
         var messageDto = new MessageDto(
             message.Id,
             _encryption.Encrypt(content),
             message.SenderUsername,
             sender?.NicknameColor,
             channelName,
-            messageType,
-            attachmentUrl,
-            file.FileName,
             message.SentAt,
-            file.Length);
+            attachmentDtos);
 
         await _chatService.BroadcastMessageAsync(channelName, messageDto);
 
         return Ok(messageDto);
     }
+
+    private static AttachmentKind ParseKind(string? kind) => kind?.ToLowerInvariant() switch
+    {
+        "image" => AttachmentKind.Image,
+        "audio" => AttachmentKind.Audio,
+        _ => AttachmentKind.File,
+    };
+
+    private static long MaxForKind(AttachmentKind kind) => kind switch
+    {
+        AttachmentKind.Image => HubConstants.MaxImageSizeBytes,
+        AttachmentKind.Audio => HubConstants.MaxAudioFileSizeBytes,
+        _ => HubConstants.MaxFileSizeBytes,
+    };
 
     [HttpPost("{channel}/send-url")]
     [EnableRateLimiting("upload")]
@@ -353,46 +383,49 @@ public class ChannelsController : ControllerBase
         // Save file and convert to ASCII
         var (fileId, filePath) = await _fileStorage.SaveFileAsync(memoryStream, fileName);
 
-        string content;
+        string preview;
         var (w, h) = ImageToAsciiService.GetDimensions(size);
         using (var imageStream = System.IO.File.OpenRead(filePath))
         {
-            content = _asciiService.ConvertToAscii(imageStream, w, h);
+            preview = _asciiService.ConvertToAscii(imageStream, w, h);
         }
 
         var attachmentUrl = $"/api/files/{fileId}";
         var sender = await _db.Users.FindAsync(userId);
-        var dbContent = _encryption.EncryptDatabaseEnabled ? _encryption.Encrypt(content) : content;
+
+        // A URL-shared image is a message with no caption and one image attachment.
+        var attachment = new Attachment
+        {
+            Id = Guid.NewGuid(),
+            Kind = AttachmentKind.Image,
+            Url = attachmentUrl,
+            FileName = fileName,
+            FileSize = imageBytes.Length,
+            AsciiPreview = _encryption.EncryptDatabaseEnabled ? _encryption.Encrypt(preview) : preview,
+        };
 
         var message = new Message
         {
             Id = Guid.NewGuid(),
-            Content = dbContent,
-            Type = MessageType.Image,
-            AttachmentUrl = attachmentUrl,
-            AttachmentFileName = fileName,
-            AttachmentFileSize = imageBytes.Length,
+            Content = string.Empty,
             SentAt = DateTimeOffset.UtcNow,
             ChannelId = channelDto.Id,
             SenderUserId = userId,
             SenderUsername = usernameClaim,
+            Attachments = [attachment],
         };
 
         _db.Messages.Add(message);
         await _db.SaveChangesAsync();
 
-        // Encrypt for transport — clients decrypt
         var messageDto = new MessageDto(
             message.Id,
-            _encryption.Encrypt(content),
+            _encryption.Encrypt(string.Empty),
             message.SenderUsername,
             sender?.NicknameColor,
             channelName,
-            MessageType.Image,
-            attachmentUrl,
-            fileName,
             message.SentAt,
-            imageBytes.Length);
+            [new AttachmentDto(AttachmentKind.Image, attachmentUrl, fileName, imageBytes.Length, _encryption.Encrypt(preview))]);
 
         await _chatService.BroadcastMessageAsync(channelName, messageDto);
 

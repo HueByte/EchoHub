@@ -6,6 +6,12 @@ public class ClientConfig
     public AccountPreset DefaultPreset { get; set; } = new();
     public string ActiveTheme { get; set; } = "Default";
     public NotificationConfig Notifications { get; set; } = new();
+
+    /// <summary>
+    /// Folder where downloaded attachments and saved images are written. When null, the
+    /// OS Downloads folder is used. Set via the native folder picker or <c>/downloadpath</c>.
+    /// </summary>
+    public string? DownloadPath { get; set; }
 }
 
 public class NotificationConfig

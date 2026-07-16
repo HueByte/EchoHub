@@ -20,17 +20,20 @@ public class ModerationController : ControllerBase
     private readonly EchoHubDbContext _db;
     private readonly IChatService _chatService;
     private readonly PresenceTracker _presenceTracker;
+    private readonly FileStorageService _fileStorage;
     private readonly IEnumerable<IChatBroadcaster> _broadcasters;
 
     public ModerationController(
         EchoHubDbContext db,
         IChatService chatService,
         PresenceTracker presenceTracker,
+        FileStorageService fileStorage,
         IEnumerable<IChatBroadcaster> broadcasters)
     {
         _db = db;
         _chatService = chatService;
         _presenceTracker = presenceTracker;
+        _fileStorage = fileStorage;
         _broadcasters = broadcasters;
     }
 
@@ -170,17 +173,47 @@ public class ModerationController : ControllerBase
     [HttpDelete("messages/{messageId:guid}")]
     public async Task<IActionResult> DeleteMessage(Guid messageId)
     {
-        var (_, error) = await GetCallerAsync(ServerRole.Mod);
-        if (error is not null) return error;
+        // Any authenticated user may reach this; permission depends on authorship + role hierarchy.
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim is null)
+            return Unauthorized(new ErrorResponse("Authentication required."));
+
+        var caller = await _db.Users.FindAsync(Guid.Parse(userIdClaim));
+        if (caller is null)
+            return Unauthorized(new ErrorResponse("User not found."));
 
         var message = await _db.Messages
             .Include(m => m.Channel)
+            .Include(m => m.Attachments)
             .FirstOrDefaultAsync(m => m.Id == messageId);
 
         if (message is null)
             return NotFound(new ErrorResponse("Message not found."));
 
+        var isOwnMessage = message.SenderUserId == caller.Id;
+        if (!isOwnMessage)
+        {
+            // Deleting someone else's message requires Mod+ AND a strictly higher role than
+            // the message author (so a mod can't delete an admin's/owner's message).
+            if (caller.Role < ServerRole.Mod)
+                return StatusCode(403, new ErrorResponse("You can only delete your own messages."));
+
+            var author = await _db.Users.FindAsync(message.SenderUserId);
+            var authorRole = author?.Role ?? ServerRole.Member;
+            if (authorRole >= caller.Role)
+                return StatusCode(403, new ErrorResponse("You cannot delete a message from a user with an equal or higher role."));
+        }
+
         var channelName = message.Channel!.Name;
+
+        // Remove attachment blobs from disk before the DB rows cascade away.
+        foreach (var attachment in message.Attachments)
+        {
+            var fileId = attachment.Url.Split('/').LastOrDefault();
+            if (!string.IsNullOrEmpty(fileId))
+                _fileStorage.DeleteFile(fileId);
+        }
+
         _db.Messages.Remove(message);
         await _db.SaveChangesAsync();
 
@@ -200,7 +233,19 @@ public class ModerationController : ControllerBase
         if (dbChannel is null)
             return NotFound(new ErrorResponse($"Channel '{channelName}' does not exist."));
 
-        var messages = await _db.Messages.Where(m => m.ChannelId == dbChannel.Id).ToListAsync();
+        var messages = await _db.Messages
+            .Where(m => m.ChannelId == dbChannel.Id)
+            .Include(m => m.Attachments)
+            .ToListAsync();
+
+        foreach (var fileId in messages
+                     .SelectMany(m => m.Attachments)
+                     .Select(a => a.Url.Split('/').LastOrDefault())
+                     .Where(id => !string.IsNullOrEmpty(id)))
+        {
+            _fileStorage.DeleteFile(fileId!);
+        }
+
         _db.Messages.RemoveRange(messages);
         await _db.SaveChangesAsync();
 

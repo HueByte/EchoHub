@@ -40,7 +40,9 @@ public sealed partial class MainWindow : Runnable
     private readonly UserListSource _usersListSource;
     private bool _usersPanelVisible = true;
     private const int UsersPanelWidth = 22;
+    private const string DefaultInputTitle = "Message │ Enter=send │ Ctrl+N=newline │ Tab=complete │ Ctrl+K=search";
     private static readonly Key F2Key = Key.F2;
+    private bool _hasStagedAttachments;
 
     internal static readonly string AppVersion =
         typeof(MainWindow).Assembly.GetName().Version?.ToString(3) ?? "?";
@@ -60,7 +62,7 @@ public sealed partial class MainWindow : Runnable
     private static readonly string[] SlashCommands =
     [
         "/status", "/nick", "/color", "/theme", "/send",
-        "/avatar", "/profile", "/servers", "/join", "/passwd", "/leave",
+        "/avatar", "/profile", "/servers", "/join", "/passwd", "/leave", "/clear", "/downloadpath",
         "/topic", "/users", "/kick", "/ban", "/unban",
         "/mute", "/unmute", "/role", "/nuke", "/test-sound", "/quit", "/help"
     ];
@@ -160,6 +162,11 @@ public sealed partial class MainWindow : Runnable
     public event Action<string, string>? OnImageSaveRequested;
 
     /// <summary>
+    /// Fired when the user presses Delete on the selected message. Parameter is the message id.
+    /// </summary>
+    public event Action<Guid>? OnDeleteMessageRequested;
+
+    /// <summary>
     /// Fired when the user activates a username (in userlist or message). Parameter is the username.
     /// </summary>
     public event Action<string>? OnUserProfileRequested;
@@ -240,6 +247,7 @@ public sealed partial class MainWindow : Runnable
         };
         _messageList.Source = new ChatListSource();
         _messageList.Accepting += OnMessageListAccepting;
+        _messageList.KeyDown += OnMessageListKeyDown;
         _messageList.VerticalScrollBar.Scrolled += OnMessageListVerticalScrollBarScrolled;
         _messageList.VerticalScrollBar.Visible = true;
 
@@ -249,7 +257,7 @@ public sealed partial class MainWindow : Runnable
         // Bottom input area
         _inputFrame = new FrameView
         {
-            Title = "Message \u2502 Enter=send \u2502 Ctrl+N=newline \u2502 Tab=complete \u2502 Ctrl+K=search",
+            Title = DefaultInputTitle,
             X = 22,
             Y = Pos.Bottom(_chatFrame),
             Width = Dim.Fill(UsersPanelWidth),
@@ -319,6 +327,27 @@ public sealed partial class MainWindow : Runnable
 
         // Window-level key handling for Alt+Q (quit), F2 (toggle users panel)
         KeyDown += OnWindowKeyDown;
+    }
+
+    /// <summary>
+    /// Updates the attachment staging indicator shown on the input frame's title.
+    /// Passing an empty list restores the default hint.
+    /// </summary>
+    public void SetStagedAttachments(IReadOnlyList<string> fileNames)
+    {
+        _hasStagedAttachments = fileNames.Count > 0;
+        if (fileNames.Count == 0)
+        {
+            _inputFrame.Title = DefaultInputTitle;
+        }
+        else
+        {
+            var names = string.Join(", ", fileNames);
+            if (names.Length > 60)
+                names = names[..57] + "...";
+            _inputFrame.Title = $"📎 {fileNames.Count} staged: {names} │ Enter=send │ /clear to drop";
+        }
+        _inputFrame.SetNeedsDraw();
     }
 
     /// <summary>
@@ -458,21 +487,21 @@ public sealed partial class MainWindow : Runnable
         // Audio/file attachments take priority
         if (line.AttachmentUrl is not null && line.AttachmentFileName is not null)
         {
-            if (line.Type == MessageType.Audio)
+            if (line.AttachmentKind == AttachmentKind.Audio)
             {
                 OnAudioPlayRequested?.Invoke(line.AttachmentUrl, line.AttachmentFileName);
                 e.Handled = true;
                 return;
             }
 
-            if (line.Type == MessageType.File)
+            if (line.AttachmentKind == AttachmentKind.File)
             {
                 OnFileDownloadRequested?.Invoke(line.AttachmentUrl, line.AttachmentFileName);
                 e.Handled = true;
                 return;
             }
 
-            if (line.Type == MessageType.Image)
+            if (line.AttachmentKind == AttachmentKind.Image)
             {
                 OnImageSaveRequested?.Invoke(line.AttachmentUrl, line.AttachmentFileName);
                 e.Handled = true;
@@ -510,6 +539,32 @@ public sealed partial class MainWindow : Runnable
         }
     }
 
+    private void OnMessageListKeyDown(object? sender, Key e)
+    {
+        if (e.KeyCode != Key.Delete.KeyCode && e.KeyCode != Key.Backspace.KeyCode)
+            return;
+
+        if (_messageList.Source is not ChatListSource source)
+            return;
+
+        var index = _messageList.SelectedItem;
+        if (!index.HasValue || index.Value < 0 || index.Value >= source.Count)
+            return;
+
+        var line = source.GetLine(index.Value);
+        if (line?.MessageId is not { } messageId)
+            return;
+
+        // Server enforces the real permission (own message, or Mod+ over a lower role);
+        // the client just confirms intent and lets the server reject if disallowed.
+        var confirm = MessageBox.Query(_app, "Delete Message",
+            "Delete this message?", "Delete", "Cancel");
+        if (confirm == 0)
+            OnDeleteMessageRequested?.Invoke(messageId);
+
+        e.Handled = true;
+    }
+
     private void OnMessageListVerticalScrollBarScrolled(object? sender, EventArgs<int> e)
     {
         if (_messageList.VerticalScrollBar.Value == 0)
@@ -545,7 +600,9 @@ public sealed partial class MainWindow : Runnable
         else if (e.KeyCode == EnterKey.KeyCode)
         {
             var text = _inputField.Text?.Trim() ?? string.Empty;
-            if (!string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(_messageManager.CurrentChannel))
+            // Send when there's text, or when only attachments are staged (empty caption).
+            if ((!string.IsNullOrEmpty(text) || _hasStagedAttachments)
+                && !string.IsNullOrEmpty(_messageManager.CurrentChannel))
             {
                 OnMessageSubmitted?.Invoke(_messageManager.CurrentChannel, text);
                 _inputField.Text = string.Empty;
@@ -564,9 +621,13 @@ public sealed partial class MainWindow : Runnable
         }
         else if (e.KeyCode == CtrlVKey.KeyCode || e.KeyCode == CtrlYKey.KeyCode)
         {
-            // Explicit paste support: terminals that don't intercept Ctrl+V themselves
-            // otherwise leave users with only the right-click context menu.
-            GuardedClipboardAction(() => _inputField.Paste(), "paste");
+            // If a file was copied in the OS file manager, the clipboard holds a file list
+            // (not text) — attach it. Otherwise paste text. This is the reliable path on
+            // Windows Terminal, which never pastes copied files as text.
+            if (ClipboardFiles.TryGetFiles(out var pastedFiles))
+                StageFiles(pastedFiles);
+            else
+                GuardedClipboardAction(() => _inputField.Paste(), "paste");
             e.Handled = true;
         }
         else if (e.KeyCode == CtrlXKey.KeyCode)
@@ -599,42 +660,35 @@ public sealed partial class MainWindow : Runnable
     }
 
     private bool _suppressEmojiReplace;
-    private int _lastInputLength;
 
     private void OnInputContentsChanged(object? sender, ContentsChangedEventArgs e)
     {
-        var text = _inputField.Text;
-        var previousLength = _lastInputLength;
-        _lastInputLength = text?.Length ?? 0;
-
         if (_suppressEmojiReplace)
             return;
 
+        var text = _inputField.Text;
         if (string.IsNullOrEmpty(text))
             return;
 
-        // A file dropped onto the terminal arrives as a pasted absolute path.
-        // Detect multi-char bursts that resolve to existing files and route them
-        // through /send instead of leaving a raw path in the input.
-        if (text.Length - previousLength > 3 && TryGetDroppedFiles(text, out var droppedFiles))
+        // A file dropped onto the terminal is delivered as its absolute path inserted into the
+        // input — often character by character (this Terminal.Gui build has no bracketed-paste
+        // coalescing). As soon as the input resolves to existing file path(s), route them
+        // through /send (which stages them) instead of leaving a raw path to be sent as a message.
+        if (DroppedFileParser.LooksLikePath(text) && DroppedFileParser.TryGetFiles(text, out var droppedFiles)
+            && !string.IsNullOrEmpty(_messageManager.CurrentChannel))
         {
-            var channel = _messageManager.CurrentChannel;
-            if (!string.IsNullOrEmpty(channel))
+            _suppressEmojiReplace = true;
+            try
             {
-                _suppressEmojiReplace = true;
-                try
-                {
-                    _inputField.Text = string.Empty;
-                }
-                finally
-                {
-                    _suppressEmojiReplace = false;
-                }
-
-                foreach (var file in droppedFiles)
-                    OnMessageSubmitted?.Invoke(channel, $"/send \"{file}\"");
-                return;
+                _inputField.Text = string.Empty;
             }
+            finally
+            {
+                _suppressEmojiReplace = false;
+            }
+
+            StageFiles(droppedFiles);
+            return;
         }
 
         var replaced = EmojiHelper.ReplaceEmoji(text);
@@ -695,77 +749,17 @@ public sealed partial class MainWindow : Runnable
     }
 
     /// <summary>
-    /// Interprets pasted text as one or more dropped files. Terminals deliver a file drop
-    /// as the absolute path (quoted when it contains spaces; multiple files space-separated).
-    /// Returns true only when the entire input resolves to existing files.
+    /// Routes files (from a drop or a file-clipboard paste) through the /send pipeline, which
+    /// stages them; the next Enter sends them with any typed caption.
     /// </summary>
-    private static bool TryGetDroppedFiles(string text, out List<string> files)
+    private void StageFiles(IEnumerable<string> files)
     {
-        files = [];
+        var channel = _messageManager.CurrentChannel;
+        if (string.IsNullOrEmpty(channel))
+            return;
 
-        var trimmed = text.Trim();
-        if (trimmed.Length < 3 || trimmed.Length > 4096 || trimmed.Contains('\n'))
-            return false;
-
-        // Single unquoted path, possibly with spaces (e.g. WSL or plain conhost drops)
-        var unquoted = StripQuotes(trimmed);
-        if (Path.IsPathFullyQualified(unquoted) && File.Exists(unquoted))
-        {
-            files.Add(unquoted);
-            return true;
-        }
-
-        // Multiple files: space-separated tokens, each optionally quoted
-        foreach (var token in TokenizeQuoted(trimmed))
-        {
-            if (!Path.IsPathFullyQualified(token) || !File.Exists(token))
-            {
-                files.Clear();
-                return false;
-            }
-            files.Add(token);
-        }
-
-        return files.Count > 0;
-    }
-
-    private static string StripQuotes(string s) =>
-        s.Length >= 2 && ((s[0] == '"' && s[^1] == '"') || (s[0] == '\'' && s[^1] == '\''))
-            ? s[1..^1]
-            : s;
-
-    private static IEnumerable<string> TokenizeQuoted(string input)
-    {
-        var current = new System.Text.StringBuilder();
-        var quote = '\0';
-
-        foreach (var c in input)
-        {
-            if (quote != '\0')
-            {
-                if (c == quote) quote = '\0';
-                else current.Append(c);
-            }
-            else if (c is '"' or '\'')
-            {
-                quote = c;
-            }
-            else if (c == ' ')
-            {
-                if (current.Length > 0)
-                {
-                    yield return current.ToString();
-                    current.Clear();
-                }
-            }
-            else
-            {
-                current.Append(c);
-            }
-        }
-
-        if (current.Length > 0)
-            yield return current.ToString();
+        foreach (var file in files)
+            OnMessageSubmitted?.Invoke(channel, $"/send \"{file}\"");
     }
 
     private void OnChatViewportChanged()

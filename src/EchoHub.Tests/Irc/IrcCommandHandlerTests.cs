@@ -340,8 +340,7 @@ public class IrcCommandHandlerTests
         var encryptedContent = _encryption.Encrypt("Hello from history!");
         _chatService.HistoryToReturn =
         [
-            new(Guid.NewGuid(), encryptedContent, "bob", null, "general",
-                MessageType.Text, null, null, DateTimeOffset.UtcNow)
+            new(Guid.NewGuid(), encryptedContent, "bob", null, "general", DateTimeOffset.UtcNow)
         ];
 
         var lines = await RunAuthenticated(["JOIN #general"]);

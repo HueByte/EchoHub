@@ -10,6 +10,7 @@ public class EchoHubDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<Channel> Channels => Set<Channel>();
     public DbSet<Message> Messages => Set<Message>();
+    public DbSet<Attachment> Attachments => Set<Attachment>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<ChannelMembership> ChannelMemberships => Set<ChannelMembership>();
 
@@ -63,6 +64,21 @@ public class EchoHubDbContext : DbContext
             entity.Property(m => m.AttachmentUrl).HasMaxLength(500);
             entity.Property(m => m.AttachmentFileName).HasMaxLength(255);
             entity.Property(m => m.EmbedJson).HasMaxLength(32000); // Increased for encrypted embed JSON
+
+            entity.HasMany(m => m.Attachments)
+                  .WithOne(a => a.Message)
+                  .HasForeignKey(a => a.MessageId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Attachment>(entity =>
+        {
+            entity.HasKey(a => a.Id);
+            entity.HasIndex(a => a.MessageId);
+            entity.Property(a => a.Kind).HasConversion<int>();
+            entity.Property(a => a.Url).IsRequired().HasMaxLength(500);
+            entity.Property(a => a.FileName).IsRequired().HasMaxLength(255);
+            entity.Property(a => a.AsciiPreview).HasMaxLength(64000); // color-tag ASCII art, encrypted-at-rest overhead
         });
 
         modelBuilder.Entity<ChannelMembership>(entity =>

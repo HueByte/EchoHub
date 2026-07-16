@@ -214,7 +214,6 @@ public class ChatService : IChatService
         {
             Id = Guid.NewGuid(),
             Content = dbContent,
-            Type = MessageType.Text,
             SentAt = DateTimeOffset.UtcNow,
             ChannelId = channel.Id,
             SenderUserId = userId,
@@ -233,9 +232,6 @@ public class ChatService : IChatService
             message.SenderUsername,
             sender?.NicknameColor,
             channelName,
-            MessageType.Text,
-            null,
-            null,
             message.SentAt,
             Embeds: embeds);
 
@@ -386,6 +382,13 @@ public class ChatService : IChatService
 
         raw.Reverse();
 
+        var messageIds = raw.Select(x => x.m.Id).ToList();
+        var attachmentsByMessage = (await db.Attachments
+                .Where(a => messageIds.Contains(a.MessageId))
+                .ToListAsync())
+            .GroupBy(a => a.MessageId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
         return raw.Select(x =>
         {
             // Decrypt DB content (handles both encrypted and plaintext via prefix detection)
@@ -399,6 +402,18 @@ public class ChatService : IChatService
                 catch { /* ignore malformed JSON */ }
             }
 
+            List<AttachmentDto>? attachments = null;
+            if (attachmentsByMessage.TryGetValue(x.m.Id, out var atts) && atts.Count > 0)
+            {
+                attachments = atts.Select(a => new AttachmentDto(
+                    a.Kind,
+                    a.Url,
+                    a.FileName,
+                    a.FileSize,
+                    // Preview re-encrypted for transport; client decrypts (and room-decrypts for E2E)
+                    _encryption.EncryptNullable(_encryption.DecryptNullable(a.AsciiPreview)))).ToList();
+            }
+
             // Encrypt for transport — client decrypts
             return new MessageDto(
                 x.m.Id,
@@ -406,11 +421,8 @@ public class ChatService : IChatService
                 x.m.SenderUsername,
                 x.NicknameColor,
                 channelName,
-                x.m.Type,
-                x.m.AttachmentUrl,
-                x.m.AttachmentFileName,
                 x.m.SentAt,
-                x.m.AttachmentFileSize,
+                attachments,
                 embeds);
         }).ToList();
     }

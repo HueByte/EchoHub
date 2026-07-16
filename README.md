@@ -227,6 +227,7 @@ For direct TLS without a reverse proxy, the IRC gateway can terminate TLS itself
 | ------- | ----------- |
 | `/join <channel> [password]` | Join a channel (passphrase for encrypted channels) |
 | `/passwd <old> <new>` | Change the current encrypted channel's passphrase (creator only) |
+| `/downloadpath [path]` | Set the download folder (no path = native folder picker) |
 | `/leave` | Leave current channel |
 | `/topic <text>` | Set channel topic (creator only) |
 | `/send <file or URL>` | Upload a file or image |

@@ -185,25 +185,35 @@ public sealed class ApiClient : IDisposable
         return result?.AvatarAscii;
     }
 
-    public async Task<MessageDto?> UploadFileAsync(string channelName, Stream fileStream, string fileName, string? size = null,
-        string? declaredType = null, string? encryptedContent = null)
+    /// <summary>
+    /// Sends one message with optional text and one or more file attachments.
+    /// For end-to-end encrypted channels each attachment carries a declared kind and a
+    /// room-encrypted preview (empty when none); the caption is likewise room-encrypted.
+    /// </summary>
+    public async Task<MessageDto?> SendMessageWithAttachmentsAsync(
+        string channelName, string content, IReadOnlyList<OutgoingAttachment> attachments, string? size = null)
     {
         EnsureAuthenticated();
-        using var content = new MultipartFormDataContent();
-        using var streamContent = new StreamContent(fileStream);
-        streamContent.Headers.ContentType = new MediaTypeHeaderValue(GetContentType(fileName));
-        content.Add(streamContent, "file", fileName);
+        using var form = new MultipartFormDataContent { { new StringContent(content), "content" } };
 
-        // E2E channels: the blob is ciphertext, so the client declares the type and
-        // supplies the room-encrypted message content the server can't produce.
-        if (declaredType is not null)
-            content.Add(new StringContent(declaredType), "type");
-        if (encryptedContent is not null)
-            content.Add(new StringContent(encryptedContent), "content");
+        foreach (var att in attachments)
+        {
+            var streamContent = new StreamContent(att.Stream);
+            streamContent.Headers.ContentType = new MediaTypeHeaderValue(GetContentType(att.FileName));
+            form.Add(streamContent, "file", att.FileName);
+
+            // Encrypted channels: one kind + preview per file, in the same order, to keep
+            // the server's index alignment (empty preview string for non-images).
+            if (att.DeclaredKind is not null)
+            {
+                form.Add(new StringContent(att.DeclaredKind), "kind");
+                form.Add(new StringContent(att.EncryptedPreview ?? string.Empty), "preview");
+            }
+        }
 
         var sizeQuery = size is not null ? $"?size={size}" : "";
         using var response = await AuthenticatedRequestAsync(() =>
-            _http.PostAsync($"/api/channels/{Uri.EscapeDataString(channelName)}/upload{sizeQuery}", content));
+            _http.PostAsync($"/api/channels/{Uri.EscapeDataString(channelName)}/messages{sizeQuery}", form));
         await EnsureSuccessAsync(response);
         return await response.Content.ReadFromJsonAsync<MessageDto>();
     }

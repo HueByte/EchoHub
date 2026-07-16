@@ -33,6 +33,7 @@ public sealed class AppOrchestrator : IDisposable
     private readonly Dictionary<string, List<UserPresenceDto>> _channelUsers = new(StringComparer.OrdinalIgnoreCase);
     private readonly Lock _channelUsersLock = new();
     private readonly HashSet<string> _channelsLoadingMore = new(StringComparer.OrdinalIgnoreCase);
+    private readonly List<string> _stagedAttachments = [];
 
     private ClientConfig _config;
     private readonly UserSession _session = new();
@@ -91,6 +92,7 @@ public sealed class AppOrchestrator : IDisposable
         _mainWindow.OnAudioPlayRequested += HandleAudioPlayRequested;
         _mainWindow.OnFileDownloadRequested += HandleFileDownloadRequested;
         _mainWindow.OnImageSaveRequested += HandleImageSaveRequested;
+        _mainWindow.OnDeleteMessageRequested += HandleDeleteMessageRequested;
         _mainWindow.OnCheckForUpdatesRequested += HandleCheckForUpdatesRequested;
         _mainWindow.OnRollbackRequested += HandleRollbackRequested;
         _mainWindow.OnUserProfileRequested += HandleViewProfile;
@@ -113,6 +115,8 @@ public sealed class AppOrchestrator : IDisposable
         _commandHandler.OnOpenServers += HandleCmdOpenServers;
         _commandHandler.OnJoinChannel += HandleCmdJoinChannel;
         _commandHandler.OnChangeRoomPassword += HandleCmdChangeRoomPassword;
+        _commandHandler.OnClearAttachments += HandleCmdClearAttachments;
+        _commandHandler.OnSetDownloadPath += HandleCmdSetDownloadPath;
         _commandHandler.OnLeaveChannel += HandleCmdLeaveChannel;
         _commandHandler.OnSetTopic += HandleCmdSetTopic;
         _commandHandler.OnListUsers += HandleCmdListUsers;
@@ -162,85 +166,107 @@ public sealed class AppOrchestrator : IDisposable
         return Task.CompletedTask;
     }
 
-    private async Task HandleCmdSendFile(string target, string? size)
+    private Task HandleCmdSendFile(string target, string? size)
     {
-        if (!_conn.IsAuthenticated || !_conn.IsConnected) return;
+        if (!_conn.IsAuthenticated || !_conn.IsConnected) return Task.CompletedTask;
 
         var channel = _mainWindow.CurrentChannel;
-        if (string.IsNullOrEmpty(channel)) return;
+        if (string.IsNullOrEmpty(channel)) return Task.CompletedTask;
 
-        try
+        // A URL image is sent immediately as its own message (it can't be staged/encrypted).
+        if (Uri.TryCreate(target, UriKind.Absolute, out var uri)
+            && (uri.Scheme == "http" || uri.Scheme == "https"))
         {
-            var hasRoomKey = _conn.RoomKeys.TryGetKey(channel, out var roomKey);
+            if (_conn.RoomKeys.HasKey(channel))
+            {
+                InvokeUI(() => _mainWindow.ShowError(
+                    "Sending by URL isn't available in encrypted channels — download the file and /send it instead."));
+                return Task.CompletedTask;
+            }
 
-            if (Uri.TryCreate(target, UriKind.Absolute, out var uri)
-                && (uri.Scheme == "http" || uri.Scheme == "https"))
-            {
-                if (hasRoomKey)
-                {
-                    InvokeUI(() => _mainWindow.ShowError(
-                        "Sending by URL isn't available in encrypted channels — download the file and /send it instead."));
-                    return;
-                }
-
-                await _conn.Api!.SendUrlAsync(channel, target, size);
-            }
-            else if (hasRoomKey)
-            {
-                await UploadEncryptedFileAsync(channel, target, size, roomKey);
-            }
-            else
-            {
-                await using var stream = File.OpenRead(target);
-                var fileName = Path.GetFileName(target);
-                await _conn.Api!.UploadFileAsync(channel, stream, fileName, size);
-            }
+            RunAsync(async () => await _conn.Api!.SendUrlAsync(channel, target, size), "Send failed");
+            return Task.CompletedTask;
         }
-        catch (Exception ex)
+
+        // Local files are staged; the next Enter sends them with the typed caption as one message.
+        if (_stagedAttachments.Count >= HubConstants.MaxAttachmentsPerMessage)
         {
-            Log.Error(ex, "File send failed for {Target}", target);
-            InvokeUI(() => _mainWindow.ShowError($"Send failed: {ex.Message}"));
+            InvokeUI(() => _mainWindow.ShowError($"You can attach at most {HubConstants.MaxAttachmentsPerMessage} files per message."));
+            return Task.CompletedTask;
         }
+
+        _stagedAttachments.Add(target);
+        InvokeUI(() => _mainWindow.SetStagedAttachments(_stagedAttachments.Select(Path.GetFileName).OfType<string>().ToList()));
+        return Task.CompletedTask;
+    }
+
+    private Task HandleCmdClearAttachments()
+    {
+        _stagedAttachments.Clear();
+        InvokeUI(() => _mainWindow.SetStagedAttachments([]));
+        return Task.CompletedTask;
     }
 
     /// <summary>
-    /// Upload into an end-to-end encrypted channel: the blob is encrypted with the room
-    /// key before it leaves this machine, and for images the ASCII preview is rendered
-    /// locally and sent room-encrypted — the server never sees image or file contents.
+    /// Sends one message with the given caption plus all staged files as attachments, then
+    /// clears the staging tray. In encrypted channels each file is room-encrypted (blob +
+    /// ASCII preview) client-side before upload; the caption is room-encrypted too.
     /// </summary>
-    private async Task UploadEncryptedFileAsync(string channel, string path, string? size, byte[] roomKey)
+    private void SendStagedMessage(string channel, string content)
+    {
+        var staged = _stagedAttachments.ToList();
+        _stagedAttachments.Clear();
+        InvokeUI(() => _mainWindow.SetStagedAttachments([]));
+
+        var hasRoomKey = _conn.RoomKeys.TryGetKey(channel, out var roomKey);
+
+        RunAsync(async () =>
+        {
+            var outgoing = new List<OutgoingAttachment>();
+            foreach (var path in staged)
+                outgoing.Add(await BuildOutgoingAttachmentAsync(path, hasRoomKey ? roomKey : null));
+
+            var wireContent = hasRoomKey && !string.IsNullOrEmpty(content)
+                ? RoomCrypto.EncryptText(content, roomKey)
+                : content;
+
+            await _conn.Api!.SendMessageWithAttachmentsAsync(channel, wireContent, outgoing);
+        }, "Send failed");
+    }
+
+    /// <summary>
+    /// Reads a staged file into an <see cref="OutgoingAttachment"/>. For encrypted channels the
+    /// blob is AES-GCM encrypted, its kind is declared, and the image ASCII preview is rendered
+    /// locally and room-encrypted — so the server never sees the file or image contents.
+    /// </summary>
+    private static async Task<OutgoingAttachment> BuildOutgoingAttachmentAsync(string path, byte[]? roomKey)
     {
         var fileName = Path.GetFileName(path);
-        var bytes = await File.ReadAllBytesAsync(path);
 
-        string declaredType;
-        string plainContent;
+        if (roomKey is null)
+            return new OutgoingAttachment(File.OpenRead(path), fileName);
+
+        var bytes = await File.ReadAllBytesAsync(path);
+        string declaredKind;
+        string? preview = null;
+
         using (var ms = new MemoryStream(bytes))
         {
             if (FileValidationHelper.IsValidImage(ms))
             {
-                declaredType = "image";
-                var (w, h) = ImageToAsciiService.GetDimensions(size);
+                declaredKind = "image";
+                var (w, h) = ImageToAsciiService.GetDimensions(null);
                 ms.Position = 0;
-                plainContent = new ImageToAsciiService().ConvertToAscii(ms, w, h);
-            }
-            else if (FileValidationHelper.IsAudioFile(fileName))
-            {
-                declaredType = "audio";
-                plainContent = fileName;
+                preview = RoomCrypto.EncryptText(new ImageToAsciiService().ConvertToAscii(ms, w, h), roomKey);
             }
             else
             {
-                declaredType = "file";
-                plainContent = fileName;
+                declaredKind = FileValidationHelper.IsAudioFile(fileName) ? "audio" : "file";
             }
         }
 
-        var encryptedContent = RoomCrypto.EncryptText(plainContent, roomKey);
         var encryptedBlob = RoomCrypto.EncryptBytes(bytes, roomKey);
-
-        await using var blobStream = new MemoryStream(encryptedBlob);
-        await _conn.Api!.UploadFileAsync(channel, blobStream, fileName, size, declaredType, encryptedContent);
+        return new OutgoingAttachment(new MemoryStream(encryptedBlob), fileName, declaredKind, preview);
     }
 
     private async Task HandleCmdSetAvatar(string target)
@@ -893,9 +919,26 @@ public sealed class AppOrchestrator : IDisposable
             return;
         }
 
+        // Staged files → one message with the typed caption plus those attachments.
+        if (_stagedAttachments.Count > 0)
+        {
+            SendStagedMessage(channelName, content);
+            return;
+        }
+
         RunAsync(
             async () => await _conn.SendMessageAsync(channelName, content),
             "Send failed");
+    }
+
+    private void HandleDeleteMessageRequested(Guid messageId)
+    {
+        if (!_conn.IsAuthenticated) return;
+
+        // The server enforces the hierarchy rule (own message, or Mod+ over a strictly
+        // lower role) and broadcasts the deletion; the local list updates on that event.
+        RunAsync(async () => await _conn.Api!.DeleteMessageAsync(messageId),
+            "Failed to delete message");
     }
 
     private void HandleChannelSelected(string channelName)
@@ -1319,18 +1362,44 @@ public sealed class AppOrchestrator : IDisposable
             InvokeUI(() => _messageManager.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloading {fileName}..."));
             var tempPath = await DownloadAttachmentAsync(attachmentUrl, fileName);
 
-            var downloads = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
-            Directory.CreateDirectory(downloads);
-
-            var stem = Path.GetFileNameWithoutExtension(fileName);
-            var ext = Path.GetExtension(fileName);
-            var destination = Path.Combine(downloads, fileName);
-            for (var i = 1; File.Exists(destination); i++)
-                destination = Path.Combine(downloads, $"{stem} ({i}){ext}");
-
+            var destination = DedupPath(GetDownloadDir(), fileName);
             File.Move(tempPath, destination);
             InvokeUI(() => _messageManager.AddSystemMessage(_mainWindow.CurrentChannel, $"Image saved to: {destination}"));
         }, "Failed to save image");
+    }
+
+    /// <summary>
+    /// Resolves the folder downloads are written to: the user's configured
+    /// <see cref="ClientConfig.DownloadPath"/> if set, otherwise the OS Downloads folder.
+    /// Falls back to the temp folder if neither can be created.
+    /// </summary>
+    private string GetDownloadDir()
+    {
+        var dir = _config.DownloadPath;
+        if (string.IsNullOrWhiteSpace(dir))
+            dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+
+        try
+        {
+            Directory.CreateDirectory(dir);
+            return dir;
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Download folder {Dir} is not usable; falling back to temp", dir);
+            return Path.GetTempPath();
+        }
+    }
+
+    /// <summary>Appends " (n)" before the extension until the path doesn't collide with an existing file.</summary>
+    private static string DedupPath(string dir, string fileName)
+    {
+        var stem = Path.GetFileNameWithoutExtension(fileName);
+        var ext = Path.GetExtension(fileName);
+        var dest = Path.Combine(dir, fileName);
+        for (var i = 1; File.Exists(dest); i++)
+            dest = Path.Combine(dir, $"{stem} ({i}){ext}");
+        return dest;
     }
 
     /// <summary>
@@ -1352,25 +1421,79 @@ public sealed class AppOrchestrator : IDisposable
             InvokeUI(() => _messageManager.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloading {fileName}..."));
             var tempPath = await DownloadAttachmentAsync(attachmentUrl, fileName);
 
-            var ext = Path.GetExtension(fileName);
-            if (SafeOpenExtensions.Contains(ext))
+            var destination = DedupPath(GetDownloadDir(), fileName);
+            File.Move(tempPath, destination);
+            InvokeUI(() => _messageManager.AddSystemMessage(_mainWindow.CurrentChannel, $"Saved to: {destination}"));
+
+            if (SafeOpenExtensions.Contains(Path.GetExtension(fileName)))
             {
                 try
                 {
-                    var psi = new System.Diagnostics.ProcessStartInfo(tempPath) { UseShellExecute = true };
+                    var psi = new System.Diagnostics.ProcessStartInfo(destination) { UseShellExecute = true };
                     System.Diagnostics.Process.Start(psi);
                 }
                 catch (Exception ex)
                 {
-                    Log.Warning(ex, "Failed to open file with default app: {Path}", tempPath);
-                    InvokeUI(() => _messageManager.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloaded to: {tempPath}"));
+                    Log.Warning(ex, "Failed to open file with default app: {Path}", destination);
                 }
             }
-            else
-            {
-                InvokeUI(() => _messageManager.AddSystemMessage(_mainWindow.CurrentChannel, $"Downloaded to: {tempPath}"));
-            }
         }, "Failed to download file");
+    }
+
+    /// <summary>
+    /// Sets the download folder. With no argument, opens the OS-native folder picker; if that
+    /// isn't available (headless, missing tool), tells the user to pass a path instead. With an
+    /// argument, sets that path directly (the fallback for machines with no native picker).
+    /// </summary>
+    private Task HandleCmdSetDownloadPath(string args)
+    {
+        var current = _config.DownloadPath ?? GetDownloadDir();
+
+        if (!string.IsNullOrWhiteSpace(args))
+        {
+            SetDownloadPath(args.Trim());
+            return Task.CompletedTask;
+        }
+
+        RunAsync(async () =>
+        {
+            var result = await NativeFolderPicker.PickFolderAsync(current);
+            InvokeUI(() =>
+            {
+                switch (result.Outcome)
+                {
+                    case PickerOutcome.Chosen when result.Path is not null:
+                        SetDownloadPath(result.Path);
+                        break;
+                    case PickerOutcome.Cancelled:
+                        _messageManager.AddSystemMessage(_mainWindow.CurrentChannel, "Download folder unchanged.");
+                        break;
+                    case PickerOutcome.Unavailable:
+                        _messageManager.AddSystemMessage(_mainWindow.CurrentChannel,
+                            $"No native folder picker here. Current download folder: {current}\nSet one with: /downloadpath <path>");
+                        break;
+                }
+            });
+        }, "Failed to open folder picker");
+
+        return Task.CompletedTask;
+    }
+
+    private void SetDownloadPath(string path)
+    {
+        try
+        {
+            Directory.CreateDirectory(path);
+        }
+        catch (Exception ex)
+        {
+            InvokeUI(() => _mainWindow.ShowError($"Can't use that folder: {ex.Message}"));
+            return;
+        }
+
+        _config.DownloadPath = path;
+        ConfigManager.Save(_config);
+        InvokeUI(() => _messageManager.AddSystemMessage(_mainWindow.CurrentChannel, $"Download folder set to: {path}"));
     }
 
     private void HandleCheckForUpdatesRequested()

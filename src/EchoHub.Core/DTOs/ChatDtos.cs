@@ -8,12 +8,21 @@ public record MessageDto(
     string SenderUsername,
     string? SenderNicknameColor,
     string ChannelName,
-    MessageType Type,
-    string? AttachmentUrl,
-    string? AttachmentFileName,
     DateTimeOffset SentAt,
-    long? AttachmentFileSize = null,
+    List<AttachmentDto>? Attachments = null,
     List<EmbedDto>? Embeds = null);
+
+/// <summary>
+/// A file attached to a message. <see cref="AsciiPreview"/> holds the color-tag art for
+/// images (null otherwise). For end-to-end encrypted channels the content behind
+/// <see cref="Url"/> and the preview are ciphertext the server cannot read.
+/// </summary>
+public record AttachmentDto(
+    AttachmentKind Kind,
+    string Url,
+    string FileName,
+    long FileSize,
+    string? AsciiPreview = null);
 
 public record ChannelDto(
     Guid Id,

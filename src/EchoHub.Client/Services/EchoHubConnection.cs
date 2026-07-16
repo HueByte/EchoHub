@@ -207,28 +207,41 @@ public sealed class EchoHubConnection : IAsyncDisposable
     }
 
     /// <summary>
-    /// Strips the transport encryption, then the room layer for E2E channels.
-    /// Without the room key the content is replaced by a locked placeholder —
-    /// re-fetch history after unlocking to render it.
+    /// Strips the transport encryption, then the room layer for E2E channels, from the
+    /// message content and every attachment preview. Without the room key the content is
+    /// replaced by a locked placeholder — re-fetch history after unlocking to render it.
     /// </summary>
     private MessageDto DecryptMessage(MessageDto message)
     {
-        var content = _encryption.Decrypt(message.Content);
+        _roomKeys.TryGetKey(message.ChannelName, out var roomKey);
 
-        if (RoomCrypto.IsRoomCiphertext(content))
+        var content = DecryptField(message.Content, roomKey) ?? LockedMessagePlaceholder;
+
+        List<AttachmentDto>? attachments = null;
+        if (message.Attachments is { Count: > 0 })
         {
-            if (_roomKeys.TryGetKey(message.ChannelName, out var roomKey)
-                && RoomCrypto.TryDecryptText(content, roomKey, out var plaintext))
-            {
-                content = plaintext;
-            }
-            else
-            {
-                content = LockedMessagePlaceholder;
-            }
+            attachments = message.Attachments
+                .Select(a => a with { AsciiPreview = a.AsciiPreview is null ? null : DecryptField(a.AsciiPreview, roomKey) })
+                .ToList();
         }
 
-        return message with { Content = content };
+        return message with { Content = content, Attachments = attachments };
+    }
+
+    /// <summary>
+    /// Decrypts one field: strips transport encryption, then the room layer if it is room
+    /// ciphertext. Returns null when it is room ciphertext but the room key is missing/wrong.
+    /// </summary>
+    private string? DecryptField(string value, byte[]? roomKey)
+    {
+        var plain = _encryption.Decrypt(value);
+        if (!RoomCrypto.IsRoomCiphertext(plain))
+            return plain;
+
+        if (roomKey is not null && RoomCrypto.TryDecryptText(plain, roomKey, out var decrypted))
+            return decrypted;
+
+        return null;
     }
 
     public async ValueTask DisposeAsync()

@@ -15,6 +15,8 @@ public class CommandHandler
     public event Func<Task>? OnOpenServers;
     public event Func<string, string?, Task>? OnJoinChannel;
     public event Func<string, string, Task>? OnChangeRoomPassword;
+    public event Func<Task>? OnClearAttachments;
+    public event Func<string, Task>? OnSetDownloadPath;
     public event Func<Task>? OnLeaveChannel;
     public event Func<string, Task>? OnSetTopic;
     public event Func<Task>? OnListUsers;
@@ -48,6 +50,8 @@ public class CommandHandler
             "color" => await HandleColor(args),
             "theme" => await HandleTheme(args),
             "send" => await HandleSend(args),
+            "clear" => await HandleClear(),
+            "downloadpath" or "downloads" => await HandleDownloadPath(args),
             "profile" => await HandleProfile(args),
             "avatar" => await HandleAvatar(args),
             "servers" => await HandleServers(),
@@ -163,6 +167,21 @@ public class CommandHandler
         if (OnSendFile is not null)
             await OnSendFile(target, size);
         return new CommandResult(true, $"Uploading: {Path.GetFileName(target)}...");
+    }
+
+    private async Task<CommandResult> HandleClear()
+    {
+        if (OnClearAttachments is not null)
+            await OnClearAttachments();
+        return new CommandResult(true, "Cleared staged attachments.");
+    }
+
+    private async Task<CommandResult> HandleDownloadPath(string args)
+    {
+        // No argument → open the native folder picker; an argument sets the path directly.
+        if (OnSetDownloadPath is not null)
+            await OnSetDownloadPath(args.Trim());
+        return new CommandResult(true);
     }
 
     private async Task<CommandResult> HandleProfile(string args)
@@ -358,7 +377,11 @@ public class CommandHandler
               /nick <name>                         - Set display name
               /color <#hex>                        - Set nickname color
               /theme <name>                        - Switch theme
-              /send <filepath or URL> [-s|-m|-l]      - Send file/image/audio (size flag for images)
+              /send <filepath> [-s|-m|-l]          - Stage a file to attach (Enter sends with your text)
+              /send <URL> [-s|-m|-l]               - Send an image URL immediately
+              /clear                               - Drop all staged attachments
+            (Tip: copy a file and press Ctrl+V, or drag a file onto the window, to attach it.)
+              /downloadpath [path]                 - Set download folder (no path = native folder picker)
               /avatar <URL or filepath>             - Set your avatar
               /profile [username]                   - View a profile
               /servers                             - Open saved servers
