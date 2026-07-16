@@ -329,7 +329,7 @@ public sealed class IrcCommandHandler
         await _conn.SendNumericAsync(ServerName, IrcNumericReply.RPL_MYINFO,
             $"{ServerName} EchoHub-IRC o o");
         await _conn.SendNumericAsync(ServerName, IrcNumericReply.RPL_ISUPPORT,
-            "CHANTYPES=# NICKLEN=50 CHANNELLEN=100 :are supported by this server");
+            "CHANTYPES=# CHANMODES=b,k,, NICKLEN=50 CHANNELLEN=100 :are supported by this server");
 
         await SendMotdAsync();
     }
@@ -371,8 +371,17 @@ public sealed class IrcCommandHandler
 
         var channels = msg.Parameters[0].Split(',', StringSplitOptions.RemoveEmptyEntries);
 
-        foreach (var rawChannel in channels)
+        // RFC 1459: optional second parameter carries comma-separated channel keys,
+        // paired with channels by position (JOIN #a,#b key1,key2).
+        var keys = msg.Parameters.Count > 1
+            ? msg.Parameters[1].Split(',')
+            : [];
+
+        for (var i = 0; i < channels.Length; i++)
         {
+            var rawChannel = channels[i];
+            var key = i < keys.Length && !string.IsNullOrEmpty(keys[i]) ? keys[i] : null;
+
             var channelName = IrcToEchoHubChannel(rawChannel);
             if (channelName is null)
             {
@@ -381,13 +390,21 @@ public sealed class IrcCommandHandler
                 continue;
             }
 
-            var (history, error) = await _chatService.JoinChannelAsync(
-                _conn.ConnectionId, _conn.UserId!.Value, _conn.Nickname!, channelName);
+            var (history, error, passwordRequired) = await _chatService.JoinChannelAsync(
+                _conn.ConnectionId, _conn.UserId!.Value, _conn.Nickname!, channelName, key);
 
             if (error is not null)
             {
-                await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_NOSUCHCHANNEL,
-                    $"#{channelName} :{error}");
+                if (passwordRequired)
+                {
+                    await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_BADCHANNELKEY,
+                        $"#{channelName} :Cannot join channel (+k) — {error}");
+                }
+                else
+                {
+                    await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_NOSUCHCHANNEL,
+                        $"#{channelName} :{error}");
+                }
                 continue;
             }
 
@@ -512,8 +529,22 @@ public sealed class IrcCommandHandler
         }
         else
         {
-            await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_CHANOPRIVSNEEDED,
-                $"#{channelName} :Topic can only be changed by the channel creator via the API");
+            var topic = msg.Parameters[1];
+            var result = await _channelService.UpdateTopicAsync(
+                _conn.UserId!.Value, channelName, string.IsNullOrWhiteSpace(topic) ? null : topic);
+
+            if (!result.IsSuccess)
+            {
+                var numeric = result.Error == ChannelError.NotFound
+                    ? IrcNumericReply.ERR_NOSUCHCHANNEL
+                    : IrcNumericReply.ERR_CHANOPRIVSNEEDED;
+                await _conn.SendNumericAsync(ServerName, numeric, $"#{channelName} :{result.ErrorMessage}");
+                return;
+            }
+
+            // Notify SignalR clients and echo the change back to the IRC client
+            await _chatService.BroadcastChannelUpdatedAsync(result.Channel!, channelName);
+            await _conn.SendAsync($":{_conn.Hostmask} TOPIC #{channelName} :{result.Channel!.Topic ?? ""}");
         }
     }
 
@@ -627,10 +658,12 @@ public sealed class IrcCommandHandler
 
         var channels = await _channelService.GetChannelListAsync();
 
-        foreach (var ch in channels)
+        // Private channels are hidden from discovery, matching the SignalR client's channel list
+        foreach (var ch in channels.Where(c => c.IsPublic))
         {
+            var lockHint = ch.IsProtected ? "[+k] " : "";
             await _conn.SendNumericAsync(ServerName, IrcNumericReply.RPL_LIST,
-                $"#{ch.Name} {ch.OnlineCount} :{ch.Topic ?? ""}");
+                $"#{ch.Name} {ch.OnlineCount} :{lockHint}{ch.Topic ?? ""}");
         }
 
         await _conn.SendNumericAsync(ServerName, IrcNumericReply.RPL_LISTEND,
@@ -644,15 +677,94 @@ public sealed class IrcCommandHandler
 
         var target = msg.Parameters[0];
 
-        if (target.StartsWith('#'))
-        {
-            await _conn.SendNumericAsync(ServerName, IrcNumericReply.RPL_CHANNELMODEIS,
-                $"{target} +");
-        }
-        else
+        if (!target.StartsWith('#'))
         {
             await _conn.SendNumericAsync(ServerName, IrcNumericReply.RPL_UMODEIS, "+");
+            return;
         }
+
+        var channelName = IrcToEchoHubChannel(target);
+        if (channelName is null)
+        {
+            await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_NOSUCHCHANNEL,
+                $"{target} :No such channel");
+            return;
+        }
+
+        // Query: MODE #channel
+        if (msg.Parameters.Count == 1)
+        {
+            var channel = await _channelService.GetChannelByNameAsync(channelName);
+            if (channel is null)
+            {
+                await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_NOSUCHCHANNEL,
+                    $"#{channelName} :No such channel");
+                return;
+            }
+
+            await _conn.SendNumericAsync(ServerName, IrcNumericReply.RPL_CHANNELMODEIS,
+                $"#{channelName} {(channel.IsProtected ? "+k" : "+")}");
+            return;
+        }
+
+        var modes = msg.Parameters[1];
+
+        // Clients commonly probe the ban list on join — reply with an empty list
+        if (modes is "b" or "+b")
+        {
+            await _conn.SendNumericAsync(ServerName, IrcNumericReply.RPL_ENDOFBANLIST,
+                $"#{channelName} :End of channel ban list");
+            return;
+        }
+
+        switch (modes)
+        {
+            case "+k":
+                if (msg.Parameters.Count < 3)
+                {
+                    await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_NEEDMOREPARAMS,
+                        "MODE :Not enough parameters");
+                    return;
+                }
+
+                var key = msg.Parameters[2];
+                var setResult = await _channelService.SetChannelPasswordAsync(_conn.UserId!.Value, channelName, key);
+                if (!setResult.IsSuccess)
+                {
+                    await SendModeErrorAsync(channelName, setResult);
+                    return;
+                }
+
+                await _conn.SendAsync($":{_conn.Hostmask} MODE #{channelName} +k {key}");
+                return;
+
+            case "-k":
+                var clearResult = await _channelService.SetChannelPasswordAsync(_conn.UserId!.Value, channelName, null);
+                if (!clearResult.IsSuccess)
+                {
+                    await SendModeErrorAsync(channelName, clearResult);
+                    return;
+                }
+
+                await _conn.SendAsync($":{_conn.Hostmask} MODE #{channelName} -k *");
+                return;
+
+            default:
+                await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_UNKNOWNMODE,
+                    $"{modes} :is unknown mode char to me for #{channelName}");
+                return;
+        }
+    }
+
+    private async Task SendModeErrorAsync(string channelName, ChannelOperationResult result)
+    {
+        var numeric = result.Error switch
+        {
+            ChannelError.NotFound => IrcNumericReply.ERR_NOSUCHCHANNEL,
+            ChannelError.Forbidden => IrcNumericReply.ERR_CHANOPRIVSNEEDED,
+            _ => IrcNumericReply.ERR_KEYSET,
+        };
+        await _conn.SendNumericAsync(ServerName, numeric, $"#{channelName} :{result.ErrorMessage}");
     }
 
     private async Task HandlePingAsync(IrcMessage msg)

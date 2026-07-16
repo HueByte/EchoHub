@@ -93,15 +93,15 @@ public class ChatService : IChatService
         return username;
     }
 
-    public async Task<(List<MessageDto> History, string? Error)> JoinChannelAsync(
-        string connectionId, Guid userId, string username, string channelName)
+    public async Task<(List<MessageDto> History, string? Error, bool PasswordRequired)> JoinChannelAsync(
+        string connectionId, Guid userId, string username, string channelName, string? password = null)
     {
         channelName = channelName.ToLowerInvariant().Trim();
 
-        // Delegate channel validation + membership to ChannelService
-        var (success, error) = await _channelService.EnsureChannelMembershipAsync(userId, channelName);
+        // Delegate channel validation + membership (incl. password gate) to ChannelService
+        var (success, error, passwordRequired) = await _channelService.EnsureChannelMembershipAsync(userId, channelName, password);
         if (!success)
-            return ([], error);
+            return ([], error, passwordRequired);
 
         var isNewJoin = _presenceTracker.JoinChannel(username, channelName);
 
@@ -136,7 +136,7 @@ public class ChatService : IChatService
         }
 
         var history = await GetChannelHistoryAsync(channelName, HubConstants.DefaultHistoryCount);
-        return (history, null);
+        return (history, null, false);
     }
 
     public async Task LeaveChannelAsync(string connectionId, string username, string channelName)

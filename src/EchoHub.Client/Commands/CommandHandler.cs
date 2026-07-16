@@ -13,7 +13,7 @@ public class CommandHandler
     public event Func<string, string?, Task>? OnSendFile;
     public event Func<string?, Task>? OnOpenProfile;
     public event Func<Task>? OnOpenServers;
-    public event Func<string, Task>? OnJoinChannel;
+    public event Func<string, string?, Task>? OnJoinChannel;
     public event Func<Task>? OnLeaveChannel;
     public event Func<string, Task>? OnSetTopic;
     public event Func<Task>? OnListUsers;
@@ -126,7 +126,7 @@ public class CommandHandler
     private async Task<CommandResult> HandleTheme(string args)
     {
         if (string.IsNullOrWhiteSpace(args))
-            return new CommandResult(true, "Usage: /theme <name> (Default, Dark, Light, Hacker, Solarized)", IsError: true);
+            return new CommandResult(true, "Usage: /theme <name> — pick one from the User menu's theme list (e.g. Default, Transparent, TransparentLight, Hacker)", IsError: true);
 
         if (OnSetTheme is not null)
             await OnSetTheme(args.Trim());
@@ -193,11 +193,14 @@ public class CommandHandler
     private async Task<CommandResult> HandleJoin(string args)
     {
         if (string.IsNullOrWhiteSpace(args))
-            return new CommandResult(true, "Usage: /join <channel>", IsError: true);
+            return new CommandResult(true, "Usage: /join <channel> [password]", IsError: true);
 
-        var channel = args.Trim().TrimStart('#');
+        var parts = args.Trim().Split(' ', 2, StringSplitOptions.TrimEntries);
+        var channel = parts[0].TrimStart('#');
+        var password = parts.Length > 1 && !string.IsNullOrWhiteSpace(parts[1]) ? parts[1] : null;
+
         if (OnJoinChannel is not null)
-            await OnJoinChannel(channel);
+            await OnJoinChannel(channel, password);
         return new CommandResult(true);
     }
 
@@ -343,7 +346,7 @@ public class CommandHandler
               /avatar <URL or filepath>             - Set your avatar
               /profile [username]                   - View a profile
               /servers                             - Open saved servers
-              /join <channel>                      - Join a channel
+              /join <channel> [password]           - Join a channel (password if protected)
               /leave                               - Leave current channel
               /topic <text>                        - Set channel topic
               /users                               - List online users

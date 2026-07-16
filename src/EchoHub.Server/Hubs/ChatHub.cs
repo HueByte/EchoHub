@@ -56,15 +56,15 @@ public class ChatHub : Hub<IEchoHubClient>
         }
     }
 
-    public async Task<JoinChannelResult> JoinChannel(string channelName)
+    public async Task<JoinChannelResult> JoinChannel(string channelName, string? password = null)
     {
         try
         {
-            var (history, error) = await _chatService.JoinChannelAsync(
-                Context.ConnectionId, CurrentUserId, CurrentUsername, channelName);
+            var (history, error, passwordRequired) = await _chatService.JoinChannelAsync(
+                Context.ConnectionId, CurrentUserId, CurrentUsername, channelName, password);
 
             if (error is not null)
-                return new JoinChannelResult(false, [], error);
+                return new JoinChannelResult(false, [], error, passwordRequired);
 
             await Groups.AddToGroupAsync(Context.ConnectionId, channelName.ToLowerInvariant().Trim());
             return new JoinChannelResult(true, history);

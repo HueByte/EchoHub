@@ -21,7 +21,8 @@ public record ChannelDto(
     string? Topic,
     bool IsPublic,
     int MessageCount,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    bool IsProtected = false);
 
 public record UserDto(
     Guid Id,
@@ -33,13 +34,13 @@ public record UserDto(
 
 public record SendMessageRequest(string ChannelName, string Content);
 
-public record CreateChannelRequest(string Name, string? Topic = null, bool IsPublic = true);
+public record CreateChannelRequest(string Name, string? Topic = null, bool IsPublic = true, string? Password = null);
 
 public record UpdateTopicRequest(string? Topic);
 
 public record SendUrlRequest(string Url);
 
-public record JoinChannelResult(bool Success, List<MessageDto> History, string? Error = null);
+public record JoinChannelResult(bool Success, List<MessageDto> History, string? Error = null, bool PasswordRequired = false);
 
 public record EmbedDto(
     string? SiteName,

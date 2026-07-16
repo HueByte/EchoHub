@@ -5,6 +5,20 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace EchoHub.Client.Services;
 
+/// <summary>
+/// Thrown when joining a channel fails because a password is required or incorrect.
+/// The UI catches this to prompt the user and retry.
+/// </summary>
+public sealed class ChannelPasswordRequiredException : Exception
+{
+    public string ChannelName { get; }
+
+    public ChannelPasswordRequiredException(string channelName, string message) : base(message)
+    {
+        ChannelName = channelName;
+    }
+}
+
 public sealed class EchoHubConnection : IAsyncDisposable
 {
     private readonly HubConnection _connection;
@@ -134,11 +148,15 @@ public sealed class EchoHubConnection : IAsyncDisposable
         OnConnectionStateChanged?.Invoke("Disconnected");
     }
 
-    public async Task<List<MessageDto>> JoinChannelAsync(string channelName)
+    public async Task<List<MessageDto>> JoinChannelAsync(string channelName, string? password = null)
     {
-        var result = await _connection.InvokeAsync<JoinChannelResult>("JoinChannel", channelName);
+        var result = await _connection.InvokeAsync<JoinChannelResult>("JoinChannel", channelName, password);
         if (!result.Success)
+        {
+            if (result.PasswordRequired)
+                throw new ChannelPasswordRequiredException(channelName, result.Error ?? "Channel is password protected.");
             throw new InvalidOperationException(result.Error ?? "Failed to join channel.");
+        }
         return DecryptMessages(result.History);
     }
 

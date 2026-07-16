@@ -16,6 +16,7 @@ public class ChannelListSource : IListDataSource
 {
     private readonly List<string> _channelNames = [];
     private readonly Dictionary<string, int> _unreadCounts = [];
+    private readonly HashSet<string> _protectedChannels = [];
     private string _activeChannel = string.Empty;
 
     public event NotifyCollectionChangedEventHandler? CollectionChanged;
@@ -28,13 +29,17 @@ public class ChannelListSource : IListDataSource
     private static readonly Attribute NormalAttr = new(Color.DarkGray, Color.None);
     private static readonly Attribute BadgeAttr = new(Color.BrightYellow, Color.None);
 
-    public void Update(List<string> channels, Dictionary<string, int> unread, string activeChannel)
+    public void Update(List<string> channels, Dictionary<string, int> unread, string activeChannel,
+        IReadOnlySet<string>? protectedChannels = null)
     {
         _channelNames.Clear();
         _channelNames.AddRange(channels);
         _unreadCounts.Clear();
         foreach (var kv in unread)
             _unreadCounts[kv.Key] = kv.Value;
+        _protectedChannels.Clear();
+        if (protectedChannels is not null)
+            _protectedChannels.UnionWith(protectedChannels);
         _activeChannel = activeChannel;
         MaxItemLength = channels.Count > 0 ? channels.Max(c => c.Length + 6) : 0;
         if (!SuspendCollectionChangedEvent)
@@ -57,7 +62,8 @@ public class ChannelListSource : IListDataSource
         var normalAttr = listView.GetAttributeForRole(VisualRole.Normal);
         var focusAttr = listView.GetAttributeForRole(VisualRole.Focus);
         var prefix = isActive ? "> " : "  ";
-        var channelText = $"#{name}";
+        // Trailing * marks password-protected (+k) channels
+        var channelText = _protectedChannels.Contains(name) ? $"#{name}*" : $"#{name}";
         var badge = hasUnread ? $" ({unread})" : "";
 
         // Resolve Transparent backgrounds to the view's actual background

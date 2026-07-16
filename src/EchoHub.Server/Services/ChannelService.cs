@@ -41,14 +41,14 @@ public class ChannelService : IChannelService
             .Skip(offset)
             .Take(limit)
             .Select(c => new ChannelDto(
-                c.Id, c.Name, c.Topic, c.IsPublic, c.Messages.Count, c.CreatedAt))
+                c.Id, c.Name, c.Topic, c.IsPublic, c.Messages.Count, c.CreatedAt, c.PasswordHash != null))
             .ToListAsync();
 
         return new PaginatedResponse<ChannelDto>(channels, total, offset, limit);
     }
 
     public async Task<ChannelOperationResult> CreateChannelAsync(
-        Guid creatorUserId, string name, string? topic, bool isPublic)
+        Guid creatorUserId, string name, string? topic, bool isPublic, string? password = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             return ChannelOperationResult.Fail(ChannelError.ValidationFailed, "Channel name is required.");
@@ -58,6 +58,10 @@ public class ChannelService : IChannelService
         if (!ValidationConstants.ChannelNameRegex().IsMatch(channelName))
             return ChannelOperationResult.Fail(ChannelError.ValidationFailed,
                 "Channel name must be 2-100 characters and contain only letters, digits, underscores, or hyphens.");
+
+        var passwordError = ValidateChannelPassword(ref password);
+        if (passwordError is not null)
+            return ChannelOperationResult.Fail(ChannelError.ValidationFailed, passwordError);
 
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
@@ -72,6 +76,7 @@ public class ChannelService : IChannelService
             Topic = topic?.Trim(),
             IsPublic = isPublic,
             CreatedByUserId = creatorUserId,
+            PasswordHash = password is not null ? BCrypt.Net.BCrypt.HashPassword(password) : null,
         };
 
         db.Channels.Add(channel);
@@ -85,7 +90,8 @@ public class ChannelService : IChannelService
 
         await db.SaveChangesAsync();
 
-        var dto = new ChannelDto(channel.Id, channel.Name, channel.Topic, channel.IsPublic, 0, channel.CreatedAt);
+        var dto = new ChannelDto(channel.Id, channel.Name, channel.Topic, channel.IsPublic, 0, channel.CreatedAt,
+            channel.PasswordHash != null);
         return ChannelOperationResult.Success(dto);
     }
 
@@ -112,7 +118,40 @@ public class ChannelService : IChannelService
         await db.SaveChangesAsync();
 
         var messageCount = await db.Messages.CountAsync(m => m.ChannelId == dbChannel.Id);
-        var dto = new ChannelDto(dbChannel.Id, dbChannel.Name, dbChannel.Topic, dbChannel.IsPublic, messageCount, dbChannel.CreatedAt);
+        var dto = new ChannelDto(dbChannel.Id, dbChannel.Name, dbChannel.Topic, dbChannel.IsPublic, messageCount, dbChannel.CreatedAt,
+            dbChannel.PasswordHash != null);
+        return ChannelOperationResult.Success(dto);
+    }
+
+    /// <summary>
+    /// Sets, changes, or clears (null) a channel's join password. Creator or admin only.
+    /// </summary>
+    public async Task<ChannelOperationResult> SetChannelPasswordAsync(Guid callerUserId, string channelName, string? password)
+    {
+        channelName = channelName.ToLowerInvariant().Trim();
+
+        var passwordError = ValidateChannelPassword(ref password);
+        if (passwordError is not null)
+            return ChannelOperationResult.Fail(ChannelError.ValidationFailed, passwordError);
+
+        using var scope = _scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
+
+        var dbChannel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
+        if (dbChannel is null)
+            return ChannelOperationResult.Fail(ChannelError.NotFound, $"Channel '{channelName}' does not exist.");
+
+        var caller = await db.Users.FindAsync(callerUserId);
+        if (dbChannel.CreatedByUserId != callerUserId && (caller is null || caller.Role < ServerRole.Admin))
+            return ChannelOperationResult.Fail(ChannelError.Forbidden,
+                "Only the channel creator or an admin can change the channel password.");
+
+        dbChannel.PasswordHash = password is not null ? BCrypt.Net.BCrypt.HashPassword(password) : null;
+        await db.SaveChangesAsync();
+
+        var messageCount = await db.Messages.CountAsync(m => m.ChannelId == dbChannel.Id);
+        var dto = new ChannelDto(dbChannel.Id, dbChannel.Name, dbChannel.Topic, dbChannel.IsPublic, messageCount, dbChannel.CreatedAt,
+            dbChannel.PasswordHash != null);
         return ChannelOperationResult.Success(dto);
     }
 
@@ -139,7 +178,8 @@ public class ChannelService : IChannelService
         db.Channels.Remove(dbChannel);
         await db.SaveChangesAsync();
 
-        var dto = new ChannelDto(dbChannel.Id, dbChannel.Name, dbChannel.Topic, dbChannel.IsPublic, 0, dbChannel.CreatedAt);
+        var dto = new ChannelDto(dbChannel.Id, dbChannel.Name, dbChannel.Topic, dbChannel.IsPublic, 0, dbChannel.CreatedAt,
+            dbChannel.PasswordHash != null);
         return ChannelOperationResult.Success(dto);
     }
 
@@ -165,7 +205,8 @@ public class ChannelService : IChannelService
 
         return channels.Select(c => new ChannelListItem(
             c.Name, c.Topic,
-            _presenceTracker.GetOnlineUsersInChannel(c.Name).Count)).ToList();
+            _presenceTracker.GetOnlineUsersInChannel(c.Name).Count,
+            c.IsPublic, c.PasswordHash != null)).ToList();
     }
 
     public async Task<ChannelDto?> GetChannelByNameAsync(string channelName)
@@ -179,15 +220,16 @@ public class ChannelService : IChannelService
         if (c is null) return null;
 
         var messageCount = await db.Messages.CountAsync(m => m.ChannelId == c.Id);
-        return new ChannelDto(c.Id, c.Name, c.Topic, c.IsPublic, messageCount, c.CreatedAt);
+        return new ChannelDto(c.Id, c.Name, c.Topic, c.IsPublic, messageCount, c.CreatedAt, c.PasswordHash != null);
     }
 
-    public async Task<(bool Success, string? Error)> EnsureChannelMembershipAsync(Guid userId, string channelName)
+    public async Task<(bool Success, string? Error, bool PasswordRequired)> EnsureChannelMembershipAsync(
+        Guid userId, string channelName, string? password = null)
     {
         channelName = channelName.ToLowerInvariant().Trim();
 
         if (!ValidationConstants.ChannelNameRegex().IsMatch(channelName))
-            return (false, "Invalid channel name. Use 2-100 characters: letters, digits, underscores, or hyphens.");
+            return (false, "Invalid channel name. Use 2-100 characters: letters, digits, underscores, or hyphens.", false);
 
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
@@ -211,7 +253,7 @@ public class ChannelService : IChannelService
             }
             else
             {
-                return (false, $"Channel '{channelName}' does not exist. Create it first via the channel list.");
+                return (false, $"Channel '{channelName}' does not exist. Create it first via the channel list.", false);
             }
         }
 
@@ -219,6 +261,17 @@ public class ChannelService : IChannelService
             .AnyAsync(m => m.UserId == userId && m.ChannelId == channel.Id);
         if (!hasMembership)
         {
+            // Password gate: existing members (incl. the creator) joined before, so only
+            // first-time joins of a protected channel need the password.
+            if (channel.PasswordHash is not null)
+            {
+                if (string.IsNullOrEmpty(password))
+                    return (false, $"Channel '{channelName}' is password protected.", true);
+
+                if (!BCrypt.Net.BCrypt.Verify(password, channel.PasswordHash))
+                    return (false, $"Incorrect password for channel '{channelName}'.", true);
+            }
+
             db.ChannelMemberships.Add(new ChannelMembership
             {
                 UserId = userId,
@@ -227,7 +280,28 @@ public class ChannelService : IChannelService
             await db.SaveChangesAsync();
         }
 
-        return (true, null);
+        return (true, null, false);
+    }
+
+    /// <summary>
+    /// Normalizes and validates a channel password. Whitespace-only becomes null (no password).
+    /// Returns an error message, or null when valid.
+    /// </summary>
+    private static string? ValidateChannelPassword(ref string? password)
+    {
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            password = null;
+            return null;
+        }
+
+        if (password.Length < ValidationConstants.MinChannelPasswordLength)
+            return $"Channel password must be at least {ValidationConstants.MinChannelPasswordLength} characters.";
+
+        if (password.Length > ValidationConstants.MaxPasswordLength)
+            return $"Channel password must not exceed {ValidationConstants.MaxPasswordLength} characters.";
+
+        return null;
     }
 
     private static async Task EnsureDefaultChannelAsync(EchoHubDbContext db)

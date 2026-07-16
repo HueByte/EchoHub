@@ -6,6 +6,7 @@ public class Channel
     public required string Name { get; set; }
     public string? Topic { get; set; }
     public bool IsPublic { get; set; } = true;
+    public string? PasswordHash { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public Guid CreatedByUserId { get; set; }
 

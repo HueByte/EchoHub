@@ -216,13 +216,15 @@ public sealed class AppOrchestrator : IDisposable
         return Task.CompletedTask;
     }
 
-    private async Task HandleCmdJoinChannel(string channelName)
+    private async Task HandleCmdJoinChannel(string channelName, string? password)
     {
         if (!_conn.IsConnected) return;
 
         try
         {
-            var history = await _conn.JoinChannelAsync(channelName);
+            var history = await JoinChannelWithPasswordPromptAsync(channelName, password);
+            if (history is null) return; // user cancelled the password prompt
+
             InvokeUI(() =>
             {
                 _mainWindow.EnsureChannelInList(channelName);
@@ -234,6 +236,31 @@ public sealed class AppOrchestrator : IDisposable
         catch (Exception ex)
         {
             InvokeUI(() => _mainWindow.ShowError($"Failed to join channel: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// Joins a channel, prompting for a password when the server requires one and
+    /// re-prompting on a wrong password. Returns the channel history, or null if
+    /// the user cancelled the prompt.
+    /// </summary>
+    private async Task<List<MessageDto>?> JoinChannelWithPasswordPromptAsync(string channelName, string? password)
+    {
+        while (true)
+        {
+            try
+            {
+                return await _conn.JoinChannelAsync(channelName, password);
+            }
+            catch (ChannelPasswordRequiredException ex)
+            {
+                var prompt = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var message = password is not null ? ex.Message : null;
+                InvokeUI(() => prompt.SetResult(ChannelPasswordDialog.Show(_app, channelName, message)));
+
+                password = await prompt.Task;
+                if (password is null) return null;
+            }
         }
     }
 
@@ -554,7 +581,7 @@ public sealed class AppOrchestrator : IDisposable
             InvokeUI(() =>
             {
                 if (channel.IsPublic)
-                    _mainWindow.EnsureChannelInList(channel.Name, channel.IsPublic);
+                    _mainWindow.EnsureChannelInList(channel.Name, channel.IsPublic, channel.IsProtected);
                 _mainWindow.SetChannelTopic(channel.Name, channel.Topic);
             });
         };
@@ -707,7 +734,16 @@ public sealed class AppOrchestrator : IDisposable
         RunAsync(async () =>
         {
             if (_conn.TrackChannel(channelName))
-                await _conn.JoinChannelAsync(channelName);
+            {
+                var joined = await JoinChannelWithPasswordPromptAsync(channelName, null);
+                if (joined is null)
+                {
+                    // User cancelled the password prompt — back to the default channel
+                    _conn.UntrackChannel(channelName);
+                    InvokeUI(() => _mainWindow.SwitchToChannel(HubConstants.DefaultChannel));
+                    return;
+                }
+            }
 
             try
             {
@@ -983,14 +1019,14 @@ public sealed class AppOrchestrator : IDisposable
 
         RunAsync(async () =>
         {
-            var channel = await _conn.Api!.CreateChannelAsync(result.Name, result.Topic, result.IsPublic);
+            var channel = await _conn.Api!.CreateChannelAsync(result.Name, result.Topic, result.IsPublic, result.Password);
             if (channel is null) return;
 
             var history = await _conn.JoinChannelAsync(channel.Name);
 
             InvokeUI(() =>
             {
-                _mainWindow.EnsureChannelInList(channel.Name);
+                _mainWindow.EnsureChannelInList(channel.Name, channel.IsPublic, channel.IsProtected);
                 _mainWindow.SetChannelTopic(channel.Name, channel.Topic);
                 _mainWindow.SwitchToChannel(channel.Name);
                 if (history.Count > 0)

@@ -169,11 +169,21 @@ internal sealed class ConnectionManager : IAsyncDisposable
 
     // ── Channel Operations ────────────────────────────────────────────────
 
-    public async Task<List<MessageDto>> JoinChannelAsync(string channelName)
+    public async Task<List<MessageDto>> JoinChannelAsync(string channelName, string? password = null)
     {
         if (_connection is null) throw new InvalidOperationException("Not connected");
-        _joinedChannels.Add(channelName);
-        return await _connection.JoinChannelAsync(channelName);
+        try
+        {
+            var history = await _connection.JoinChannelAsync(channelName, password);
+            _joinedChannels.Add(channelName);
+            return history;
+        }
+        catch (ChannelPasswordRequiredException)
+        {
+            // Not actually joined — don't track, or reconnects would retry a doomed join
+            _joinedChannels.Remove(channelName);
+            throw;
+        }
     }
 
     public async Task LeaveChannelAsync(string channelName)

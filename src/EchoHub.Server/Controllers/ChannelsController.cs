@@ -65,7 +65,7 @@ public class ChannelsController : ControllerBase
             return Unauthorized(new ErrorResponse("Authentication required."));
 
         var result = await _channelService.CreateChannelAsync(
-            Guid.Parse(userIdClaim), request.Name, request.Topic, request.IsPublic);
+            Guid.Parse(userIdClaim), request.Name, request.Topic, request.IsPublic, request.Password);
         if (!result.IsSuccess)
             return MapChannelError(result);
 

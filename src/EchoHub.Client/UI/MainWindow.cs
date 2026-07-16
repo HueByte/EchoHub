@@ -7,6 +7,7 @@ using EchoHub.Client.UI.Helpers;
 using EchoHub.Client.UI.ListSources;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
+using Serilog;
 using Terminal.Gui.App;
 using Terminal.Gui.Configuration;
 using Terminal.Gui.Drawing;
@@ -50,6 +51,10 @@ public sealed partial class MainWindow : Runnable
     private static readonly Key AltQKey = Key.Q.WithAlt;
     private static readonly Key TabKey = Key.Tab;
     private static readonly Key CtrlKKey = Key.K.WithCtrl;
+    private static readonly Key CtrlVKey = Key.V.WithCtrl;
+    private static readonly Key CtrlXKey = Key.X.WithCtrl;
+    private static readonly Key CtrlCKey = Key.C.WithCtrl;
+    private static readonly Key CtrlYKey = Key.Y.WithCtrl;
 
     // Available slash commands for Tab autocomplete
     private static readonly string[] SlashCommands =
@@ -63,6 +68,7 @@ public sealed partial class MainWindow : Runnable
     private readonly List<string> _channelNames = [];
     private readonly Dictionary<string, string?> _channelTopics = [];
     private readonly Dictionary<string, bool> _channelPublic = [];
+    private readonly HashSet<string> _channelProtected = [];
     private readonly ChannelListSource _channelListSource;
     private readonly ChatMessageManager _messageManager;
     private string _connectionStatus = "Disconnected";
@@ -253,6 +259,10 @@ public sealed partial class MainWindow : Runnable
             Height = Dim.Fill(),
             WordWrap = true
         };
+        // Terminal.Gui binds Ctrl+W to Command.Cut, whose OS clipboard write can throw
+        // Win32Exception when another process holds the clipboard, crashing the app.
+        // Rebind it to delete-word-backward (readline behavior), which never touches the clipboard.
+        _inputField.KeyBindings.ReplaceCommands(Key.W.WithCtrl, Command.KillWordLeft);
         _inputField.KeyDown += OnInputKeyDown;
         _inputField.ContentsChanged += OnInputContentsChanged;
         _inputFrame.Add(_inputField);
@@ -540,18 +550,80 @@ public sealed partial class MainWindow : Runnable
             ShowSearchDialog();
             e.Handled = true;
         }
+        else if (e.KeyCode == CtrlVKey.KeyCode || e.KeyCode == CtrlYKey.KeyCode)
+        {
+            // Explicit paste support: terminals that don't intercept Ctrl+V themselves
+            // otherwise leave users with only the right-click context menu.
+            GuardedClipboardAction(() => _inputField.Paste(), "paste");
+            e.Handled = true;
+        }
+        else if (e.KeyCode == CtrlXKey.KeyCode)
+        {
+            GuardedClipboardAction(() => _inputField.Cut(), "cut");
+            e.Handled = true;
+        }
+        else if (e.KeyCode == CtrlCKey.KeyCode)
+        {
+            GuardedClipboardAction(() => _inputField.Copy(), "copy");
+            e.Handled = true;
+        }
+    }
+
+    /// <summary>
+    /// Runs a clipboard-backed edit action, swallowing transient OS clipboard failures
+    /// (e.g. another process holding the Windows clipboard) that would otherwise
+    /// propagate out of the input loop and crash the app.
+    /// </summary>
+    private static void GuardedClipboardAction(Action action, string operation)
+    {
+        try
+        {
+            action();
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Clipboard {Operation} failed", operation);
+        }
     }
 
     private bool _suppressEmojiReplace;
+    private int _lastInputLength;
 
     private void OnInputContentsChanged(object? sender, ContentsChangedEventArgs e)
     {
+        var text = _inputField.Text;
+        var previousLength = _lastInputLength;
+        _lastInputLength = text?.Length ?? 0;
+
         if (_suppressEmojiReplace)
             return;
 
-        var text = _inputField.Text;
         if (string.IsNullOrEmpty(text))
             return;
+
+        // A file dropped onto the terminal arrives as a pasted absolute path.
+        // Detect multi-char bursts that resolve to existing files and route them
+        // through /send instead of leaving a raw path in the input.
+        if (text.Length - previousLength > 3 && TryGetDroppedFiles(text, out var droppedFiles))
+        {
+            var channel = _messageManager.CurrentChannel;
+            if (!string.IsNullOrEmpty(channel))
+            {
+                _suppressEmojiReplace = true;
+                try
+                {
+                    _inputField.Text = string.Empty;
+                }
+                finally
+                {
+                    _suppressEmojiReplace = false;
+                }
+
+                foreach (var file in droppedFiles)
+                    OnMessageSubmitted?.Invoke(channel, $"/send \"{file}\"");
+                return;
+            }
+        }
 
         var replaced = EmojiHelper.ReplaceEmoji(text);
         if (replaced == text)
@@ -562,9 +634,15 @@ public sealed partial class MainWindow : Runnable
         var newCol = Math.Max(0, _inputField.CurrentColumn + lengthDelta);
 
         _suppressEmojiReplace = true;
-        _inputField.Text = replaced;
-        _inputField.InsertionPoint = new System.Drawing.Point(newCol, _inputField.CurrentRow);
-        _suppressEmojiReplace = false;
+        try
+        {
+            _inputField.Text = replaced;
+            _inputField.InsertionPoint = new System.Drawing.Point(newCol, _inputField.CurrentRow);
+        }
+        finally
+        {
+            _suppressEmojiReplace = false;
+        }
     }
 
     /// <summary>
@@ -602,6 +680,80 @@ public sealed partial class MainWindow : Runnable
 
         // Move cursor to end after autocomplete
         _inputField.InsertionPoint = new System.Drawing.Point(_inputField.Text?.Length ?? 0, 0);
+    }
+
+    /// <summary>
+    /// Interprets pasted text as one or more dropped files. Terminals deliver a file drop
+    /// as the absolute path (quoted when it contains spaces; multiple files space-separated).
+    /// Returns true only when the entire input resolves to existing files.
+    /// </summary>
+    private static bool TryGetDroppedFiles(string text, out List<string> files)
+    {
+        files = [];
+
+        var trimmed = text.Trim();
+        if (trimmed.Length < 3 || trimmed.Length > 4096 || trimmed.Contains('\n'))
+            return false;
+
+        // Single unquoted path, possibly with spaces (e.g. WSL or plain conhost drops)
+        var unquoted = StripQuotes(trimmed);
+        if (Path.IsPathFullyQualified(unquoted) && File.Exists(unquoted))
+        {
+            files.Add(unquoted);
+            return true;
+        }
+
+        // Multiple files: space-separated tokens, each optionally quoted
+        foreach (var token in TokenizeQuoted(trimmed))
+        {
+            if (!Path.IsPathFullyQualified(token) || !File.Exists(token))
+            {
+                files.Clear();
+                return false;
+            }
+            files.Add(token);
+        }
+
+        return files.Count > 0;
+    }
+
+    private static string StripQuotes(string s) =>
+        s.Length >= 2 && ((s[0] == '"' && s[^1] == '"') || (s[0] == '\'' && s[^1] == '\''))
+            ? s[1..^1]
+            : s;
+
+    private static IEnumerable<string> TokenizeQuoted(string input)
+    {
+        var current = new System.Text.StringBuilder();
+        var quote = '\0';
+
+        foreach (var c in input)
+        {
+            if (quote != '\0')
+            {
+                if (c == quote) quote = '\0';
+                else current.Append(c);
+            }
+            else if (c is '"' or '\'')
+            {
+                quote = c;
+            }
+            else if (c == ' ')
+            {
+                if (current.Length > 0)
+                {
+                    yield return current.ToString();
+                    current.Clear();
+                }
+            }
+            else
+            {
+                current.Append(c);
+            }
+        }
+
+        if (current.Length > 0)
+            yield return current.ToString();
     }
 
     private void OnChatViewportChanged()
@@ -675,11 +827,14 @@ public sealed partial class MainWindow : Runnable
         _channelNames.Clear();
         _channelTopics.Clear();
         _channelPublic.Clear();
+        _channelProtected.Clear();
         foreach (var ch in channels)
         {
             _channelNames.Add(ch.Name);
             _channelTopics[ch.Name] = ch.Topic;
             _channelPublic[ch.Name] = ch.IsPublic;
+            if (ch.IsProtected)
+                _channelProtected.Add(ch.Name);
         }
         RefreshChannelList();
     }
@@ -687,13 +842,23 @@ public sealed partial class MainWindow : Runnable
     /// <summary>
     /// Ensure a channel exists in the left panel list (used for private channels joined via /join).
     /// </summary>
-    public void EnsureChannelInList(string channelName, bool? isPublic = null)
+    public void EnsureChannelInList(string channelName, bool? isPublic = null, bool? isProtected = null)
     {
         if (isPublic.HasValue)
             _channelPublic[channelName] = isPublic.Value;
 
+        if (isProtected.HasValue)
+        {
+            if (isProtected.Value) _channelProtected.Add(channelName);
+            else _channelProtected.Remove(channelName);
+        }
+
         if (_channelNames.Contains(channelName))
+        {
+            if (isProtected.HasValue)
+                RefreshChannelList();
             return;
+        }
 
         _channelNames.Add(channelName);
         RefreshChannelList();
@@ -707,6 +872,7 @@ public sealed partial class MainWindow : Runnable
         _channelNames.Remove(channelName);
         _channelTopics.Remove(channelName);
         _channelPublic.Remove(channelName);
+        _channelProtected.Remove(channelName);
         RefreshChannelList();
     }
 
@@ -792,6 +958,8 @@ public sealed partial class MainWindow : Runnable
         {
             _channelPublic.TryGetValue(currentChannel, out var isPublic);
             var typeSuffix = isPublic ? "public" : "private";
+            if (_channelProtected.Contains(currentChannel))
+                typeSuffix += " +k";
             Write($" \u2502 #{currentChannel} - {typeSuffix}", normalAttr);
         }
 
@@ -855,6 +1023,7 @@ public sealed partial class MainWindow : Runnable
         _messageManager.ClearAll();
         _channelTopics.Clear();
         _channelPublic.Clear();
+        _channelProtected.Clear();
         _channelListSource.Update([], [], string.Empty);
         _channelList.Source = _channelListSource;
         _chatFrame.Title = "Chat";
@@ -915,7 +1084,7 @@ public sealed partial class MainWindow : Runnable
     /// </summary>
     private void RefreshChannelList()
     {
-        _channelListSource.Update(_channelNames, _messageManager.GetUnreadCounts(), _messageManager.CurrentChannel);
+        _channelListSource.Update(_channelNames, _messageManager.GetUnreadCounts(), _messageManager.CurrentChannel, _channelProtected);
         _channelList.Source = _channelListSource;
 
         // Restore selection to current channel

@@ -10,7 +10,7 @@ public interface IChatService
     Task<string?> UserDisconnectedAsync(string connectionId);
 
     // Channel operations
-    Task<(List<MessageDto> History, string? Error)> JoinChannelAsync(string connectionId, Guid userId, string username, string channelName);
+    Task<(List<MessageDto> History, string? Error, bool PasswordRequired)> JoinChannelAsync(string connectionId, Guid userId, string username, string channelName, string? password = null);
     Task LeaveChannelAsync(string connectionId, string username, string channelName);
 
     // Messaging

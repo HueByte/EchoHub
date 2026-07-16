@@ -52,7 +52,7 @@ Terminal.Gui v2 TUI application:
 
 - **UI**: Main window, dialogs, chat renderer with ANSI color support
 - **Services**: API client with automatic token refresh, SignalR connection wrapper, audio playback (NetCoreAudio), automatic update checker (AlwaysUpToDate)
-- **Themes**: 13 built-in color themes (including transparent theme with true terminal transparency)
+- **Themes**: 14 built-in color themes (including transparent dark/light themes with true terminal transparency)
 - **Config**: Client configuration management with session persistence ("Remember Me" refresh tokens)
 
 ## Communication
