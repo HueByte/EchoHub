@@ -15,6 +15,7 @@ public interface IEchoHubClient
     Task UserKicked(string channelName, string username, string? reason);
     Task UserBanned(string username, string? reason);
     Task MessageDeleted(string channelName, Guid messageId);
+    Task ChannelDeleted(string channelName);
     Task ChannelNuked(string channelName);
     Task ForceDisconnect(string reason);
     Task Error(string message);

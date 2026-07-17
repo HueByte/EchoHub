@@ -24,6 +24,7 @@ public interface IChatService
     // Broadcasting (used by controllers and IRC gateway)
     Task BroadcastMessageAsync(string channelName, MessageDto message);
     Task BroadcastChannelUpdatedAsync(ChannelDto channel, string? channelName = null);
+    Task BroadcastChannelDeletedAsync(string channelName);
 
     // Query operations (used by IRC gateway for WHOIS)
     Task<List<string>> GetChannelsForUserAsync(string username);

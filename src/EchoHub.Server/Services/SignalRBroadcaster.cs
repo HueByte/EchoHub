@@ -63,6 +63,9 @@ public class SignalRBroadcaster : IChatBroadcaster
     public Task SendMessageDeletedAsync(string channelName, Guid messageId)
         => HubContext.Clients.Group(channelName).MessageDeleted(channelName, messageId);
 
+    public Task SendChannelDeletedAsync(string channelName)
+        => HubContext.Clients.All.ChannelDeleted(channelName);
+
     public Task SendChannelNukedAsync(string channelName)
         => HubContext.Clients.Group(channelName).ChannelNuked(channelName);
 

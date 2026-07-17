@@ -212,6 +212,9 @@ internal sealed class FakeChatService : IChatService
     public Task BroadcastChannelUpdatedAsync(ChannelDto channel, string? channelName = null) =>
         Task.CompletedTask;
 
+    public Task BroadcastChannelDeletedAsync(string channelName) =>
+        Task.CompletedTask;
+
     public Task<List<string>> GetChannelsForUserAsync(string username) =>
         Task.FromResult(ChannelsForUserToReturn);
 }

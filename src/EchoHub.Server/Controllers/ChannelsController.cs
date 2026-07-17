@@ -162,6 +162,8 @@ public class ChannelsController : ControllerBase
         if (!result.IsSuccess)
             return MapChannelError(result);
 
+        await _chatService.BroadcastChannelDeletedAsync(channel.ToLowerInvariant().Trim());
+
         return NoContent();
     }
 

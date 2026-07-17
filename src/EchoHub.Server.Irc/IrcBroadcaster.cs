@@ -101,6 +101,14 @@ public class IrcBroadcaster : IChatBroadcaster
         }
     }
 
+    public async Task SendChannelDeletedAsync(string channelName)
+    {
+        foreach (var conn in _gateway.GetConnectionsInChannel(channelName))
+        {
+            await conn.SendAsync($":{_gateway.Options.ServerName} NOTICE {conn.Nickname ?? "*"} :Channel #{channelName} has been deleted");
+        }
+    }
+
     public async Task SendChannelNukedAsync(string channelName)
     {
         foreach (var conn in _gateway.GetConnectionsInChannel(channelName))

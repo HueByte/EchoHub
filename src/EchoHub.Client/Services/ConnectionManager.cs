@@ -46,6 +46,7 @@ internal sealed class ConnectionManager : IAsyncDisposable
     public event Action<string, string?>? UserBanned;
     public event Action<string>? ForceDisconnected;
     public event Action<string, Guid>? MessageDeleted;
+    public event Action<string>? ChannelDeleted;
     public event Action<string>? ChannelNuked;
     public event Action<ChannelDto>? ChannelUpdated;
     public event Action<string>? Error;
@@ -300,6 +301,7 @@ internal sealed class ConnectionManager : IAsyncDisposable
         connection.OnUserBanned += (user, reason) => UserBanned?.Invoke(user, reason);
         connection.OnForceDisconnect += reason => ForceDisconnected?.Invoke(reason);
         connection.OnMessageDeleted += (ch, id) => MessageDeleted?.Invoke(ch, id);
+        connection.OnChannelDeleted += ch => ChannelDeleted?.Invoke(ch);
         connection.OnChannelNuked += ch => ChannelNuked?.Invoke(ch);
         connection.OnChannelUpdated += ch =>
         {
