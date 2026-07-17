@@ -4,6 +4,7 @@ using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
 using EchoHub.Server.Data;
 using EchoHub.Server.Services;
+using EchoHub.Server.Services.Stats;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -22,19 +23,25 @@ public class ModerationController : ControllerBase
     private readonly PresenceTracker _presenceTracker;
     private readonly FileStorageService _fileStorage;
     private readonly IEnumerable<IChatBroadcaster> _broadcasters;
+    private readonly ServerStatsCollector _statsCollector;
+    private readonly ILogger<ModerationController> _logger;
 
     public ModerationController(
         EchoHubDbContext db,
         IChatService chatService,
         PresenceTracker presenceTracker,
         FileStorageService fileStorage,
-        IEnumerable<IChatBroadcaster> broadcasters)
+        IEnumerable<IChatBroadcaster> broadcasters,
+        ServerStatsCollector statsCollector,
+        ILogger<ModerationController> logger)
     {
         _db = db;
         _chatService = chatService;
         _presenceTracker = presenceTracker;
         _fileStorage = fileStorage;
         _broadcasters = broadcasters;
+        _statsCollector = statsCollector;
+        _logger = logger;
     }
 
     [HttpPost("role")]
@@ -56,8 +63,13 @@ public class ModerationController : ControllerBase
         if (request.Role >= caller!.Role)
             return BadRequest(new ErrorResponse("Cannot assign a role equal to or above your own."));
 
+        var previousRole = target.Role;
         target.Role = request.Role;
         await _db.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "Role change: {Actor} set {Target} from {OldRole} to {NewRole}",
+            caller!.Username, target.Username, previousRole, request.Role);
 
         return Ok(new { Message = $"{target.Username} is now {request.Role}." });
     }
@@ -86,6 +98,11 @@ public class ModerationController : ControllerBase
         var reason = request?.Reason ?? "You have been kicked from the server.";
         await ForceDisconnectAndCleanupAsync(target.Username, reason);
 
+        _statsCollector.RecordKick();
+        _logger.LogInformation(
+            "Kick: {Actor} kicked {Target} (reason: {Reason})",
+            caller!.Username, target.Username, request?.Reason ?? "none");
+
         return Ok(new { Message = $"{target.Username} has been kicked." });
     }
 
@@ -111,13 +128,18 @@ public class ModerationController : ControllerBase
         var reason = request?.Reason ?? "You have been banned from this server.";
         await ForceDisconnectAndCleanupAsync(target.Username, reason);
 
+        _statsCollector.RecordBan();
+        _logger.LogWarning(
+            "Ban: {Actor} banned {Target} (reason: {Reason})",
+            caller!.Username, target.Username, request?.Reason ?? "none");
+
         return Ok(new { Message = $"{target.Username} has been banned." });
     }
 
     [HttpPost("unban/{username}")]
     public async Task<IActionResult> UnbanUser(string username)
     {
-        var (_, error) = await GetCallerAsync(ServerRole.Admin);
+        var (caller, error) = await GetCallerAsync(ServerRole.Admin);
         if (error is not null) return error;
 
         var target = await _db.Users.FirstOrDefaultAsync(u => u.Username == username.ToLowerInvariant());
@@ -126,6 +148,8 @@ public class ModerationController : ControllerBase
 
         target.IsBanned = false;
         await _db.SaveChangesAsync();
+
+        _logger.LogInformation("Unban: {Actor} unbanned {Target}", caller!.Username, target.Username);
 
         return Ok(new { Message = $"{target.Username} has been unbanned." });
     }
@@ -149,6 +173,12 @@ public class ModerationController : ControllerBase
             : null;
         await _db.SaveChangesAsync();
 
+        _logger.LogInformation(
+            "Mute: {Actor} muted {Target} ({Duration}, reason: {Reason})",
+            caller!.Username, target.Username,
+            request?.DurationMinutes is > 0 ? $"{request.DurationMinutes}m" : "indefinite",
+            request?.Reason ?? "none");
+
         var durationText = request?.DurationMinutes is > 0 ? $" for {request.DurationMinutes} minutes" : "";
         return Ok(new { Message = $"{target.Username} has been muted{durationText}." });
     }
@@ -156,7 +186,7 @@ public class ModerationController : ControllerBase
     [HttpPost("unmute/{username}")]
     public async Task<IActionResult> UnmuteUser(string username)
     {
-        var (_, error) = await GetCallerAsync(ServerRole.Mod);
+        var (caller, error) = await GetCallerAsync(ServerRole.Mod);
         if (error is not null) return error;
 
         var target = await _db.Users.FirstOrDefaultAsync(u => u.Username == username.ToLowerInvariant());
@@ -166,6 +196,8 @@ public class ModerationController : ControllerBase
         target.IsMuted = false;
         target.MutedUntil = null;
         await _db.SaveChangesAsync();
+
+        _logger.LogInformation("Unmute: {Actor} unmuted {Target}", caller!.Username, target.Username);
 
         return Ok(new { Message = $"{target.Username} has been unmuted." });
     }
@@ -219,13 +251,19 @@ public class ModerationController : ControllerBase
 
         await BroadcastToAllAsync(b => b.SendMessageDeletedAsync(channelName, messageId));
 
+        // Only moderator removals of another user's message are noteworthy; self-deletes are routine.
+        if (!isOwnMessage)
+            _logger.LogInformation(
+                "Message removed: {Actor} deleted {Author}'s message {MessageId} in '{Channel}'",
+                caller.Username, message.SenderUsername, messageId, channelName);
+
         return Ok(new { Message = "Message deleted." });
     }
 
     [HttpDelete("channels/{channel}/nuke")]
     public async Task<IActionResult> NukeChannel(string channel)
     {
-        var (_, error) = await GetCallerAsync(ServerRole.Mod);
+        var (caller, error) = await GetCallerAsync(ServerRole.Mod);
         if (error is not null) return error;
 
         var channelName = channel.ToLowerInvariant().Trim();
@@ -250,6 +288,10 @@ public class ModerationController : ControllerBase
         await _db.SaveChangesAsync();
 
         await BroadcastToAllAsync(b => b.SendChannelNukedAsync(channelName));
+
+        _logger.LogWarning(
+            "Channel nuked: {Actor} cleared {Count} messages from '{Channel}'",
+            caller!.Username, messages.Count, channelName);
 
         return Ok(new { Message = $"All messages in #{channelName} have been cleared." });
     }

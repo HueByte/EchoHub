@@ -14,6 +14,7 @@ public class EchoHubDbContext : DbContext
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<ChannelMembership> ChannelMemberships => Set<ChannelMembership>();
     public DbSet<InviteCode> InviteCodes => Set<InviteCode>();
+    public DbSet<ServerStatsReport> ServerStatsReports => Set<ServerStatsReport>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -105,6 +106,12 @@ public class EchoHubDbContext : DbContext
             entity.HasIndex(i => i.Code).IsUnique();
             entity.Property(i => i.Code).IsRequired().HasMaxLength(32);
             entity.Property(i => i.CreatedByUsername).IsRequired().HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<ServerStatsReport>(entity =>
+        {
+            entity.HasKey(r => r.Id);
+            entity.HasIndex(r => r.GeneratedAt);
         });
 
         modelBuilder.Entity<RefreshToken>(entity =>
