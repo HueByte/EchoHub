@@ -1071,6 +1071,15 @@ public sealed class AppOrchestrator : IDisposable
         _conn.MessageDeleted += (channelName, messageId) =>
             InvokeUI(() => _messageManager.RemoveMessage(channelName, messageId));
 
+        _conn.ChannelDeleted += channelName =>
+        {
+            InvokeUI(() =>
+            {
+                _conn.UntrackChannel(channelName);
+                _mainWindow.RemoveChannel(channelName);
+            });
+        };
+
         _conn.ChannelNuked += channelName =>
         {
             InvokeUI(() =>

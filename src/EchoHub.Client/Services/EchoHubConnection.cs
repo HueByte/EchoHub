@@ -58,6 +58,7 @@ public sealed class EchoHubConnection : IAsyncDisposable
     public event Action<string, string, string?>? OnUserKicked;
     public event Action<string, string?>? OnUserBanned;
     public event Action<string, Guid>? OnMessageDeleted;
+    public event Action<string>? OnChannelDeleted;
     public event Action<string>? OnChannelNuked;
     public event Action<string>? OnForceDisconnect;
     public event Action<string>? OnError;
@@ -142,6 +143,11 @@ public sealed class EchoHubConnection : IAsyncDisposable
         _connection.On<string, Guid>(nameof(Core.Contracts.IEchoHubClient.MessageDeleted), (channelName, messageId) =>
         {
             OnMessageDeleted?.Invoke(channelName, messageId);
+        });
+
+        _connection.On<string>(nameof(Core.Contracts.IEchoHubClient.ChannelDeleted), channelName =>
+        {
+            OnChannelDeleted?.Invoke(channelName);
         });
 
         _connection.On<string>(nameof(Core.Contracts.IEchoHubClient.ChannelNuked), channelName =>

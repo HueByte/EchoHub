@@ -320,6 +320,9 @@ public class ChatService : IChatService
     public Task BroadcastChannelUpdatedAsync(ChannelDto channel, string? channelName = null)
         => BroadcastToAllAsync(b => b.SendChannelUpdatedAsync(channel, channelName));
 
+    public Task BroadcastChannelDeletedAsync(string channelName)
+        => BroadcastToAllAsync(b => b.SendChannelDeletedAsync(channelName));
+
     private async Task BroadcastToAllAsync(Func<IChatBroadcaster, Task> action)
     {
         foreach (var broadcaster in _broadcasters)
