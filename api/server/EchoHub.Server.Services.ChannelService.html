@@ -160,8 +160,8 @@ Class ChannelService  <a class="header-action link-secondary" title="View source
 
   <a id="EchoHub_Server_Services_ChannelService__ctor_" data-uid="EchoHub.Server.Services.ChannelService.#ctor*"></a>
 
-  <h3 id="EchoHub_Server_Services_ChannelService__ctor_Microsoft_Extensions_DependencyInjection_IServiceScopeFactory_EchoHub_Server_Services_PresenceTracker_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Services_ChannelService__" data-uid="EchoHub.Server.Services.ChannelService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory,EchoHub.Server.Services.PresenceTracker,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.ChannelService})">
-  ChannelService(IServiceScopeFactory, PresenceTracker, ILogger&lt;ChannelService&gt;)
+  <h3 id="EchoHub_Server_Services_ChannelService__ctor_Microsoft_Extensions_DependencyInjection_IServiceScopeFactory_EchoHub_Server_Services_PresenceTracker_EchoHub_Server_Services_SpamGuard_EchoHub_Server_Services_ServerLogs_ServerLogsService_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Services_ChannelService__" data-uid="EchoHub.Server.Services.ChannelService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory,EchoHub.Server.Services.PresenceTracker,EchoHub.Server.Services.SpamGuard,EchoHub.Server.Services.ServerLogs.ServerLogsService,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.ChannelService})">
+  ChannelService(IServiceScopeFactory, PresenceTracker, SpamGuard, ServerLogsService, ILogger&lt;ChannelService&gt;)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/ChannelService.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -169,7 +169,7 @@ Class ChannelService  <a class="header-action link-secondary" title="View source
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public ChannelService(IServiceScopeFactory scopeFactory, PresenceTracker presenceTracker, ILogger&lt;ChannelService&gt; logger)</code></pre>
+    <pre><code class="lang-csharp hljs">public ChannelService(IServiceScopeFactory scopeFactory, PresenceTracker presenceTracker, SpamGuard spamGuard, ServerLogsService serverLogs, ILogger&lt;ChannelService&gt; logger)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -177,6 +177,10 @@ Class ChannelService  <a class="header-action link-secondary" title="View source
     <dt><code>scopeFactory</code> <span class="xref">IServiceScopeFactory</span></dt>
     <dd></dd>
     <dt><code>presenceTracker</code> <a class="xref" href="EchoHub.Server.Services.PresenceTracker.html">PresenceTracker</a></dt>
+    <dd></dd>
+    <dt><code>spamGuard</code> <a class="xref" href="EchoHub.Server.Services.SpamGuard.html">SpamGuard</a></dt>
+    <dd></dd>
+    <dt><code>serverLogs</code> <a class="xref" href="EchoHub.Server.Services.ServerLogs.ServerLogsService.html">ServerLogsService</a></dt>
     <dd></dd>
     <dt><code>logger</code> <span class="xref">ILogger</span>&lt;<a class="xref" href="EchoHub.Server.Services.ChannelService.html">ChannelService</a>&gt;</dt>
     <dd></dd>
@@ -310,6 +314,44 @@ Class ChannelService  <a class="header-action link-secondary" title="View source
   <h4 class="section">Returns</h4>
   <dl class="parameters">
     <dt><span class="xref">Task</span>&lt;(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.boolean,system.string,system.boolean-.success">Success</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.boolean,system.string,system.boolean-.error">Error</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.boolean,system.string,system.boolean-.passwordrequired">PasswordRequired</a>)&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Server_Services_ChannelService_EnsureSystemChannelAsync_" data-uid="EchoHub.Server.Services.ChannelService.EnsureSystemChannelAsync*"></a>
+
+  <h3 id="EchoHub_Server_Services_ChannelService_EnsureSystemChannelAsync_System_String_System_String_" data-uid="EchoHub.Server.Services.ChannelService.EnsureSystemChannelAsync(System.String,System.String)">
+  EnsureSystemChannelAsync(string, string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/ChannelService.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;ChannelDto&gt; EnsureSystemChannelAsync(string channelName, string? topic = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>channelName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>topic</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs">ChannelDto</a>&gt;</dt>
     <dd></dd>
   </dl>
 

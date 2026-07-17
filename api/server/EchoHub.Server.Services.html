@@ -148,7 +148,30 @@ status (success/failure code, conflicting hosts) for operator-facing endpoints.<
       <dd></dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Server.Services.SpamGuard.html">SpamGuard</a></dt>
+      <dd><p>In-memory, per-user spam protection consulted from <a class="xref" href="EchoHub.Server.Services.ChatService.html">ChatService</a> (messages,
+joins) and <a class="xref" href="EchoHub.Server.Services.ChannelService.html">ChannelService</a> (channel creation), so every ingress protocol —
+SignalR and IRC alike — shares the same limits. State is per-process and never persisted;
+auto-mutes land in the normal mute store. Operates only on content the server already
+stores (for end-to-end encrypted rooms that is ciphertext) — nothing is decrypted.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Server.Services.UserService.html">UserService</a></dt>
+      <dd></dd>
+    </dl>
+    <h3 id="structs">
+Structs
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Server.Services.SpamVerdict.html">SpamVerdict</a></dt>
+      <dd></dd>
+    </dl>
+    <h3 id="enums">
+Enums
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Server.Services.SpamVerdictKind.html">SpamVerdictKind</a></dt>
       <dd></dd>
     </dl>
 

@@ -882,6 +882,37 @@ Class MainWindow  <a class="header-action link-secondary" title="View source" hr
 
 
 
+  <a id="EchoHub_Client_UI_MainWindow_HasPendingReplyIndicator_" data-uid="EchoHub.Client.UI.MainWindow.HasPendingReplyIndicator*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_HasPendingReplyIndicator" data-uid="EchoHub.Client.UI.MainWindow.HasPendingReplyIndicator">
+  HasPendingReplyIndicator
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool HasPendingReplyIndicator { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <h2 class="section" id="methods">Methods
 </h2>
 
@@ -943,8 +974,8 @@ Call after theme changes to refresh colors.</p>
 
   <a id="EchoHub_Client_UI_MainWindow_EnsureChannelInList_" data-uid="EchoHub.Client.UI.MainWindow.EnsureChannelInList*"></a>
 
-  <h3 id="EchoHub_Client_UI_MainWindow_EnsureChannelInList_System_String_System_Nullable_System_Boolean__System_Nullable_System_Boolean__" data-uid="EchoHub.Client.UI.MainWindow.EnsureChannelInList(System.String,System.Nullable{System.Boolean},System.Nullable{System.Boolean})">
-  EnsureChannelInList(string, bool?, bool?)
+  <h3 id="EchoHub_Client_UI_MainWindow_EnsureChannelInList_System_String_System_Nullable_System_Boolean__System_Nullable_System_Boolean__System_Nullable_System_Boolean__" data-uid="EchoHub.Client.UI.MainWindow.EnsureChannelInList(System.String,System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean})">
+  EnsureChannelInList(string, bool?, bool?, bool?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -953,7 +984,7 @@ Call after theme changes to refresh colors.</p>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public void EnsureChannelInList(string channelName, bool? isPublic = null, bool? isProtected = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public void EnsureChannelInList(string channelName, bool? isPublic = null, bool? isProtected = null, bool? isSystem = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -963,6 +994,8 @@ Call after theme changes to refresh colors.</p>
     <dt><code>isPublic</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a>?</dt>
     <dd></dd>
     <dt><code>isProtected</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a>?</dt>
+    <dd></dd>
+    <dt><code>isSystem</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a>?</dt>
     <dd></dd>
   </dl>
 
@@ -1179,6 +1212,38 @@ Call after theme changes to refresh colors.</p>
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>username</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_MainWindow_SetReplyingTo_" data-uid="EchoHub.Client.UI.MainWindow.SetReplyingTo*"></a>
+
+  <h3 id="EchoHub_Client_UI_MainWindow_SetReplyingTo_System_String_" data-uid="EchoHub.Client.UI.MainWindow.SetReplyingTo(System.String)">
+  SetReplyingTo(string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Shows/clears the &quot;replying to&quot; strip on the input frame's title. Pass null to clear.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetReplyingTo(string? label)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>label</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 
@@ -1730,6 +1795,38 @@ Parameters: channel name, absolute paths of existing files.</p>
 
 
 
+  <h3 id="EchoHub_Client_UI_MainWindow_OnImageOpenRequested" data-uid="EchoHub.Client.UI.MainWindow.OnImageOpenRequested">
+  OnImageOpenRequested
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when the user activates an image's &quot;[open]&quot; action to view it without saving.
+Parameters: attachmentUrl, fileName.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action&lt;string, string&gt;? OnImageOpenRequested</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-2">Action</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <h3 id="EchoHub_Client_UI_MainWindow_OnImagePasted" data-uid="EchoHub.Client.UI.MainWindow.OnImagePasted">
   OnImagePasted
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
@@ -1907,6 +2004,69 @@ screenshot tool). Parameters: channel name, PNG-encoded image bytes.</p>
   <h4 class="section">Event Type</h4>
   <dl class="parameters">
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action">Action</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h3 id="EchoHub_Client_UI_MainWindow_OnReplyCancelRequested" data-uid="EchoHub.Client.UI.MainWindow.OnReplyCancelRequested">
+  OnReplyCancelRequested
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when the user cancels a pending reply (Esc in the input field).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action? OnReplyCancelRequested</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action">Action</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h3 id="EchoHub_Client_UI_MainWindow_OnReplyRequested" data-uid="EchoHub.Client.UI.MainWindow.OnReplyRequested">
+  OnReplyRequested
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/MainWindow.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fired when the user picks &quot;Reply&quot; on a message. Parameters: message id, sender username,
+a short plain-text snippet for the reply strip.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event Action&lt;Guid, string, string&gt;? OnReplyRequested</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-3">Action</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.guid">Guid</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
     <dd></dd>
   </dl>
 

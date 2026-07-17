@@ -409,6 +409,44 @@ Class ApiClient  <a class="header-action link-secondary" title="View source" hre
 
 
 
+  <a id="EchoHub_Client_Services_ApiClient_CreateInviteAsync_" data-uid="EchoHub.Client.Services.ApiClient.CreateInviteAsync*"></a>
+
+  <h3 id="EchoHub_Client_Services_ApiClient_CreateInviteAsync_System_Nullable_System_Int32__System_Nullable_System_Int32__" data-uid="EchoHub.Client.Services.ApiClient.CreateInviteAsync(System.Nullable{System.Int32},System.Nullable{System.Int32})">
+  CreateInviteAsync(int?, int?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ApiClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;InviteDto?&gt; CreateInviteAsync(int? maxUses = null, int? expiresInHours = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>maxUses</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+    <dt><code>expiresInHours</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/InviteDtos.cs">InviteDto</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
   <a id="EchoHub_Client_Services_ApiClient_DeleteChannelAsync_" data-uid="EchoHub.Client.Services.ApiClient.DeleteChannelAsync*"></a>
 
   <h3 id="EchoHub_Client_Services_ApiClient_DeleteChannelAsync_System_String_" data-uid="EchoHub.Client.Services.ApiClient.DeleteChannelAsync(System.String)">
@@ -481,6 +519,43 @@ Class ApiClient  <a class="header-action link-secondary" title="View source" hre
 
 
 
+  <a id="EchoHub_Client_Services_ApiClient_DeleteMyAccountAsync_" data-uid="EchoHub.Client.Services.ApiClient.DeleteMyAccountAsync*"></a>
+
+  <h3 id="EchoHub_Client_Services_ApiClient_DeleteMyAccountAsync_System_String_" data-uid="EchoHub.Client.Services.ApiClient.DeleteMyAccountAsync(System.String)">
+  DeleteMyAccountAsync(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ApiClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Deletes the caller's account. The password re-confirms intent.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task DeleteMyAccountAsync(string password)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>password</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
   <a id="EchoHub_Client_Services_ApiClient_Dispose_" data-uid="EchoHub.Client.Services.ApiClient.Dispose*"></a>
 
   <h3 id="EchoHub_Client_Services_ApiClient_Dispose" data-uid="EchoHub.Client.Services.ApiClient.Dispose">
@@ -528,6 +603,38 @@ Class ApiClient  <a class="header-action link-secondary" title="View source" hre
     <dt><code>fileName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_Services_ApiClient_ExportMyDataAsync_" data-uid="EchoHub.Client.Services.ApiClient.ExportMyDataAsync*"></a>
+
+  <h3 id="EchoHub_Client_Services_ApiClient_ExportMyDataAsync" data-uid="EchoHub.Client.Services.ApiClient.ExportMyDataAsync">
+  ExportMyDataAsync()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ApiClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Downloads the caller's full data export as raw JSON text.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;string&gt; ExportMyDataAsync()</code></pre>
+  </div>
+
 
   <h4 class="section">Returns</h4>
   <dl class="parameters">
@@ -670,6 +777,37 @@ size, created date, room id) for the <code>/meta</code> command. Returns null if
   <h4 class="section">Returns</h4>
   <dl class="parameters">
     <dt><span class="xref">Task</span>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_Services_ApiClient_GetInvitesAsync_" data-uid="EchoHub.Client.Services.ApiClient.GetInvitesAsync*"></a>
+
+  <h3 id="EchoHub_Client_Services_ApiClient_GetInvitesAsync" data-uid="EchoHub.Client.Services.ApiClient.GetInvitesAsync">
+  GetInvitesAsync()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ApiClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;List&lt;InviteDto&gt;&gt; GetInvitesAsync()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span>&lt;<span class="xref">List</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/InviteDtos.cs">InviteDto</a>&gt;&gt;</dt>
     <dd></dd>
   </dl>
 
@@ -1035,8 +1173,8 @@ Used by EchoHubConnection for SignalR token provider.</p>
 
   <a id="EchoHub_Client_Services_ApiClient_RegisterAsync_" data-uid="EchoHub.Client.Services.ApiClient.RegisterAsync*"></a>
 
-  <h3 id="EchoHub_Client_Services_ApiClient_RegisterAsync_System_String_System_String_System_String_" data-uid="EchoHub.Client.Services.ApiClient.RegisterAsync(System.String,System.String,System.String)">
-  RegisterAsync(string, string, string?)
+  <h3 id="EchoHub_Client_Services_ApiClient_RegisterAsync_System_String_System_String_System_String_System_String_" data-uid="EchoHub.Client.Services.ApiClient.RegisterAsync(System.String,System.String,System.String,System.String)">
+  RegisterAsync(string, string, string?, string?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ApiClient.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -1044,7 +1182,7 @@ Used by EchoHubConnection for SignalR token provider.</p>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Task&lt;LoginResponse&gt; RegisterAsync(string username, string password, string? displayName = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;LoginResponse&gt; RegisterAsync(string username, string password, string? displayName = null, string? inviteCode = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -1054,6 +1192,8 @@ Used by EchoHubConnection for SignalR token provider.</p>
     <dt><code>password</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>displayName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>inviteCode</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 
@@ -1098,6 +1238,42 @@ Used by EchoHubConnection for SignalR token provider.</p>
   <h4 class="section">Returns</h4>
   <dl class="parameters">
     <dt><span class="xref">Task</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/DTOs/ChatDtos.cs">ChannelDto</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_Services_ApiClient_RevokeInviteAsync_" data-uid="EchoHub.Client.Services.ApiClient.RevokeInviteAsync*"></a>
+
+  <h3 id="EchoHub_Client_Services_ApiClient_RevokeInviteAsync_System_String_" data-uid="EchoHub.Client.Services.ApiClient.RevokeInviteAsync(System.String)">
+  RevokeInviteAsync(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/Services/ApiClient.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task RevokeInviteAsync(string code)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>code</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span></dt>
     <dd></dd>
   </dl>
 

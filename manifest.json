@@ -516,6 +516,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Chat.AttachmentAction.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Chat.AttachmentAction.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Chat.AttachmentAction",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Chat.AttachmentAction.yml\" sourcestartlinenumber=\"1\">An action a click on an attachment line can trigger.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Chat.AttachmentActionSpan.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/client/EchoHub.Client.UI.Chat.AttachmentActionSpan.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Client.UI.Chat.AttachmentActionSpan",
+      "Summary": "<p sourcefile=\"_api_meta/client/EchoHub.Client.UI.Chat.AttachmentActionSpan.yml\" sourcestartlinenumber=\"1\">Inclusive column range on a chat line that triggers an attachment action when clicked.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/client/EchoHub.Client.UI.Chat.ChatColors.yml",
       "output": {
         ".html": {
@@ -1020,6 +1048,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Constants.MessageConventions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Constants.MessageConventions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Constants.MessageConventions",
+      "Summary": "<p sourcefile=\"_api_meta/core/EchoHub.Core.Constants.MessageConventions.yml\" sourcestartlinenumber=\"1\">Cross-protocol message conventions. Action messages (<code>/me</code>) use the IRC CTCP ACTION\nwire format 0x01 + &quot;ACTION &quot; + text + 0x01 as the stored content, so IRC clients\ninteroperate natively (irssi's /me arrives in exactly this shape) and the TUI renders\n&quot;* nick text&quot;. In end-to-end encrypted rooms the marker encrypts along with the text.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/core/EchoHub.Core.Constants.ValidationConstants.yml",
       "output": {
         ".html": {
@@ -1328,6 +1370,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.CreateInviteRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.CreateInviteRequest.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.CreateInviteRequest",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.DeleteAccountRequest.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.DeleteAccountRequest.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.DeleteAccountRequest",
+      "Summary": "<p sourcefile=\"_api_meta/core/EchoHub.Core.DTOs.DeleteAccountRequest.yml\" sourcestartlinenumber=\"1\">Password re-confirmation for destructive self-service account actions.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.EmbedDto.yml",
       "output": {
         ".html": {
@@ -1366,6 +1436,48 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Core.DTOs.ErrorResponse",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.ExportedAttachmentDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.ExportedAttachmentDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.ExportedAttachmentDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.ExportedMessageDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.ExportedMessageDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.ExportedMessageDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.InviteDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.InviteDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.InviteDto",
       "Summary": null
     },
     {
@@ -1510,6 +1622,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.ReplyRefDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.ReplyRefDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.ReplyRefDto",
+      "Summary": "<p sourcefile=\"_api_meta/core/EchoHub.Core.DTOs.ReplyRefDto.yml\" sourcestartlinenumber=\"1\">Reference to the message a reply targets. <xref href=\"EchoHub.Core.DTOs.ReplyRefDto.Content\" data-throw-if-not-resolved=\"false\"></xref> is treated exactly like\nmessage content on the wire: transport-encrypted, and for end-to-end encrypted rooms it is\nroom ciphertext the client must decrypt (the server truncates only plaintext snippets).\nNull on a <xref href=\"EchoHub.Core.DTOs.MessageDto\" data-throw-if-not-resolved=\"false\"></xref> when the original message no longer exists.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.SendMessageRequest.yml",
       "output": {
         ".html": {
@@ -1591,6 +1717,20 @@
       "IsMRef": true,
       "Title": "EchoHub.Core.DTOs.UpdateTopicRequest",
       "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.DTOs.UserDataExportDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.DTOs.UserDataExportDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.DTOs.UserDataExportDto",
+      "Summary": "<p sourcefile=\"_api_meta/core/EchoHub.Core.DTOs.UserDataExportDto.yml\" sourcestartlinenumber=\"1\">Everything the server holds about a user, as stored. For end-to-end encrypted rooms the\nmessage content in here is room ciphertext — the server cannot include plaintext it never had.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -1734,6 +1874,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Models.InviteCode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Models.InviteCode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Models.InviteCode",
+      "Summary": "<p sourcefile=\"_api_meta/core/EchoHub.Core.Models.InviteCode.yml\" sourcestartlinenumber=\"1\">A registration invite code. When the server runs with <code>Server:Registration = &quot;invite&quot;</code>,\nnew accounts (REST and IRC alike) require a valid, unexpired, not-fully-used code.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/core/EchoHub.Core.Models.Message.yml",
       "output": {
         ".html": {
@@ -1871,6 +2025,20 @@
       "IsMRef": true,
       "Title": "EchoHub.Core.Security",
       "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Services.AsciiBannerService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Services.AsciiBannerService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Services.AsciiBannerService",
+      "Summary": "<p sourcefile=\"_api_meta/core/EchoHub.Core.Services.AsciiBannerService.yml\" sourcestartlinenumber=\"1\">Renders short text as a 5-row block-character banner (the <code>/banner</code> command).\nEntirely local — a hand-rolled figlet-style font, no dependencies, no network.\nOutput is plain message content, so it travels (and encrypts) like any other text.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -2084,6 +2252,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Config.ServerLogsOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Config.ServerLogsOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Config.ServerLogsOptions",
+      "Summary": "<p sourcefile=\"_api_meta/server/EchoHub.Server.Config.ServerLogsOptions.yml\" sourcestartlinenumber=\"1\">Live server-log room settings, bound from the &quot;ServerLogs&quot; config section (env override:\n<code>ServerLogs__Enabled</code> etc.). When enabled, a read-only system channel is auto-created\nand log events are streamed to it live — log lines are never stored as messages in the\ndatabase; the rolling Serilog log files remain the only persistence.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Config.SpamOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Config.SpamOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Config.SpamOptions",
+      "Summary": "<p sourcefile=\"_api_meta/server/EchoHub.Server.Config.SpamOptions.yml\" sourcestartlinenumber=\"1\">Anti-spam thresholds, bound from the &quot;Spam&quot; config section. Defaults are lenient enough\nthat a fast typist never trips them; Mods and above are always exempt.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/server/EchoHub.Server.Config.UploadLimits.yml",
       "output": {
         ".html": {
@@ -2151,6 +2347,20 @@
       "IsMRef": true,
       "Title": "EchoHub.Server.Controllers.FilesController",
       "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Controllers.InvitesController.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Controllers.InvitesController.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Controllers.InvitesController",
+      "Summary": "<p sourcefile=\"_api_meta/server/EchoHub.Server.Controllers.InvitesController.yml\" sourcestartlinenumber=\"1\">Invite-code management for invite-gated registration (Admin+ only).\nCodes live in this server's own database — there is no central service.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -2266,6 +2476,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Data.Migrations.AddChannelIsSystem.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Data.Migrations.AddChannelIsSystem.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Data.Migrations.AddChannelIsSystem",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/server/EchoHub.Server.Data.Migrations.AddChannelMembership.yml",
       "output": {
         ".html": {
@@ -2304,6 +2528,20 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Server.Data.Migrations.AddEncryptionSupport",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Data.Migrations.AddInvitesAndReplies.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Data.Migrations.AddInvitesAndReplies.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Data.Migrations.AddInvitesAndReplies",
       "Summary": null
     },
     {
@@ -2574,6 +2812,76 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.ServerLogs.LogBacklogEntry.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.ServerLogs.LogBacklogEntry.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.ServerLogs.LogBacklogEntry",
+      "Summary": "<p sourcefile=\"_api_meta/server/EchoHub.Server.Services.ServerLogs.LogBacklogEntry.yml\" sourcestartlinenumber=\"1\">A backlog entry read from the log file: one timestamped log line plus any continuation\nlines (exception stack traces) that followed it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.ServerLogs.ServerLogsService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.ServerLogs.ServerLogsService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.ServerLogs.ServerLogsService",
+      "Summary": "<p sourcefile=\"_api_meta/server/EchoHub.Server.Services.ServerLogs.ServerLogsService.yml\" sourcestartlinenumber=\"1\">Shared logic for the live log room: room identity, the role gate, and reading the backlog\ntail from the current rolling log file. The file stays the only persistence — log lines\nare never stored as messages.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.ServerLogs.ServerLogsSink.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.ServerLogs.ServerLogsSink.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.ServerLogs.ServerLogsSink",
+      "Summary": "<p sourcefile=\"_api_meta/server/EchoHub.Server.Services.ServerLogs.ServerLogsSink.yml\" sourcestartlinenumber=\"1\">Serilog sink feeding the live log room. Events are queued in a bounded drop-oldest buffer\nand consumed by <xref href=\"EchoHub.Server.Services.ServerLogs.ServerLogsStreamService\" data-throw-if-not-resolved=\"false\"></xref>; nothing is written to the database.\nEvents emitted by the streaming pipeline itself (the stream service and SignalR transport\ninternals) are dropped here so a broadcast that logs — e.g. a transport warning on a dead\nconnection — can never enter a log → broadcast → log feedback loop.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.ServerLogs.ServerLogsStreamService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.ServerLogs.ServerLogsStreamService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.ServerLogs.ServerLogsStreamService",
+      "Summary": "<p sourcefile=\"_api_meta/server/EchoHub.Server.Services.ServerLogs.ServerLogsStreamService.yml\" sourcestartlinenumber=\"1\">Streams queued log events to the live log room as ephemeral messages: SignalR only (the\nIRC gateway never sees them) and no database rows. Ensures the room exists before\nstreaming, recreating it on the fly if it was deleted.</p>\n<p sourcefile=\"_api_meta/server/EchoHub.Server.Services.ServerLogs.ServerLogsStreamService.yml\" sourcestartlinenumber=\"5\">This class must never log from its streaming path — its namespace is excluded by\n<xref href=\"EchoHub.Server.Services.ServerLogs.ServerLogsSink\" data-throw-if-not-resolved=\"false\"></xref> as a second line of defense, but the primary rule is simply\nnot to log per event, otherwise every streamed line would spawn another.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.ServerLogs.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.ServerLogs.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.ServerLogs",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/server/EchoHub.Server.Services.SignalRBroadcaster.yml",
       "output": {
         ".html": {
@@ -2584,6 +2892,48 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Server.Services.SignalRBroadcaster",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.SpamGuard.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.SpamGuard.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.SpamGuard",
+      "Summary": "<p sourcefile=\"_api_meta/server/EchoHub.Server.Services.SpamGuard.yml\" sourcestartlinenumber=\"1\">In-memory, per-user spam protection consulted from <xref href=\"EchoHub.Server.Services.ChatService\" data-throw-if-not-resolved=\"false\"></xref> (messages,\njoins) and <xref href=\"EchoHub.Server.Services.ChannelService\" data-throw-if-not-resolved=\"false\"></xref> (channel creation), so every ingress protocol —\nSignalR and IRC alike — shares the same limits. State is per-process and never persisted;\nauto-mutes land in the normal mute store. Operates only on content the server already\nstores (for end-to-end encrypted rooms that is ciphertext) — nothing is decrypted.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.SpamVerdict.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.SpamVerdict.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.SpamVerdict",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.SpamVerdictKind.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.SpamVerdictKind.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.SpamVerdictKind",
       "Summary": null
     },
     {
@@ -3004,6 +3354,16 @@
       "output": {
         ".html": {
           "relative_path": "changelog/v0.2.14.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "changelog/v0.2.15.md",
+      "output": {
+        ".html": {
+          "relative_path": "changelog/v0.2.15.html"
         }
       },
       "version": ""

@@ -160,8 +160,8 @@ Class UserService  <a class="header-action link-secondary" title="View source" h
 
   <a id="EchoHub_Server_Services_UserService__ctor_" data-uid="EchoHub.Server.Services.UserService.#ctor*"></a>
 
-  <h3 id="EchoHub_Server_Services_UserService__ctor_Microsoft_Extensions_DependencyInjection_IServiceScopeFactory_" data-uid="EchoHub.Server.Services.UserService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory)">
-  UserService(IServiceScopeFactory)
+  <h3 id="EchoHub_Server_Services_UserService__ctor_Microsoft_Extensions_DependencyInjection_IServiceScopeFactory_Microsoft_Extensions_Configuration_IConfiguration_" data-uid="EchoHub.Server.Services.UserService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory,Microsoft.Extensions.Configuration.IConfiguration)">
+  UserService(IServiceScopeFactory, IConfiguration)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/UserService.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -169,18 +169,56 @@ Class UserService  <a class="header-action link-secondary" title="View source" h
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public UserService(IServiceScopeFactory scopeFactory)</code></pre>
+    <pre><code class="lang-csharp hljs">public UserService(IServiceScopeFactory scopeFactory, IConfiguration configuration)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>scopeFactory</code> <span class="xref">IServiceScopeFactory</span></dt>
     <dd></dd>
+    <dt><code>configuration</code> <span class="xref">IConfiguration</span></dt>
+    <dd></dd>
   </dl>
 
 
 
 
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="EchoHub_Server_Services_UserService_RegistrationMode_" data-uid="EchoHub.Server.Services.UserService.RegistrationMode*"></a>
+
+  <h3 id="EchoHub_Server_Services_UserService_RegistrationMode" data-uid="EchoHub.Server.Services.UserService.RegistrationMode">
+  RegistrationMode
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/UserService.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Registration mode from config: &quot;open&quot; (default), &quot;invite&quot;, or &quot;closed&quot;.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string RegistrationMode { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
 
 
 
@@ -305,8 +343,8 @@ Class UserService  <a class="header-action link-secondary" title="View source" h
 
   <a id="EchoHub_Server_Services_UserService_RegisterUserAsync_" data-uid="EchoHub.Server.Services.UserService.RegisterUserAsync*"></a>
 
-  <h3 id="EchoHub_Server_Services_UserService_RegisterUserAsync_System_String_System_String_System_String_" data-uid="EchoHub.Server.Services.UserService.RegisterUserAsync(System.String,System.String,System.String)">
-  RegisterUserAsync(string, string, string?)
+  <h3 id="EchoHub_Server_Services_UserService_RegisterUserAsync_System_String_System_String_System_String_System_String_" data-uid="EchoHub.Server.Services.UserService.RegisterUserAsync(System.String,System.String,System.String,System.String)">
+  RegisterUserAsync(string, string, string?, string?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Services/UserService.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -314,7 +352,7 @@ Class UserService  <a class="header-action link-secondary" title="View source" h
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public Task&lt;UserOperationResult&gt; RegisterUserAsync(string username, string password, string? displayName = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public Task&lt;UserOperationResult&gt; RegisterUserAsync(string username, string password, string? displayName = null, string? inviteCode = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -324,6 +362,8 @@ Class UserService  <a class="header-action link-secondary" title="View source" h
     <dt><code>password</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
     <dt><code>displayName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>inviteCode</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 

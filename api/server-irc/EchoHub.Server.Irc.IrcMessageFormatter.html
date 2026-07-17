@@ -152,62 +152,29 @@ Class IrcMessageFormatter  <a class="header-action link-secondary" title="View s
 </h2>
 
 
-  <a id="EchoHub_Server_Irc_IrcMessageFormatter_ColorTagsToAnsi_" data-uid="EchoHub.Server.Irc.IrcMessageFormatter.ColorTagsToAnsi*"></a>
-
-  <h3 id="EchoHub_Server_Irc_IrcMessageFormatter_ColorTagsToAnsi_System_String_" data-uid="EchoHub.Server.Irc.IrcMessageFormatter.ColorTagsToAnsi(System.String)">
-  ColorTagsToAnsi(string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server.Irc/IrcMessageFormatter.cs"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Convert printable color tags ({F:RRGGBB}, {B:RRGGBB}, {X}) to ANSI escape codes for IRC clients.
-Also passes through content that already uses ANSI codes unchanged.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static string ColorTagsToAnsi(string text)</code></pre>
-  </div>
-
-  <h4 class="section">Parameters</h4>
-  <dl class="parameters">
-    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd></dd>
-  </dl>
-
-  <h4 class="section">Returns</h4>
-  <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
-
-
-
   <a id="EchoHub_Server_Irc_IrcMessageFormatter_FormatMessage_" data-uid="EchoHub.Server.Irc.IrcMessageFormatter.FormatMessage*"></a>
 
-  <h3 id="EchoHub_Server_Irc_IrcMessageFormatter_FormatMessage_EchoHub_Core_DTOs_MessageDto_" data-uid="EchoHub.Server.Irc.IrcMessageFormatter.FormatMessage(EchoHub.Core.DTOs.MessageDto)">
-  FormatMessage(MessageDto)
+  <h3 id="EchoHub_Server_Irc_IrcMessageFormatter_FormatMessage_EchoHub_Core_DTOs_MessageDto_System_String_" data-uid="EchoHub.Server.Irc.IrcMessageFormatter.FormatMessage(EchoHub.Core.DTOs.MessageDto,System.String)">
+  FormatMessage(MessageDto, string?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server.Irc/IrcMessageFormatter.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Format a MessageDto as one or more IRC PRIVMSG lines.</p>
+  <div class="markdown level1 summary"><p>Format a MessageDto as one or more IRC PRIVMSG lines.
+Attachments are rendered as single link lines \u2014 the widely-supported IRC convention
+(clients auto-preview or open plain http(s) URLs) \u2014 never as terminal color art.
+<code class="paramref">publicBaseUrl</code> makes the links absolute so any IRC client can open them.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static List&lt;string&gt; FormatMessage(MessageDto message)</code></pre>
+    <pre><code class="lang-csharp hljs">public static List&lt;string&gt; FormatMessage(MessageDto message, string? publicBaseUrl = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>message</code> <a class="xref" href="../core/EchoHub.Core.DTOs.MessageDto.html">MessageDto</a></dt>
+    <dd></dd>
+    <dt><code>publicBaseUrl</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 
@@ -253,6 +220,46 @@ Also passes through content that already uses ANSI codes unchanged.</p>
   <h4 class="section">Returns</h4>
   <dl class="parameters">
     <dt><span class="xref">List</span>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Server_Irc_IrcMessageFormatter_ToAbsoluteUrl_" data-uid="EchoHub.Server.Irc.IrcMessageFormatter.ToAbsoluteUrl*"></a>
+
+  <h3 id="EchoHub_Server_Irc_IrcMessageFormatter_ToAbsoluteUrl_System_String_System_String_" data-uid="EchoHub.Server.Irc.IrcMessageFormatter.ToAbsoluteUrl(System.String,System.String)">
+  ToAbsoluteUrl(string, string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server.Irc/IrcMessageFormatter.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Joins a relative attachment path onto the configured public base URL.
+Already-absolute URLs and unset base URLs pass through unchanged.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static string ToAbsoluteUrl(string url, string? publicBaseUrl)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>url</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>publicBaseUrl</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 

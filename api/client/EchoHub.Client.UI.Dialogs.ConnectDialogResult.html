@@ -183,8 +183,8 @@ Class ConnectDialogResult  <a class="header-action link-secondary" title="View s
 
   <a id="EchoHub_Client_UI_Dialogs_ConnectDialogResult__ctor_" data-uid="EchoHub.Client.UI.Dialogs.ConnectDialogResult.#ctor*"></a>
 
-  <h3 id="EchoHub_Client_UI_Dialogs_ConnectDialogResult__ctor_System_String_System_String_System_String_System_Boolean_System_Boolean_System_String_" data-uid="EchoHub.Client.UI.Dialogs.ConnectDialogResult.#ctor(System.String,System.String,System.String,System.Boolean,System.Boolean,System.String)">
-  ConnectDialogResult(string, string, string, bool, bool, string?)
+  <h3 id="EchoHub_Client_UI_Dialogs_ConnectDialogResult__ctor_System_String_System_String_System_String_System_Boolean_System_Boolean_System_String_System_String_System_String_" data-uid="EchoHub.Client.UI.Dialogs.ConnectDialogResult.#ctor(System.String,System.String,System.String,System.Boolean,System.Boolean,System.String,System.String,System.String)">
+  ConnectDialogResult(string, string, string, bool, bool, string?, string?, string?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -193,7 +193,7 @@ Class ConnectDialogResult  <a class="header-action link-secondary" title="View s
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public ConnectDialogResult(string ServerUrl, string Username, string Password, bool IsRegister, bool RememberMe, string? SavedRefreshToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public ConnectDialogResult(string ServerUrl, string Username, string Password, bool IsRegister, bool RememberMe, string? SavedRefreshToken, string? DisplayName = null, string? InviteCode = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -210,6 +210,10 @@ Class ConnectDialogResult  <a class="header-action link-secondary" title="View s
     <dd></dd>
     <dt><code>SavedRefreshToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
+    <dt><code>DisplayName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>InviteCode</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
   </dl>
 
 
@@ -225,6 +229,37 @@ Class ConnectDialogResult  <a class="header-action link-secondary" title="View s
 
   <h2 class="section" id="properties">Properties
 </h2>
+
+
+  <a id="EchoHub_Client_UI_Dialogs_ConnectDialogResult_DisplayName_" data-uid="EchoHub.Client.UI.Dialogs.ConnectDialogResult.DisplayName*"></a>
+
+  <h3 id="EchoHub_Client_UI_Dialogs_ConnectDialogResult_DisplayName" data-uid="EchoHub.Client.UI.Dialogs.ConnectDialogResult.DisplayName">
+  DisplayName
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? DisplayName { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
 
 
   <a id="EchoHub_Client_UI_Dialogs_ConnectDialogResult_EqualityContract_" data-uid="EchoHub.Client.UI.Dialogs.ConnectDialogResult.EqualityContract*"></a>
@@ -248,6 +283,37 @@ Class ConnectDialogResult  <a class="header-action link-secondary" title="View s
   <h4 class="section">Property Value</h4>
   <dl class="parameters">
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.type">Type</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Client_UI_Dialogs_ConnectDialogResult_InviteCode_" data-uid="EchoHub.Client.UI.Dialogs.ConnectDialogResult.InviteCode*"></a>
+
+  <h3 id="EchoHub_Client_UI_Dialogs_ConnectDialogResult_InviteCode" data-uid="EchoHub.Client.UI.Dialogs.ConnectDialogResult.InviteCode">
+  InviteCode
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? InviteCode { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 
@@ -450,8 +516,8 @@ Class ConnectDialogResult  <a class="header-action link-secondary" title="View s
 
   <a id="EchoHub_Client_UI_Dialogs_ConnectDialogResult_Deconstruct_" data-uid="EchoHub.Client.UI.Dialogs.ConnectDialogResult.Deconstruct*"></a>
 
-  <h3 id="EchoHub_Client_UI_Dialogs_ConnectDialogResult_Deconstruct_System_String__System_String__System_String__System_Boolean__System_Boolean__System_String__" data-uid="EchoHub.Client.UI.Dialogs.ConnectDialogResult.Deconstruct(System.String@,System.String@,System.String@,System.Boolean@,System.Boolean@,System.String@)">
-  Deconstruct(out string, out string, out string, out bool, out bool, out string?)
+  <h3 id="EchoHub_Client_UI_Dialogs_ConnectDialogResult_Deconstruct_System_String__System_String__System_String__System_Boolean__System_Boolean__System_String__System_String__System_String__" data-uid="EchoHub.Client.UI.Dialogs.ConnectDialogResult.Deconstruct(System.String@,System.String@,System.String@,System.Boolean@,System.Boolean@,System.String@,System.String@,System.String@)">
+  Deconstruct(out string, out string, out string, out bool, out bool, out string?, out string?, out string?)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -459,7 +525,7 @@ Class ConnectDialogResult  <a class="header-action link-secondary" title="View s
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public void Deconstruct(out string ServerUrl, out string Username, out string Password, out bool IsRegister, out bool RememberMe, out string? SavedRefreshToken)</code></pre>
+    <pre><code class="lang-csharp hljs">public void Deconstruct(out string ServerUrl, out string Username, out string Password, out bool IsRegister, out bool RememberMe, out string? SavedRefreshToken, out string? DisplayName, out string? InviteCode)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -475,6 +541,10 @@ Class ConnectDialogResult  <a class="header-action link-secondary" title="View s
     <dt><code>RememberMe</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
     <dd></dd>
     <dt><code>SavedRefreshToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>DisplayName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>InviteCode</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd></dd>
   </dl>
 

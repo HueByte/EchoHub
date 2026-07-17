@@ -95,6 +95,20 @@
 Classes
 </h3>
     <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Server.Config.ServerLogsOptions.html">ServerLogsOptions</a></dt>
+      <dd><p>Live server-log room settings, bound from the &quot;ServerLogs&quot; config section (env override:
+<code>ServerLogs__Enabled</code> etc.). When enabled, a read-only system channel is auto-created
+and log events are streamed to it live — log lines are never stored as messages in the
+database; the rolling Serilog log files remain the only persistence.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Server.Config.SpamOptions.html">SpamOptions</a></dt>
+      <dd><p>Anti-spam thresholds, bound from the &quot;Spam&quot; config section. Defaults are lenient enough
+that a fast typist never trips them; Mods and above are always exempt.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Server.Config.UploadLimits.html">UploadLimits</a></dt>
       <dd><p>Admin-configurable upload limits, bound from the <code>Uploads</code> configuration section.
 Sizes are expressed in megabytes in configuration; the <code>*Bytes</code> accessors convert them

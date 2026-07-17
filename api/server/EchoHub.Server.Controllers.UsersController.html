@@ -159,8 +159,8 @@ public class UsersController : ControllerBase</code></pre>
 
   <a id="EchoHub_Server_Controllers_UsersController__ctor_" data-uid="EchoHub.Server.Controllers.UsersController.#ctor*"></a>
 
-  <h3 id="EchoHub_Server_Controllers_UsersController__ctor_EchoHub_Core_Contracts_IUserService_EchoHub_Core_Services_ImageToAsciiService_EchoHub_Server_Config_UploadLimits_" data-uid="EchoHub.Server.Controllers.UsersController.#ctor(EchoHub.Core.Contracts.IUserService,EchoHub.Core.Services.ImageToAsciiService,EchoHub.Server.Config.UploadLimits)">
-  UsersController(IUserService, ImageToAsciiService, UploadLimits)
+  <h3 id="EchoHub_Server_Controllers_UsersController__ctor_EchoHub_Core_Contracts_IUserService_EchoHub_Core_Services_ImageToAsciiService_EchoHub_Server_Config_UploadLimits_EchoHub_Server_Data_EchoHubDbContext_EchoHub_Core_Contracts_IMessageEncryptionService_EchoHub_Server_Services_FileStorageService_EchoHub_Server_Services_PresenceTracker_System_Collections_Generic_IEnumerable_EchoHub_Core_Contracts_IChatBroadcaster__Microsoft_Extensions_Configuration_IConfiguration_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Controllers_UsersController__" data-uid="EchoHub.Server.Controllers.UsersController.#ctor(EchoHub.Core.Contracts.IUserService,EchoHub.Core.Services.ImageToAsciiService,EchoHub.Server.Config.UploadLimits,EchoHub.Server.Data.EchoHubDbContext,EchoHub.Core.Contracts.IMessageEncryptionService,EchoHub.Server.Services.FileStorageService,EchoHub.Server.Services.PresenceTracker,System.Collections.Generic.IEnumerable{EchoHub.Core.Contracts.IChatBroadcaster},Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Controllers.UsersController})">
+  UsersController(IUserService, ImageToAsciiService, UploadLimits, EchoHubDbContext, IMessageEncryptionService, FileStorageService, PresenceTracker, IEnumerable&lt;IChatBroadcaster&gt;, IConfiguration, ILogger&lt;UsersController&gt;)
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/UsersController.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
@@ -168,7 +168,7 @@ public class UsersController : ControllerBase</code></pre>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public UsersController(IUserService userService, ImageToAsciiService asciiService, UploadLimits uploadLimits)</code></pre>
+    <pre><code class="lang-csharp hljs">public UsersController(IUserService userService, ImageToAsciiService asciiService, UploadLimits uploadLimits, EchoHubDbContext db, IMessageEncryptionService encryption, FileStorageService fileStorage, PresenceTracker presenceTracker, IEnumerable&lt;IChatBroadcaster&gt; broadcasters, IConfiguration config, ILogger&lt;UsersController&gt; logger)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -178,6 +178,20 @@ public class UsersController : ControllerBase</code></pre>
     <dt><code>asciiService</code> <a class="xref" href="../core/EchoHub.Core.Services.ImageToAsciiService.html">ImageToAsciiService</a></dt>
     <dd></dd>
     <dt><code>uploadLimits</code> <a class="xref" href="EchoHub.Server.Config.UploadLimits.html">UploadLimits</a></dt>
+    <dd></dd>
+    <dt><code>db</code> <a class="xref" href="EchoHub.Server.Data.EchoHubDbContext.html">EchoHubDbContext</a></dt>
+    <dd></dd>
+    <dt><code>encryption</code> <a class="xref" href="../core/EchoHub.Core.Contracts.IMessageEncryptionService.html">IMessageEncryptionService</a></dt>
+    <dd></dd>
+    <dt><code>fileStorage</code> <a class="xref" href="EchoHub.Server.Services.FileStorageService.html">FileStorageService</a></dt>
+    <dd></dd>
+    <dt><code>presenceTracker</code> <a class="xref" href="EchoHub.Server.Services.PresenceTracker.html">PresenceTracker</a></dt>
+    <dd></dd>
+    <dt><code>broadcasters</code> <span class="xref">IEnumerable</span>&lt;<a class="xref" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Core/Contracts/IChatBroadcaster.cs">IChatBroadcaster</a>&gt;</dt>
+    <dd></dd>
+    <dt><code>config</code> <span class="xref">IConfiguration</span></dt>
+    <dd></dd>
+    <dt><code>logger</code> <span class="xref">ILogger</span>&lt;<a class="xref" href="EchoHub.Server.Controllers.UsersController.html">UsersController</a>&gt;</dt>
     <dd></dd>
   </dl>
 
@@ -192,8 +206,120 @@ public class UsersController : ControllerBase</code></pre>
 
 
 
+  <h2 class="section" id="fields">Fields
+</h2>
+
+
+
+  <h3 id="EchoHub_Server_Controllers_UsersController_DeletedUserName" data-uid="EchoHub.Server.Controllers.UsersController.DeletedUserName">
+  DeletedUserName
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/UsersController.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Username tombstoned messages are re-attributed to after account deletion.
+Reserved — <a class="xref" href="EchoHub.Server.Services.UserService.html">UserService</a> refuses to register it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string DeletedUserName = &quot;deleted-user&quot;</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
   <h2 class="section" id="methods">Methods
 </h2>
+
+
+  <a id="EchoHub_Server_Controllers_UsersController_DeleteMyAccount_" data-uid="EchoHub.Server.Controllers.UsersController.DeleteMyAccount*"></a>
+
+  <h3 id="EchoHub_Server_Controllers_UsersController_DeleteMyAccount_EchoHub_Core_DTOs_DeleteAccountRequest_" data-uid="EchoHub.Server.Controllers.UsersController.DeleteMyAccount(EchoHub.Core.DTOs.DeleteAccountRequest)">
+  DeleteMyAccount(DeleteAccountRequest)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/UsersController.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Self-service account deletion (password re-confirmed). Removes the account, its refresh
+tokens and memberships (FK cascade), and every attachment blob the user uploaded.
+Their messages are kept but tombstoned to <a class="xref" href="EchoHub.Server.Controllers.UsersController.html#EchoHub_Server_Controllers_UsersController_DeletedUserName">DeletedUserName</a> — deleting them
+outright would silently gut other people's conversations.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[HttpDelete(&quot;me&quot;)]
+public Task&lt;IActionResult&gt; DeleteMyAccount(DeleteAccountRequest request)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>request</code> <a class="xref" href="../core/EchoHub.Core.DTOs.DeleteAccountRequest.html">DeleteAccountRequest</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span>&lt;<span class="xref">IActionResult</span>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="EchoHub_Server_Controllers_UsersController_ExportMyData_" data-uid="EchoHub.Server.Controllers.UsersController.ExportMyData*"></a>
+
+  <h3 id="EchoHub_Server_Controllers_UsersController_ExportMyData" data-uid="EchoHub.Server.Controllers.UsersController.ExportMyData">
+  ExportMyData()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/UsersController.cs"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Everything the server stores about the caller, as stored: profile, their messages
+(end-to-end encrypted room content stays ciphertext — the server never had plaintext),
+and metadata of their uploaded attachments. &quot;You own the data&quot; made demonstrable.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[HttpGet(&quot;me/export&quot;)]
+public Task&lt;IActionResult&gt; ExportMyData()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><span class="xref">Task</span>&lt;<span class="xref">IActionResult</span>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
 
 
   <a id="EchoHub_Server_Controllers_UsersController_GetProfile_" data-uid="EchoHub.Server.Controllers.UsersController.GetProfile*"></a>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>v0.2.15 | EchoHub Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="v0.2.15 | EchoHub Documentation ">
+      
+      
+      <link rel="icon" href="../images/hue_icon.svg">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/HueByte/EchoHub/blob/master/docs/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/hue_icon.svg" alt="EchoHub">
+            EchoHub
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="v0215">v0.2.15</h1>
+
+<p>A big one. Server owners can gate registration behind invite codes, users can export or delete
+everything the server holds about them, and chat gets three classics — <code>/me</code> actions that
+interop natively with IRC, <code>/banner</code> ASCII text, and message replies with quote rendering and
+jump-to-original. Images become properly shareable: every image gets an <strong>[open]</strong> action that
+views it in your browser (or, in end-to-end encrypted rooms, decrypts and opens it locally).
+The IRC gateway stops painting ANSI art nobody asked for and posts plain image links any IRC
+client can open or auto-preview. And a long-standing dual-session annoyance is fixed: messages
+you send from the TUI now reach your own connected IRC client instantly.</p>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><strong>Invite-gated registration</strong> — set <code>Server:Registration</code> to <code>&quot;invite&quot;</code> (or <code>&quot;closed&quot;</code>) in
+<code>appsettings.json</code> and new accounts require a valid invite code; the default <code>&quot;open&quot;</code> keeps
+today's behavior. Admins mint codes with <code>/invite [uses] [hours]</code> (single-use, never-expiring
+by default), list them with <code>/invite list</code>, and revoke with <code>/invite revoke &lt;code&gt;</code>. Codes are
+unguessable (<code>K7QM-3XPF</code> style), stored only in your server's own database, and consumed
+atomically so a code's last use can't be taken twice. The IRC gateway respects the gate too:
+unknown nicknames connecting to an invite-only server get a clear error instead of a silent
+auto-registered account. The very first account (server owner bootstrap) is always allowed.</li>
+<li><strong>Data export</strong> — <code>/export</code> downloads everything the server stores about you (profile, your
+messages, attachment metadata) as JSON into your download folder. Content from end-to-end
+encrypted rooms appears as ciphertext, because the server never had the plaintext — &quot;you own
+the data&quot;, demonstrably.</li>
+<li><strong>Account deletion</strong> — <code>/deleteaccount</code> permanently removes your account after a typed
+confirmation and password re-check: profile, sessions, and every file you uploaded are
+deleted. Your messages remain (deleting them would gut other people's conversations) but are
+re-attributed to a reserved <code>deleted-user</code> name. The last remaining Owner can't self-delete.</li>
+<li><strong><code>/me</code> actions</strong> — <code>/me waves</code> renders as <code>* nick waves</code>. On the wire it's a real CTCP
+ACTION, so irssi/WeeChat users see a native action line, and their <code>/me</code> renders properly in
+the TUI. Works in encrypted rooms (the marker encrypts with the text).</li>
+<li><strong><code>/banner &lt;text&gt;</code></strong> — renders short text (up to 20 characters) as a 5-row block-letter
+banner. Rendered locally with a built-in font — no network, no dependencies — and sent as
+plain message content, so it works over IRC and in encrypted rooms.</li>
+<li><strong>Message replies</strong> — right-click a message (or F6-select) and pick <strong>Reply</strong>: the input
+shows a &quot;Replying to&quot; strip (Esc cancels), and the sent message renders with a dim
+<code>┌ nick: snippet</code> quote line. Activating the quote line jumps to the original message.
+Being replied to lights up the channel like an @mention. IRC clients see the familiar
+<code>&gt; nick: snippet | text</code> convention. In encrypted rooms the quoted snippet is decrypted
+client-side with the room key — the server still never reads room content.</li>
+<li><strong><code>[open]</code> images without saving them</strong> — every image attachment now shows <code>[open] [↓ save original]</code> beneath its preview. Open views the image in your default browser straight from the server; in end-to-end encrypted rooms (where a browser would only see ciphertext) the client downloads, decrypts with the room key, and opens the image in your OS viewer from a temp file instead. Both actions are individually clickable, Enter on the line opens, and the right-click menu carries both.</li>
+<li><strong>Attachment links work in a browser</strong> — <code>GET /api/files/{id}</code> is now a capability URL: the unguessable GUID in the link is the access token (Discord-CDN style), so attachment links can be opened directly in a browser or shared to IRC without a login token. Images and audio are served inline so the browser displays them instead of forcing a download. Blobs from encrypted rooms remain ciphertext, so their links reveal nothing.</li>
+<li><strong>IRC gets image links instead of terminal art</strong> — the gateway no longer floods IRC clients with truecolor-ANSI ASCII art for images. Each attachment is now a single line — <code>[Image: photo.png] https://your-server/api/files/…</code> — the convention every IRC client understands, and ones like TheLounge or IRCCloud auto-preview. Set the new <code>Irc:PublicBaseUrl</code> option (e.g. <code>&quot;https://chat.example.com&quot;</code>) so those links come out absolute; unset, they fall back to relative paths as before.</li>
+<li><strong>Spam protection</strong> — per-user message flood and duplicate-message limits, join and
+channel-creation throttles, and automatic escalation: enough rejected sends in a few minutes
+earns a timed auto-mute through the normal mute system (moderators see it, and it expires on
+its own). One guard covers every ingress — TUI and IRC clients hit the same limits. Mods and
+above are exempt, everything is configurable under the new <code>Spam</code> section
+(<code>Spam:Enabled</code> master switch, lenient defaults a fast typist won't trip), and the guard only
+ever sees stored content — encrypted-room messages stay ciphertext.</li>
+</ul>
+<h2 id="improvements">Improvements</h2>
+<ul>
+<li><strong>Strict <code>/status</code></strong> — <code>/status garbage</code> is now an error instead of silently becoming your
+status message (and resetting you to Online). Status messages moved to <code>/status msg &lt;text&gt;</code>,
+which preserves your current status; <code>/status msg</code> with no text clears it. The server also
+rejects out-of-range status values sent by misbehaving clients.</li>
+<li><strong>Registration dialog</strong> — gained Invite Code support, and the Display Name field you could
+already type into is now actually sent with registration.</li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><strong>Messages sent from the TUI now reach your own IRC session.</strong> With the same account online via both the TUI and an IRC client, messages sent from the TUI never appeared in the IRC client until it reconnected (which replayed history). The gateway suppressed the sender's echo by <em>nickname</em>, which swallowed the message for every IRC connection on that account — it now excludes only the exact connection a message originated from, so all your other sessions (a second IRC client included) receive it immediately.</li>
+<li><strong>Channel deleted event</strong> — when a channel is deleted, all connected clients are now immediately notified via the new <code>ChannelDeleted</code> SignalR event. The channel is removed from the channel list. Previously only the deleting client was able to delete the channel. Other clients would see the channel linger until the next manual refresh.</li>
+<li><strong>Deleted accounts don't break history</strong> — channel history now left-joins users, so messages
+from deleted accounts render (as <code>deleted-user</code>) instead of silently disappearing.</li>
+</ul>
+<h2 id="notes-for-server-operators">Notes for server operators</h2>
+<ul>
+<li>New config key: <code>Server:Registration</code> — <code>&quot;open&quot;</code> (default), <code>&quot;invite&quot;</code>, or <code>&quot;closed&quot;</code>.</li>
+<li>New config section: <code>Spam</code> — flood/duplicate/join/create thresholds and auto-mute duration;
+see <code>appsettings.example.json</code>. On by default with lenient limits; <code>Spam:Enabled: false</code>
+turns it all off. Note <code>Spam:MaxJoinsPerWindow</code> counts only <em>first-time</em> channel joins —
+keep it above your public channel count so a new member's first connect isn't throttled.</li>
+<li>New REST endpoints: <code>POST/GET/DELETE /api/invites</code> (Admin+), <code>GET /api/users/me/export</code>,
+<code>DELETE /api/users/me</code>.</li>
+<li>One new database migration (<code>AddInvitesAndReplies</code>) applies automatically on startup.</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/HueByte/EchoHub/blob/master/docs/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <div class='footer-custom'><div class='footer-inner'><span class='footer-brand'>EchoHub</span><span class='footer-sep'>&middot;</span><a href='https://github.com/HueByte/EchoHub'>GitHub</a><span class='footer-sep'>&middot;</span><a href='https://echohub.voidcube.cloud'>Website</a></div></div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

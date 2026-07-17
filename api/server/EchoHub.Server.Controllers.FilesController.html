@@ -199,11 +199,16 @@ public class FilesController : ControllerBase</code></pre>
   <a class="header-action link-secondary" title="View source" href="https://github.com/HueByte/EchoHub/blob/master/src/EchoHub.Server/Controllers/FilesController.cs"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 summary"><p>Serves an uploaded file. Anonymous by design: the unguessable GUID in the URL is the
+access token (Discord-CDN-style capability URL), so attachment links can be opened
+directly in a browser and shared to IRC clients. E2E-encrypted room blobs are
+ciphertext at rest, so anonymous access reveals nothing for those channels.</p>
+</div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">[HttpGet(&quot;{fileId}&quot;)]
+[AllowAnonymous]
 public IActionResult GetFile(string fileId)</code></pre>
   </div>
 
