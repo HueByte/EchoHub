@@ -83,17 +83,48 @@ public class CommandHandlerTests
     }
 
     [Fact]
-    public async Task HandleAsync_StatusCustomMessage_SetsStatusMessage()
+    public async Task HandleAsync_StatusMsg_SetsStatusMessageAndKeepsStatus()
     {
         var handler = CreateHandler();
+        UserStatus? capturedStatus = UserStatus.Online;
         string? capturedMessage = null;
-        handler.OnSetStatus += (status, msg) => { capturedMessage = msg; return Task.CompletedTask; };
+        handler.OnSetStatus += (status, msg) => { capturedStatus = status; capturedMessage = msg; return Task.CompletedTask; };
 
-        var result = await handler.HandleAsync("/status brb lunch");
+        var result = await handler.HandleAsync("/status msg brb lunch");
 
         Assert.True(result.Handled);
+        Assert.False(result.IsError);
         Assert.Contains("brb lunch", result.Message);
         Assert.Equal("brb lunch", capturedMessage);
+        Assert.Null(capturedStatus); // null = keep the current status
+    }
+
+    [Fact]
+    public async Task HandleAsync_StatusMsgNoText_ClearsMessage()
+    {
+        var handler = CreateHandler();
+        string? capturedMessage = "sentinel";
+        handler.OnSetStatus += (status, msg) => { capturedMessage = msg; return Task.CompletedTask; };
+
+        var result = await handler.HandleAsync("/status msg");
+
+        Assert.False(result.IsError);
+        Assert.Contains("cleared", result.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(string.Empty, capturedMessage); // empty = clear
+    }
+
+    [Fact]
+    public async Task HandleAsync_StatusUnknownValue_IsErrorAndDoesNotFire()
+    {
+        var handler = CreateHandler();
+        var fired = false;
+        handler.OnSetStatus += (_, _) => { fired = true; return Task.CompletedTask; };
+
+        var result = await handler.HandleAsync("/status garbage");
+
+        Assert.True(result.IsError);
+        Assert.Contains("Unknown status", result.Message);
+        Assert.False(fired);
     }
 
     [Fact]
@@ -104,6 +135,128 @@ public class CommandHandlerTests
 
         Assert.True(result.IsError);
         Assert.Contains("Usage", result.Message);
+    }
+
+    // ── /me ───────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task HandleAsync_Me_FiresActionEvent()
+    {
+        var handler = CreateHandler();
+        string? captured = null;
+        handler.OnSendAction += text => { captured = text; return Task.CompletedTask; };
+
+        var result = await handler.HandleAsync("/me waves at everyone");
+
+        Assert.True(result.Handled);
+        Assert.False(result.IsError);
+        Assert.Equal("waves at everyone", captured);
+    }
+
+    [Fact]
+    public async Task HandleAsync_MeNoArgs_ReturnsError()
+    {
+        var handler = CreateHandler();
+        var result = await handler.HandleAsync("/me");
+
+        Assert.True(result.IsError);
+        Assert.Contains("Usage", result.Message);
+    }
+
+    // ── /banner ───────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task HandleAsync_Banner_FiresBannerEvent()
+    {
+        var handler = CreateHandler();
+        string? captured = null;
+        handler.OnSendBanner += text => { captured = text; return Task.CompletedTask; };
+
+        var result = await handler.HandleAsync("/banner hi");
+
+        Assert.True(result.Handled);
+        Assert.Equal("hi", captured);
+    }
+
+    // ── /invite ───────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task HandleAsync_Invite_DefaultsFireCreateWithNulls()
+    {
+        var handler = CreateHandler();
+        (int? Uses, int? Hours)? captured = null;
+        handler.OnCreateInvite += (uses, hours) => { captured = (uses, hours); return Task.CompletedTask; };
+
+        var result = await handler.HandleAsync("/invite");
+
+        Assert.True(result.Handled);
+        Assert.False(result.IsError);
+        Assert.Equal((null, null), captured);
+    }
+
+    [Fact]
+    public async Task HandleAsync_InviteWithArgs_ParsesUsesAndHours()
+    {
+        var handler = CreateHandler();
+        (int? Uses, int? Hours)? captured = null;
+        handler.OnCreateInvite += (uses, hours) => { captured = (uses, hours); return Task.CompletedTask; };
+
+        await handler.HandleAsync("/invite 5 48");
+
+        Assert.Equal((5, 48), captured);
+    }
+
+    [Fact]
+    public async Task HandleAsync_InviteRevoke_FiresRevokeWithCode()
+    {
+        var handler = CreateHandler();
+        string? captured = null;
+        handler.OnRevokeInvite += code => { captured = code; return Task.CompletedTask; };
+
+        await handler.HandleAsync("/invite revoke K7QM-3XPF");
+
+        Assert.Equal("K7QM-3XPF", captured);
+    }
+
+    [Fact]
+    public async Task HandleAsync_InviteBadArgs_ReturnsError()
+    {
+        var handler = CreateHandler();
+        var fired = false;
+        handler.OnCreateInvite += (_, _) => { fired = true; return Task.CompletedTask; };
+
+        var result = await handler.HandleAsync("/invite zero");
+
+        Assert.True(result.IsError);
+        Assert.False(fired);
+    }
+
+    // ── /export, /deleteaccount ───────────────────────────────────────
+
+    [Fact]
+    public async Task HandleAsync_Export_FiresExportEvent()
+    {
+        var handler = CreateHandler();
+        var fired = false;
+        handler.OnExportData += () => { fired = true; return Task.CompletedTask; };
+
+        var result = await handler.HandleAsync("/export");
+
+        Assert.True(result.Handled);
+        Assert.True(fired);
+    }
+
+    [Fact]
+    public async Task HandleAsync_DeleteAccount_FiresDeleteEvent()
+    {
+        var handler = CreateHandler();
+        var fired = false;
+        handler.OnDeleteAccount += () => { fired = true; return Task.CompletedTask; };
+
+        var result = await handler.HandleAsync("/deleteaccount");
+
+        Assert.True(result.Handled);
+        Assert.True(fired);
     }
 
     // ── /nick ─────────────────────────────────────────────────────────

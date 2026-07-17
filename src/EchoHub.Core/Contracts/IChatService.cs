@@ -15,8 +15,9 @@ public interface IChatService
 
     // Messaging. originConnectionId identifies the connection the message came from so
     // broadcasters can avoid echoing it back to that one connection (IRC convention);
-    // the sender's other sessions still receive it.
-    Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content, string? originConnectionId = null);
+    // the sender's other sessions still receive it. replyToMessageId references the message
+    // being replied to; it must exist in the same channel.
+    Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content, string? originConnectionId = null, Guid? replyToMessageId = null);
     Task<List<MessageDto>> GetChannelHistoryAsync(string channelName, int count, int offset = 0);
 
     // Presence

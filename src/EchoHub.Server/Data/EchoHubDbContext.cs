@@ -13,6 +13,7 @@ public class EchoHubDbContext : DbContext
     public DbSet<Attachment> Attachments => Set<Attachment>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<ChannelMembership> ChannelMemberships => Set<ChannelMembership>();
+    public DbSet<InviteCode> InviteCodes => Set<InviteCode>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -96,6 +97,14 @@ public class EchoHubDbContext : DbContext
                   .WithMany()
                   .HasForeignKey(cm => cm.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<InviteCode>(entity =>
+        {
+            entity.HasKey(i => i.Id);
+            entity.HasIndex(i => i.Code).IsUnique();
+            entity.Property(i => i.Code).IsRequired().HasMaxLength(32);
+            entity.Property(i => i.CreatedByUsername).IsRequired().HasMaxLength(50);
         });
 
         modelBuilder.Entity<RefreshToken>(entity =>

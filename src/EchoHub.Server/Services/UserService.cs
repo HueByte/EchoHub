@@ -11,13 +11,24 @@ namespace EchoHub.Server.Services;
 public class UserService : IUserService
 {
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IConfiguration _configuration;
 
-    public UserService(IServiceScopeFactory scopeFactory)
+    public UserService(IServiceScopeFactory scopeFactory, IConfiguration configuration)
     {
         _scopeFactory = scopeFactory;
+        _configuration = configuration;
     }
 
-    public async Task<UserOperationResult> RegisterUserAsync(string username, string password, string? displayName = null)
+    /// <summary>Registration mode from config: "open" (default), "invite", or "closed".</summary>
+    public string RegistrationMode =>
+        (_configuration["Server:Registration"] ?? "open").Trim().ToLowerInvariant() switch
+        {
+            "invite" => "invite",
+            "closed" => "closed",
+            _ => "open",
+        };
+
+    public async Task<UserOperationResult> RegisterUserAsync(string username, string password, string? displayName = null, string? inviteCode = null)
     {
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             return UserOperationResult.Fail(UserError.ValidationFailed, "Username and password are required.");
@@ -35,6 +46,10 @@ public class UserService : IUserService
 
         var normalizedUsername = username.ToLowerInvariant().Trim();
 
+        // Reserved: deleted accounts' messages are re-attributed to this name
+        if (normalizedUsername == Controllers.UsersController.DeletedUserName)
+            return UserOperationResult.Fail(UserError.ValidationFailed, "This username is reserved.");
+
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
@@ -42,6 +57,24 @@ public class UserService : IUserService
             return UserOperationResult.Fail(UserError.AlreadyExists, "Username is already taken.");
 
         var isFirstUser = !await db.Users.AnyAsync();
+
+        // Registration gate. The very first account (server owner bootstrap) is always allowed —
+        // otherwise a fresh invite/closed server could never mint its first admin.
+        if (!isFirstUser)
+        {
+            switch (RegistrationMode)
+            {
+                case "closed":
+                    return UserOperationResult.Fail(UserError.ValidationFailed,
+                        "Registration is closed on this server.");
+
+                case "invite":
+                    var inviteError = await TryConsumeInviteAsync(db, inviteCode);
+                    if (inviteError is not null)
+                        return UserOperationResult.Fail(UserError.ValidationFailed, inviteError);
+                    break;
+            }
+        }
 
         var user = new User
         {
@@ -56,6 +89,32 @@ public class UserService : IUserService
         await db.SaveChangesAsync();
 
         return UserOperationResult.Success(ToProfileDto(user));
+    }
+
+    /// <summary>
+    /// Validates and consumes one use of an invite code. Returns an error message, or null on
+    /// success. The increment is a guarded UPDATE so two racing registrations can't both take
+    /// a code's last use.
+    /// </summary>
+    private static async Task<string?> TryConsumeInviteAsync(EchoHubDbContext db, string? inviteCode)
+    {
+        if (string.IsNullOrWhiteSpace(inviteCode))
+            return "Registration is invite-only on this server. An invite code is required.";
+
+        var code = inviteCode.Trim().ToUpperInvariant();
+        var invite = await db.InviteCodes.FirstOrDefaultAsync(i => i.Code == code);
+
+        if (invite is null || invite.UseCount >= invite.MaxUses)
+            return "Invalid invite code.";
+
+        if (invite.ExpiresAt.HasValue && invite.ExpiresAt.Value <= DateTimeOffset.UtcNow)
+            return "This invite code has expired.";
+
+        var consumed = await db.InviteCodes
+            .Where(i => i.Id == invite.Id && i.UseCount < i.MaxUses)
+            .ExecuteUpdateAsync(s => s.SetProperty(i => i.UseCount, i => i.UseCount + 1));
+
+        return consumed == 1 ? null : "Invalid invite code.";
     }
 
     public async Task<UserOperationResult> AuthenticateUserAsync(string username, string password)

@@ -18,7 +18,11 @@ public class IrcBroadcaster : IChatBroadcaster
     {
         // Decrypt transport-encrypted content for IRC clients (they can't handle
         // app-layer encryption). E2E room ciphertext ($RC1$) passes through untouched.
-        var decryptedMessage = message with { Content = _encryption.Decrypt(message.Content) };
+        var decryptedMessage = message with
+        {
+            Content = _encryption.Decrypt(message.Content),
+            ReplyTo = message.ReplyTo is { } reply ? reply with { Content = _encryption.Decrypt(reply.Content) } : null,
+        };
         var lines = IrcMessageFormatter.FormatMessage(decryptedMessage, _gateway.Options.PublicBaseUrl);
 
         foreach (var conn in _gateway.GetConnectionsInChannel(channelName))

@@ -432,7 +432,11 @@ public sealed class IrcCommandHandler
             // Replay history (decrypt — history is encrypted for SignalR transport)
             foreach (var m in history)
             {
-                var decrypted = m with { Content = _encryption.Decrypt(m.Content) };
+                var decrypted = m with
+                {
+                    Content = _encryption.Decrypt(m.Content),
+                    ReplyTo = m.ReplyTo is { } reply ? reply with { Content = _encryption.Decrypt(reply.Content) } : null,
+                };
                 var lines = IrcMessageFormatter.FormatMessage(decrypted, _options.PublicBaseUrl);
                 foreach (var line in lines)
                     await _conn.SendAsync(line);

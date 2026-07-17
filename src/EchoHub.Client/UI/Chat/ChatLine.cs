@@ -32,6 +32,12 @@ public partial class ChatLine
     public string? SenderUsername { get; set; }
 
     /// <summary>
+    /// Set on a reply's quote line: activating the line jumps to this message
+    /// if it is in the loaded history.
+    /// </summary>
+    public Guid? JumpToMessageId { get; set; }
+
+    /// <summary>
     /// Clickable sub-line targets (e.g. the "[open]" and "[save original]" brackets under an
     /// image). Columns are relative to the unwrapped line, so only the first wrapped line
     /// keeps them. Null means the whole line uses the kind's default action.
@@ -176,6 +182,7 @@ public partial class ChatLine
             wrapped.MessageId = MessageId;
             wrapped.SenderUsername = SenderUsername;
             wrapped.IsMention = IsMention;
+            wrapped.JumpToMessageId = JumpToMessageId;
         }
 
         // Span columns only line up with the first wrapped line; later lines fall

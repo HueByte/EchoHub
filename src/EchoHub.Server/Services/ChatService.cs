@@ -3,6 +3,7 @@ using EchoHub.Core.Constants;
 using EchoHub.Core.Contracts;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
+using EchoHub.Core.Security;
 using EchoHub.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -151,7 +152,7 @@ public class ChatService : IChatService
         _logger.LogInformation("{User} left channel '{Channel}'", username, channelName);
     }
 
-    public async Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content, string? originConnectionId = null)
+    public async Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content, string? originConnectionId = null, Guid? replyToMessageId = null)
     {
         channelName = channelName.ToLowerInvariant().Trim();
 
@@ -198,6 +199,15 @@ public class ChatService : IChatService
             }
         }
 
+        // Replies must target an existing message in the same channel
+        Message? replyTarget = null;
+        if (replyToMessageId is { } replyId)
+        {
+            replyTarget = await db.Messages.FirstOrDefaultAsync(m => m.Id == replyId && m.ChannelId == channel.Id);
+            if (replyTarget is null)
+                return "The message you're replying to no longer exists.";
+        }
+
         // Attempt to fetch link embeds for URLs in the plaintext message
         List<EmbedDto>? embeds = null;
         try
@@ -223,6 +233,7 @@ public class ChatService : IChatService
             SenderUserId = userId,
             SenderUsername = username,
             EmbedJson = dbEmbedJson,
+            ReplyToMessageId = replyTarget?.Id,
         };
 
         db.Messages.Add(message);
@@ -238,7 +249,8 @@ public class ChatService : IChatService
             channelName,
             message.SentAt,
             Embeds: embeds,
-            SenderDisplayName: sender?.DisplayName);
+            SenderDisplayName: sender?.DisplayName,
+            ReplyTo: replyTarget is null ? null : BuildReplyRef(replyTarget));
 
         await BroadcastToAllAsync(b => b.SendMessageToChannelAsync(channelName, messageDto, originConnectionId));
 
@@ -258,8 +270,29 @@ public class ChatService : IChatService
         return await GetChannelHistoryInternalAsync(db, channelName, count, offset);
     }
 
+    /// <summary>
+    /// Builds the wire reference for a reply target. Plaintext snippets are truncated
+    /// server-side; end-to-end room ciphertext must pass through whole (a truncated blob
+    /// can't be decrypted), so the client truncates those after decrypting.
+    /// </summary>
+    private ReplyRefDto BuildReplyRef(Message target)
+    {
+        const int maxSnippetLength = 120;
+
+        // Strip the at-rest layer; E2E room content stays $RC1$ ciphertext
+        var plain = _encryption.Decrypt(target.Content);
+        if (!RoomCrypto.IsRoomCiphertext(plain) && plain.Length > maxSnippetLength)
+            plain = plain[..maxSnippetLength] + "…";
+
+        return new ReplyRefDto(target.Id, target.SenderUsername, _encryption.Encrypt(plain));
+    }
+
     public async Task<string?> UpdateStatusAsync(Guid userId, string username, UserStatus status, string? statusMessage)
     {
+        // SignalR happily binds any int to the enum parameter — reject undefined values
+        if (!Enum.IsDefined(status))
+            return "Invalid status. Use online, away, dnd, or invisible.";
+
         if (statusMessage is not null && statusMessage.Length > ValidationConstants.MaxStatusMessageLength)
             return $"Status message must not exceed {ValidationConstants.MaxStatusMessageLength} characters.";
 
@@ -382,18 +415,32 @@ public class ChatService : IChatService
         if (channel is null)
             return [];
 
+        // Left join: tombstoned messages (deleted accounts, SenderUserId cleared) must
+        // still appear in history — an inner join would silently drop them.
         var raw = await db.Messages
             .Where(m => m.ChannelId == channel.Id)
             .OrderByDescending(m => m.SentAt)
             .Skip(offset)
             .Take(count)
-            .Join(db.Users,
+            .GroupJoin(db.Users,
                 m => m.SenderUserId,
                 u => u.Id,
-                (m, u) => new { m, u.NicknameColor, u.DisplayName })
+                (m, users) => new { m, users })
+            .SelectMany(x => x.users.DefaultIfEmpty(),
+                (x, u) => new { x.m, NicknameColor = u != null ? u.NicknameColor : null, DisplayName = u != null ? u.DisplayName : null })
             .ToListAsync();
 
         raw.Reverse();
+
+        // Reply targets referenced by this batch, for quote snippets
+        var replyIds = raw
+            .Where(x => x.m.ReplyToMessageId.HasValue)
+            .Select(x => x.m.ReplyToMessageId!.Value)
+            .Distinct()
+            .ToList();
+        var replyTargets = replyIds.Count > 0
+            ? (await db.Messages.Where(m => replyIds.Contains(m.Id)).ToListAsync()).ToDictionary(m => m.Id)
+            : new Dictionary<Guid, Message>();
 
         var messageIds = raw.Select(x => x.m.Id).ToList();
         var attachmentsByMessage = (await db.Attachments
@@ -459,7 +506,10 @@ public class ChatService : IChatService
                 x.m.SentAt,
                 attachments,
                 embeds,
-                x.DisplayName));
+                x.DisplayName,
+                x.m.ReplyToMessageId is { } rid && replyTargets.TryGetValue(rid, out var replyTarget)
+                    ? BuildReplyRef(replyTarget)
+                    : null));
         }
 
         // Lazily delete the pruned messages (+ their attachment rows) as they're encountered.

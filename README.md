@@ -84,6 +84,7 @@ graph TD
 - **JWT auth** with short-lived access tokens and 30-day refresh tokens
 - **Channels** — create, set topics, delete (no 47-step permission wizard required)
 - **Moderation** — ban, mute (timed or permanent), kick, role assignment
+- **Registration control** — open, invite-code-gated (`/invite`), or closed; codes live in your own database
 - **File & image uploads** with actual validation (magic bytes, not just trusting the extension)
 - **Image-to-ASCII** — because images in a terminal is objectively cool
 - **Presence tracking** — online/away/DND/invisible with custom status messages
@@ -101,6 +102,8 @@ graph TD
 - **Clickable everything** — usernames, @mentions, #channels — just press Enter
 - **File/image sharing** — local files or URLs; drag & drop a file onto the terminal to send it; save the original behind any ASCII-art image
 - **End-to-end encrypted rooms** — password-protected channels are encrypted with a passphrase-derived key that never reaches the server, so not even the server owner can read messages or files (they can still see counts and storage size)
+- **Replies** — quote a message, jump back to the original; being replied to pings like a mention
+- **Your data is yours** — `/export` everything the server holds about you; `/deleteaccount` removes it
 - **Multi-server** — save and switch between servers
 - **Auto-reconnect** — drops happen, it rejoins your channels automatically
 - **Auto-updater** — updates in-place with automatic rollback if something goes wrong
@@ -198,6 +201,8 @@ Auth works via `PASS`/`NICK`/`USER` or SASL PLAIN. New usernames are auto-regist
 | Feature | How it maps to IRC |
 | ------- | ------------------ |
 | Text messages | Standard `PRIVMSG` (long messages split at ~400 byte chunks) |
+| `/me` actions | Native CTCP ACTION in both directions |
+| Replies | TUI replies arrive as `> nick: snippet \| text` |
 | Images | `[Image: filename]` + download URL + ASCII art line-by-line |
 | File uploads | `[File: filename] /api/files/{id}` |
 | Channels | `JOIN`, `PART`, `NAMES`, `TOPIC`, `LIST` |
@@ -226,6 +231,8 @@ For direct TLS without a reverse proxy, the IRC gateway can terminate TLS itself
 | Command | Description |
 | ------- | ----------- |
 | `/join <channel> [password]` | Join a channel (passphrase for encrypted channels) |
+| `/me <action>` | Action message — `* nick waves` (native CTCP ACTION over IRC) |
+| `/banner <text>` | Render short text as a big ASCII banner |
 | `/passwd <old> <new>` | Change the current encrypted channel's passphrase (creator only) |
 | `/size [s\|m\|l]` | ASCII-art size for attached images (no arg = picker) |
 | `/downloadpath [path]` | Set the download folder (no path = native folder picker) |
@@ -233,17 +240,20 @@ For direct TLS without a reverse proxy, the IRC gateway can terminate TLS itself
 | `/topic <text>` | Set channel topic (creator only) |
 | `/send <file or URL>` | Upload a file or image |
 | `/status <online\|away\|dnd\|invisible>` | Set your status |
-| `/status <message>` | Set a status message |
+| `/status msg <text>` | Set a status message (keeps your status; empty text clears it) |
 | `/nick <name>` | Set display name |
 | `/color <#hex>` | Set nickname color |
 | `/theme <name>` | Switch theme |
 | `/profile` | Open profile editor |
 | `/users` | List online users in channel |
 | `/servers` | Manage saved servers |
+| `/invite [uses] [hours]` | Create a registration invite code (Admin+); also `list` / `revoke <code>` |
+| `/export` | Download everything the server stores about you as JSON |
+| `/deleteaccount` | Permanently delete your account (password re-confirmed) |
 | `/help` | Show help |
 | `/quit` | Exit |
 
-**Message actions:** **right-click a message** for a context menu — delete, save/download/play its attachment, mention the sender, view their profile, or copy the text. (Keyboard alternative: press <kbd>F6</kbd> to focus the message list, select with the arrow keys, and press <kbd>Delete</kbd>; <kbd>F6</kbd> again returns to the input.) You can always delete your own messages; moderators and above can delete others' messages, but only from users below their own role.
+**Message actions:** **right-click a message** for a context menu — reply (quotes the message; Esc cancels a pending reply), delete, save/download/play its attachment, mention the sender, view their profile, or copy the text. (Keyboard alternative: press <kbd>F6</kbd> to focus the message list, select with the arrow keys, and press <kbd>Delete</kbd>; <kbd>F6</kbd> again returns to the input.) You can always delete your own messages; moderators and above can delete others' messages, but only from users below their own role.
 
 ## Themes
 
@@ -277,6 +287,7 @@ For direct TLS without a reverse proxy, the IRC gateway can terminate TLS itself
 | `Jwt:Secret` | *(auto-generated)* | JWT signing key |
 | `Server:Name` | `My EchoHub Server` | Server display name |
 | `Server:Description` | `A self-hosted EchoHub chat server` | Server description |
+| `Server:Registration` | `open` | `open`, `invite` (codes via `/invite`, Admin+), or `closed` |
 | `Server:PublicServer` | `false` | List on the [public directory](https://echohub.voidcube.cloud/servers) |
 | `Server:PublicHost` | *(empty)* | Public hostname for directory listing |
 | `Irc:Enabled` | `false` | Enable the IRC gateway |

@@ -31,11 +31,19 @@ public class ServerController : ControllerBase
         var userCount = await _db.Users.CountAsync();
         var channelCount = await _db.Channels.CountAsync();
 
+        var registrationMode = (_config["Server:Registration"] ?? "open").Trim().ToLowerInvariant() switch
+        {
+            "invite" => "invite",
+            "closed" => "closed",
+            _ => "open",
+        };
+
         var status = new ServerStatusDto(
             _config["Server:Name"] ?? "EchoHub Server",
             _config["Server:Description"],
             userCount,
-            channelCount);
+            channelCount,
+            registrationMode);
 
         return Ok(status);
     }

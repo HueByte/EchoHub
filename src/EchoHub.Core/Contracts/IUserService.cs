@@ -4,7 +4,9 @@ namespace EchoHub.Core.Contracts;
 
 public interface IUserService
 {
-    Task<UserOperationResult> RegisterUserAsync(string username, string password, string? displayName = null);
+    // inviteCode is required when the server runs with Server:Registration = "invite";
+    // "closed" refuses all new accounts. Both REST and the IRC gateway funnel through here.
+    Task<UserOperationResult> RegisterUserAsync(string username, string password, string? displayName = null, string? inviteCode = null);
     Task<UserOperationResult> AuthenticateUserAsync(string username, string password);
     Task<UserProfileDto?> GetUserProfileAsync(string username);
     Task<UserProfileDto?> GetUserByIdAsync(Guid userId);

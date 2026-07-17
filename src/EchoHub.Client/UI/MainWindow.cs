@@ -64,10 +64,11 @@ public sealed partial class MainWindow : Runnable
     // Available slash commands for Tab autocomplete
     private static readonly string[] SlashCommands =
     [
-        "/status", "/nick", "/color", "/theme", "/send",
+        "/status", "/nick", "/color", "/theme", "/send", "/me", "/banner",
         "/avatar", "/profile", "/servers", "/join", "/passwd", "/leave", "/clear", "/size", "/downloadpath",
         "/topic", "/users", "/kick", "/ban", "/unban",
-        "/mute", "/unmute", "/role", "/nuke", "/test-sound", "/quit", "/help"
+        "/mute", "/unmute", "/role", "/invite", "/export", "/deleteaccount",
+        "/nuke", "/test-sound", "/quit", "/help"
     ];
 
     private readonly List<string> _channelNames = [];
@@ -186,6 +187,17 @@ public sealed partial class MainWindow : Runnable
     /// Fired when the user presses Delete on the selected message. Parameter is the message id.
     /// </summary>
     public event Action<Guid>? OnDeleteMessageRequested;
+
+    /// <summary>
+    /// Fired when the user picks "Reply" on a message. Parameters: message id, sender username,
+    /// a short plain-text snippet for the reply strip.
+    /// </summary>
+    public event Action<Guid, string, string>? OnReplyRequested;
+
+    /// <summary>
+    /// Fired when the user cancels a pending reply (Esc in the input field).
+    /// </summary>
+    public event Action? OnReplyCancelRequested;
 
     /// <summary>
     /// Fired when the user activates a username (in userlist or message). Parameter is the username.
@@ -357,6 +369,9 @@ public sealed partial class MainWindow : Runnable
         KeyDown += OnWindowKeyDown;
     }
 
+    private string? _stagedTitleFragment;
+    private string? _replyTitleFragment;
+
     /// <summary>
     /// Updates the attachment staging indicator shown on the input frame's title, including the
     /// current ASCII-art size for images. Passing an empty list restores the default hint.
@@ -366,15 +381,38 @@ public sealed partial class MainWindow : Runnable
         _hasStagedAttachments = fileNames.Count > 0;
         if (fileNames.Count == 0)
         {
-            _inputFrame.Title = DefaultInputTitle;
+            _stagedTitleFragment = null;
         }
         else
         {
             var names = string.Join(", ", fileNames);
             if (names.Length > 45)
                 names = names[..42] + "...";
-            _inputFrame.Title = $"📎 {fileNames.Count}: {names} │ art: {asciiSizeLabel} (/size) │ Enter=send │ /clear";
+            _stagedTitleFragment = $"📎 {fileNames.Count}: {names} │ art: {asciiSizeLabel} (/size) │ Enter=send │ /clear";
         }
+        UpdateInputTitle();
+    }
+
+    /// <summary>
+    /// Shows/clears the "replying to" strip on the input frame's title. Pass null to clear.
+    /// </summary>
+    public void SetReplyingTo(string? label)
+    {
+        _replyTitleFragment = label is null ? null : $"↩ Replying to {label} │ Esc=cancel";
+        UpdateInputTitle();
+    }
+
+    public bool HasPendingReplyIndicator => _replyTitleFragment is not null;
+
+    private void UpdateInputTitle()
+    {
+        _inputFrame.Title = (_replyTitleFragment, _stagedTitleFragment) switch
+        {
+            (null, null) => DefaultInputTitle,
+            ({ } reply, null) => reply,
+            (null, { } staged) => staged,
+            ({ } reply, { } staged) => $"{reply} │ {staged}",
+        };
         _inputFrame.SetNeedsDraw();
     }
 
@@ -518,6 +556,14 @@ public sealed partial class MainWindow : Runnable
 
         var line = source.GetLine(index.Value);
         if (line is null) return;
+
+        // A reply's quote line jumps to the original message (if it's in the buffer)
+        if (line.JumpToMessageId is { } jumpTarget)
+        {
+            ScrollToMessage(jumpTarget);
+            e.Handled = true;
+            return;
+        }
 
         // Audio/file attachments take priority
         if (line.AttachmentUrl is not null && line.AttachmentFileName is not null)
@@ -681,6 +727,20 @@ public sealed partial class MainWindow : Runnable
             }
         }
 
+        if (sender is not null && line.MessageId is { } replyTargetId)
+        {
+            items.Add(new MenuItem("Reply", "", () =>
+            {
+                // Strip the "HH:mm nick │ " header so the strip shows just the text
+                var snippet = line.ToString();
+                var railIdx = snippet.IndexOf(" │ ", StringComparison.Ordinal);
+                if (railIdx >= 0)
+                    snippet = snippet[(railIdx + 3)..];
+                OnReplyRequested?.Invoke(replyTargetId, sender, snippet.Trim());
+                _inputField.SetFocus();
+            }, Key.Empty));
+        }
+
         if (sender is not null)
         {
             items.Add(new MenuItem($"Mention @{sender}", "", () => MentionUser(sender), Key.Empty));
@@ -722,6 +782,30 @@ public sealed partial class MainWindow : Runnable
         }
     }
 
+    /// <summary>
+    /// Scrolls the message list to a message's first line (used by reply quote lines).
+    /// No-op when the message isn't in the loaded buffer.
+    /// </summary>
+    private void ScrollToMessage(Guid messageId)
+    {
+        if (_messageList.Source is not ChatListSource source)
+            return;
+
+        for (int i = 0; i < source.Count; i++)
+        {
+            var line = source.GetLine(i);
+            // Match the message's own lines, not other replies' quote lines pointing at it
+            if (line?.MessageId == messageId && line.JumpToMessageId is null)
+            {
+                _messageList.SelectedItem = i;
+                _messageList.TopItem = Math.Max(0, i - 3);
+                _messageList.SetFocus();
+                _messageList.SetNeedsDraw();
+                return;
+            }
+        }
+    }
+
     private void ConfirmDeleteMessage(Guid messageId)
     {
         var confirm = MessageBox.Query(_app, "Delete Message", "Delete this message?", "Delete", "Cancel");
@@ -755,6 +839,10 @@ public sealed partial class MainWindow : Runnable
         {
             case TabKey:
                 TryAutocompleteCommand();
+                break;
+
+            case KeyCode.Esc when HasPendingReplyIndicator:
+                OnReplyCancelRequested?.Invoke();
                 break;
 
             case NewlineKey:
