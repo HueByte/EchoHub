@@ -443,9 +443,7 @@ public sealed class ChatMessageManager
                             lines.Add(new ChatLine(segments));
                         }
                     }
-                    lines.Add(AttachmentActionLine(
-                        $"[↓ save original] {attachment.FileName} [{FormatFileSize(attachment.FileSize)}]",
-                        ChatColors.FileAttr, attachment));
+                    lines.Add(ImageActionLine(attachment));
                     break;
 
                 case Core.Models.AttachmentKind.Audio:
@@ -487,6 +485,41 @@ public sealed class ChatMessageManager
         }
 
         return lines;
+    }
+
+    /// <summary>
+    /// Builds the action line below an image preview: "[open] [↓ save original] name [size]".
+    /// Each bracket is an <see cref="AttachmentActionSpan"/> so a mouse click can target it;
+    /// keyboard activation (Enter) uses the default action, open.
+    /// </summary>
+    private static ChatLine ImageActionLine(AttachmentDto attachment)
+    {
+        var segments = RailPrefix();
+        var col = segments.Sum(s => s.Text.GetColumns());
+        var spans = new List<AttachmentActionSpan>();
+
+        void AddAction(string text, AttachmentAction action)
+        {
+            var width = text.GetColumns();
+            spans.Add(new AttachmentActionSpan(col, col + width - 1, action));
+            segments.Add(new(text, ChatColors.FileAttr));
+            col += width;
+        }
+
+        AddAction("[open]", AttachmentAction.OpenImage);
+        segments.Add(new(" ", null));
+        col += 1;
+        AddAction("[↓ save original]", AttachmentAction.SaveImage);
+        segments.Add(new($" {attachment.FileName} [{FormatFileSize(attachment.FileSize)}]", ChatColors.FileAttr));
+
+        return new ChatLine(segments)
+        {
+            AttachmentUrl = attachment.Url,
+            AttachmentFileName = attachment.FileName,
+            AttachmentKind = attachment.Kind,
+            ActionSpans = spans,
+            ContinuationPrefixSegments = RailPrefix(),
+        };
     }
 
     /// <summary>

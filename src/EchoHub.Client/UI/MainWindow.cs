@@ -177,6 +177,12 @@ public sealed partial class MainWindow : Runnable
     public event Action<string, string>? OnImageSaveRequested;
 
     /// <summary>
+    /// Fired when the user activates an image's "[open]" action to view it without saving.
+    /// Parameters: attachmentUrl, fileName.
+    /// </summary>
+    public event Action<string, string>? OnImageOpenRequested;
+
+    /// <summary>
     /// Fired when the user presses Delete on the selected message. Parameter is the message id.
     /// </summary>
     public event Action<Guid>? OnDeleteMessageRequested;
@@ -532,7 +538,9 @@ public sealed partial class MainWindow : Runnable
 
             if (line.AttachmentKind == AttachmentKind.Image)
             {
-                OnImageSaveRequested?.Invoke(line.AttachmentUrl, line.AttachmentFileName);
+                // Keyboard/default activation opens the image for viewing;
+                // saving is the mouse span or the context menu.
+                OnImageOpenRequested?.Invoke(line.AttachmentUrl, line.AttachmentFileName);
                 e.Handled = true;
                 return;
             }
@@ -600,7 +608,8 @@ public sealed partial class MainWindow : Runnable
 
     private void OnMessageListMouseEvent(object? sender, Mouse e)
     {
-        if (!e.Flags.HasFlag(MouseFlags.RightButtonClicked))
+        var leftClick = e.Flags.HasFlag(MouseFlags.LeftButtonClicked);
+        if (!leftClick && !e.Flags.HasFlag(MouseFlags.RightButtonClicked))
             return;
 
         if (_messageList.Source is not ChatListSource source || source.Count == 0 || e.Position is not { } pos)
@@ -609,6 +618,30 @@ public sealed partial class MainWindow : Runnable
         var index = _messageList.TopItem + pos.Y;
         if (index < 0 || index >= source.Count)
             return;
+
+        // Left-click only activates the "[open]" / "[save original]" brackets on an
+        // attachment action line; anywhere else it falls through to normal selection.
+        if (leftClick)
+        {
+            var clicked = source.GetLine(index);
+            if (clicked?.ActionSpans is { } spans
+                && clicked.AttachmentUrl is { } url && clicked.AttachmentFileName is { } name)
+            {
+                foreach (var span in spans)
+                {
+                    if (pos.X < span.StartCol || pos.X > span.EndCol)
+                        continue;
+
+                    if (span.Action == AttachmentAction.OpenImage)
+                        OnImageOpenRequested?.Invoke(url, name);
+                    else
+                        OnImageSaveRequested?.Invoke(url, name);
+                    e.Handled = true;
+                    return;
+                }
+            }
+            return;
+        }
 
         // Select the right-clicked row (so the menu acts on it and it highlights), then show the menu.
         _messageList.SelectedItem = index;
@@ -636,6 +669,7 @@ public sealed partial class MainWindow : Runnable
             switch (kind)
             {
                 case AttachmentKind.Image:
+                    items.Add(new MenuItem("Open image", "", () => OnImageOpenRequested?.Invoke(url, name), Key.Empty));
                     items.Add(new MenuItem("Save original image", "", () => OnImageSaveRequested?.Invoke(url, name), Key.Empty));
                     break;
                 case AttachmentKind.Audio:

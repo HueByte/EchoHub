@@ -90,7 +90,7 @@ public class IrcBroadcasterTests
     }
 
     [Fact]
-    public async Task SendMessage_DecryptsAttachmentAsciiPreview()
+    public async Task SendMessage_ImageAttachment_SendsLinkLineOnly()
     {
         var (_, stream) = AddConnectionWithCapture("bob", "general");
 
@@ -104,9 +104,9 @@ public class IrcBroadcasterTests
         await _broadcaster.SendMessageToChannelAsync("general", message);
 
         var output = stream.GetOutputLines();
-        Assert.Contains(output, l => l.Contains("[Image: photo.png]"));
-        Assert.Contains(output, l => l.Contains("line1"));
-        Assert.Contains(output, l => l.Contains("line2"));
+        Assert.Contains(output, l => l.Contains("[Image: photo.png]") && l.Contains("/api/files/abc"));
+        // ASCII preview art is never sent to IRC clients — images are links only
+        Assert.DoesNotContain(output, l => l.Contains("line1"));
         Assert.DoesNotContain(output, l => l.Contains("$ENC$"));
     }
 
