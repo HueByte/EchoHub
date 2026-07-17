@@ -13,15 +13,18 @@ public class ChannelService : IChannelService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly PresenceTracker _presenceTracker;
+    private readonly SpamGuard _spamGuard;
     private readonly ILogger<ChannelService> _logger;
 
     public ChannelService(
         IServiceScopeFactory scopeFactory,
         PresenceTracker presenceTracker,
+        SpamGuard spamGuard,
         ILogger<ChannelService> logger)
     {
         _scopeFactory = scopeFactory;
         _presenceTracker = presenceTracker;
+        _spamGuard = spamGuard;
         _logger = logger;
     }
 
@@ -73,6 +76,16 @@ public class ChannelService : IChannelService
 
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
+
+        // Channel-creation throttle (spam guard; Mods and above are exempt)
+        if (_spamGuard.Enabled)
+        {
+            var creator = await db.Users.FindAsync(creatorUserId);
+            var verdict = _spamGuard.CheckChannelCreate(creatorUserId, creator?.Role ?? ServerRole.Member);
+            if (verdict.Kind != SpamVerdictKind.Allowed)
+                return ChannelOperationResult.Fail(ChannelError.ValidationFailed,
+                    verdict.Reason ?? "You're creating channels too fast.");
+        }
 
         if (await db.Channels.AnyAsync(c => c.Name == channelName))
             return ChannelOperationResult.Fail(ChannelError.AlreadyExists, $"Channel '{channelName}' already exists.");

@@ -20,6 +20,7 @@ public class ChatService : IChatService
     private readonly IMessageEncryptionService _encryption;
     private readonly IChannelService _channelService;
     private readonly FileStorageService _fileStorage;
+    private readonly SpamGuard _spamGuard;
     private readonly ILogger<ChatService> _logger;
 
     public ChatService(
@@ -30,6 +31,7 @@ public class ChatService : IChatService
         IMessageEncryptionService encryption,
         IChannelService channelService,
         FileStorageService fileStorage,
+        SpamGuard spamGuard,
         ILogger<ChatService> logger)
     {
         _scopeFactory = scopeFactory;
@@ -39,6 +41,7 @@ public class ChatService : IChatService
         _encryption = encryption;
         _channelService = channelService;
         _fileStorage = fileStorage;
+        _spamGuard = spamGuard;
         _logger = logger;
     }
 
@@ -101,6 +104,27 @@ public class ChatService : IChatService
         string connectionId, Guid userId, string username, string channelName, string? password = null)
     {
         channelName = channelName.ToLowerInvariant().Trim();
+
+        // Join throttle — stops channel-cycling spam from any protocol. Only *first-time*
+        // joins (no membership yet) count: the client auto-joins every known channel on
+        // connect/reconnect, and that burst must never trip the guard.
+        if (_spamGuard.Enabled)
+        {
+            using var guardScope = _scopeFactory.CreateScope();
+            var guardDb = guardScope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
+
+            var isExistingMember = await guardDb.Channels
+                .Where(c => c.Name == channelName)
+                .AnyAsync(c => guardDb.ChannelMemberships.Any(m => m.ChannelId == c.Id && m.UserId == userId));
+
+            if (!isExistingMember)
+            {
+                var joiner = await guardDb.Users.FindAsync(userId);
+                var joinVerdict = _spamGuard.CheckJoin(userId, joiner?.Role ?? ServerRole.Member);
+                if (joinVerdict.Kind != SpamVerdictKind.Allowed)
+                    return ([], joinVerdict.Reason, false);
+            }
+        }
 
         // Delegate channel validation + membership (incl. password gate) to ChannelService
         var (success, error, passwordRequired) = await _channelService.EnsureChannelMembershipAsync(userId, channelName, password);
@@ -196,6 +220,27 @@ public class ChatService : IChatService
             else
             {
                 return "You are muted and cannot send messages.";
+            }
+        }
+
+        // Spam guard — operates on the stored content (ciphertext for E2E rooms), never decrypts
+        if (sender is not null)
+        {
+            var verdict = _spamGuard.CheckMessage(userId, sender.Role, plaintext);
+            switch (verdict.Kind)
+            {
+                case SpamVerdictKind.AutoMute:
+                    // Escalate through the normal timed-mute machinery: moderation endpoints
+                    // list it and MuteExpirationService lifts it. Issued by the server itself.
+                    sender.IsMuted = true;
+                    sender.MutedUntil = DateTimeOffset.UtcNow.Add(verdict.MuteDuration);
+                    await db.SaveChangesAsync();
+                    _logger.LogWarning("Spam protection auto-muted {User} for {Minutes} minutes in '{Channel}'",
+                        username, (int)verdict.MuteDuration.TotalMinutes, channelName);
+                    return $"You have been automatically muted for {(int)verdict.MuteDuration.TotalMinutes} minutes (spam protection).";
+
+                case SpamVerdictKind.Rejected:
+                    return verdict.Reason;
             }
         }
 

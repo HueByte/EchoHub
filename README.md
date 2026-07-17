@@ -89,6 +89,7 @@ graph TD
 - **Image-to-ASCII** — because images in a terminal is objectively cool
 - **Presence tracking** — online/away/DND/invisible with custom status messages
 - **Rate limiting** — in case someone gets too excited
+- **Spam protection** — per-user flood/duplicate limits with auto-mute escalation, covering TUI and IRC alike; configurable under `Spam`, Mods exempt
 - **Auto-restart** on crash with exponential backoff — it picks itself back up
 - **Serilog logging** — console + rolling file, because `Console.WriteLine` isn't a logging strategy
 - **Zero config first run** — generates its own JWT secret and config on launch
