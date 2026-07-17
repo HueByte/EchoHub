@@ -188,7 +188,7 @@ internal sealed class FakeChatService : IChatService
         return Task.CompletedTask;
     }
 
-    public Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content)
+    public Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content, string? originConnectionId = null)
     {
         SentMessages.Add((channelName, content));
         return Task.FromResult(SendMessageError);

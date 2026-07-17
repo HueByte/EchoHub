@@ -486,7 +486,7 @@ public sealed class IrcCommandHandler
         if (channelName is null) return;
 
         var error = await _chatService.SendMessageAsync(
-            _conn.UserId!.Value, _conn.Nickname!, channelName, content);
+            _conn.UserId!.Value, _conn.Nickname!, channelName, content, _conn.ConnectionId);
 
         if (error is not null)
         {

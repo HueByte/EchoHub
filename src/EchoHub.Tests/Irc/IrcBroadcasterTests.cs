@@ -111,21 +111,38 @@ public class IrcBroadcasterTests
     }
 
     [Fact]
-    public async Task SendMessage_SkipsSender()
+    public async Task SendMessage_SkipsOnlyOriginConnection()
     {
-        var (_, aliceStream) = AddConnectionWithCapture("alice", "general");
+        var (aliceConn, aliceStream) = AddConnectionWithCapture("alice", "general");
         var (_, bobStream) = AddConnectionWithCapture("bob", "general");
 
         var message = new MessageDto(
             Guid.NewGuid(), _encryption.Encrypt("Hi"), "alice", null, "general", DateTimeOffset.UtcNow);
 
-        await _broadcaster.SendMessageToChannelAsync("general", message);
+        await _broadcaster.SendMessageToChannelAsync("general", message, aliceConn.ConnectionId);
 
-        // Alice (sender) should NOT receive the message
+        // The connection that sent it should NOT get an echo
         Assert.Empty(aliceStream.GetOutputLines());
 
         // Bob should receive it
         Assert.NotEmpty(bobStream.GetOutputLines());
+    }
+
+    [Fact]
+    public async Task SendMessage_SendersOtherSessionsStillReceive()
+    {
+        // Same account online twice (e.g. TUI + IRC, or two IRC clients): a message sent
+        // from one session must still reach the other — skipping by nickname used to
+        // swallow these until the IRC client reconnected.
+        var (_, ircStream) = AddConnectionWithCapture("alice", "general");
+
+        var message = new MessageDto(
+            Guid.NewGuid(), _encryption.Encrypt("sent from the TUI"), "alice", null, "general", DateTimeOffset.UtcNow);
+
+        // Origin is a SignalR connection, not this IRC one
+        await _broadcaster.SendMessageToChannelAsync("general", message, "signalr-conn-123");
+
+        Assert.Contains(ircStream.GetOutputLines(), l => l.Contains("sent from the TUI"));
     }
 
     [Fact]

@@ -103,7 +103,7 @@ public class ChatHub : Hub<IEchoHubClient>
     {
         try
         {
-            var error = await _chatService.SendMessageAsync(CurrentUserId, CurrentUsername, channelName, content);
+            var error = await _chatService.SendMessageAsync(CurrentUserId, CurrentUsername, channelName, content, Context.ConnectionId);
             if (error is not null)
                 await Clients.Caller.Error(error);
         }
