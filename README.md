@@ -157,22 +157,21 @@ Contributions are welcome. Open an issue to discuss larger changes first.
 ## Contributors
 
 <div align="center">
-<table>
-  <tr>
-    <td align="center" width="160">
-      <a href="https://github.com/HueByte">
-        <img src="https://github.com/HueByte.png?size=120" width="96" height="96" alt="HueByte" /><br />
-        <sub><b>HueByte</b></sub>
-      </a><br />
-      <sub>Creator &amp; maintainer</sub>
-    </td>
-    <td align="center" width="160">
-      <a href="https://github.com/Stone-Red-Code">
-        <img src="https://github.com/Stone-Red-Code.png?size=120" width="96" height="96" alt="Stone_Red" /><br />
-        <sub><b>Stone_Red</b></sub>
-      </a><br />
-      <sub>Creator &amp; maintainer</sub>
-    </td>
-  </tr>
-</table>
+
+<sub>The people building EchoHub.</sub>
+
+<p align="center">
+  <a href="https://github.com/HueByte"><img src="https://wsrv.nl/?url=github.com/HueByte.png&w=220&h=220&fit=cover&r=32" width="116" height="116" alt="HueByte" /></a>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://github.com/Stone-Red-Code"><img src="https://wsrv.nl/?url=github.com/Stone-Red-Code.png&w=220&h=220&fit=cover&r=32" width="116" height="116" alt="Stone_Red" /></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/HueByte"><b>HueByte</b></a>
+  &nbsp;&nbsp;·&nbsp;&nbsp;
+  <a href="https://github.com/Stone-Red-Code"><b>Stone_Red</b></a>
+  <br />
+  <sub>Creators &amp; maintainers</sub>
+</p>
+
 </div>
