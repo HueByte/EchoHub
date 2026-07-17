@@ -20,7 +20,9 @@ public class SignalRBroadcaster : IChatBroadcaster
         _presenceTracker = presenceTracker;
     }
 
-    public Task SendMessageToChannelAsync(string channelName, MessageDto message)
+    // The exclusion only applies to the IRC gateway (SignalR clients render their own
+    // message from the broadcast echo), so the id is ignored here.
+    public Task SendMessageToChannelAsync(string channelName, MessageDto message, string? excludeConnectionId = null)
         => HubContext.Clients.Group(channelName).ReceiveMessage(message);
 
     public Task SendUserJoinedAsync(string channelName, string username, UserPresenceDto? presence, string? excludeConnectionId = null)

@@ -4,7 +4,14 @@ namespace EchoHub.Core.Contracts;
 
 public interface IChatBroadcaster
 {
-    Task SendMessageToChannelAsync(string channelName, MessageDto message);
+    /// <summary>
+    /// Broadcast a chat message to a channel. <paramref name="excludeConnectionId"/> is the
+    /// connection the message originated from (IRC convention: never echo a message back to
+    /// the connection that sent it — its client already displayed it locally). Other
+    /// connections of the same user (e.g. an IRC session alongside a TUI session) still
+    /// receive the message.
+    /// </summary>
+    Task SendMessageToChannelAsync(string channelName, MessageDto message, string? excludeConnectionId = null);
     Task SendUserJoinedAsync(string channelName, string username, UserPresenceDto? presence, string? excludeConnectionId = null);
     Task SendUserLeftAsync(string channelName, string username);
     Task SendChannelUpdatedAsync(ChannelDto channel, string? channelName = null);

@@ -14,24 +14,20 @@ public class IrcBroadcaster : IChatBroadcaster
         _encryption = encryption;
     }
 
-    public async Task SendMessageToChannelAsync(string channelName, MessageDto message)
+    public async Task SendMessageToChannelAsync(string channelName, MessageDto message, string? excludeConnectionId = null)
     {
-        // Decrypt content and attachment previews for IRC clients (they can't handle
-        // app-layer encryption). E2E room ciphertext ($RC1$) passes through untouched;
-        // the formatter drops previews that are still ciphertext.
-        var decryptedMessage = message with
-        {
-            Content = _encryption.Decrypt(message.Content),
-            Attachments = message.Attachments?
-                .Select(a => a with { AsciiPreview = _encryption.DecryptNullable(a.AsciiPreview) })
-                .ToList(),
-        };
-        var lines = IrcMessageFormatter.FormatMessage(decryptedMessage);
+        // Decrypt transport-encrypted content for IRC clients (they can't handle
+        // app-layer encryption). E2E room ciphertext ($RC1$) passes through untouched.
+        var decryptedMessage = message with { Content = _encryption.Decrypt(message.Content) };
+        var lines = IrcMessageFormatter.FormatMessage(decryptedMessage, _gateway.Options.PublicBaseUrl);
 
         foreach (var conn in _gateway.GetConnectionsInChannel(channelName))
         {
-            // IRC convention: don't echo sender's own message
-            if (conn.Nickname == message.SenderUsername)
+            // IRC convention: don't echo a message back to the connection that sent it
+            // (its client already displayed it locally). Match by connection id, not
+            // nickname — the same account may also be online via the TUI or a second
+            // IRC client, and those sessions must still receive the message.
+            if (conn.ConnectionId == excludeConnectionId)
                 continue;
 
             foreach (var line in lines)

@@ -59,9 +59,22 @@ public class IrcMessageFormatterTests
             attachments: [new AttachmentDto(AttachmentKind.Image, "/api/files/abc", "photo.png", 0, "{F:FF0000}█{X}")]);
         var lines = IrcMessageFormatter.FormatMessage(msg);
 
-        Assert.True(lines.Count >= 2);
+        // Images are a single link line — the ASCII preview is never sent to IRC clients
+        Assert.Single(lines);
         Assert.Contains("[Image: photo.png]", lines[0]);
         Assert.Contains("/api/files/abc", lines[0]);
+    }
+
+    [Fact]
+    public void FormatMessage_WithPublicBaseUrl_EmitsAbsoluteAttachmentLinks()
+    {
+        var msg = CreateMessage(
+            content: "",
+            attachments: [new AttachmentDto(AttachmentKind.Image, "/api/files/abc", "photo.png", 0, null)]);
+        var lines = IrcMessageFormatter.FormatMessage(msg, "https://chat.example.com/");
+
+        Assert.Single(lines);
+        Assert.Contains("https://chat.example.com/api/files/abc", lines[0]);
     }
 
     [Fact]
@@ -119,48 +132,6 @@ public class IrcMessageFormatterTests
         Assert.Contains(lines, l => l.Contains("[Image: a.png]"));
         Assert.Contains(lines, l => l.Contains("[Audio: b.mp3]"));
         Assert.Contains(lines, l => l.Contains("[File: c.pdf]"));
-    }
-
-    // ── ColorTagsToAnsi ───────────────────────────────────────────────
-
-    [Fact]
-    public void ColorTagsToAnsi_ForegroundTag_ConvertsToAnsiEscape()
-    {
-        var result = IrcMessageFormatter.ColorTagsToAnsi("{F:FF0000}text");
-        Assert.Contains("\x1b[38;2;255;0;0m", result);
-        Assert.Contains("text", result);
-    }
-
-    [Fact]
-    public void ColorTagsToAnsi_BackgroundTag_ConvertsToAnsiEscape()
-    {
-        var result = IrcMessageFormatter.ColorTagsToAnsi("{B:00FF00}text");
-        Assert.Contains("\x1b[48;2;0;255;0m", result);
-    }
-
-    [Fact]
-    public void ColorTagsToAnsi_ResetTag_ConvertsToAnsiReset()
-    {
-        var result = IrcMessageFormatter.ColorTagsToAnsi("{X}");
-        Assert.Equal("\x1b[0m", result);
-    }
-
-    [Fact]
-    public void ColorTagsToAnsi_NoTags_ReturnsUnchanged()
-    {
-        var result = IrcMessageFormatter.ColorTagsToAnsi("plain text");
-        Assert.Equal("plain text", result);
-    }
-
-    [Fact]
-    public void ColorTagsToAnsi_MultipleTags_ConvertsAll()
-    {
-        var result = IrcMessageFormatter.ColorTagsToAnsi("{F:FF0000}red{F:0000FF}blue{X}");
-        Assert.Contains("\x1b[38;2;255;0;0m", result);
-        Assert.Contains("\x1b[38;2;0;0;255m", result);
-        Assert.Contains("\x1b[0m", result);
-        Assert.Contains("red", result);
-        Assert.Contains("blue", result);
     }
 
     // ── SplitMessage ──────────────────────────────────────────────────

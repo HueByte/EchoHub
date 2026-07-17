@@ -118,37 +118,50 @@ public class IrcMessageFormatterTests
     }
 
     [Fact]
-    public void FormatMessage_ImageMessage_IncludesAsciiArt()
+    public void FormatMessage_ImageMessage_NeverEmitsAsciiArt()
     {
-        var msg = CreateImageMessage("line1\nline2");
+        // Images are shared as plain links (the common IRC practice) — never color art,
+        // regardless of what the preview contains.
+        var msg = CreateImageMessage("{F:FF0000}█{X}\nline2");
         var lines = IrcMessageFormatter.FormatMessage(msg);
 
-        Assert.Contains(lines, l => l.Contains("line1"));
-        Assert.Contains(lines, l => l.Contains("line2"));
+        Assert.Single(lines);
+        Assert.Contains("[Image: image.png]", lines[0]);
+        Assert.DoesNotContain(lines, l => l.Contains("line2"));
     }
 
     [Fact]
-    public void FormatMessage_ImageMessage_SkipsEmptyAsciiLines()
+    public void FormatMessage_RelativeUrl_JoinedWithPublicBaseUrl()
     {
-        var msg = CreateImageMessage("line1\n\nline2");
-        var lines = IrcMessageFormatter.FormatMessage(msg);
+        var msg = CreateImageMessage("art", "photo.jpg", "/api/files/abc");
+        var lines = IrcMessageFormatter.FormatMessage(msg, "https://chat.example.com");
 
-        // Empty lines should be skipped
-        var asciiLines = lines.Where(l => !l.Contains("[Image:") && !l.Contains("Download:")).ToList();
-        Assert.Equal(2, asciiLines.Count);
+        Assert.Single(lines);
+        Assert.Contains("https://chat.example.com/api/files/abc", lines[0]);
     }
 
-    [Theory]
-    [InlineData("$ENC$v1$abc123$def456")] // transport ciphertext a broadcast path forgot to decrypt
-    [InlineData("$RC1$abc123def456")]     // E2E room ciphertext the server cannot decrypt
-    public void FormatMessage_ImageMessage_SkipsCiphertextPreview(string ciphertextPreview)
+    [Fact]
+    public void FormatMessage_AbsoluteUrl_NotRewrittenByPublicBaseUrl()
     {
-        var msg = CreateImageMessage(ciphertextPreview, "photo.jpg", "https://example.com/photo.jpg");
-        var lines = IrcMessageFormatter.FormatMessage(msg);
+        var msg = CreateImageMessage("art", "photo.jpg", "https://cdn.example.com/photo.jpg");
+        var lines = IrcMessageFormatter.FormatMessage(msg, "https://chat.example.com");
 
-        // Only the [Image: ...] header line — never the ciphertext blob
-        Assert.Single(lines);
-        Assert.Contains("[Image: photo.jpg]", lines[0]);
+        Assert.Contains("https://cdn.example.com/photo.jpg", lines[0]);
+        Assert.DoesNotContain("https://chat.example.com", lines[0]);
+    }
+
+    [Fact]
+    public void ToAbsoluteUrl_NoBaseUrl_ReturnsRelativeUnchanged()
+    {
+        Assert.Equal("/api/files/abc", IrcMessageFormatter.ToAbsoluteUrl("/api/files/abc", null));
+        Assert.Equal("/api/files/abc", IrcMessageFormatter.ToAbsoluteUrl("/api/files/abc", "  "));
+    }
+
+    [Fact]
+    public void ToAbsoluteUrl_TrailingSlashBase_JoinsWithoutDoubleSlash()
+    {
+        Assert.Equal("https://x.example/api/files/1",
+            IrcMessageFormatter.ToAbsoluteUrl("/api/files/1", "https://x.example/"));
     }
 
     [Fact]
@@ -244,62 +257,4 @@ public class IrcMessageFormatterTests
         }
     }
 
-    // ── ColorTagsToAnsi ──────────────────────────────────────────────────
-
-    [Fact]
-    public void ColorTagsToAnsi_NoTags_ReturnsUnchanged()
-    {
-        Assert.Equal("Hello world", IrcMessageFormatter.ColorTagsToAnsi("Hello world"));
-    }
-
-    [Fact]
-    public void ColorTagsToAnsi_ForegroundTag_ConvertsToAnsi()
-    {
-        var result = IrcMessageFormatter.ColorTagsToAnsi("{F:FF0000}Red text");
-        Assert.Equal("\x1b[38;2;255;0;0mRed text", result);
-    }
-
-    [Fact]
-    public void ColorTagsToAnsi_BackgroundTag_ConvertsToAnsi()
-    {
-        var result = IrcMessageFormatter.ColorTagsToAnsi("{B:00FF00}Green bg");
-        Assert.Equal("\x1b[48;2;0;255;0mGreen bg", result);
-    }
-
-    [Fact]
-    public void ColorTagsToAnsi_ResetTag_ConvertsToReset()
-    {
-        var result = IrcMessageFormatter.ColorTagsToAnsi("{F:FF0000}Red{X} Normal");
-        Assert.Equal("\x1b[38;2;255;0;0mRed\x1b[0m Normal", result);
-    }
-
-    [Fact]
-    public void ColorTagsToAnsi_MultipleTags_ConvertsAll()
-    {
-        var result = IrcMessageFormatter.ColorTagsToAnsi("{F:FF0000}Red {F:0000FF}Blue{X}");
-        Assert.Contains("\x1b[38;2;255;0;0m", result);
-        Assert.Contains("\x1b[38;2;0;0;255m", result);
-        Assert.Contains("\x1b[0m", result);
-    }
-
-    [Fact]
-    public void ColorTagsToAnsi_LowercaseHex_ConvertsCorrectly()
-    {
-        var result = IrcMessageFormatter.ColorTagsToAnsi("{F:ff8800}text");
-        Assert.Equal("\x1b[38;2;255;136;0mtext", result);
-    }
-
-    [Fact]
-    public void ColorTagsToAnsi_NoBraces_SkipsProcessing()
-    {
-        var text = "plain text without braces";
-        Assert.Equal(text, IrcMessageFormatter.ColorTagsToAnsi(text));
-    }
-
-    [Fact]
-    public void ColorTagsToAnsi_ExistingAnsiCodes_PreservesUnchanged()
-    {
-        var text = "\x1b[31mAlready colored\x1b[0m";
-        Assert.Equal(text, IrcMessageFormatter.ColorTagsToAnsi(text));
-    }
 }

@@ -110,6 +110,7 @@ public sealed class AppOrchestrator : IDisposable
         _mainWindow.OnAudioPlayRequested += HandleAudioPlayRequested;
         _mainWindow.OnFileDownloadRequested += HandleFileDownloadRequested;
         _mainWindow.OnImageSaveRequested += HandleImageSaveRequested;
+        _mainWindow.OnImageOpenRequested += HandleImageOpenRequested;
         _mainWindow.OnDeleteMessageRequested += HandleDeleteMessageRequested;
         _mainWindow.OnCheckForUpdatesRequested += HandleCheckForUpdatesRequested;
         _mainWindow.OnRollbackRequested += HandleRollbackRequested;
@@ -1702,6 +1703,62 @@ public sealed class AppOrchestrator : IDisposable
         }
 
         return tempPath;
+    }
+
+    /// <summary>File extensions the "[open]" action will hand to the OS image viewer for E2E rooms.</summary>
+    private static readonly HashSet<string> ImageOpenExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp",
+    };
+
+    /// <summary>
+    /// Views an image without saving it to the user's downloads. Plain channels open the
+    /// file's web URL in the default browser (the server serves files by capability URL, so
+    /// no auth token is needed). E2E-encrypted channels would render as ciphertext in a
+    /// browser, so the blob is downloaded, decrypted locally, and opened from a temp file.
+    /// </summary>
+    private void HandleImageOpenRequested(string attachmentUrl, string fileName)
+    {
+        if (!_conn.IsAuthenticated) return;
+
+        var channel = _mainWindow.CurrentChannel;
+        var isEncryptedRoom = !string.IsNullOrEmpty(channel) && _conn.RoomKeys.TryGetKey(channel, out _);
+
+        if (!isEncryptedRoom)
+        {
+            var webUrl = attachmentUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                || attachmentUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+                ? attachmentUrl
+                : $"{_conn.Api!.BaseUrl}/{attachmentUrl.TrimStart('/')}";
+
+            try
+            {
+                System.Diagnostics.Process.Start(
+                    new System.Diagnostics.ProcessStartInfo(webUrl) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Failed to open image URL in browser: {Url}", webUrl);
+                InvokeUI(() => _messageManager.AddSystemMessage(channel, $"Couldn't open a browser — image URL: {webUrl}"));
+            }
+            return;
+        }
+
+        // In E2E rooms the attachment kind is sender-declared, so only hand real image
+        // extensions to the OS viewer; anything else goes through the save path instead.
+        if (!ImageOpenExtensions.Contains(Path.GetExtension(fileName)))
+        {
+            HandleImageSaveRequested(attachmentUrl, fileName);
+            return;
+        }
+
+        RunAsync(async () =>
+        {
+            InvokeUI(() => _messageManager.AddSystemMessage(channel, $"Decrypting {fileName}..."));
+            var tempPath = await DownloadAttachmentAsync(attachmentUrl, fileName);
+            var psi = new System.Diagnostics.ProcessStartInfo(tempPath) { UseShellExecute = true };
+            System.Diagnostics.Process.Start(psi);
+        }, "Failed to open image");
     }
 
     private void HandleImageSaveRequested(string attachmentUrl, string fileName)

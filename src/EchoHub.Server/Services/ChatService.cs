@@ -151,7 +151,7 @@ public class ChatService : IChatService
         _logger.LogInformation("{User} left channel '{Channel}'", username, channelName);
     }
 
-    public async Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content)
+    public async Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content, string? originConnectionId = null)
     {
         channelName = channelName.ToLowerInvariant().Trim();
 
@@ -240,7 +240,7 @@ public class ChatService : IChatService
             Embeds: embeds,
             SenderDisplayName: sender?.DisplayName);
 
-        await BroadcastToAllAsync(b => b.SendMessageToChannelAsync(channelName, messageDto));
+        await BroadcastToAllAsync(b => b.SendMessageToChannelAsync(channelName, messageDto, originConnectionId));
 
         _logger.LogDebug("{User} sent message in '{Channel}'", username, channelName);
         return null;

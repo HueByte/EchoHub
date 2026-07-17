@@ -433,7 +433,7 @@ public sealed class IrcCommandHandler
             foreach (var m in history)
             {
                 var decrypted = m with { Content = _encryption.Decrypt(m.Content) };
-                var lines = IrcMessageFormatter.FormatMessage(decrypted);
+                var lines = IrcMessageFormatter.FormatMessage(decrypted, _options.PublicBaseUrl);
                 foreach (var line in lines)
                     await _conn.SendAsync(line);
             }
@@ -486,7 +486,7 @@ public sealed class IrcCommandHandler
         if (channelName is null) return;
 
         var error = await _chatService.SendMessageAsync(
-            _conn.UserId!.Value, _conn.Nickname!, channelName, content);
+            _conn.UserId!.Value, _conn.Nickname!, channelName, content, _conn.ConnectionId);
 
         if (error is not null)
         {

@@ -13,8 +13,10 @@ public interface IChatService
     Task<(List<MessageDto> History, string? Error, bool PasswordRequired)> JoinChannelAsync(string connectionId, Guid userId, string username, string channelName, string? password = null);
     Task LeaveChannelAsync(string connectionId, string username, string channelName);
 
-    // Messaging
-    Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content);
+    // Messaging. originConnectionId identifies the connection the message came from so
+    // broadcasters can avoid echoing it back to that one connection (IRC convention);
+    // the sender's other sessions still receive it.
+    Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content, string? originConnectionId = null);
     Task<List<MessageDto>> GetChannelHistoryAsync(string channelName, int count, int offset = 0);
 
     // Presence
