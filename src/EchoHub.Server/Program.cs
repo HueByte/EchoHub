@@ -11,6 +11,7 @@ using EchoHub.Server.Hubs;
 using EchoHub.Server.Irc;
 using EchoHub.Server.Services;
 using EchoHub.Server.Services.ServerLogs;
+using EchoHub.Server.Services.Stats;
 using EchoHub.Server.Setup;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
@@ -141,6 +142,13 @@ while (true)
         builder.Services.AddHostedService<ServerDirectoryService>();
         builder.Services.AddHostedService<FileCleanupService>();
         builder.Services.AddHostedService<MuteExpirationService>();
+
+        // ── Periodic stats report (admin-configurable via the "Stats" section) ─
+        var statsOptions = builder.Configuration.GetSection("Stats").Get<StatsOptions>() ?? new StatsOptions();
+        builder.Services.AddSingleton(statsOptions);
+        builder.Services.AddSingleton<ServerStatsCollector>();
+        if (statsOptions.Enabled)
+            builder.Services.AddHostedService<ServerStatsReportService>();
 
         // Live server-log streaming (only when the sink is active)
         if (serverLogsSink is not null)
