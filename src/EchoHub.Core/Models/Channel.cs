@@ -6,6 +6,10 @@ public class Channel
     public required string Name { get; set; }
     public string? Topic { get; set; }
     public bool IsPublic { get; set; } = true;
+
+    // Server-managed channel (e.g. the live server-log room): auto-created, read-only for
+    // every role, visible only to roles the owning feature allows. Users can never create one.
+    public bool IsSystem { get; set; }
     public string? PasswordHash { get; set; }
 
     // End-to-end encryption envelope (client-generated; server cannot decrypt room content).

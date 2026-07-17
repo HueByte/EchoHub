@@ -3,6 +3,7 @@ using EchoHub.Core.Contracts;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
 using EchoHub.Server.Data;
+using EchoHub.Server.Services.ServerLogs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,17 +15,20 @@ public class ChannelService : IChannelService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly PresenceTracker _presenceTracker;
     private readonly SpamGuard _spamGuard;
+    private readonly ServerLogsService _serverLogs;
     private readonly ILogger<ChannelService> _logger;
 
     public ChannelService(
         IServiceScopeFactory scopeFactory,
         PresenceTracker presenceTracker,
         SpamGuard spamGuard,
+        ServerLogsService serverLogs,
         ILogger<ChannelService> logger)
     {
         _scopeFactory = scopeFactory;
         _presenceTracker = presenceTracker;
         _spamGuard = spamGuard;
+        _serverLogs = serverLogs;
         _logger = logger;
     }
 
@@ -35,17 +39,24 @@ public class ChannelService : IChannelService
 
         await EnsureDefaultChannelAsync(db);
 
-        var query = db.Channels.Where(c =>
-            c.IsPublic || db.ChannelMemberships.Any(m => m.ChannelId == c.Id && m.UserId == userId));
+        // System channels (the live log room) are visible only to the configured roles,
+        // regardless of membership; the room sorts above everything else.
+        var caller = await db.Users.FindAsync(userId);
+        var canViewSystem = _serverLogs.CanView(caller?.Role ?? ServerRole.Member);
+
+        var query = db.Channels.Where(c => c.IsSystem
+            ? canViewSystem
+            : c.IsPublic || db.ChannelMemberships.Any(m => m.ChannelId == c.Id && m.UserId == userId));
         var total = await query.CountAsync();
 
         var channels = await query
-            .OrderBy(c => c.Name)
+            .OrderByDescending(c => c.IsSystem)
+            .ThenBy(c => c.Name)
             .Skip(offset)
             .Take(limit)
             .Select(c => new ChannelDto(
                 c.Id, c.Name, c.Topic, c.IsPublic, c.Messages.Count, c.CreatedAt,
-                c.PasswordHash != null, c.WrappedRoomKey != null))
+                c.PasswordHash != null, c.WrappedRoomKey != null, c.IsSystem))
             .ToListAsync();
 
         return new PaginatedResponse<ChannelDto>(channels, total, offset, limit);
@@ -63,6 +74,12 @@ public class ChannelService : IChannelService
         if (!ValidationConstants.ChannelNameRegex().IsMatch(channelName))
             return ChannelOperationResult.Fail(ChannelError.ValidationFailed,
                 "Channel name must be 2-100 characters and contain only letters, digits, underscores, or hyphens.");
+
+        // The log room's name is reserved even while the feature is disabled, so enabling it
+        // later never turns a user-owned channel into the stream target.
+        if (channelName == _serverLogs.Options.NormalizedRoomName)
+            return ChannelOperationResult.Fail(ChannelError.ValidationFailed,
+                $"Channel name '{channelName}' is reserved.");
 
         var passwordError = ValidateChannelPassword(ref password);
         if (passwordError is not null)
@@ -166,6 +183,10 @@ public class ChannelService : IChannelService
         if (dbChannel is null)
             return ChannelOperationResult.Fail(ChannelError.NotFound, $"Channel '{channelName}' does not exist.");
 
+        if (dbChannel.IsSystem)
+            return ChannelOperationResult.Fail(ChannelError.Protected,
+                "System channels cannot be password protected.");
+
         if (dbChannel.WrappedRoomKey is not null)
             return ChannelOperationResult.Fail(ChannelError.Protected,
                 "This channel is end-to-end encrypted — change its passphrase from the EchoHub client (/passwd).");
@@ -247,6 +268,10 @@ public class ChannelService : IChannelService
         if (dbChannel is null)
             return ChannelOperationResult.Fail(ChannelError.NotFound, $"Channel '{channelName}' does not exist.");
 
+        if (dbChannel.IsSystem)
+            return ChannelOperationResult.Fail(ChannelError.Protected,
+                "System channels cannot be deleted.");
+
         var caller = await db.Users.FindAsync(callerUserId);
         if (dbChannel.CreatedByUserId != callerUserId && (caller is null || caller.Role < ServerRole.Admin))
             return ChannelOperationResult.Fail(ChannelError.Forbidden,
@@ -298,7 +323,7 @@ public class ChannelService : IChannelService
 
         var messageCount = await db.Messages.CountAsync(m => m.ChannelId == c.Id);
         return new ChannelDto(c.Id, c.Name, c.Topic, c.IsPublic, messageCount, c.CreatedAt,
-            c.PasswordHash != null, c.WrappedRoomKey != null);
+            c.PasswordHash != null, c.WrappedRoomKey != null, c.IsSystem);
     }
 
     public async Task<ChannelMetaDto?> GetChannelMetaAsync(string channelName)
@@ -372,6 +397,16 @@ public class ChannelService : IChannelService
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
+        // The live log room is role-gated: only the configured roles may join, no matter
+        // how the join arrives (TUI, REST, IRC).
+        var isLogsChannel = _serverLogs.IsLogsChannel(channelName);
+        if (isLogsChannel)
+        {
+            var joiner = await db.Users.FindAsync(userId);
+            if (!_serverLogs.CanView(joiner?.Role ?? ServerRole.Member))
+                return (false, $"Channel '{channelName}' is restricted to server staff.", false);
+        }
+
         var channel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
         if (channel is null)
         {
@@ -389,10 +424,30 @@ public class ChannelService : IChannelService
                 await db.SaveChangesAsync();
                 _logger.LogWarning("Default channel '{Channel}' was missing and has been recreated", HubConstants.DefaultChannel);
             }
+            else if (isLogsChannel)
+            {
+                channel = new Channel
+                {
+                    Id = Guid.NewGuid(),
+                    Name = channelName,
+                    Topic = ServerLogsService.RoomTopic,
+                    IsPublic = false,
+                    IsSystem = true,
+                    CreatedByUserId = Guid.Empty,
+                };
+                db.Channels.Add(channel);
+                await db.SaveChangesAsync();
+                _logger.LogWarning("Log channel '{Channel}' was missing and has been recreated", channelName);
+            }
             else
             {
                 return (false, $"Channel '{channelName}' does not exist. Create it first via the channel list.", false);
             }
+        }
+        else if (channel.IsSystem && !isLogsChannel)
+        {
+            // A system channel left behind while its feature is disabled stays inaccessible.
+            return (false, $"Channel '{channelName}' is not available.", false);
         }
 
         var hasMembership = await db.ChannelMemberships
@@ -440,6 +495,44 @@ public class ChannelService : IChannelService
             return $"Channel password must not exceed {ValidationConstants.MaxPasswordLength} characters.";
 
         return null;
+    }
+
+    public async Task<ChannelDto> EnsureSystemChannelAsync(string channelName, string? topic = null)
+    {
+        channelName = channelName.ToLowerInvariant().Trim();
+
+        using var scope = _scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
+
+        var channel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
+        if (channel is null)
+        {
+            channel = new Channel
+            {
+                Id = Guid.NewGuid(),
+                Name = channelName,
+                Topic = topic,
+                IsPublic = false,
+                IsSystem = true,
+                CreatedByUserId = Guid.Empty,
+            };
+            db.Channels.Add(channel);
+            await db.SaveChangesAsync();
+            _logger.LogInformation("System channel '{Channel}' created", channelName);
+        }
+        else if (!channel.IsSystem)
+        {
+            // A regular channel squatting on the system name (created while the feature was
+            // off) is claimed, so server content never streams into a user-owned room.
+            channel.IsSystem = true;
+            channel.IsPublic = false;
+            channel.PasswordHash = null;
+            await db.SaveChangesAsync();
+            _logger.LogWarning("Existing channel '{Channel}' was claimed as a system channel", channelName);
+        }
+
+        return new ChannelDto(channel.Id, channel.Name, channel.Topic, channel.IsPublic, 0, channel.CreatedAt,
+            false, channel.WrappedRoomKey != null, true);
     }
 
     private static async Task EnsureDefaultChannelAsync(EchoHubDbContext db)

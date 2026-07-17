@@ -280,6 +280,12 @@ internal sealed class FakeChannelService : IChannelService
 
     public Task<(bool Success, string? Error, bool PasswordRequired)> EnsureChannelMembershipAsync(Guid userId, string channelName, string? password = null) =>
         Task.FromResult(MembershipResult);
+
+    public ChannelDto? SystemChannelToReturn { get; set; }
+
+    public Task<ChannelDto> EnsureSystemChannelAsync(string channelName, string? topic = null) =>
+        Task.FromResult(SystemChannelToReturn ?? new ChannelDto(
+            Guid.NewGuid(), channelName, topic, false, 0, DateTimeOffset.UnixEpoch, false, false, true));
 }
 
 /// <summary>

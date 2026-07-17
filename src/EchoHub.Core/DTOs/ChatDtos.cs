@@ -45,7 +45,8 @@ public record ChannelDto(
     int MessageCount,
     DateTimeOffset CreatedAt,
     bool IsProtected = false,
-    bool IsEncrypted = false);
+    bool IsEncrypted = false,
+    bool IsSystem = false);
 
 public record UserDto(
     Guid Id,

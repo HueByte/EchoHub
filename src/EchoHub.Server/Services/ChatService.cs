@@ -5,6 +5,7 @@ using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
 using EchoHub.Core.Security;
 using EchoHub.Server.Data;
+using EchoHub.Server.Services.ServerLogs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -21,6 +22,7 @@ public class ChatService : IChatService
     private readonly IChannelService _channelService;
     private readonly FileStorageService _fileStorage;
     private readonly SpamGuard _spamGuard;
+    private readonly ServerLogsService _serverLogs;
     private readonly ILogger<ChatService> _logger;
 
     public ChatService(
@@ -32,6 +34,7 @@ public class ChatService : IChatService
         IChannelService channelService,
         FileStorageService fileStorage,
         SpamGuard spamGuard,
+        ServerLogsService serverLogs,
         ILogger<ChatService> logger)
     {
         _scopeFactory = scopeFactory;
@@ -42,6 +45,7 @@ public class ChatService : IChatService
         _channelService = channelService;
         _fileStorage = fileStorage;
         _spamGuard = spamGuard;
+        _serverLogs = serverLogs;
         _logger = logger;
     }
 
@@ -183,6 +187,11 @@ public class ChatService : IChatService
         if (!ValidationConstants.ChannelNameRegex().IsMatch(channelName))
             return "Invalid channel name.";
 
+        // The live log room is read-only for everyone, every role. Reject by name before any
+        // work so a streamed log line can never provoke a DB write or another log event.
+        if (_serverLogs.IsLogsChannel(channelName))
+            return "This channel is read-only.";
+
         // Decrypt content (client sends encrypted; IRC sends plaintext — Decrypt handles both)
         var plaintext = _encryption.Decrypt(content);
 
@@ -205,6 +214,9 @@ public class ChatService : IChatService
         var channel = await db.Channels.FirstOrDefaultAsync(c => c.Name == channelName);
         if (channel is null)
             return $"Channel '{channelName}' does not exist.";
+
+        if (channel.IsSystem)
+            return "This channel is read-only.";
 
         var sender = await db.Users.FindAsync(userId);
 
@@ -309,10 +321,32 @@ public class ChatService : IChatService
         count = Math.Clamp(count, 1, ValidationConstants.MaxHistoryCount);
         offset = Math.Max(offset, 0);
 
+        // The log room has no DB messages — its backlog is the tail of the rolling log file.
+        // Only the first page carries the backlog; older pages are empty (files are the archive).
+        if (_serverLogs.IsLogsChannel(channelName))
+            return offset > 0 ? [] : BuildLogBacklog(channelName);
+
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
         return await GetChannelHistoryInternalAsync(db, channelName, count, offset);
+    }
+
+    /// <summary>
+    /// Turns the log-file backlog into transport-encrypted <see cref="MessageDto"/>s so clients
+    /// render past log lines exactly like streamed ones. Never touches the database.
+    /// </summary>
+    private List<MessageDto> BuildLogBacklog(string channelName)
+    {
+        return _serverLogs.ReadBacklog()
+            .Select(entry => new MessageDto(
+                Guid.NewGuid(),
+                _encryption.Encrypt(entry.Content),
+                ServerLogsService.SenderName,
+                null,
+                channelName,
+                entry.Timestamp))
+            .ToList();
     }
 
     /// <summary>

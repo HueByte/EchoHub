@@ -400,6 +400,16 @@ public sealed class IrcCommandHandler
                 continue;
             }
 
+            // System channels (e.g. the live log room) stream over SignalR only — the IRC
+            // gateway never carries their content, so block joins outright.
+            var channelInfo = await _channelService.GetChannelByNameAsync(channelName);
+            if (channelInfo?.IsSystem == true)
+            {
+                await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_NOSUCHCHANNEL,
+                    $"#{channelName} :Cannot join channel — server-managed, use the EchoHub client");
+                continue;
+            }
+
             var (history, error, passwordRequired) = await _chatService.JoinChannelAsync(
                 _conn.ConnectionId, _conn.UserId!.Value, _conn.Nickname!, channelName, key);
 

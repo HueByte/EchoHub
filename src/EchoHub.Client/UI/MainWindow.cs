@@ -75,6 +75,7 @@ public sealed partial class MainWindow : Runnable
     private readonly Dictionary<string, string?> _channelTopics = [];
     private readonly Dictionary<string, bool> _channelPublic = [];
     private readonly HashSet<string> _channelProtected = [];
+    private readonly HashSet<string> _systemChannels = [];
     private readonly ChannelListSource _channelListSource;
     private readonly ChatMessageManager _messageManager;
     private string _connectionStatus = "Disconnected";
@@ -406,6 +407,14 @@ public sealed partial class MainWindow : Runnable
 
     private void UpdateInputTitle()
     {
+        // Read-only channels (the live log room) override any reply/staged hint.
+        if (IsCurrentChannelReadOnly)
+        {
+            _inputFrame.Title = "Read-only channel — you cannot type here";
+            _inputFrame.SetNeedsDraw();
+            return;
+        }
+
         _inputFrame.Title = (_replyTitleFragment, _stagedTitleFragment) switch
         {
             (null, null) => DefaultInputTitle,
@@ -850,6 +859,8 @@ public sealed partial class MainWindow : Runnable
                 break;
 
             case EnterKey:
+                if (IsCurrentChannelReadOnly)
+                    break;
                 var text = _inputField.Text?.Trim() ?? string.Empty;
                 // Send when there's text, or when only attachments are staged (empty caption).
                 if ((!string.IsNullOrEmpty(text) || _hasStagedAttachments)
@@ -876,6 +887,9 @@ public sealed partial class MainWindow : Runnable
 
             case CtrlVKey:
             case CtrlYKey:
+                // Read-only channels can't receive text or attachments.
+                if (IsCurrentChannelReadOnly)
+                    break;
                 // Discord-style paste priority. Copied files in the OS file manager put a file
                 // list (not text) on the clipboard — attach them all. Copied image data (browser
                 // right-click copy, screenshot tools) is attached as a PNG. Otherwise paste text.
@@ -1102,6 +1116,7 @@ public sealed partial class MainWindow : Runnable
         _channelTopics.Clear();
         _channelPublic.Clear();
         _channelProtected.Clear();
+        _systemChannels.Clear();
         foreach (var ch in channels)
         {
             _channelNames.Add(ch.Name);
@@ -1109,6 +1124,8 @@ public sealed partial class MainWindow : Runnable
             _channelPublic[ch.Name] = ch.IsPublic;
             if (ch.IsProtected)
                 _channelProtected.Add(ch.Name);
+            if (ch.IsSystem)
+                _systemChannels.Add(ch.Name);
         }
         RefreshChannelList();
     }
@@ -1116,7 +1133,8 @@ public sealed partial class MainWindow : Runnable
     /// <summary>
     /// Ensure a channel exists in the left panel list (used for private channels joined via /join).
     /// </summary>
-    public void EnsureChannelInList(string channelName, bool? isPublic = null, bool? isProtected = null)
+    public void EnsureChannelInList(string channelName, bool? isPublic = null, bool? isProtected = null,
+        bool? isSystem = null)
     {
         if (isPublic.HasValue)
             _channelPublic[channelName] = isPublic.Value;
@@ -1127,9 +1145,15 @@ public sealed partial class MainWindow : Runnable
             else _channelProtected.Remove(channelName);
         }
 
+        if (isSystem.HasValue)
+        {
+            if (isSystem.Value) _systemChannels.Add(channelName);
+            else _systemChannels.Remove(channelName);
+        }
+
         if (_channelNames.Contains(channelName))
         {
-            if (isProtected.HasValue)
+            if (isProtected.HasValue || isSystem.HasValue)
                 RefreshChannelList();
             return;
         }
@@ -1147,6 +1171,7 @@ public sealed partial class MainWindow : Runnable
         _channelTopics.Remove(channelName);
         _channelPublic.Remove(channelName);
         _channelProtected.Remove(channelName);
+        _systemChannels.Remove(channelName);
         RefreshChannelList();
     }
 
@@ -1337,12 +1362,26 @@ public sealed partial class MainWindow : Runnable
 
         RefreshMessages();
         UpdateTopicBar();
+        UpdateInputReadOnly();
         _statusLabel.SetNeedsDraw();
 
         // Update channel list selection
         var idx = _channelNames.IndexOf(channelName);
         if (idx >= 0)
             _channelList.SelectedItem = idx;
+    }
+
+    /// <summary>Whether the active channel is read-only (a system channel like the log room).</summary>
+    private bool IsCurrentChannelReadOnly => _systemChannels.Contains(_messageManager.CurrentChannel);
+
+    /// <summary>
+    /// Disables the input for read-only (system) channels so nothing can be typed there, and
+    /// reflects the state in the input frame title.
+    /// </summary>
+    private void UpdateInputReadOnly()
+    {
+        _inputField.ReadOnly = IsCurrentChannelReadOnly;
+        UpdateInputTitle();
     }
 
     /// <summary>
@@ -1355,6 +1394,7 @@ public sealed partial class MainWindow : Runnable
         _channelTopics.Clear();
         _channelPublic.Clear();
         _channelProtected.Clear();
+        _systemChannels.Clear();
         _channelListSource.Update([], [], string.Empty);
         _channelList.Source = _channelListSource;
         _chatFrame.Title = "Chat";
@@ -1459,11 +1499,21 @@ public sealed partial class MainWindow : Runnable
     /// </summary>
     private void RefreshChannelList()
     {
+        // Pin system channels (e.g. the live log room) to the very top, keeping the server's
+        // relative order otherwise. OrderBy is stable, so alphabetical order is preserved within
+        // each group. Reordering in place keeps _channelNames the source of truth for selection
+        // lookups. System channels are private by nature but shouldn't get the private (~) glyph,
+        // so exclude them from the private set.
+        var ordered = _channelNames.OrderBy(n => _systemChannels.Contains(n) ? 0 : 1).ToList();
+        _channelNames.Clear();
+        _channelNames.AddRange(ordered);
+
         var privateChannels = _channelNames
-            .Where(n => _channelPublic.TryGetValue(n, out var isPublic) && !isPublic)
+            .Where(n => !_systemChannels.Contains(n)
+                && _channelPublic.TryGetValue(n, out var isPublic) && !isPublic)
             .ToHashSet();
         _channelListSource.Update(_channelNames, _messageManager.GetUnreadCounts(), _messageManager.CurrentChannel,
-            _channelProtected, _messageManager.MentionChannels, privateChannels);
+            _channelProtected, _messageManager.MentionChannels, privateChannels, _systemChannels);
         _channelList.Source = _channelListSource;
 
         // Restore selection to current channel

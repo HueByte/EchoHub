@@ -19,6 +19,7 @@ public class ChannelListSource : IListDataSource
     private readonly HashSet<string> _protectedChannels = [];
     private readonly HashSet<string> _mentionChannels = [];
     private readonly HashSet<string> _privateChannels = [];
+    private readonly HashSet<string> _systemChannels = [];
     private string _activeChannel = string.Empty;
 
     public event NotifyCollectionChangedEventHandler? CollectionChanged;
@@ -31,10 +32,12 @@ public class ChannelListSource : IListDataSource
     private static readonly Attribute NormalAttr = new(Color.DarkGray, Color.None);
     private static readonly Attribute BadgeAttr = new(Color.BrightYellow, Color.None);
     private static readonly Attribute MentionAttr = new(new Color(230, 140, 60), Color.None);
+    // System channels (e.g. the live log room) render in green to set them apart from user rooms.
+    private static readonly Attribute SystemAttr = new(Color.BrightGreen, Color.None);
 
     public void Update(List<string> channels, Dictionary<string, int> unread, string activeChannel,
         IReadOnlySet<string>? protectedChannels = null, IReadOnlySet<string>? mentionChannels = null,
-        IReadOnlySet<string>? privateChannels = null)
+        IReadOnlySet<string>? privateChannels = null, IReadOnlySet<string>? systemChannels = null)
     {
         _channelNames.Clear();
         _channelNames.AddRange(channels);
@@ -50,6 +53,9 @@ public class ChannelListSource : IListDataSource
         _privateChannels.Clear();
         if (privateChannels is not null)
             _privateChannels.UnionWith(privateChannels);
+        _systemChannels.Clear();
+        if (systemChannels is not null)
+            _systemChannels.UnionWith(systemChannels);
         _activeChannel = activeChannel;
         MaxItemLength = channels.Count > 0 ? channels.Max(c => c.Length + 6) : 0;
         if (!SuspendCollectionChangedEvent)
@@ -71,7 +77,9 @@ public class ChannelListSource : IListDataSource
 
         var normalAttr = listView.GetAttributeForRole(VisualRole.Normal);
         var focusAttr = listView.GetAttributeForRole(VisualRole.Focus);
-        var prefix = isActive ? "> " : "  ";
+        var isSystem = _systemChannels.Contains(name);
+        // System channels get a leading rule so they read as a pinned, separate group at the top.
+        var prefix = isSystem ? (isActive ? "▌ " : "▎ ") : (isActive ? "> " : "  ");
         // Trailing * marks password-protected (+k) channels; ~ marks private (unlisted) ones
         var channelText = $"#{name}";
         if (_protectedChannels.Contains(name))
@@ -93,12 +101,15 @@ public class ChannelListSource : IListDataSource
         }
         else
         {
-            listView.SetAttribute(Resolve(isActive ? ActiveAttr : NormalAttr));
+            // System channels are green so they stand apart from user rooms; that green also
+            // colors the leading rule and (dimmer) prefix.
+            listView.SetAttribute(Resolve(isSystem ? SystemAttr : isActive ? ActiveAttr : NormalAttr));
             drawnChars = RenderHelpers.WriteText(listView, prefix, drawnChars, width);
 
             // Mentions escalate above plain unread: the whole entry turns orange
             var hasMention = _mentionChannels.Contains(name);
-            var nameAttr = isActive ? ActiveAttr
+            var nameAttr = isSystem ? SystemAttr
+                : isActive ? ActiveAttr
                 : hasMention ? MentionAttr
                 : hasUnread ? UnreadAttr
                 : NormalAttr;
@@ -107,7 +118,7 @@ public class ChannelListSource : IListDataSource
 
             if (hasUnread)
             {
-                listView.SetAttribute(Resolve(hasMention ? MentionAttr : BadgeAttr));
+                listView.SetAttribute(Resolve(isSystem ? SystemAttr : hasMention ? MentionAttr : BadgeAttr));
                 drawnChars = RenderHelpers.WriteText(listView, badge, drawnChars, width);
             }
         }
