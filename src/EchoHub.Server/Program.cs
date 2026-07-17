@@ -106,6 +106,11 @@ while (true)
         // ── Upload limits (admin-configurable via the "Uploads" section) ─────
         var uploadLimits = builder.Configuration.GetSection("Uploads").Get<UploadLimits>() ?? new UploadLimits();
         builder.Services.AddSingleton(uploadLimits);
+
+        // ── Spam protection (admin-configurable via the "Spam" section) ──────
+        var spamOptions = builder.Configuration.GetSection("Spam").Get<SpamOptions>() ?? new SpamOptions();
+        builder.Services.AddSingleton(spamOptions);
+        builder.Services.AddSingleton<SpamGuard>();
         // Raise the multipart form ceiling to match the configured limits; per-endpoint
         // request-body limits are applied at the action from the same values.
         builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(o =>

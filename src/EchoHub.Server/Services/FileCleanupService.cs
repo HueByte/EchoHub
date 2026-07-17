@@ -15,8 +15,10 @@ public sealed class FileCleanupService : BackgroundService
     {
         var intervalHours = _configuration.GetValue("Storage:CleanupIntervalHours", 1);
         var retentionDays = _configuration.GetValue("Storage:RetentionDays", 30);
-        var storagePath = _configuration["Storage:Path"]
-            ?? Path.Combine(AppContext.BaseDirectory, "uploads");
+        var configuredPath = _configuration["Storage:Path"];
+        var storagePath = !string.IsNullOrWhiteSpace(configuredPath)
+            ? configuredPath
+            : Path.Combine(AppContext.BaseDirectory, "uploads");
 
         _logger.LogInformation(
             "File cleanup service started — interval: {Hours}h, retention: {Days}d, path: {Path}",

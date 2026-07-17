@@ -12,7 +12,8 @@ public class IrcMessageFormatterTests
         string sender = "alice",
         string channel = "general",
         List<AttachmentDto>? attachments = null,
-        List<EmbedDto>? embeds = null) => new(
+        List<EmbedDto>? embeds = null,
+        ReplyRefDto? replyTo = null) => new(
         Id: Guid.NewGuid(),
         Content: content,
         SenderUsername: sender,
@@ -20,7 +21,81 @@ public class IrcMessageFormatterTests
         ChannelName: channel,
         SentAt: DateTimeOffset.UtcNow,
         Attachments: attachments,
-        Embeds: embeds);
+        Embeds: embeds,
+        ReplyTo: replyTo);
+
+    // ── CTCP ACTION (/me) ───────────────────────────────────
+
+    [Fact]
+    public void FormatMessage_ActionContent_EmitsCtcpAction()
+    {
+        var msg = CreateMessage(content: "\u0001ACTION waves at everyone\u0001");
+        var lines = IrcMessageFormatter.FormatMessage(msg);
+
+        Assert.Single(lines);
+        Assert.Contains("PRIVMSG #general :\u0001ACTION waves at everyone\u0001", lines[0]);
+    }
+
+    [Fact]
+    public void FormatMessage_LongActionContent_EachChunkIsWellFormedCtcp()
+    {
+        var longText = string.Join(' ', Enumerable.Repeat("wordyword", 80));
+        var msg = CreateMessage(content: "\u0001ACTION " + longText + "\u0001");
+        var lines = IrcMessageFormatter.FormatMessage(msg);
+
+        Assert.True(lines.Count > 1);
+        foreach (var line in lines)
+        {
+            var payload = line[(line.IndexOf(" :", StringComparison.Ordinal) + 2)..];
+            Assert.StartsWith("\u0001ACTION ", payload);
+            Assert.EndsWith("\u0001", payload);
+        }
+    }
+
+    // ── Replies ───────────────────────────────────────────
+
+    [Fact]
+    public void FormatMessage_Reply_PrefixesQuoteConvention()
+    {
+        var reply = new ReplyRefDto(Guid.NewGuid(), "bob", "the original text");
+        var msg = CreateMessage(content: "I agree", replyTo: reply);
+        var lines = IrcMessageFormatter.FormatMessage(msg);
+
+        Assert.Single(lines);
+        Assert.Contains("PRIVMSG #general :> bob: the original text | I agree", lines[0]);
+    }
+
+    [Fact]
+    public void FormatMessage_ReplyToLongMessage_SnippetTruncated()
+    {
+        var reply = new ReplyRefDto(Guid.NewGuid(), "bob", new string('x', 300));
+        var msg = CreateMessage(content: "ok", replyTo: reply);
+        var lines = IrcMessageFormatter.FormatMessage(msg);
+
+        Assert.Single(lines);
+        Assert.Contains("… | ok", lines[0]);
+        Assert.DoesNotContain(new string('x', 100), lines[0]);
+    }
+
+    [Fact]
+    public void FormatMessage_ReplyToEncryptedContent_ShowsPlaceholder()
+    {
+        var reply = new ReplyRefDto(Guid.NewGuid(), "bob", "$RC1$AAAA$BBBB$CCCC");
+        var msg = CreateMessage(content: "ok", replyTo: reply);
+        var lines = IrcMessageFormatter.FormatMessage(msg);
+
+        Assert.Contains("> bob: [encrypted] | ok", lines[0]);
+    }
+
+    [Fact]
+    public void FormatMessage_ReplyToAction_SnippetRendersAsAction()
+    {
+        var reply = new ReplyRefDto(Guid.NewGuid(), "bob", "\u0001ACTION waves\u0001");
+        var msg = CreateMessage(content: "nice wave", replyTo: reply);
+        var lines = IrcMessageFormatter.FormatMessage(msg);
+
+        Assert.Contains("> bob: * bob waves | nice wave", lines[0]);
+    }
 
     // ── FormatMessage ─────────────────────────────────────────────────
 

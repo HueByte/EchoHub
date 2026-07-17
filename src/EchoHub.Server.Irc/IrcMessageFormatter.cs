@@ -1,12 +1,15 @@
 using System.Text;
+using EchoHub.Core.Constants;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
+using EchoHub.Core.Security;
 
 namespace EchoHub.Server.Irc;
 
 public static class IrcMessageFormatter
 {
     private const int MaxIrcLineContentBytes = 400;
+    private const int MaxReplySnippetLength = 80;
 
     /// <summary>
     /// Format a MessageDto as one or more IRC PRIVMSG lines.
@@ -20,11 +23,32 @@ public static class IrcMessageFormatter
         var ircChannel = $"#{message.ChannelName}";
         var prefix = $":{message.SenderUsername}!{message.SenderUsername}@echohub";
 
+        // Reply reference → the "> nick: snippet" quoting convention IRC users know
+        var replyPrefix = FormatReplyPrefix(message.ReplyTo);
+
         // Caption text first (may be empty when the message is attachments-only)
         if (!string.IsNullOrEmpty(message.Content))
         {
-            foreach (var chunk in SplitMessage(message.Content, MaxIrcLineContentBytes))
-                lines.Add($"{prefix} PRIVMSG {ircChannel} :{chunk}");
+            // /me actions arrive as CTCP ACTION content; each chunk must stay a
+            // well-formed CTCP message (\x01ACTION …\x01) or clients render garbage.
+            if (MessageConventions.TryParseAction(message.Content, out var actionText))
+            {
+                if (replyPrefix is not null)
+                    lines.Add($"{prefix} PRIVMSG {ircChannel} :{replyPrefix.TrimEnd(' ', '|', ' ')}");
+
+                foreach (var chunk in SplitMessage(actionText, MaxIrcLineContentBytes))
+                    lines.Add($"{prefix} PRIVMSG {ircChannel} :{MessageConventions.FormatAction(chunk)}");
+            }
+            else
+            {
+                var content = replyPrefix is not null ? replyPrefix + message.Content : message.Content;
+                foreach (var chunk in SplitMessage(content, MaxIrcLineContentBytes))
+                    lines.Add($"{prefix} PRIVMSG {ircChannel} :{chunk}");
+            }
+        }
+        else if (replyPrefix is not null)
+        {
+            lines.Add($"{prefix} PRIVMSG {ircChannel} :{replyPrefix.TrimEnd(' ', '|', ' ')}");
         }
 
         // One link line per attachment
@@ -51,6 +75,28 @@ public static class IrcMessageFormatter
         }
 
         return lines;
+    }
+
+    /// <summary>
+    /// "&gt; nick: snippet | " prefix for replies. Room ciphertext can't be rendered
+    /// (IRC can't join encrypted rooms anyway) and is shown as a placeholder.
+    /// </summary>
+    private static string? FormatReplyPrefix(ReplyRefDto? replyTo)
+    {
+        if (replyTo is null)
+            return null;
+
+        var snippet = RoomCrypto.IsRoomCiphertext(replyTo.Content)
+            ? "[encrypted]"
+            : replyTo.Content.Replace('\n', ' ').Replace('\r', ' ');
+
+        if (MessageConventions.TryParseAction(snippet, out var actionText))
+            snippet = $"* {replyTo.SenderUsername} {actionText}";
+
+        if (snippet.Length > MaxReplySnippetLength)
+            snippet = snippet[..MaxReplySnippetLength] + "…";
+
+        return $"> {replyTo.SenderUsername}: {snippet} | ";
     }
 
     /// <summary>

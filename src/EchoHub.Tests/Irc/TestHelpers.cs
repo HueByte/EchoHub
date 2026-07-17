@@ -188,7 +188,7 @@ internal sealed class FakeChatService : IChatService
         return Task.CompletedTask;
     }
 
-    public Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content, string? originConnectionId = null)
+    public Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content, string? originConnectionId = null, Guid? replyToMessageId = null)
     {
         SentMessages.Add((channelName, content));
         return Task.FromResult(SendMessageError);
@@ -305,9 +305,14 @@ internal sealed class FakeUserService : IUserService
         Task.FromResult(AuthResult
             ?? UserOperationResult.Fail(UserError.InvalidCredentials, "Invalid username or password."));
 
-    public Task<UserOperationResult> RegisterUserAsync(string username, string password, string? displayName = null) =>
-        Task.FromResult(RegisterResult
+    public List<string?> RegisterInviteCodes { get; } = [];
+
+    public Task<UserOperationResult> RegisterUserAsync(string username, string password, string? displayName = null, string? inviteCode = null)
+    {
+        RegisterInviteCodes.Add(inviteCode);
+        return Task.FromResult(RegisterResult
             ?? UserOperationResult.Fail(UserError.AlreadyExists, "Username is already taken."));
+    }
 
     public Task<UserProfileDto?> GetUserProfileAsync(string username) =>
         Task.FromResult(ProfileToReturn);

@@ -78,7 +78,8 @@ internal sealed class ConnectionManager : IAsyncDisposable
             }
             else if (info.IsRegister)
             {
-                loginResponse = await _apiClient.RegisterAsync(info.Username, info.Password);
+                loginResponse = await _apiClient.RegisterAsync(
+                    info.Username, info.Password, info.DisplayName, info.InviteCode);
             }
             else
             {
@@ -244,8 +245,8 @@ internal sealed class ConnectionManager : IAsyncDisposable
 
     // ── Delegate Operations ───────────────────────────────────────────────
 
-    public Task SendMessageAsync(string channel, string content) =>
-        _connection?.SendMessageAsync(channel, content)
+    public Task SendMessageAsync(string channel, string content, Guid? replyToMessageId = null) =>
+        _connection?.SendMessageAsync(channel, content, replyToMessageId)
         ?? throw new InvalidOperationException("Not connected");
 
     public Task<List<MessageDto>> GetHistoryAsync(string channel, int count = HubConstants.DefaultHistoryCount, int offset = 0) =>
