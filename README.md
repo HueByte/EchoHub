@@ -1,41 +1,23 @@
-# EchoHub
+<div align="center">
 
-<p align="center">
-  <img src="https://cdn.voidcube.cloud/assets/hue_icon.svg" alt="EchoHub Logo" width="120" />
-</p>
+<img src="https://cdn.voidcube.cloud/assets/hue_icon.svg" alt="EchoHub" width="112" />
 
-<h1 align="center">EchoHub</h1>
+<h1>EchoHub</h1>
 
-<p align="center">
-  No tracking. No subscriptions. No "enhanced AI features". Just chat.
-</p>
+**No tracking. No subscriptions. No "enhanced AI features". Just chat.**
 
-<p align="center">
-  <a href="#what-is-this">What</a> •
-  <a href="#getting-started">Setup</a> •
-  <a href="#irc-gateway">IRC</a> •
-  <a href="#deployment-with-nginx">Deploy</a> •
-  <a href="#client-commands">Commands</a> •
-  <a href="#configuration">Config</a> •
-  <a href="#license">License</a>
-</p>
+Self-hosted, IRC-inspired chat with an open API. Use the terminal, a desktop app, IRC, or a client you build yourself.
 
-<p align="center">
-  <a href="https://echohub.voidcube.cloud/">Website</a> •
-  <a href="https://echohub.voidcube.cloud/servers">Public Servers</a> •
-  <a href="https://huebyte.github.io/EchoHub/">Documentation</a>
-</p>
+[Website](https://echohub.voidcube.cloud/) · [Public servers](https://echohub.voidcube.cloud/servers) · [Documentation](https://huebyte.github.io/EchoHub/) · [Changelog](docs/changelog/index.md)
 
-<p align="center">
-  <a href="https://github.com/HueByte/EchoHub/actions/workflows/ci.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/HueByte/EchoHub/ci.yml?branch=master&style=flat-square&logo=github&label=Build" /></a>
-  <a href="https://github.com/HueByte/EchoHub/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/HueByte/EchoHub?style=flat-square&logo=github&label=Release" /></a>
-  <a href="https://community.chocolatey.org/packages/echohub"><img alt="Chocolatey" src="https://img.shields.io/chocolatey/v/echohub?style=flat-square&logo=chocolatey&label=Chocolatey" /></a>
-  <a href="https://github.com/HueByte/EchoHub/pkgs/container/echohub-server"><img alt="Docker" src="https://img.shields.io/badge/Docker-GHCR-2496ED?style=flat-square&logo=docker&logoColor=white" /></a>
-  <img alt=".NET 10" src="https://img.shields.io/badge/.NET-10-512BD4?style=flat-square&logo=dotnet&logoColor=white" />
-  <img alt="Terminal.Gui" src="https://img.shields.io/badge/TUI-Terminal.Gui%20v2-yellow?style=flat-square" />
-  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/HueByte/EchoHub?style=flat-square" /></a>
-  <img alt="Repo size" src="https://img.shields.io/github/repo-size/HueByte/EchoHub?style=flat-square&label=Size" />
-</p>
+<a href="https://github.com/HueByte/EchoHub/actions/workflows/ci.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/HueByte/EchoHub/ci.yml?branch=master&style=flat-square&logo=github&label=Build" /></a>
+<a href="https://github.com/HueByte/EchoHub/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/HueByte/EchoHub?style=flat-square&logo=github&label=Release" /></a>
+<a href="https://community.chocolatey.org/packages/echohub"><img alt="Chocolatey" src="https://img.shields.io/chocolatey/v/echohub?style=flat-square&logo=chocolatey&label=Chocolatey" /></a>
+<a href="https://github.com/HueByte/EchoHub/pkgs/container/echohub-server"><img alt="Docker" src="https://img.shields.io/badge/Docker-GHCR-2496ED?style=flat-square&logo=docker&logoColor=white" /></a>
+<img alt=".NET 10" src="https://img.shields.io/badge/.NET-10-512BD4?style=flat-square&logo=dotnet&logoColor=white" />
+<a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/HueByte/EchoHub?style=flat-square" /></a>
+
+</div>
 
 ---
 
@@ -43,355 +25,154 @@
 
 Chat apps used to be simple. You connected to a server, joined a channel, and talked to people. No one was mining your messages for ad targeting, no one was selling your "engagement metrics", and the app didn't need 2GB of RAM to display text.
 
-EchoHub is a return to that. Self-hosted, IRC-inspired chat that runs in your terminal. You own the server, you own the data, and the client won't try to upsell you on a premium tier.
+EchoHub is a return to that. Self-hosted, IRC-inspired chat where you own the server and the data, and the client won't try to upsell you on a premium tier.
 
-Each server is fully independent — no central authority, no account federation, no corporate overlord. Just spin one up and go.
+Each server is fully independent. No central authority, no account federation, no corporate overlord. Just spin one up and go.
+
+The terminal client in this repo is the main way in: a proper native app that runs right in your terminal, no browser or Electron in sight. But you're not locked to it. The server speaks an open API (REST and SignalR) plus native IRC, so you can reach it however you like. There's already [**decho**](https://github.com/Stone-Red-Code/Decho), any IRC client works fine, and if none of those suit you, writing your own is fair game.
+
+<!--
+  Screenshots / demo GIF go here once ready. Drop them in docs/images/ and reference like:
+  <p align="center"><img src="docs/images/demo.gif" alt="EchoHub in action" width="820" /></p>
+-->
+
+## Architecture
+
+One server process speaks two protocols: SignalR for native clients and raw IRC for everything else. Both land on the same `ChatService`, so a message from irssi and one from the terminal client look identical by the time they hit the database.
 
 ```mermaid
-graph TD
-    subgraph Server["Server"]
-        ChatSvc["ChatService"]
-        Hub["SignalR ChatHub"]
-        IRC["IRC Gateway :6667"]
+graph LR
+    subgraph Clients
+        direction TB
+        TUI["Terminal client<br/>Terminal.Gui v2"]
+        Desk["decho · your app<br/>REST + SignalR"]
+        IRCC["IRC clients<br/>irssi · WeeChat · …"]
+    end
+
+    subgraph Server["EchoHub Server · ASP.NET Core"]
+        direction TB
+        Hub["SignalR Hub"]
+        GW["IRC Gateway<br/>:6667"]
+        Chat["ChatService"]
         Auth["JWT Auth"]
-        DB["SQLite DB (EF Core)"]
-        Files["File Storage"]
+        DB[("SQLite · EF Core")]
+        Files[("File store")]
     end
 
-    subgraph Clients["Clients"]
-        TUI["Terminal GUI (TUI)"]
-        IRCClient["IRC Client (irssi, WeeChat, ...)"]
-    end
+    TUI == "WebSocket" ==> Hub
+    TUI -. "REST" .-> Auth
+    Desk == "WebSocket" ==> Hub
+    Desk -. "REST" .-> Auth
+    IRCC == "TCP" ==> GW
+    Hub --> Chat
+    GW --> Chat
+    Auth --> Chat
+    Chat --> DB
+    Chat --> Files
 
-    TUI -- "WebSocket" --> Hub
-    TUI -- "REST" --> Auth
-    IRCClient -- "TCP" --> IRC
-    Hub --> ChatSvc
-    IRC --> ChatSvc
-    ChatSvc --> DB
-    Auth --> DB
-    Files --> DB
+    classDef core fill:#512BD4,stroke:#c3b5ff,color:#ffffff,stroke-width:1.5px;
+    classDef io fill:#1f6feb,stroke:#9dc1ff,color:#ffffff;
+    classDef data fill:#0f7b8a,stroke:#7fd3de,color:#ffffff;
+    classDef client fill:#22272e,stroke:#768390,color:#e6edf3;
+
+    class Chat core
+    class Hub,GW,Auth io
+    class DB,Files data
+    class TUI,Desk,IRCC client
 ```
 
-## What you get
+## Highlights
 
-### Server
+|  |  |
+| --- | --- |
+| 🔒 **Actually private** | Self-hosted, no telemetry. Password rooms are end-to-end encrypted with a key derived from the passphrase on your own machine, so not even the server owner can read them. |
+| 🖥️ **Native client, open API** | A real terminal client ships in the box. The REST + SignalR API is open too, so you're never stuck with it: there's the [**decho**](https://github.com/Stone-Red-Code/Decho) desktop app, any IRC client, or roll your own. |
+| 💬 **IRC still works** | A built-in gateway drops irssi and WeeChat users into the same rooms as everyone else, live. Actions, replies and presence all carry across. |
+| 🛡️ **Moderation, built in** | Four roles with ban, kick, mute and invite-only signup. Spam and flooding earn an automatic timed mute, no plugins to install. |
+| 📎 **Files, images, audio** | Uploads are checked by their real bytes, not the file extension. Images even render as ASCII in the terminal, because why not. |
+| 📤 **Take your data and go** | One command exports everything the server knows about you. Another deletes the account for good. |
 
-- **Self-hostable** — your server, your rules, your data
-- **Docker ready** — `docker compose up -d` and you're done
-- **Real-time messaging** via SignalR WebSockets
-- **IRC gateway** — native IRC clients connect alongside TUI users, full cross-protocol messaging
-- **JWT auth** with short-lived access tokens and 30-day refresh tokens
-- **Channels** — create, set topics, delete (no 47-step permission wizard required)
-- **Moderation** — ban, mute (timed or permanent), kick, role assignment
-- **Registration control** — open, invite-code-gated (`/invite`), or closed; codes live in your own database
-- **File & image uploads** with actual validation (magic bytes, not just trusting the extension)
-- **Image-to-ASCII** — because images in a terminal is objectively cool
-- **Presence tracking** — online/away/DND/invisible with custom status messages
-- **Rate limiting** — in case someone gets too excited
-- **Spam protection** — per-user flood/duplicate limits with auto-mute escalation, covering TUI and IRC alike; configurable under `Spam`, Mods exempt
-- **Auto-restart** on crash with exponential backoff — it picks itself back up
-- **Serilog logging** — console + rolling file, because `Console.WriteLine` isn't a logging strategy
-- **Zero config first run** — generates its own JWT secret and config on launch
+Full feature tour in the [documentation](https://huebyte.github.io/EchoHub/articles/getting-started.html).
 
-### Client
+## Clients
 
-- **Runs in your terminal** — no browser, no Electron, no 500MB of bundled Chromium
-- **14 built-in themes** — including `hacker` for when you want to feel like you're in a movie
-- **Slash commands** — `/join`, `/send`, `/status`, `/theme`, etc.
-- **Colored nicknames** — pick your hex color, express yourself
-- **Clickable everything** — usernames, @mentions, #channels — just press Enter
-- **File/image sharing** — local files or URLs; drag & drop a file onto the terminal to send it; save the original behind any ASCII-art image
-- **End-to-end encrypted rooms** — password-protected channels are encrypted with a passphrase-derived key that never reaches the server, so not even the server owner can read messages or files (they can still see counts and storage size)
-- **Replies** — quote a message, jump back to the original; being replied to pings like a mention
-- **Your data is yours** — `/export` everything the server holds about you; `/deleteaccount` removes it
-- **Multi-server** — save and switch between servers
-- **Auto-reconnect** — drops happen, it rejoins your channels automatically
-- **Auto-updater** — updates in-place with automatic rollback if something goes wrong
-- **Message history** on join — you won't miss context
+The terminal client is the main, native interface. Beyond that the API and the IRC gateway are open, so you can bring whatever you like.
 
-## Getting Started
+| Client | Platform | Notes |
+| --- | --- | --- |
+| **[Terminal client](src/EchoHub.Client)** | Windows · macOS · Linux | The main, native client (Terminal.Gui v2), shipped as a self-contained binary |
+| **[decho](https://github.com/Stone-Red-Code/Decho)** | Desktop | A community desktop client |
+| **Any IRC client** | Everywhere | irssi, WeeChat, TheLounge, and friends, through the built-in gateway |
+| **Your own** | anything | Build against the open REST + SignalR API. See the [documentation](https://huebyte.github.io/EchoHub/) |
 
-### Install the Client
+## Quick start
 
-**Windows (Chocolatey):**
+### Install the client
 
 ```bash
+# Windows (Chocolatey)
 choco install echohub
-```
 
-**Linux / macOS:**
-
-```bash
+# Linux / macOS
 curl -sSfL https://raw.githubusercontent.com/HueByte/EchoHub/master/scripts/install.sh | sh
 ```
 
-**Manual download:** grab a self-contained binary from [Releases](../../releases) — no runtime needed, just run it.
+Or grab a self-contained binary from [Releases](../../releases). No runtime required.
 
-### Host a Server
-
-**Docker (recommended):**
+### Host a server
 
 ```bash
 cp .env.example .env
 docker compose up -d
 ```
 
-Pre-built images on [GHCR](https://github.com/HueByte/EchoHub/pkgs/container/echohub-server) — `linux/amd64` and `linux/arm64`.
+Pre-built multi-arch images live on [GHCR](https://github.com/HueByte/EchoHub/pkgs/container/echohub-server). Prefer running from source? `dotnet run --project src/EchoHub.Server` (needs the [.NET 10 SDK](https://dotnet.microsoft.com/download)). The first launch writes its config, generates a JWT secret, and creates the database with a `#general` channel. No manual setup.
 
-**From source:**
+→ **[Getting started](https://huebyte.github.io/EchoHub/articles/getting-started.html)** · **[Docker & deployment](https://huebyte.github.io/EchoHub/articles/docker.html)** · **[Configuration](https://huebyte.github.io/EchoHub/articles/configuration.html)**
 
-```bash
-dotnet run --project src/EchoHub.Server
-```
+## Documentation
 
-Requires [.NET 10 SDK](https://dotnet.microsoft.com/download). First run does everything for you:
+Everything lives at **[huebyte.github.io/EchoHub](https://huebyte.github.io/EchoHub/)**:
 
-1. Creates `appsettings.json` from the example config
-2. Generates a secure JWT secret
-3. Creates the database with a `#general` channel
+| Guide | What's inside |
+| --- | --- |
+| [Getting started](https://huebyte.github.io/EchoHub/articles/getting-started.html) | Install, first connection, the onboarding flow |
+| [TUI guide](https://huebyte.github.io/EchoHub/articles/tui-guide.html) | Slash commands, themes, keybindings, message actions |
+| [Configuration](https://huebyte.github.io/EchoHub/articles/configuration.html) | Every `appsettings.json` / env key explained |
+| [IRC gateway](https://huebyte.github.io/EchoHub/articles/irc-gateway.html) | Connecting IRC clients, what maps to what, TLS |
+| [Encrypted rooms](https://huebyte.github.io/EchoHub/articles/encrypted-rooms.html) | How zero-knowledge password channels work |
+| [Moderation](https://huebyte.github.io/EchoHub/articles/moderation.html) | Roles, bans, mutes, invite codes |
+| [Docker & deployment](https://huebyte.github.io/EchoHub/articles/docker.html) | Compose, reverse proxy, TLS (see also [`examples/nginx.conf`](examples/nginx.conf)) |
+| [Architecture](https://huebyte.github.io/EchoHub/articles/architecture.html) | How the pieces above actually fit together |
 
-### Run the Client (from source)
-
-```bash
-dotnet run --project src/EchoHub.Client
-```
-
-Connect, register, chat. That's the whole onboarding flow.
-
-### Build from Source
+## Building from source
 
 ```bash
-dotnet build src/EchoHub.slnx
+dotnet build src/EchoHub.slnx      # build everything
+dotnet test src/EchoHub.Tests      # run the test suite
 ```
 
-## IRC Gateway
+Contributions are welcome. Open an issue to discuss larger changes first.
 
-EchoHub includes a built-in IRC protocol gateway. Any standard IRC client can connect to the same server and chat alongside TUI users — messages flow both ways in real time.
+## Contributors
 
-### Enable It
-
-In the server's `appsettings.json`:
-
-```json
-{
-  "Irc": {
-    "Enabled": true,
-    "Port": 6667,
-    "ServerName": "echohub",
-    "Motd": "Welcome to EchoHub IRC Gateway!"
-  }
-}
-```
-
-### Connect
-
-```bash
-# irssi
-irssi -c your-server.com -p 6667 -w <password> -n <username>
-
-# WeeChat
-/server add echohub your-server.com/6667 -password=<password> -nicks=<username>
-/connect echohub
-```
-
-Auth works via `PASS`/`NICK`/`USER` or SASL PLAIN. New usernames are auto-registered on first connect — no separate signup needed.
-
-### What Works
-
-| Feature | How it maps to IRC |
-| ------- | ------------------ |
-| Text messages | Standard `PRIVMSG` (long messages split at ~400 byte chunks) |
-| `/me` actions | Native CTCP ACTION in both directions |
-| Replies | TUI replies arrive as `> nick: snippet \| text` |
-| Images | `[Image: filename]` + download URL + ASCII art line-by-line |
-| File uploads | `[File: filename] /api/files/{id}` |
-| Channels | `JOIN`, `PART`, `NAMES`, `TOPIC`, `LIST` |
-| Presence | `AWAY`, `WHO`, `WHOIS` |
-| Status | Maps to IRC away/here |
-
-### TLS
-
-If running behind **nginx** (recommended), let nginx handle TLS -- see [Deployment with nginx](#deployment-with-nginx) below.
-
-For direct TLS without a reverse proxy, the IRC gateway can terminate TLS itself:
-
-```json
-{
-  "Irc": {
-    "TlsEnabled": true,
-    "TlsPort": 6697,
-    "TlsCertPath": "/path/to/cert.pfx",
-    "TlsCertPassword": "your-password"
-  }
-}
-```
-
-## Client Commands
-
-| Command | Description |
-| ------- | ----------- |
-| `/join <channel> [password]` | Join a channel (passphrase for encrypted channels) |
-| `/me <action>` | Action message — `* nick waves` (native CTCP ACTION over IRC) |
-| `/banner <text>` | Render short text as a big ASCII banner |
-| `/passwd <old> <new>` | Change the current encrypted channel's passphrase (creator only) |
-| `/size [s\|m\|l]` | ASCII-art size for attached images (no arg = picker) |
-| `/downloadpath [path]` | Set the download folder (no path = native folder picker) |
-| `/leave` | Leave current channel |
-| `/topic <text>` | Set channel topic (creator only) |
-| `/send <file or URL>` | Upload a file or image |
-| `/status <online\|away\|dnd\|invisible>` | Set your status |
-| `/status msg <text>` | Set a status message (keeps your status; empty text clears it) |
-| `/nick <name>` | Set display name |
-| `/color <#hex>` | Set nickname color |
-| `/theme <name>` | Switch theme |
-| `/profile` | Open profile editor |
-| `/users` | List online users in channel |
-| `/servers` | Manage saved servers |
-| `/invite [uses] [hours]` | Create a registration invite code (Admin+); also `list` / `revoke <code>` |
-| `/export` | Download everything the server stores about you as JSON |
-| `/deleteaccount` | Permanently delete your account (password re-confirmed) |
-| `/help` | Show help |
-| `/quit` | Exit |
-
-**Message actions:** **right-click a message** for a context menu — reply (quotes the message; Esc cancels a pending reply), delete, save/download/play its attachment, mention the sender, view their profile, or copy the text. (Keyboard alternative: press <kbd>F6</kbd> to focus the message list, select with the arrow keys, and press <kbd>Delete</kbd>; <kbd>F6</kbd> again returns to the input.) You can always delete your own messages; moderators and above can delete others' messages, but only from users below their own role.
-
-## Themes
-
-`/theme <name>` to switch:
-
-| Theme | Vibe |
-| ----- | ---- |
-| `default` | Gray on black — clean and quiet |
-| `transparent` | White on black — for fancy transparent terminals |
-| `transparentlight` | Black on transparent — dark characters for light transparent terminals |
-| `classic` | White on blue — IRC nostalgia |
-| `light` | Black on white — for the brave |
-| `hacker` | Green on black — *I'm in* |
-| `solarized` | Cyan/yellow on dark gray — for the refined |
-| `dracula` | Purple accents on black — the classic dark theme |
-| `monokai` | Yellow highlights on black — warm and familiar |
-| `nord` | Cool blues — arctic vibes |
-| `gruvbox` | Earthy yellows on black — retro warmth |
-| `ocean` | Cyan on deep blue — underwater aesthetics |
-| `highcontrast` | Bright yellow on black — maximum readability |
-| `rosepine` | Muted pinks on black — cozy and soft |
-
-## Configuration
-
-`appsettings.json` is auto-generated on first run. Tweak what you need:
-
-| Key | Default | Description |
-| --- | ------- | ----------- |
-| `Urls` | `http://0.0.0.0:5000` | Listen address and port |
-| `ConnectionStrings:DefaultConnection` | *(empty — app directory)* | SQLite connection string |
-| `Jwt:Secret` | *(auto-generated)* | JWT signing key |
-| `Server:Name` | `My EchoHub Server` | Server display name |
-| `Server:Description` | `A self-hosted EchoHub chat server` | Server description |
-| `Server:Registration` | `open` | `open`, `invite` (codes via `/invite`, Admin+), or `closed` |
-| `Server:PublicServer` | `false` | List on the [public directory](https://echohub.voidcube.cloud/servers) |
-| `Server:PublicHost` | *(empty)* | Public hostname for directory listing |
-| `Irc:Enabled` | `false` | Enable the IRC gateway |
-| `Irc:Port` | `6667` | IRC listen port |
-| `Irc:TlsEnabled` | `false` | Enable TLS for IRC |
-| `Irc:TlsPort` | `6697` | IRC TLS port |
-| `Irc:ServerName` | `echohub` | IRC server name in protocol messages |
-| `Irc:Motd` | `Welcome to EchoHub IRC Gateway!` | Message of the day |
-| `Cors:AllowedOrigins` | *(all origins)* | CORS whitelist |
-
-Logging uses Serilog — console + daily rolling files with 14-day retention. Configure in the `Serilog` section.
-
-## Deployment with nginx
-
-Most production deployments run behind nginx. Here's a config that handles both the HTTP/WebSocket server and the IRC gateway:
-
-```nginx
-# HTTP + WebSocket (EchoHub Server API + SignalR)
-server {
-    listen 443 ssl;
-    server_name echohub.example.com;
-
-    ssl_certificate     /etc/letsencrypt/live/echohub.example.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/echohub.example.com/privkey.pem;
-
-    location / {
-        proxy_pass http://127.0.0.1:5000;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-
-        # Required for SignalR WebSocket
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection $http_connection;
-
-        proxy_read_timeout 86400s;
-        proxy_send_timeout 86400s;
-    }
-
-    # Increase max upload size for file sharing
-    client_max_body_size 10m;
-}
-
-# HTTP → HTTPS redirect
-server {
-    listen 80;
-    server_name echohub.example.com;
-    return 301 https://$host$request_uri;
-}
-
-# IRC TLS (port 6697 → plain IRC on 6667)
-stream {
-    upstream irc_backend {
-        server 127.0.0.1:6667;
-    }
-
-    server {
-        listen 6697 ssl;
-        proxy_pass irc_backend;
-
-        ssl_certificate     /etc/letsencrypt/live/echohub.example.com/fullchain.pem;
-        ssl_certificate_key /etc/letsencrypt/live/echohub.example.com/privkey.pem;
-    }
-}
-```
-
-With this setup, keep the EchoHub IRC gateway's `TlsEnabled` set to `false` — nginx terminates TLS. See the full example at [`examples/nginx.conf`](examples/nginx.conf).
-
-## Project Structure
-
-```text
-src/
-├── EchoHub.Core/            # Shared models, DTOs, contracts, validation
-│   ├── Constants/           # ValidationConstants, HubConstants
-│   ├── Contracts/           # IChatService, IChatBroadcaster, IEchoHubClient
-│   ├── DTOs/                # Record DTOs
-│   └── Models/              # Entity models
-│
-├── EchoHub.Server/          # ASP.NET Core server
-│   ├── Auth/                # JWT token service
-│   ├── Controllers/         # REST API endpoints
-│   ├── Data/                # EF Core DbContext + migrations
-│   ├── Hubs/                # SignalR ChatHub
-│   ├── Services/            # ChatService, presence, file storage, image processing
-│   └── Setup/               # First-run setup, DB initialization
-│
-├── EchoHub.Server.Irc/      # IRC protocol gateway
-│   ├── IrcGatewayService    # TCP listener (BackgroundService)
-│   ├── IrcCommandHandler    # IRC command dispatch (JOIN, PRIVMSG, etc.)
-│   ├── IrcBroadcaster       # Fans chat events to IRC connections
-│   └── IrcMessageFormatter  # MessageDto → IRC PRIVMSG lines
-│
-├── EchoHub.Client/          # Terminal.Gui TUI client
-│   ├── Config/              # Client configuration
-│   ├── Services/            # API client, SignalR connection
-│   ├── Themes/              # 13 built-in themes
-│   └── UI/                  # MainWindow, dialogs, chat renderer
-│
-└── EchoHub.slnx             # Solution file
-```
-
-## License
-
-[MIT](LICENSE) — do whatever you want with it.
+<div align="center">
+<table>
+  <tr>
+    <td align="center" width="160">
+      <a href="https://github.com/HueByte">
+        <img src="https://github.com/HueByte.png?size=120" width="96" height="96" alt="HueByte" /><br />
+        <sub><b>HueByte</b></sub>
+      </a><br />
+      <sub>Creator &amp; maintainer</sub>
+    </td>
+    <td align="center" width="160">
+      <a href="https://github.com/Stone-Red-Code">
+        <img src="https://github.com/Stone-Red-Code.png?size=120" width="96" height="96" alt="Stone_Red" /><br />
+        <sub><b>Stone_Red</b></sub>
+      </a><br />
+      <sub>Creator &amp; maintainer</sub>
+    </td>
+  </tr>
+</table>
+</div>
