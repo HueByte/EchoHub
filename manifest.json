@@ -1944,6 +1944,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/core/EchoHub.Core.Models.ServerStatsReport.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/core/EchoHub.Core.Models.ServerStatsReport.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Core.Models.ServerStatsReport",
+      "Summary": "<p sourcefile=\"_api_meta/core/EchoHub.Core.Models.ServerStatsReport.yml\" sourcestartlinenumber=\"1\">A snapshot of server activity over one reporting window, produced periodically by the\nstats-report background job. Each report is logged as pretty-printed JSON and persisted\nfor historical trend analysis. The window is &quot;since the previous report&quot; (or since startup\nfor the first report of a run).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/core/EchoHub.Core.Models.User.yml",
       "output": {
         ".html": {
@@ -2280,6 +2294,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Config.StatsOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Config.StatsOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Config.StatsOptions",
+      "Summary": "<p sourcefile=\"_api_meta/server/EchoHub.Server.Config.StatsOptions.yml\" sourcestartlinenumber=\"1\">Periodic server-stats report settings, bound from the &quot;Stats&quot; config section (env override:\n<code>Stats__Enabled</code> etc.). When enabled, a background job periodically snapshots server\nactivity, logs it as pretty-printed JSON, and persists it to the database.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "_api_meta/server/EchoHub.Server.Config.UploadLimits.yml",
       "output": {
         ".html": {
@@ -2584,6 +2612,20 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Server.Data.Migrations.AddModerationRoles",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Data.Migrations.AddServerStatsReports.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Data.Migrations.AddServerStatsReports.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Data.Migrations.AddServerStatsReports",
       "Summary": null
     },
     {
@@ -2934,6 +2976,62 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "EchoHub.Server.Services.SpamVerdictKind",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.Stats.ServerStatsCollector.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.Stats.ServerStatsCollector.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.Stats.ServerStatsCollector",
+      "Summary": "<p sourcefile=\"_api_meta/server/EchoHub.Server.Services.Stats.ServerStatsCollector.yml\" sourcestartlinenumber=\"1\">Thread-safe, in-memory accumulator for server-activity counters that have no natural\ndatabase timestamp to query after the fact — session connects/disconnects, moderation\nactions, and peak concurrency. The periodic stats-report job snapshots and resets these\nonce per reporting window. Registered as a singleton; every increment is lock-free so it\nis safe to call from hot paths (connect/disconnect).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.Stats.ServerStatsReportService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.Stats.ServerStatsReportService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.Stats.ServerStatsReportService",
+      "Summary": "<p sourcefile=\"_api_meta/server/EchoHub.Server.Services.Stats.ServerStatsReportService.yml\" sourcestartlinenumber=\"1\">Background job that periodically snapshots server activity over a window, logs it as\npretty-printed JSON (which also surfaces in the live server-logs room), and persists it to\nthe database for historical trends. Interval and retention are configurable via the &quot;Stats&quot;\nsection; the default cadence is every 6 hours.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.Stats.StatsCounters.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.Stats.StatsCounters.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.Stats.StatsCounters",
+      "Summary": "<p sourcefile=\"_api_meta/server/EchoHub.Server.Services.Stats.StatsCounters.yml\" sourcestartlinenumber=\"1\">Immutable snapshot of the counters held by <xref href=\"EchoHub.Server.Services.Stats.ServerStatsCollector\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "_api_meta/server/EchoHub.Server.Services.Stats.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/server/EchoHub.Server.Services.Stats.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "EchoHub.Server.Services.Stats",
       "Summary": null
     },
     {
@@ -3364,6 +3462,16 @@
       "output": {
         ".html": {
           "relative_path": "changelog/v0.2.15.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "changelog/v0.2.16.md",
+      "output": {
+        ".html": {
+          "relative_path": "changelog/v0.2.16.html"
         }
       },
       "version": ""

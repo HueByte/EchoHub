@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Changelog | EchoHub Documentation </title>
+      <title>v0.2.16 | EchoHub Documentation </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Changelog | EchoHub Documentation ">
+      <meta name="title" content="v0.2.16 | EchoHub Documentation ">
       
       
       <link rel="icon" href="../images/hue_icon.svg">
@@ -85,30 +85,48 @@
         </div>
 
         <article data-uid="">
-<h1 id="changelog">Changelog</h1>
+<h1 id="v0216">v0.2.16</h1>
 
-<p>Release history for EchoHub.</p>
-<h2 id="releases">Releases</h2>
+<p>A logging and observability pass built on the new server-logs room. Busy servers stop drowning
+in connect/disconnect noise, the events operators actually care about — uploads, moderation
+actions — now get logged, and a new periodic report summarizes server activity as pretty-printed
+JSON that streams into the logs room and is saved to the database for history.</p>
+<h2 id="new-features">New Features</h2>
 <ul>
-<li><a href="v0.2.16.html">v0.2.16</a> - Periodic Server-Stats Report, Upload &amp; Moderation Logging &amp; Quieter Connection Logs</li>
-<li><a href="v0.2.15.html">v0.2.15</a> - Invite Codes, Data Export &amp; Deletion, /me, /banner, Replies, Open Images In Browser &amp; IRC Image Links</li>
-<li><a href="v0.2.14.html">v0.2.14</a> - Clipboard Image &amp; Multi-File Paste, E2E Room Unlock Fixes, Encrypted Key Cache &amp; IRC Gateway Polish</li>
-<li><a href="v0.2.13.html">v0.2.13</a> - Chat Visual Overhaul, Auto-Join All Channels &amp; Persistent Read Positions</li>
-<li><a href="v0.2.12.html">v0.2.12</a> - End-to-End Encrypted Channels, IRC Channel Keys, Image Save &amp; Ctrl+W Crash Fix</li>
-<li><a href="v0.2.11.html">v0.2.11</a> - EchoHubSpace Auth, Live Directory Updates &amp; Server Browser Metadata</li>
-<li><a href="v0.2.10.html">v0.2.10</a> - Command Palette, Infinite History Scroll &amp; Auto-Updater Fixes</li>
-<li><a href="v0.2.9.html">v0.2.9</a> - Install Script &amp; Chocolatey Fixes</li>
-<li><a href="v0.2.8.html">v0.2.8</a> - Docker Support, IRC Account Creation &amp; BOM Fix</li>
-<li><a href="v0.2.7.html">v0.2.7</a> - User List Fix &amp; Terminal.Gui NuGet Migration</li>
-<li><a href="v0.2.6.html">v0.2.6</a> - Major Refactoring &amp; Code Organization</li>
-<li><a href="v0.2.5.html">v0.2.5</a> - Session Persistence, Auto-Updates, Audio &amp; Transparent Theme</li>
-<li><a href="v0.2.4.html">v0.2.4</a> - E2E Message Encryption</li>
-<li><a href="v0.2.3.html">v0.2.3</a> - Moderation, Embeds &amp; UI Overhaul</li>
-<li><a href="v0.2.2.html">v0.2.2</a> - Startup &amp; Shutdown Fixes</li>
-<li><a href="v0.2.1.html">v0.2.1</a> - Shutdown &amp; CI Fixes</li>
-<li><a href="v0.2.0.html">v0.2.0</a> - IRC Gateway</li>
-<li><a href="v0.1.1.html">v0.1.1</a> - Directory Connection Self-Healing</li>
-<li><a href="v0.1.0.html">v0.1.0</a> - Initial Release</li>
+<li><strong>Periodic server-stats report</strong> — every 6 hours (configurable), the server logs an aggregate
+activity snapshot as pretty-printed JSON and saves it to the database. Each report covers the
+window since the previous one: messages sent, files uploaded (and total bytes), new members,
+active members (distinct senders), session connections/disconnections, kicks, bans, total
+registered members, users online now, and peak concurrent online. Reports also stream into the
+live server-logs room, and old ones are pruned past a configurable retention. New <code>Stats</code> config
+section (<code>Stats:Enabled</code>, <code>Stats:IntervalHours</code> = 6, <code>Stats:RetentionDays</code> = 90).</li>
+<li><strong>Upload logging</strong> — every file, image, and audio upload is now logged with its resource URL
+(<code>/api/files/{id}</code>), kind, size, uploader, and channel. In end-to-end encrypted rooms the
+filename is client-side ciphertext, so it's logged as <code>[encrypted]</code> — the server still never
+sees room content.</li>
+<li><strong>Moderation &amp; user-action logging</strong> — role changes, kicks, bans, unbans, mutes, unmutes,
+moderator message removals, and channel nukes are now logged with the actor, target, and reason.
+Bans and channel nukes log at Warning level so they stand out.</li>
+</ul>
+<h2 id="improvements">Improvements</h2>
+<ul>
+<li><strong>Quieter connection logs</strong> — user connect, disconnect, join-channel, and leave-channel events
+(over both SignalR and IRC) dropped from Information to Debug. On a busy server these fired
+constantly and buried everything else; the aggregate counts now live in the periodic stats
+report instead. They still show in Development, where the default level is Debug.</li>
+<li><strong>Config examples stay in sync</strong> — <code>.env.example</code> gained the <code>ServerLogs</code> and <code>Stats</code> sections
+(the former had been missing), alongside <code>appsettings.json</code> / <code>appsettings.example.json</code>.</li>
+</ul>
+<h2 id="notes-for-server-operators">Notes for server operators</h2>
+<ul>
+<li>New config section: <code>Stats</code> — <code>Enabled</code> (default true), <code>IntervalHours</code> (default 6),
+<code>RetentionDays</code> (default 90, <code>0</code> keeps reports forever). See <code>appsettings.example.json</code> and
+<code>.env.example</code>. A non-positive interval falls back to 6h; positive values are honored down to a
+1-second floor.</li>
+<li>One new database migration (<code>AddServerStatsReports</code>) applies automatically on startup.</li>
+<li>Connect/disconnect/join/leave now log at Debug — if you relied on those Information lines, lower
+<code>Serilog:MinimumLevel:Default</code> (or <code>ServerLogs:MinLevel</code> for the room) to <code>Debug</code>, or read the
+periodic stats report for aggregates.</li>
 </ul>
 
 </article>

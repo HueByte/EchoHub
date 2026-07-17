@@ -18250,6 +18250,234 @@ references:
   commentId: F:EchoHub.Core.Models.ServerRole.Owner
   fullName: EchoHub.Core.Models.ServerRole.Owner
   nameWithType: ServerRole.Owner
+- uid: EchoHub.Core.Models.ServerStatsReport
+  name: ServerStatsReport
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html
+  commentId: T:EchoHub.Core.Models.ServerStatsReport
+  fullName: EchoHub.Core.Models.ServerStatsReport
+  nameWithType: ServerStatsReport
+- uid: EchoHub.Core.Models.ServerStatsReport.#ctor
+  name: ServerStatsReport()
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport__ctor
+  commentId: M:EchoHub.Core.Models.ServerStatsReport.#ctor
+  name.vb: New()
+  fullName: EchoHub.Core.Models.ServerStatsReport.ServerStatsReport()
+  fullName.vb: EchoHub.Core.Models.ServerStatsReport.New()
+  nameWithType: ServerStatsReport.ServerStatsReport()
+  nameWithType.vb: ServerStatsReport.New()
+- uid: EchoHub.Core.Models.ServerStatsReport.#ctor*
+  name: ServerStatsReport
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport__ctor_
+  commentId: Overload:EchoHub.Core.Models.ServerStatsReport.#ctor
+  name.vb: New
+  fullName: EchoHub.Core.Models.ServerStatsReport.ServerStatsReport
+  fullName.vb: EchoHub.Core.Models.ServerStatsReport.New
+  nameWithType: ServerStatsReport.ServerStatsReport
+  nameWithType.vb: ServerStatsReport.New
+- uid: EchoHub.Core.Models.ServerStatsReport.ActiveMembers
+  name: ActiveMembers
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_ActiveMembers
+  commentId: P:EchoHub.Core.Models.ServerStatsReport.ActiveMembers
+  fullName: EchoHub.Core.Models.ServerStatsReport.ActiveMembers
+  nameWithType: ServerStatsReport.ActiveMembers
+- uid: EchoHub.Core.Models.ServerStatsReport.ActiveMembers*
+  name: ActiveMembers
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_ActiveMembers_
+  commentId: Overload:EchoHub.Core.Models.ServerStatsReport.ActiveMembers
+  fullName: EchoHub.Core.Models.ServerStatsReport.ActiveMembers
+  nameWithType: ServerStatsReport.ActiveMembers
+- uid: EchoHub.Core.Models.ServerStatsReport.Bans
+  name: Bans
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_Bans
+  commentId: P:EchoHub.Core.Models.ServerStatsReport.Bans
+  fullName: EchoHub.Core.Models.ServerStatsReport.Bans
+  nameWithType: ServerStatsReport.Bans
+- uid: EchoHub.Core.Models.ServerStatsReport.Bans*
+  name: Bans
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_Bans_
+  commentId: Overload:EchoHub.Core.Models.ServerStatsReport.Bans
+  fullName: EchoHub.Core.Models.ServerStatsReport.Bans
+  nameWithType: ServerStatsReport.Bans
+- uid: EchoHub.Core.Models.ServerStatsReport.BytesUploaded
+  name: BytesUploaded
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_BytesUploaded
+  commentId: P:EchoHub.Core.Models.ServerStatsReport.BytesUploaded
+  fullName: EchoHub.Core.Models.ServerStatsReport.BytesUploaded
+  nameWithType: ServerStatsReport.BytesUploaded
+- uid: EchoHub.Core.Models.ServerStatsReport.BytesUploaded*
+  name: BytesUploaded
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_BytesUploaded_
+  commentId: Overload:EchoHub.Core.Models.ServerStatsReport.BytesUploaded
+  fullName: EchoHub.Core.Models.ServerStatsReport.BytesUploaded
+  nameWithType: ServerStatsReport.BytesUploaded
+- uid: EchoHub.Core.Models.ServerStatsReport.Connections
+  name: Connections
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_Connections
+  commentId: P:EchoHub.Core.Models.ServerStatsReport.Connections
+  fullName: EchoHub.Core.Models.ServerStatsReport.Connections
+  nameWithType: ServerStatsReport.Connections
+- uid: EchoHub.Core.Models.ServerStatsReport.Connections*
+  name: Connections
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_Connections_
+  commentId: Overload:EchoHub.Core.Models.ServerStatsReport.Connections
+  fullName: EchoHub.Core.Models.ServerStatsReport.Connections
+  nameWithType: ServerStatsReport.Connections
+- uid: EchoHub.Core.Models.ServerStatsReport.Disconnections
+  name: Disconnections
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_Disconnections
+  commentId: P:EchoHub.Core.Models.ServerStatsReport.Disconnections
+  fullName: EchoHub.Core.Models.ServerStatsReport.Disconnections
+  nameWithType: ServerStatsReport.Disconnections
+- uid: EchoHub.Core.Models.ServerStatsReport.Disconnections*
+  name: Disconnections
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_Disconnections_
+  commentId: Overload:EchoHub.Core.Models.ServerStatsReport.Disconnections
+  fullName: EchoHub.Core.Models.ServerStatsReport.Disconnections
+  nameWithType: ServerStatsReport.Disconnections
+- uid: EchoHub.Core.Models.ServerStatsReport.FilesUploaded
+  name: FilesUploaded
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_FilesUploaded
+  commentId: P:EchoHub.Core.Models.ServerStatsReport.FilesUploaded
+  fullName: EchoHub.Core.Models.ServerStatsReport.FilesUploaded
+  nameWithType: ServerStatsReport.FilesUploaded
+- uid: EchoHub.Core.Models.ServerStatsReport.FilesUploaded*
+  name: FilesUploaded
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_FilesUploaded_
+  commentId: Overload:EchoHub.Core.Models.ServerStatsReport.FilesUploaded
+  fullName: EchoHub.Core.Models.ServerStatsReport.FilesUploaded
+  nameWithType: ServerStatsReport.FilesUploaded
+- uid: EchoHub.Core.Models.ServerStatsReport.GeneratedAt
+  name: GeneratedAt
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_GeneratedAt
+  commentId: P:EchoHub.Core.Models.ServerStatsReport.GeneratedAt
+  fullName: EchoHub.Core.Models.ServerStatsReport.GeneratedAt
+  nameWithType: ServerStatsReport.GeneratedAt
+- uid: EchoHub.Core.Models.ServerStatsReport.GeneratedAt*
+  name: GeneratedAt
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_GeneratedAt_
+  commentId: Overload:EchoHub.Core.Models.ServerStatsReport.GeneratedAt
+  fullName: EchoHub.Core.Models.ServerStatsReport.GeneratedAt
+  nameWithType: ServerStatsReport.GeneratedAt
+- uid: EchoHub.Core.Models.ServerStatsReport.Id
+  name: Id
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_Id
+  commentId: P:EchoHub.Core.Models.ServerStatsReport.Id
+  fullName: EchoHub.Core.Models.ServerStatsReport.Id
+  nameWithType: ServerStatsReport.Id
+- uid: EchoHub.Core.Models.ServerStatsReport.Id*
+  name: Id
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_Id_
+  commentId: Overload:EchoHub.Core.Models.ServerStatsReport.Id
+  fullName: EchoHub.Core.Models.ServerStatsReport.Id
+  nameWithType: ServerStatsReport.Id
+- uid: EchoHub.Core.Models.ServerStatsReport.Kicks
+  name: Kicks
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_Kicks
+  commentId: P:EchoHub.Core.Models.ServerStatsReport.Kicks
+  fullName: EchoHub.Core.Models.ServerStatsReport.Kicks
+  nameWithType: ServerStatsReport.Kicks
+- uid: EchoHub.Core.Models.ServerStatsReport.Kicks*
+  name: Kicks
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_Kicks_
+  commentId: Overload:EchoHub.Core.Models.ServerStatsReport.Kicks
+  fullName: EchoHub.Core.Models.ServerStatsReport.Kicks
+  nameWithType: ServerStatsReport.Kicks
+- uid: EchoHub.Core.Models.ServerStatsReport.MessagesSent
+  name: MessagesSent
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_MessagesSent
+  commentId: P:EchoHub.Core.Models.ServerStatsReport.MessagesSent
+  fullName: EchoHub.Core.Models.ServerStatsReport.MessagesSent
+  nameWithType: ServerStatsReport.MessagesSent
+- uid: EchoHub.Core.Models.ServerStatsReport.MessagesSent*
+  name: MessagesSent
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_MessagesSent_
+  commentId: Overload:EchoHub.Core.Models.ServerStatsReport.MessagesSent
+  fullName: EchoHub.Core.Models.ServerStatsReport.MessagesSent
+  nameWithType: ServerStatsReport.MessagesSent
+- uid: EchoHub.Core.Models.ServerStatsReport.NewMembers
+  name: NewMembers
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_NewMembers
+  commentId: P:EchoHub.Core.Models.ServerStatsReport.NewMembers
+  fullName: EchoHub.Core.Models.ServerStatsReport.NewMembers
+  nameWithType: ServerStatsReport.NewMembers
+- uid: EchoHub.Core.Models.ServerStatsReport.NewMembers*
+  name: NewMembers
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_NewMembers_
+  commentId: Overload:EchoHub.Core.Models.ServerStatsReport.NewMembers
+  fullName: EchoHub.Core.Models.ServerStatsReport.NewMembers
+  nameWithType: ServerStatsReport.NewMembers
+- uid: EchoHub.Core.Models.ServerStatsReport.OnlineNow
+  name: OnlineNow
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_OnlineNow
+  commentId: P:EchoHub.Core.Models.ServerStatsReport.OnlineNow
+  fullName: EchoHub.Core.Models.ServerStatsReport.OnlineNow
+  nameWithType: ServerStatsReport.OnlineNow
+- uid: EchoHub.Core.Models.ServerStatsReport.OnlineNow*
+  name: OnlineNow
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_OnlineNow_
+  commentId: Overload:EchoHub.Core.Models.ServerStatsReport.OnlineNow
+  fullName: EchoHub.Core.Models.ServerStatsReport.OnlineNow
+  nameWithType: ServerStatsReport.OnlineNow
+- uid: EchoHub.Core.Models.ServerStatsReport.PeakOnline
+  name: PeakOnline
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_PeakOnline
+  commentId: P:EchoHub.Core.Models.ServerStatsReport.PeakOnline
+  fullName: EchoHub.Core.Models.ServerStatsReport.PeakOnline
+  nameWithType: ServerStatsReport.PeakOnline
+- uid: EchoHub.Core.Models.ServerStatsReport.PeakOnline*
+  name: PeakOnline
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_PeakOnline_
+  commentId: Overload:EchoHub.Core.Models.ServerStatsReport.PeakOnline
+  fullName: EchoHub.Core.Models.ServerStatsReport.PeakOnline
+  nameWithType: ServerStatsReport.PeakOnline
+- uid: EchoHub.Core.Models.ServerStatsReport.PeriodEnd
+  name: PeriodEnd
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_PeriodEnd
+  commentId: P:EchoHub.Core.Models.ServerStatsReport.PeriodEnd
+  fullName: EchoHub.Core.Models.ServerStatsReport.PeriodEnd
+  nameWithType: ServerStatsReport.PeriodEnd
+- uid: EchoHub.Core.Models.ServerStatsReport.PeriodEnd*
+  name: PeriodEnd
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_PeriodEnd_
+  commentId: Overload:EchoHub.Core.Models.ServerStatsReport.PeriodEnd
+  fullName: EchoHub.Core.Models.ServerStatsReport.PeriodEnd
+  nameWithType: ServerStatsReport.PeriodEnd
+- uid: EchoHub.Core.Models.ServerStatsReport.PeriodStart
+  name: PeriodStart
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_PeriodStart
+  commentId: P:EchoHub.Core.Models.ServerStatsReport.PeriodStart
+  fullName: EchoHub.Core.Models.ServerStatsReport.PeriodStart
+  nameWithType: ServerStatsReport.PeriodStart
+- uid: EchoHub.Core.Models.ServerStatsReport.PeriodStart*
+  name: PeriodStart
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_PeriodStart_
+  commentId: Overload:EchoHub.Core.Models.ServerStatsReport.PeriodStart
+  fullName: EchoHub.Core.Models.ServerStatsReport.PeriodStart
+  nameWithType: ServerStatsReport.PeriodStart
+- uid: EchoHub.Core.Models.ServerStatsReport.TotalMembers
+  name: TotalMembers
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_TotalMembers
+  commentId: P:EchoHub.Core.Models.ServerStatsReport.TotalMembers
+  fullName: EchoHub.Core.Models.ServerStatsReport.TotalMembers
+  nameWithType: ServerStatsReport.TotalMembers
+- uid: EchoHub.Core.Models.ServerStatsReport.TotalMembers*
+  name: TotalMembers
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_TotalMembers_
+  commentId: Overload:EchoHub.Core.Models.ServerStatsReport.TotalMembers
+  fullName: EchoHub.Core.Models.ServerStatsReport.TotalMembers
+  nameWithType: ServerStatsReport.TotalMembers
+- uid: EchoHub.Core.Models.ServerStatsReport.WindowHours
+  name: WindowHours
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_WindowHours
+  commentId: P:EchoHub.Core.Models.ServerStatsReport.WindowHours
+  fullName: EchoHub.Core.Models.ServerStatsReport.WindowHours
+  nameWithType: ServerStatsReport.WindowHours
+- uid: EchoHub.Core.Models.ServerStatsReport.WindowHours*
+  name: WindowHours
+  href: api/core/EchoHub.Core.Models.ServerStatsReport.html#EchoHub_Core_Models_ServerStatsReport_WindowHours_
+  commentId: Overload:EchoHub.Core.Models.ServerStatsReport.WindowHours
+  fullName: EchoHub.Core.Models.ServerStatsReport.WindowHours
+  nameWithType: ServerStatsReport.WindowHours
 - uid: EchoHub.Core.Models.User
   name: User
   href: api/core/EchoHub.Core.Models.User.html
@@ -19276,6 +19504,66 @@ references:
   commentId: Overload:EchoHub.Server.Config.SpamOptions.WindowSeconds
   fullName: EchoHub.Server.Config.SpamOptions.WindowSeconds
   nameWithType: SpamOptions.WindowSeconds
+- uid: EchoHub.Server.Config.StatsOptions
+  name: StatsOptions
+  href: api/server/EchoHub.Server.Config.StatsOptions.html
+  commentId: T:EchoHub.Server.Config.StatsOptions
+  fullName: EchoHub.Server.Config.StatsOptions
+  nameWithType: StatsOptions
+- uid: EchoHub.Server.Config.StatsOptions.#ctor
+  name: StatsOptions()
+  href: api/server/EchoHub.Server.Config.StatsOptions.html#EchoHub_Server_Config_StatsOptions__ctor
+  commentId: M:EchoHub.Server.Config.StatsOptions.#ctor
+  name.vb: New()
+  fullName: EchoHub.Server.Config.StatsOptions.StatsOptions()
+  fullName.vb: EchoHub.Server.Config.StatsOptions.New()
+  nameWithType: StatsOptions.StatsOptions()
+  nameWithType.vb: StatsOptions.New()
+- uid: EchoHub.Server.Config.StatsOptions.#ctor*
+  name: StatsOptions
+  href: api/server/EchoHub.Server.Config.StatsOptions.html#EchoHub_Server_Config_StatsOptions__ctor_
+  commentId: Overload:EchoHub.Server.Config.StatsOptions.#ctor
+  name.vb: New
+  fullName: EchoHub.Server.Config.StatsOptions.StatsOptions
+  fullName.vb: EchoHub.Server.Config.StatsOptions.New
+  nameWithType: StatsOptions.StatsOptions
+  nameWithType.vb: StatsOptions.New
+- uid: EchoHub.Server.Config.StatsOptions.Enabled
+  name: Enabled
+  href: api/server/EchoHub.Server.Config.StatsOptions.html#EchoHub_Server_Config_StatsOptions_Enabled
+  commentId: P:EchoHub.Server.Config.StatsOptions.Enabled
+  fullName: EchoHub.Server.Config.StatsOptions.Enabled
+  nameWithType: StatsOptions.Enabled
+- uid: EchoHub.Server.Config.StatsOptions.Enabled*
+  name: Enabled
+  href: api/server/EchoHub.Server.Config.StatsOptions.html#EchoHub_Server_Config_StatsOptions_Enabled_
+  commentId: Overload:EchoHub.Server.Config.StatsOptions.Enabled
+  fullName: EchoHub.Server.Config.StatsOptions.Enabled
+  nameWithType: StatsOptions.Enabled
+- uid: EchoHub.Server.Config.StatsOptions.IntervalHours
+  name: IntervalHours
+  href: api/server/EchoHub.Server.Config.StatsOptions.html#EchoHub_Server_Config_StatsOptions_IntervalHours
+  commentId: P:EchoHub.Server.Config.StatsOptions.IntervalHours
+  fullName: EchoHub.Server.Config.StatsOptions.IntervalHours
+  nameWithType: StatsOptions.IntervalHours
+- uid: EchoHub.Server.Config.StatsOptions.IntervalHours*
+  name: IntervalHours
+  href: api/server/EchoHub.Server.Config.StatsOptions.html#EchoHub_Server_Config_StatsOptions_IntervalHours_
+  commentId: Overload:EchoHub.Server.Config.StatsOptions.IntervalHours
+  fullName: EchoHub.Server.Config.StatsOptions.IntervalHours
+  nameWithType: StatsOptions.IntervalHours
+- uid: EchoHub.Server.Config.StatsOptions.RetentionDays
+  name: RetentionDays
+  href: api/server/EchoHub.Server.Config.StatsOptions.html#EchoHub_Server_Config_StatsOptions_RetentionDays
+  commentId: P:EchoHub.Server.Config.StatsOptions.RetentionDays
+  fullName: EchoHub.Server.Config.StatsOptions.RetentionDays
+  nameWithType: StatsOptions.RetentionDays
+- uid: EchoHub.Server.Config.StatsOptions.RetentionDays*
+  name: RetentionDays
+  href: api/server/EchoHub.Server.Config.StatsOptions.html#EchoHub_Server_Config_StatsOptions_RetentionDays_
+  commentId: Overload:EchoHub.Server.Config.StatsOptions.RetentionDays
+  fullName: EchoHub.Server.Config.StatsOptions.RetentionDays
+  nameWithType: StatsOptions.RetentionDays
 - uid: EchoHub.Server.Config.UploadLimits
   name: UploadLimits
   href: api/server/EchoHub.Server.Config.UploadLimits.html
@@ -19516,15 +19804,15 @@ references:
   commentId: T:EchoHub.Server.Controllers.ChannelsController
   fullName: EchoHub.Server.Controllers.ChannelsController
   nameWithType: ChannelsController
-- uid: EchoHub.Server.Controllers.ChannelsController.#ctor(EchoHub.Core.Contracts.IChannelService,EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Services.FileStorageService,EchoHub.Core.Services.ImageToAsciiService,System.Net.Http.IHttpClientFactory,EchoHub.Core.Contracts.IChatService,EchoHub.Core.Contracts.IMessageEncryptionService,EchoHub.Server.Config.UploadLimits)
-  name: ChannelsController(IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService, UploadLimits)
-  href: api/server/EchoHub.Server.Controllers.ChannelsController.html#EchoHub_Server_Controllers_ChannelsController__ctor_EchoHub_Core_Contracts_IChannelService_EchoHub_Server_Data_EchoHubDbContext_EchoHub_Server_Services_FileStorageService_EchoHub_Core_Services_ImageToAsciiService_System_Net_Http_IHttpClientFactory_EchoHub_Core_Contracts_IChatService_EchoHub_Core_Contracts_IMessageEncryptionService_EchoHub_Server_Config_UploadLimits_
-  commentId: M:EchoHub.Server.Controllers.ChannelsController.#ctor(EchoHub.Core.Contracts.IChannelService,EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Services.FileStorageService,EchoHub.Core.Services.ImageToAsciiService,System.Net.Http.IHttpClientFactory,EchoHub.Core.Contracts.IChatService,EchoHub.Core.Contracts.IMessageEncryptionService,EchoHub.Server.Config.UploadLimits)
-  name.vb: New(IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService, UploadLimits)
-  fullName: EchoHub.Server.Controllers.ChannelsController.ChannelsController(EchoHub.Core.Contracts.IChannelService, EchoHub.Server.Data.EchoHubDbContext, EchoHub.Server.Services.FileStorageService, EchoHub.Core.Services.ImageToAsciiService, System.Net.Http.IHttpClientFactory, EchoHub.Core.Contracts.IChatService, EchoHub.Core.Contracts.IMessageEncryptionService, EchoHub.Server.Config.UploadLimits)
-  fullName.vb: EchoHub.Server.Controllers.ChannelsController.New(EchoHub.Core.Contracts.IChannelService, EchoHub.Server.Data.EchoHubDbContext, EchoHub.Server.Services.FileStorageService, EchoHub.Core.Services.ImageToAsciiService, System.Net.Http.IHttpClientFactory, EchoHub.Core.Contracts.IChatService, EchoHub.Core.Contracts.IMessageEncryptionService, EchoHub.Server.Config.UploadLimits)
-  nameWithType: ChannelsController.ChannelsController(IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService, UploadLimits)
-  nameWithType.vb: ChannelsController.New(IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService, UploadLimits)
+- uid: EchoHub.Server.Controllers.ChannelsController.#ctor(EchoHub.Core.Contracts.IChannelService,EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Services.FileStorageService,EchoHub.Core.Services.ImageToAsciiService,System.Net.Http.IHttpClientFactory,EchoHub.Core.Contracts.IChatService,EchoHub.Core.Contracts.IMessageEncryptionService,EchoHub.Server.Config.UploadLimits,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Controllers.ChannelsController})
+  name: ChannelsController(IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService, UploadLimits, ILogger<ChannelsController>)
+  href: api/server/EchoHub.Server.Controllers.ChannelsController.html#EchoHub_Server_Controllers_ChannelsController__ctor_EchoHub_Core_Contracts_IChannelService_EchoHub_Server_Data_EchoHubDbContext_EchoHub_Server_Services_FileStorageService_EchoHub_Core_Services_ImageToAsciiService_System_Net_Http_IHttpClientFactory_EchoHub_Core_Contracts_IChatService_EchoHub_Core_Contracts_IMessageEncryptionService_EchoHub_Server_Config_UploadLimits_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Controllers_ChannelsController__
+  commentId: M:EchoHub.Server.Controllers.ChannelsController.#ctor(EchoHub.Core.Contracts.IChannelService,EchoHub.Server.Data.EchoHubDbContext,EchoHub.Server.Services.FileStorageService,EchoHub.Core.Services.ImageToAsciiService,System.Net.Http.IHttpClientFactory,EchoHub.Core.Contracts.IChatService,EchoHub.Core.Contracts.IMessageEncryptionService,EchoHub.Server.Config.UploadLimits,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Controllers.ChannelsController})
+  name.vb: New(IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService, UploadLimits, ILogger(Of ChannelsController))
+  fullName: EchoHub.Server.Controllers.ChannelsController.ChannelsController(EchoHub.Core.Contracts.IChannelService, EchoHub.Server.Data.EchoHubDbContext, EchoHub.Server.Services.FileStorageService, EchoHub.Core.Services.ImageToAsciiService, System.Net.Http.IHttpClientFactory, EchoHub.Core.Contracts.IChatService, EchoHub.Core.Contracts.IMessageEncryptionService, EchoHub.Server.Config.UploadLimits, Microsoft.Extensions.Logging.ILogger<EchoHub.Server.Controllers.ChannelsController>)
+  fullName.vb: EchoHub.Server.Controllers.ChannelsController.New(EchoHub.Core.Contracts.IChannelService, EchoHub.Server.Data.EchoHubDbContext, EchoHub.Server.Services.FileStorageService, EchoHub.Core.Services.ImageToAsciiService, System.Net.Http.IHttpClientFactory, EchoHub.Core.Contracts.IChatService, EchoHub.Core.Contracts.IMessageEncryptionService, EchoHub.Server.Config.UploadLimits, Microsoft.Extensions.Logging.ILogger(Of EchoHub.Server.Controllers.ChannelsController))
+  nameWithType: ChannelsController.ChannelsController(IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService, UploadLimits, ILogger<ChannelsController>)
+  nameWithType.vb: ChannelsController.New(IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService, UploadLimits, ILogger(Of ChannelsController))
 - uid: EchoHub.Server.Controllers.ChannelsController.#ctor*
   name: ChannelsController
   href: api/server/EchoHub.Server.Controllers.ChannelsController.html#EchoHub_Server_Controllers_ChannelsController__ctor_
@@ -19774,15 +20062,15 @@ references:
   commentId: T:EchoHub.Server.Controllers.ModerationController
   fullName: EchoHub.Server.Controllers.ModerationController
   nameWithType: ModerationController
-- uid: EchoHub.Server.Controllers.ModerationController.#ctor(EchoHub.Server.Data.EchoHubDbContext,EchoHub.Core.Contracts.IChatService,EchoHub.Server.Services.PresenceTracker,EchoHub.Server.Services.FileStorageService,System.Collections.Generic.IEnumerable{EchoHub.Core.Contracts.IChatBroadcaster})
-  name: ModerationController(EchoHubDbContext, IChatService, PresenceTracker, FileStorageService, IEnumerable<IChatBroadcaster>)
-  href: api/server/EchoHub.Server.Controllers.ModerationController.html#EchoHub_Server_Controllers_ModerationController__ctor_EchoHub_Server_Data_EchoHubDbContext_EchoHub_Core_Contracts_IChatService_EchoHub_Server_Services_PresenceTracker_EchoHub_Server_Services_FileStorageService_System_Collections_Generic_IEnumerable_EchoHub_Core_Contracts_IChatBroadcaster__
-  commentId: M:EchoHub.Server.Controllers.ModerationController.#ctor(EchoHub.Server.Data.EchoHubDbContext,EchoHub.Core.Contracts.IChatService,EchoHub.Server.Services.PresenceTracker,EchoHub.Server.Services.FileStorageService,System.Collections.Generic.IEnumerable{EchoHub.Core.Contracts.IChatBroadcaster})
-  name.vb: New(EchoHubDbContext, IChatService, PresenceTracker, FileStorageService, IEnumerable(Of IChatBroadcaster))
-  fullName: EchoHub.Server.Controllers.ModerationController.ModerationController(EchoHub.Server.Data.EchoHubDbContext, EchoHub.Core.Contracts.IChatService, EchoHub.Server.Services.PresenceTracker, EchoHub.Server.Services.FileStorageService, System.Collections.Generic.IEnumerable<EchoHub.Core.Contracts.IChatBroadcaster>)
-  fullName.vb: EchoHub.Server.Controllers.ModerationController.New(EchoHub.Server.Data.EchoHubDbContext, EchoHub.Core.Contracts.IChatService, EchoHub.Server.Services.PresenceTracker, EchoHub.Server.Services.FileStorageService, System.Collections.Generic.IEnumerable(Of EchoHub.Core.Contracts.IChatBroadcaster))
-  nameWithType: ModerationController.ModerationController(EchoHubDbContext, IChatService, PresenceTracker, FileStorageService, IEnumerable<IChatBroadcaster>)
-  nameWithType.vb: ModerationController.New(EchoHubDbContext, IChatService, PresenceTracker, FileStorageService, IEnumerable(Of IChatBroadcaster))
+- uid: EchoHub.Server.Controllers.ModerationController.#ctor(EchoHub.Server.Data.EchoHubDbContext,EchoHub.Core.Contracts.IChatService,EchoHub.Server.Services.PresenceTracker,EchoHub.Server.Services.FileStorageService,System.Collections.Generic.IEnumerable{EchoHub.Core.Contracts.IChatBroadcaster},EchoHub.Server.Services.Stats.ServerStatsCollector,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Controllers.ModerationController})
+  name: ModerationController(EchoHubDbContext, IChatService, PresenceTracker, FileStorageService, IEnumerable<IChatBroadcaster>, ServerStatsCollector, ILogger<ModerationController>)
+  href: api/server/EchoHub.Server.Controllers.ModerationController.html#EchoHub_Server_Controllers_ModerationController__ctor_EchoHub_Server_Data_EchoHubDbContext_EchoHub_Core_Contracts_IChatService_EchoHub_Server_Services_PresenceTracker_EchoHub_Server_Services_FileStorageService_System_Collections_Generic_IEnumerable_EchoHub_Core_Contracts_IChatBroadcaster__EchoHub_Server_Services_Stats_ServerStatsCollector_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Controllers_ModerationController__
+  commentId: M:EchoHub.Server.Controllers.ModerationController.#ctor(EchoHub.Server.Data.EchoHubDbContext,EchoHub.Core.Contracts.IChatService,EchoHub.Server.Services.PresenceTracker,EchoHub.Server.Services.FileStorageService,System.Collections.Generic.IEnumerable{EchoHub.Core.Contracts.IChatBroadcaster},EchoHub.Server.Services.Stats.ServerStatsCollector,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Controllers.ModerationController})
+  name.vb: New(EchoHubDbContext, IChatService, PresenceTracker, FileStorageService, IEnumerable(Of IChatBroadcaster), ServerStatsCollector, ILogger(Of ModerationController))
+  fullName: EchoHub.Server.Controllers.ModerationController.ModerationController(EchoHub.Server.Data.EchoHubDbContext, EchoHub.Core.Contracts.IChatService, EchoHub.Server.Services.PresenceTracker, EchoHub.Server.Services.FileStorageService, System.Collections.Generic.IEnumerable<EchoHub.Core.Contracts.IChatBroadcaster>, EchoHub.Server.Services.Stats.ServerStatsCollector, Microsoft.Extensions.Logging.ILogger<EchoHub.Server.Controllers.ModerationController>)
+  fullName.vb: EchoHub.Server.Controllers.ModerationController.New(EchoHub.Server.Data.EchoHubDbContext, EchoHub.Core.Contracts.IChatService, EchoHub.Server.Services.PresenceTracker, EchoHub.Server.Services.FileStorageService, System.Collections.Generic.IEnumerable(Of EchoHub.Core.Contracts.IChatBroadcaster), EchoHub.Server.Services.Stats.ServerStatsCollector, Microsoft.Extensions.Logging.ILogger(Of EchoHub.Server.Controllers.ModerationController))
+  nameWithType: ModerationController.ModerationController(EchoHubDbContext, IChatService, PresenceTracker, FileStorageService, IEnumerable<IChatBroadcaster>, ServerStatsCollector, ILogger<ModerationController>)
+  nameWithType.vb: ModerationController.New(EchoHubDbContext, IChatService, PresenceTracker, FileStorageService, IEnumerable(Of IChatBroadcaster), ServerStatsCollector, ILogger(Of ModerationController))
 - uid: EchoHub.Server.Controllers.ModerationController.#ctor*
   name: ModerationController
   href: api/server/EchoHub.Server.Controllers.ModerationController.html#EchoHub_Server_Controllers_ModerationController__ctor_
@@ -20185,6 +20473,18 @@ references:
   commentId: Overload:EchoHub.Server.Data.EchoHubDbContext.RefreshTokens
   fullName: EchoHub.Server.Data.EchoHubDbContext.RefreshTokens
   nameWithType: EchoHubDbContext.RefreshTokens
+- uid: EchoHub.Server.Data.EchoHubDbContext.ServerStatsReports
+  name: ServerStatsReports
+  href: api/server/EchoHub.Server.Data.EchoHubDbContext.html#EchoHub_Server_Data_EchoHubDbContext_ServerStatsReports
+  commentId: P:EchoHub.Server.Data.EchoHubDbContext.ServerStatsReports
+  fullName: EchoHub.Server.Data.EchoHubDbContext.ServerStatsReports
+  nameWithType: EchoHubDbContext.ServerStatsReports
+- uid: EchoHub.Server.Data.EchoHubDbContext.ServerStatsReports*
+  name: ServerStatsReports
+  href: api/server/EchoHub.Server.Data.EchoHubDbContext.html#EchoHub_Server_Data_EchoHubDbContext_ServerStatsReports_
+  commentId: Overload:EchoHub.Server.Data.EchoHubDbContext.ServerStatsReports
+  fullName: EchoHub.Server.Data.EchoHubDbContext.ServerStatsReports
+  nameWithType: EchoHubDbContext.ServerStatsReports
 - uid: EchoHub.Server.Data.EchoHubDbContext.Users
   name: Users
   href: api/server/EchoHub.Server.Data.EchoHubDbContext.html#EchoHub_Server_Data_EchoHubDbContext_Users
@@ -20863,6 +21163,66 @@ references:
   commentId: Overload:EchoHub.Server.Data.Migrations.AddModerationRoles.Up
   fullName: EchoHub.Server.Data.Migrations.AddModerationRoles.Up
   nameWithType: AddModerationRoles.Up
+- uid: EchoHub.Server.Data.Migrations.AddServerStatsReports
+  name: AddServerStatsReports
+  href: api/server/EchoHub.Server.Data.Migrations.AddServerStatsReports.html
+  commentId: T:EchoHub.Server.Data.Migrations.AddServerStatsReports
+  fullName: EchoHub.Server.Data.Migrations.AddServerStatsReports
+  nameWithType: AddServerStatsReports
+- uid: EchoHub.Server.Data.Migrations.AddServerStatsReports.#ctor
+  name: AddServerStatsReports()
+  href: api/server/EchoHub.Server.Data.Migrations.AddServerStatsReports.html#EchoHub_Server_Data_Migrations_AddServerStatsReports__ctor
+  commentId: M:EchoHub.Server.Data.Migrations.AddServerStatsReports.#ctor
+  name.vb: New()
+  fullName: EchoHub.Server.Data.Migrations.AddServerStatsReports.AddServerStatsReports()
+  fullName.vb: EchoHub.Server.Data.Migrations.AddServerStatsReports.New()
+  nameWithType: AddServerStatsReports.AddServerStatsReports()
+  nameWithType.vb: AddServerStatsReports.New()
+- uid: EchoHub.Server.Data.Migrations.AddServerStatsReports.#ctor*
+  name: AddServerStatsReports
+  href: api/server/EchoHub.Server.Data.Migrations.AddServerStatsReports.html#EchoHub_Server_Data_Migrations_AddServerStatsReports__ctor_
+  commentId: Overload:EchoHub.Server.Data.Migrations.AddServerStatsReports.#ctor
+  name.vb: New
+  fullName: EchoHub.Server.Data.Migrations.AddServerStatsReports.AddServerStatsReports
+  fullName.vb: EchoHub.Server.Data.Migrations.AddServerStatsReports.New
+  nameWithType: AddServerStatsReports.AddServerStatsReports
+  nameWithType.vb: AddServerStatsReports.New
+- uid: EchoHub.Server.Data.Migrations.AddServerStatsReports.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)
+  name: BuildTargetModel(ModelBuilder)
+  href: api/server/EchoHub.Server.Data.Migrations.AddServerStatsReports.html#EchoHub_Server_Data_Migrations_AddServerStatsReports_BuildTargetModel_Microsoft_EntityFrameworkCore_ModelBuilder_
+  commentId: M:EchoHub.Server.Data.Migrations.AddServerStatsReports.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)
+  fullName: EchoHub.Server.Data.Migrations.AddServerStatsReports.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)
+  nameWithType: AddServerStatsReports.BuildTargetModel(ModelBuilder)
+- uid: EchoHub.Server.Data.Migrations.AddServerStatsReports.BuildTargetModel*
+  name: BuildTargetModel
+  href: api/server/EchoHub.Server.Data.Migrations.AddServerStatsReports.html#EchoHub_Server_Data_Migrations_AddServerStatsReports_BuildTargetModel_
+  commentId: Overload:EchoHub.Server.Data.Migrations.AddServerStatsReports.BuildTargetModel
+  fullName: EchoHub.Server.Data.Migrations.AddServerStatsReports.BuildTargetModel
+  nameWithType: AddServerStatsReports.BuildTargetModel
+- uid: EchoHub.Server.Data.Migrations.AddServerStatsReports.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+  name: Down(MigrationBuilder)
+  href: api/server/EchoHub.Server.Data.Migrations.AddServerStatsReports.html#EchoHub_Server_Data_Migrations_AddServerStatsReports_Down_Microsoft_EntityFrameworkCore_Migrations_MigrationBuilder_
+  commentId: M:EchoHub.Server.Data.Migrations.AddServerStatsReports.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+  fullName: EchoHub.Server.Data.Migrations.AddServerStatsReports.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+  nameWithType: AddServerStatsReports.Down(MigrationBuilder)
+- uid: EchoHub.Server.Data.Migrations.AddServerStatsReports.Down*
+  name: Down
+  href: api/server/EchoHub.Server.Data.Migrations.AddServerStatsReports.html#EchoHub_Server_Data_Migrations_AddServerStatsReports_Down_
+  commentId: Overload:EchoHub.Server.Data.Migrations.AddServerStatsReports.Down
+  fullName: EchoHub.Server.Data.Migrations.AddServerStatsReports.Down
+  nameWithType: AddServerStatsReports.Down
+- uid: EchoHub.Server.Data.Migrations.AddServerStatsReports.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+  name: Up(MigrationBuilder)
+  href: api/server/EchoHub.Server.Data.Migrations.AddServerStatsReports.html#EchoHub_Server_Data_Migrations_AddServerStatsReports_Up_Microsoft_EntityFrameworkCore_Migrations_MigrationBuilder_
+  commentId: M:EchoHub.Server.Data.Migrations.AddServerStatsReports.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+  fullName: EchoHub.Server.Data.Migrations.AddServerStatsReports.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)
+  nameWithType: AddServerStatsReports.Up(MigrationBuilder)
+- uid: EchoHub.Server.Data.Migrations.AddServerStatsReports.Up*
+  name: Up
+  href: api/server/EchoHub.Server.Data.Migrations.AddServerStatsReports.html#EchoHub_Server_Data_Migrations_AddServerStatsReports_Up_
+  commentId: Overload:EchoHub.Server.Data.Migrations.AddServerStatsReports.Up
+  fullName: EchoHub.Server.Data.Migrations.AddServerStatsReports.Up
+  nameWithType: AddServerStatsReports.Up
 - uid: EchoHub.Server.Data.Migrations.InitialCreate
   name: InitialCreate
   href: api/server/EchoHub.Server.Data.Migrations.InitialCreate.html
@@ -22528,15 +22888,15 @@ references:
   commentId: T:EchoHub.Server.Services.ChatService
   fullName: EchoHub.Server.Services.ChatService
   nameWithType: ChatService
-- uid: EchoHub.Server.Services.ChatService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory,EchoHub.Server.Services.PresenceTracker,System.Collections.Generic.IEnumerable{EchoHub.Core.Contracts.IChatBroadcaster},EchoHub.Server.Services.LinkEmbedService,EchoHub.Core.Contracts.IMessageEncryptionService,EchoHub.Core.Contracts.IChannelService,EchoHub.Server.Services.FileStorageService,EchoHub.Server.Services.SpamGuard,EchoHub.Server.Services.ServerLogs.ServerLogsService,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.ChatService})
-  name: ChatService(IServiceScopeFactory, PresenceTracker, IEnumerable<IChatBroadcaster>, LinkEmbedService, IMessageEncryptionService, IChannelService, FileStorageService, SpamGuard, ServerLogsService, ILogger<ChatService>)
-  href: api/server/EchoHub.Server.Services.ChatService.html#EchoHub_Server_Services_ChatService__ctor_Microsoft_Extensions_DependencyInjection_IServiceScopeFactory_EchoHub_Server_Services_PresenceTracker_System_Collections_Generic_IEnumerable_EchoHub_Core_Contracts_IChatBroadcaster__EchoHub_Server_Services_LinkEmbedService_EchoHub_Core_Contracts_IMessageEncryptionService_EchoHub_Core_Contracts_IChannelService_EchoHub_Server_Services_FileStorageService_EchoHub_Server_Services_SpamGuard_EchoHub_Server_Services_ServerLogs_ServerLogsService_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Services_ChatService__
-  commentId: M:EchoHub.Server.Services.ChatService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory,EchoHub.Server.Services.PresenceTracker,System.Collections.Generic.IEnumerable{EchoHub.Core.Contracts.IChatBroadcaster},EchoHub.Server.Services.LinkEmbedService,EchoHub.Core.Contracts.IMessageEncryptionService,EchoHub.Core.Contracts.IChannelService,EchoHub.Server.Services.FileStorageService,EchoHub.Server.Services.SpamGuard,EchoHub.Server.Services.ServerLogs.ServerLogsService,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.ChatService})
-  name.vb: New(IServiceScopeFactory, PresenceTracker, IEnumerable(Of IChatBroadcaster), LinkEmbedService, IMessageEncryptionService, IChannelService, FileStorageService, SpamGuard, ServerLogsService, ILogger(Of ChatService))
-  fullName: EchoHub.Server.Services.ChatService.ChatService(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory, EchoHub.Server.Services.PresenceTracker, System.Collections.Generic.IEnumerable<EchoHub.Core.Contracts.IChatBroadcaster>, EchoHub.Server.Services.LinkEmbedService, EchoHub.Core.Contracts.IMessageEncryptionService, EchoHub.Core.Contracts.IChannelService, EchoHub.Server.Services.FileStorageService, EchoHub.Server.Services.SpamGuard, EchoHub.Server.Services.ServerLogs.ServerLogsService, Microsoft.Extensions.Logging.ILogger<EchoHub.Server.Services.ChatService>)
-  fullName.vb: EchoHub.Server.Services.ChatService.New(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory, EchoHub.Server.Services.PresenceTracker, System.Collections.Generic.IEnumerable(Of EchoHub.Core.Contracts.IChatBroadcaster), EchoHub.Server.Services.LinkEmbedService, EchoHub.Core.Contracts.IMessageEncryptionService, EchoHub.Core.Contracts.IChannelService, EchoHub.Server.Services.FileStorageService, EchoHub.Server.Services.SpamGuard, EchoHub.Server.Services.ServerLogs.ServerLogsService, Microsoft.Extensions.Logging.ILogger(Of EchoHub.Server.Services.ChatService))
-  nameWithType: ChatService.ChatService(IServiceScopeFactory, PresenceTracker, IEnumerable<IChatBroadcaster>, LinkEmbedService, IMessageEncryptionService, IChannelService, FileStorageService, SpamGuard, ServerLogsService, ILogger<ChatService>)
-  nameWithType.vb: ChatService.New(IServiceScopeFactory, PresenceTracker, IEnumerable(Of IChatBroadcaster), LinkEmbedService, IMessageEncryptionService, IChannelService, FileStorageService, SpamGuard, ServerLogsService, ILogger(Of ChatService))
+- uid: EchoHub.Server.Services.ChatService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory,EchoHub.Server.Services.PresenceTracker,System.Collections.Generic.IEnumerable{EchoHub.Core.Contracts.IChatBroadcaster},EchoHub.Server.Services.LinkEmbedService,EchoHub.Core.Contracts.IMessageEncryptionService,EchoHub.Core.Contracts.IChannelService,EchoHub.Server.Services.FileStorageService,EchoHub.Server.Services.SpamGuard,EchoHub.Server.Services.ServerLogs.ServerLogsService,EchoHub.Server.Services.Stats.ServerStatsCollector,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.ChatService})
+  name: ChatService(IServiceScopeFactory, PresenceTracker, IEnumerable<IChatBroadcaster>, LinkEmbedService, IMessageEncryptionService, IChannelService, FileStorageService, SpamGuard, ServerLogsService, ServerStatsCollector, ILogger<ChatService>)
+  href: api/server/EchoHub.Server.Services.ChatService.html#EchoHub_Server_Services_ChatService__ctor_Microsoft_Extensions_DependencyInjection_IServiceScopeFactory_EchoHub_Server_Services_PresenceTracker_System_Collections_Generic_IEnumerable_EchoHub_Core_Contracts_IChatBroadcaster__EchoHub_Server_Services_LinkEmbedService_EchoHub_Core_Contracts_IMessageEncryptionService_EchoHub_Core_Contracts_IChannelService_EchoHub_Server_Services_FileStorageService_EchoHub_Server_Services_SpamGuard_EchoHub_Server_Services_ServerLogs_ServerLogsService_EchoHub_Server_Services_Stats_ServerStatsCollector_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Services_ChatService__
+  commentId: M:EchoHub.Server.Services.ChatService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory,EchoHub.Server.Services.PresenceTracker,System.Collections.Generic.IEnumerable{EchoHub.Core.Contracts.IChatBroadcaster},EchoHub.Server.Services.LinkEmbedService,EchoHub.Core.Contracts.IMessageEncryptionService,EchoHub.Core.Contracts.IChannelService,EchoHub.Server.Services.FileStorageService,EchoHub.Server.Services.SpamGuard,EchoHub.Server.Services.ServerLogs.ServerLogsService,EchoHub.Server.Services.Stats.ServerStatsCollector,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.ChatService})
+  name.vb: New(IServiceScopeFactory, PresenceTracker, IEnumerable(Of IChatBroadcaster), LinkEmbedService, IMessageEncryptionService, IChannelService, FileStorageService, SpamGuard, ServerLogsService, ServerStatsCollector, ILogger(Of ChatService))
+  fullName: EchoHub.Server.Services.ChatService.ChatService(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory, EchoHub.Server.Services.PresenceTracker, System.Collections.Generic.IEnumerable<EchoHub.Core.Contracts.IChatBroadcaster>, EchoHub.Server.Services.LinkEmbedService, EchoHub.Core.Contracts.IMessageEncryptionService, EchoHub.Core.Contracts.IChannelService, EchoHub.Server.Services.FileStorageService, EchoHub.Server.Services.SpamGuard, EchoHub.Server.Services.ServerLogs.ServerLogsService, EchoHub.Server.Services.Stats.ServerStatsCollector, Microsoft.Extensions.Logging.ILogger<EchoHub.Server.Services.ChatService>)
+  fullName.vb: EchoHub.Server.Services.ChatService.New(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory, EchoHub.Server.Services.PresenceTracker, System.Collections.Generic.IEnumerable(Of EchoHub.Core.Contracts.IChatBroadcaster), EchoHub.Server.Services.LinkEmbedService, EchoHub.Core.Contracts.IMessageEncryptionService, EchoHub.Core.Contracts.IChannelService, EchoHub.Server.Services.FileStorageService, EchoHub.Server.Services.SpamGuard, EchoHub.Server.Services.ServerLogs.ServerLogsService, EchoHub.Server.Services.Stats.ServerStatsCollector, Microsoft.Extensions.Logging.ILogger(Of EchoHub.Server.Services.ChatService))
+  nameWithType: ChatService.ChatService(IServiceScopeFactory, PresenceTracker, IEnumerable<IChatBroadcaster>, LinkEmbedService, IMessageEncryptionService, IChannelService, FileStorageService, SpamGuard, ServerLogsService, ServerStatsCollector, ILogger<ChatService>)
+  nameWithType.vb: ChatService.New(IServiceScopeFactory, PresenceTracker, IEnumerable(Of IChatBroadcaster), LinkEmbedService, IMessageEncryptionService, IChannelService, FileStorageService, SpamGuard, ServerLogsService, ServerStatsCollector, ILogger(Of ChatService))
 - uid: EchoHub.Server.Services.ChatService.#ctor*
   name: ChatService
   href: api/server/EchoHub.Server.Services.ChatService.html#EchoHub_Server_Services_ChatService__ctor_
@@ -24427,6 +24787,336 @@ references:
   commentId: F:EchoHub.Server.Services.SpamVerdictKind.Rejected
   fullName: EchoHub.Server.Services.SpamVerdictKind.Rejected
   nameWithType: SpamVerdictKind.Rejected
+- uid: EchoHub.Server.Services.Stats
+  name: EchoHub.Server.Services.Stats
+  href: api/server/EchoHub.Server.Services.Stats.html
+  commentId: N:EchoHub.Server.Services.Stats
+  fullName: EchoHub.Server.Services.Stats
+  nameWithType: EchoHub.Server.Services.Stats
+- uid: EchoHub.Server.Services.Stats.ServerStatsCollector
+  name: ServerStatsCollector
+  href: api/server/EchoHub.Server.Services.Stats.ServerStatsCollector.html
+  commentId: T:EchoHub.Server.Services.Stats.ServerStatsCollector
+  fullName: EchoHub.Server.Services.Stats.ServerStatsCollector
+  nameWithType: ServerStatsCollector
+- uid: EchoHub.Server.Services.Stats.ServerStatsCollector.#ctor
+  name: ServerStatsCollector()
+  href: api/server/EchoHub.Server.Services.Stats.ServerStatsCollector.html#EchoHub_Server_Services_Stats_ServerStatsCollector__ctor
+  commentId: M:EchoHub.Server.Services.Stats.ServerStatsCollector.#ctor
+  name.vb: New()
+  fullName: EchoHub.Server.Services.Stats.ServerStatsCollector.ServerStatsCollector()
+  fullName.vb: EchoHub.Server.Services.Stats.ServerStatsCollector.New()
+  nameWithType: ServerStatsCollector.ServerStatsCollector()
+  nameWithType.vb: ServerStatsCollector.New()
+- uid: EchoHub.Server.Services.Stats.ServerStatsCollector.#ctor*
+  name: ServerStatsCollector
+  href: api/server/EchoHub.Server.Services.Stats.ServerStatsCollector.html#EchoHub_Server_Services_Stats_ServerStatsCollector__ctor_
+  commentId: Overload:EchoHub.Server.Services.Stats.ServerStatsCollector.#ctor
+  name.vb: New
+  fullName: EchoHub.Server.Services.Stats.ServerStatsCollector.ServerStatsCollector
+  fullName.vb: EchoHub.Server.Services.Stats.ServerStatsCollector.New
+  nameWithType: ServerStatsCollector.ServerStatsCollector
+  nameWithType.vb: ServerStatsCollector.New
+- uid: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordBan
+  name: RecordBan()
+  href: api/server/EchoHub.Server.Services.Stats.ServerStatsCollector.html#EchoHub_Server_Services_Stats_ServerStatsCollector_RecordBan
+  commentId: M:EchoHub.Server.Services.Stats.ServerStatsCollector.RecordBan
+  fullName: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordBan()
+  nameWithType: ServerStatsCollector.RecordBan()
+- uid: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordBan*
+  name: RecordBan
+  href: api/server/EchoHub.Server.Services.Stats.ServerStatsCollector.html#EchoHub_Server_Services_Stats_ServerStatsCollector_RecordBan_
+  commentId: Overload:EchoHub.Server.Services.Stats.ServerStatsCollector.RecordBan
+  fullName: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordBan
+  nameWithType: ServerStatsCollector.RecordBan
+- uid: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordConnection(System.Int32)
+  name: RecordConnection(int)
+  href: api/server/EchoHub.Server.Services.Stats.ServerStatsCollector.html#EchoHub_Server_Services_Stats_ServerStatsCollector_RecordConnection_System_Int32_
+  commentId: M:EchoHub.Server.Services.Stats.ServerStatsCollector.RecordConnection(System.Int32)
+  name.vb: RecordConnection(Integer)
+  fullName: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordConnection(int)
+  fullName.vb: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordConnection(Integer)
+  nameWithType: ServerStatsCollector.RecordConnection(int)
+  nameWithType.vb: ServerStatsCollector.RecordConnection(Integer)
+- uid: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordConnection*
+  name: RecordConnection
+  href: api/server/EchoHub.Server.Services.Stats.ServerStatsCollector.html#EchoHub_Server_Services_Stats_ServerStatsCollector_RecordConnection_
+  commentId: Overload:EchoHub.Server.Services.Stats.ServerStatsCollector.RecordConnection
+  fullName: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordConnection
+  nameWithType: ServerStatsCollector.RecordConnection
+- uid: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordDisconnection(System.Int32)
+  name: RecordDisconnection(int)
+  href: api/server/EchoHub.Server.Services.Stats.ServerStatsCollector.html#EchoHub_Server_Services_Stats_ServerStatsCollector_RecordDisconnection_System_Int32_
+  commentId: M:EchoHub.Server.Services.Stats.ServerStatsCollector.RecordDisconnection(System.Int32)
+  name.vb: RecordDisconnection(Integer)
+  fullName: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordDisconnection(int)
+  fullName.vb: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordDisconnection(Integer)
+  nameWithType: ServerStatsCollector.RecordDisconnection(int)
+  nameWithType.vb: ServerStatsCollector.RecordDisconnection(Integer)
+- uid: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordDisconnection*
+  name: RecordDisconnection
+  href: api/server/EchoHub.Server.Services.Stats.ServerStatsCollector.html#EchoHub_Server_Services_Stats_ServerStatsCollector_RecordDisconnection_
+  commentId: Overload:EchoHub.Server.Services.Stats.ServerStatsCollector.RecordDisconnection
+  fullName: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordDisconnection
+  nameWithType: ServerStatsCollector.RecordDisconnection
+- uid: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordKick
+  name: RecordKick()
+  href: api/server/EchoHub.Server.Services.Stats.ServerStatsCollector.html#EchoHub_Server_Services_Stats_ServerStatsCollector_RecordKick
+  commentId: M:EchoHub.Server.Services.Stats.ServerStatsCollector.RecordKick
+  fullName: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordKick()
+  nameWithType: ServerStatsCollector.RecordKick()
+- uid: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordKick*
+  name: RecordKick
+  href: api/server/EchoHub.Server.Services.Stats.ServerStatsCollector.html#EchoHub_Server_Services_Stats_ServerStatsCollector_RecordKick_
+  commentId: Overload:EchoHub.Server.Services.Stats.ServerStatsCollector.RecordKick
+  fullName: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordKick
+  nameWithType: ServerStatsCollector.RecordKick
+- uid: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordOnline(System.Int32)
+  name: RecordOnline(int)
+  href: api/server/EchoHub.Server.Services.Stats.ServerStatsCollector.html#EchoHub_Server_Services_Stats_ServerStatsCollector_RecordOnline_System_Int32_
+  commentId: M:EchoHub.Server.Services.Stats.ServerStatsCollector.RecordOnline(System.Int32)
+  name.vb: RecordOnline(Integer)
+  fullName: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordOnline(int)
+  fullName.vb: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordOnline(Integer)
+  nameWithType: ServerStatsCollector.RecordOnline(int)
+  nameWithType.vb: ServerStatsCollector.RecordOnline(Integer)
+- uid: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordOnline*
+  name: RecordOnline
+  href: api/server/EchoHub.Server.Services.Stats.ServerStatsCollector.html#EchoHub_Server_Services_Stats_ServerStatsCollector_RecordOnline_
+  commentId: Overload:EchoHub.Server.Services.Stats.ServerStatsCollector.RecordOnline
+  fullName: EchoHub.Server.Services.Stats.ServerStatsCollector.RecordOnline
+  nameWithType: ServerStatsCollector.RecordOnline
+- uid: EchoHub.Server.Services.Stats.ServerStatsCollector.SnapshotAndReset(System.Int32)
+  name: SnapshotAndReset(int)
+  href: api/server/EchoHub.Server.Services.Stats.ServerStatsCollector.html#EchoHub_Server_Services_Stats_ServerStatsCollector_SnapshotAndReset_System_Int32_
+  commentId: M:EchoHub.Server.Services.Stats.ServerStatsCollector.SnapshotAndReset(System.Int32)
+  name.vb: SnapshotAndReset(Integer)
+  fullName: EchoHub.Server.Services.Stats.ServerStatsCollector.SnapshotAndReset(int)
+  fullName.vb: EchoHub.Server.Services.Stats.ServerStatsCollector.SnapshotAndReset(Integer)
+  nameWithType: ServerStatsCollector.SnapshotAndReset(int)
+  nameWithType.vb: ServerStatsCollector.SnapshotAndReset(Integer)
+- uid: EchoHub.Server.Services.Stats.ServerStatsCollector.SnapshotAndReset*
+  name: SnapshotAndReset
+  href: api/server/EchoHub.Server.Services.Stats.ServerStatsCollector.html#EchoHub_Server_Services_Stats_ServerStatsCollector_SnapshotAndReset_
+  commentId: Overload:EchoHub.Server.Services.Stats.ServerStatsCollector.SnapshotAndReset
+  fullName: EchoHub.Server.Services.Stats.ServerStatsCollector.SnapshotAndReset
+  nameWithType: ServerStatsCollector.SnapshotAndReset
+- uid: EchoHub.Server.Services.Stats.ServerStatsReportService
+  name: ServerStatsReportService
+  href: api/server/EchoHub.Server.Services.Stats.ServerStatsReportService.html
+  commentId: T:EchoHub.Server.Services.Stats.ServerStatsReportService
+  fullName: EchoHub.Server.Services.Stats.ServerStatsReportService
+  nameWithType: ServerStatsReportService
+- uid: EchoHub.Server.Services.Stats.ServerStatsReportService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory,EchoHub.Server.Services.PresenceTracker,EchoHub.Server.Services.Stats.ServerStatsCollector,EchoHub.Server.Config.StatsOptions,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.Stats.ServerStatsReportService})
+  name: ServerStatsReportService(IServiceScopeFactory, PresenceTracker, ServerStatsCollector, StatsOptions, ILogger<ServerStatsReportService>)
+  href: api/server/EchoHub.Server.Services.Stats.ServerStatsReportService.html#EchoHub_Server_Services_Stats_ServerStatsReportService__ctor_Microsoft_Extensions_DependencyInjection_IServiceScopeFactory_EchoHub_Server_Services_PresenceTracker_EchoHub_Server_Services_Stats_ServerStatsCollector_EchoHub_Server_Config_StatsOptions_Microsoft_Extensions_Logging_ILogger_EchoHub_Server_Services_Stats_ServerStatsReportService__
+  commentId: M:EchoHub.Server.Services.Stats.ServerStatsReportService.#ctor(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory,EchoHub.Server.Services.PresenceTracker,EchoHub.Server.Services.Stats.ServerStatsCollector,EchoHub.Server.Config.StatsOptions,Microsoft.Extensions.Logging.ILogger{EchoHub.Server.Services.Stats.ServerStatsReportService})
+  name.vb: New(IServiceScopeFactory, PresenceTracker, ServerStatsCollector, StatsOptions, ILogger(Of ServerStatsReportService))
+  fullName: EchoHub.Server.Services.Stats.ServerStatsReportService.ServerStatsReportService(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory, EchoHub.Server.Services.PresenceTracker, EchoHub.Server.Services.Stats.ServerStatsCollector, EchoHub.Server.Config.StatsOptions, Microsoft.Extensions.Logging.ILogger<EchoHub.Server.Services.Stats.ServerStatsReportService>)
+  fullName.vb: EchoHub.Server.Services.Stats.ServerStatsReportService.New(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory, EchoHub.Server.Services.PresenceTracker, EchoHub.Server.Services.Stats.ServerStatsCollector, EchoHub.Server.Config.StatsOptions, Microsoft.Extensions.Logging.ILogger(Of EchoHub.Server.Services.Stats.ServerStatsReportService))
+  nameWithType: ServerStatsReportService.ServerStatsReportService(IServiceScopeFactory, PresenceTracker, ServerStatsCollector, StatsOptions, ILogger<ServerStatsReportService>)
+  nameWithType.vb: ServerStatsReportService.New(IServiceScopeFactory, PresenceTracker, ServerStatsCollector, StatsOptions, ILogger(Of ServerStatsReportService))
+- uid: EchoHub.Server.Services.Stats.ServerStatsReportService.#ctor*
+  name: ServerStatsReportService
+  href: api/server/EchoHub.Server.Services.Stats.ServerStatsReportService.html#EchoHub_Server_Services_Stats_ServerStatsReportService__ctor_
+  commentId: Overload:EchoHub.Server.Services.Stats.ServerStatsReportService.#ctor
+  name.vb: New
+  fullName: EchoHub.Server.Services.Stats.ServerStatsReportService.ServerStatsReportService
+  fullName.vb: EchoHub.Server.Services.Stats.ServerStatsReportService.New
+  nameWithType: ServerStatsReportService.ServerStatsReportService
+  nameWithType.vb: ServerStatsReportService.New
+- uid: EchoHub.Server.Services.Stats.ServerStatsReportService.ExecuteAsync(System.Threading.CancellationToken)
+  name: ExecuteAsync(CancellationToken)
+  href: api/server/EchoHub.Server.Services.Stats.ServerStatsReportService.html#EchoHub_Server_Services_Stats_ServerStatsReportService_ExecuteAsync_System_Threading_CancellationToken_
+  commentId: M:EchoHub.Server.Services.Stats.ServerStatsReportService.ExecuteAsync(System.Threading.CancellationToken)
+  fullName: EchoHub.Server.Services.Stats.ServerStatsReportService.ExecuteAsync(System.Threading.CancellationToken)
+  nameWithType: ServerStatsReportService.ExecuteAsync(CancellationToken)
+- uid: EchoHub.Server.Services.Stats.ServerStatsReportService.ExecuteAsync*
+  name: ExecuteAsync
+  href: api/server/EchoHub.Server.Services.Stats.ServerStatsReportService.html#EchoHub_Server_Services_Stats_ServerStatsReportService_ExecuteAsync_
+  commentId: Overload:EchoHub.Server.Services.Stats.ServerStatsReportService.ExecuteAsync
+  fullName: EchoHub.Server.Services.Stats.ServerStatsReportService.ExecuteAsync
+  nameWithType: ServerStatsReportService.ExecuteAsync
+- uid: EchoHub.Server.Services.Stats.StatsCounters
+  name: StatsCounters
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html
+  commentId: T:EchoHub.Server.Services.Stats.StatsCounters
+  fullName: EchoHub.Server.Services.Stats.StatsCounters
+  nameWithType: StatsCounters
+- uid: EchoHub.Server.Services.Stats.StatsCounters.#ctor(System.Int64,System.Int64,System.Int64,System.Int64,System.Int32)
+  name: StatsCounters(long, long, long, long, int)
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters__ctor_System_Int64_System_Int64_System_Int64_System_Int64_System_Int32_
+  commentId: M:EchoHub.Server.Services.Stats.StatsCounters.#ctor(System.Int64,System.Int64,System.Int64,System.Int64,System.Int32)
+  name.vb: New(Long, Long, Long, Long, Integer)
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.StatsCounters(long, long, long, long, int)
+  fullName.vb: EchoHub.Server.Services.Stats.StatsCounters.New(Long, Long, Long, Long, Integer)
+  nameWithType: StatsCounters.StatsCounters(long, long, long, long, int)
+  nameWithType.vb: StatsCounters.New(Long, Long, Long, Long, Integer)
+- uid: EchoHub.Server.Services.Stats.StatsCounters.#ctor*
+  name: StatsCounters
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters__ctor_
+  commentId: Overload:EchoHub.Server.Services.Stats.StatsCounters.#ctor
+  name.vb: New
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.StatsCounters
+  fullName.vb: EchoHub.Server.Services.Stats.StatsCounters.New
+  nameWithType: StatsCounters.StatsCounters
+  nameWithType.vb: StatsCounters.New
+- uid: EchoHub.Server.Services.Stats.StatsCounters.Bans
+  name: Bans
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_Bans
+  commentId: P:EchoHub.Server.Services.Stats.StatsCounters.Bans
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.Bans
+  nameWithType: StatsCounters.Bans
+- uid: EchoHub.Server.Services.Stats.StatsCounters.Bans*
+  name: Bans
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_Bans_
+  commentId: Overload:EchoHub.Server.Services.Stats.StatsCounters.Bans
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.Bans
+  nameWithType: StatsCounters.Bans
+- uid: EchoHub.Server.Services.Stats.StatsCounters.Connections
+  name: Connections
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_Connections
+  commentId: P:EchoHub.Server.Services.Stats.StatsCounters.Connections
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.Connections
+  nameWithType: StatsCounters.Connections
+- uid: EchoHub.Server.Services.Stats.StatsCounters.Connections*
+  name: Connections
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_Connections_
+  commentId: Overload:EchoHub.Server.Services.Stats.StatsCounters.Connections
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.Connections
+  nameWithType: StatsCounters.Connections
+- uid: EchoHub.Server.Services.Stats.StatsCounters.Deconstruct(System.Int64@,System.Int64@,System.Int64@,System.Int64@,System.Int32@)
+  name: Deconstruct(out long, out long, out long, out long, out int)
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_Deconstruct_System_Int64__System_Int64__System_Int64__System_Int64__System_Int32__
+  commentId: M:EchoHub.Server.Services.Stats.StatsCounters.Deconstruct(System.Int64@,System.Int64@,System.Int64@,System.Int64@,System.Int32@)
+  name.vb: Deconstruct(Long, Long, Long, Long, Integer)
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.Deconstruct(out long, out long, out long, out long, out int)
+  fullName.vb: EchoHub.Server.Services.Stats.StatsCounters.Deconstruct(Long, Long, Long, Long, Integer)
+  nameWithType: StatsCounters.Deconstruct(out long, out long, out long, out long, out int)
+  nameWithType.vb: StatsCounters.Deconstruct(Long, Long, Long, Long, Integer)
+- uid: EchoHub.Server.Services.Stats.StatsCounters.Deconstruct*
+  name: Deconstruct
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_Deconstruct_
+  commentId: Overload:EchoHub.Server.Services.Stats.StatsCounters.Deconstruct
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.Deconstruct
+  nameWithType: StatsCounters.Deconstruct
+- uid: EchoHub.Server.Services.Stats.StatsCounters.Disconnections
+  name: Disconnections
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_Disconnections
+  commentId: P:EchoHub.Server.Services.Stats.StatsCounters.Disconnections
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.Disconnections
+  nameWithType: StatsCounters.Disconnections
+- uid: EchoHub.Server.Services.Stats.StatsCounters.Disconnections*
+  name: Disconnections
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_Disconnections_
+  commentId: Overload:EchoHub.Server.Services.Stats.StatsCounters.Disconnections
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.Disconnections
+  nameWithType: StatsCounters.Disconnections
+- uid: EchoHub.Server.Services.Stats.StatsCounters.Equals(EchoHub.Server.Services.Stats.StatsCounters)
+  name: Equals(StatsCounters)
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_Equals_EchoHub_Server_Services_Stats_StatsCounters_
+  commentId: M:EchoHub.Server.Services.Stats.StatsCounters.Equals(EchoHub.Server.Services.Stats.StatsCounters)
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.Equals(EchoHub.Server.Services.Stats.StatsCounters)
+  nameWithType: StatsCounters.Equals(StatsCounters)
+- uid: EchoHub.Server.Services.Stats.StatsCounters.Equals(System.Object)
+  name: Equals(object)
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_Equals_System_Object_
+  commentId: M:EchoHub.Server.Services.Stats.StatsCounters.Equals(System.Object)
+  name.vb: Equals(Object)
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.Equals(object)
+  fullName.vb: EchoHub.Server.Services.Stats.StatsCounters.Equals(Object)
+  nameWithType: StatsCounters.Equals(object)
+  nameWithType.vb: StatsCounters.Equals(Object)
+- uid: EchoHub.Server.Services.Stats.StatsCounters.Equals*
+  name: Equals
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_Equals_
+  commentId: Overload:EchoHub.Server.Services.Stats.StatsCounters.Equals
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.Equals
+  nameWithType: StatsCounters.Equals
+- uid: EchoHub.Server.Services.Stats.StatsCounters.GetHashCode
+  name: GetHashCode()
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_GetHashCode
+  commentId: M:EchoHub.Server.Services.Stats.StatsCounters.GetHashCode
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.GetHashCode()
+  nameWithType: StatsCounters.GetHashCode()
+- uid: EchoHub.Server.Services.Stats.StatsCounters.GetHashCode*
+  name: GetHashCode
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_GetHashCode_
+  commentId: Overload:EchoHub.Server.Services.Stats.StatsCounters.GetHashCode
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.GetHashCode
+  nameWithType: StatsCounters.GetHashCode
+- uid: EchoHub.Server.Services.Stats.StatsCounters.Kicks
+  name: Kicks
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_Kicks
+  commentId: P:EchoHub.Server.Services.Stats.StatsCounters.Kicks
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.Kicks
+  nameWithType: StatsCounters.Kicks
+- uid: EchoHub.Server.Services.Stats.StatsCounters.Kicks*
+  name: Kicks
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_Kicks_
+  commentId: Overload:EchoHub.Server.Services.Stats.StatsCounters.Kicks
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.Kicks
+  nameWithType: StatsCounters.Kicks
+- uid: EchoHub.Server.Services.Stats.StatsCounters.PeakOnline
+  name: PeakOnline
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_PeakOnline
+  commentId: P:EchoHub.Server.Services.Stats.StatsCounters.PeakOnline
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.PeakOnline
+  nameWithType: StatsCounters.PeakOnline
+- uid: EchoHub.Server.Services.Stats.StatsCounters.PeakOnline*
+  name: PeakOnline
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_PeakOnline_
+  commentId: Overload:EchoHub.Server.Services.Stats.StatsCounters.PeakOnline
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.PeakOnline
+  nameWithType: StatsCounters.PeakOnline
+- uid: EchoHub.Server.Services.Stats.StatsCounters.ToString
+  name: ToString()
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_ToString
+  commentId: M:EchoHub.Server.Services.Stats.StatsCounters.ToString
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.ToString()
+  nameWithType: StatsCounters.ToString()
+- uid: EchoHub.Server.Services.Stats.StatsCounters.ToString*
+  name: ToString
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_ToString_
+  commentId: Overload:EchoHub.Server.Services.Stats.StatsCounters.ToString
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.ToString
+  nameWithType: StatsCounters.ToString
+- uid: EchoHub.Server.Services.Stats.StatsCounters.op_Equality(EchoHub.Server.Services.Stats.StatsCounters,EchoHub.Server.Services.Stats.StatsCounters)
+  name: operator ==(StatsCounters, StatsCounters)
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_op_Equality_EchoHub_Server_Services_Stats_StatsCounters_EchoHub_Server_Services_Stats_StatsCounters_
+  commentId: M:EchoHub.Server.Services.Stats.StatsCounters.op_Equality(EchoHub.Server.Services.Stats.StatsCounters,EchoHub.Server.Services.Stats.StatsCounters)
+  name.vb: =(StatsCounters, StatsCounters)
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.operator ==(EchoHub.Server.Services.Stats.StatsCounters, EchoHub.Server.Services.Stats.StatsCounters)
+  fullName.vb: EchoHub.Server.Services.Stats.StatsCounters.=(EchoHub.Server.Services.Stats.StatsCounters, EchoHub.Server.Services.Stats.StatsCounters)
+  nameWithType: StatsCounters.operator ==(StatsCounters, StatsCounters)
+  nameWithType.vb: StatsCounters.=(StatsCounters, StatsCounters)
+- uid: EchoHub.Server.Services.Stats.StatsCounters.op_Equality*
+  name: operator ==
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_op_Equality_
+  commentId: Overload:EchoHub.Server.Services.Stats.StatsCounters.op_Equality
+  name.vb: =
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.operator ==
+  fullName.vb: EchoHub.Server.Services.Stats.StatsCounters.=
+  nameWithType: StatsCounters.operator ==
+  nameWithType.vb: StatsCounters.=
+- uid: EchoHub.Server.Services.Stats.StatsCounters.op_Inequality(EchoHub.Server.Services.Stats.StatsCounters,EchoHub.Server.Services.Stats.StatsCounters)
+  name: operator !=(StatsCounters, StatsCounters)
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_op_Inequality_EchoHub_Server_Services_Stats_StatsCounters_EchoHub_Server_Services_Stats_StatsCounters_
+  commentId: M:EchoHub.Server.Services.Stats.StatsCounters.op_Inequality(EchoHub.Server.Services.Stats.StatsCounters,EchoHub.Server.Services.Stats.StatsCounters)
+  name.vb: <>(StatsCounters, StatsCounters)
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.operator !=(EchoHub.Server.Services.Stats.StatsCounters, EchoHub.Server.Services.Stats.StatsCounters)
+  fullName.vb: EchoHub.Server.Services.Stats.StatsCounters.<>(EchoHub.Server.Services.Stats.StatsCounters, EchoHub.Server.Services.Stats.StatsCounters)
+  nameWithType: StatsCounters.operator !=(StatsCounters, StatsCounters)
+  nameWithType.vb: StatsCounters.<>(StatsCounters, StatsCounters)
+- uid: EchoHub.Server.Services.Stats.StatsCounters.op_Inequality*
+  name: operator !=
+  href: api/server/EchoHub.Server.Services.Stats.StatsCounters.html#EchoHub_Server_Services_Stats_StatsCounters_op_Inequality_
+  commentId: Overload:EchoHub.Server.Services.Stats.StatsCounters.op_Inequality
+  name.vb: <>
+  fullName: EchoHub.Server.Services.Stats.StatsCounters.operator !=
+  fullName.vb: EchoHub.Server.Services.Stats.StatsCounters.<>
+  nameWithType: StatsCounters.operator !=
+  nameWithType.vb: StatsCounters.<>
 - uid: EchoHub.Server.Services.UserService
   name: UserService
   href: api/server/EchoHub.Server.Services.UserService.html

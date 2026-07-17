@@ -109,6 +109,13 @@ that a fast typist never trips them; Mods and above are always exempt.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="EchoHub.Server.Config.StatsOptions.html">StatsOptions</a></dt>
+      <dd><p>Periodic server-stats report settings, bound from the &quot;Stats&quot; config section (env override:
+<code>Stats__Enabled</code> etc.). When enabled, a background job periodically snapshots server
+activity, logs it as pretty-printed JSON, and persists it to the database.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="EchoHub.Server.Config.UploadLimits.html">UploadLimits</a></dt>
       <dd><p>Admin-configurable upload limits, bound from the <code>Uploads</code> configuration section.
 Sizes are expressed in megabytes in configuration; the <code>*Bytes</code> accessors convert them
