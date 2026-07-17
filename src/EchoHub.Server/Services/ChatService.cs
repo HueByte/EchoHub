@@ -6,6 +6,7 @@ using EchoHub.Core.Models;
 using EchoHub.Core.Security;
 using EchoHub.Server.Data;
 using EchoHub.Server.Services.ServerLogs;
+using EchoHub.Server.Services.Stats;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -23,6 +24,7 @@ public class ChatService : IChatService
     private readonly FileStorageService _fileStorage;
     private readonly SpamGuard _spamGuard;
     private readonly ServerLogsService _serverLogs;
+    private readonly ServerStatsCollector _statsCollector;
     private readonly ILogger<ChatService> _logger;
 
     public ChatService(
@@ -35,6 +37,7 @@ public class ChatService : IChatService
         FileStorageService fileStorage,
         SpamGuard spamGuard,
         ServerLogsService serverLogs,
+        ServerStatsCollector statsCollector,
         ILogger<ChatService> logger)
     {
         _scopeFactory = scopeFactory;
@@ -46,12 +49,14 @@ public class ChatService : IChatService
         _fileStorage = fileStorage;
         _spamGuard = spamGuard;
         _serverLogs = serverLogs;
+        _statsCollector = statsCollector;
         _logger = logger;
     }
 
     public async Task UserConnectedAsync(string connectionId, Guid userId, string username)
     {
         _presenceTracker.UserConnected(connectionId, userId, username);
+        _statsCollector.RecordConnection(_presenceTracker.GetOnlineUserCount());
 
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
@@ -64,7 +69,9 @@ public class ChatService : IChatService
             await db.SaveChangesAsync();
         }
 
-        _logger.LogInformation("{User} connected (ConnectionId: {ConnectionId})", username, connectionId);
+        // Debug-level: connect/disconnect churn is high-volume on a busy server. Aggregate
+        // counts land in the periodic stats report instead.
+        _logger.LogDebug("{User} connected (ConnectionId: {ConnectionId})", username, connectionId);
     }
 
     public async Task<string?> UserDisconnectedAsync(string connectionId)
@@ -75,6 +82,7 @@ public class ChatService : IChatService
             : [];
 
         var username = _presenceTracker.UserDisconnected(connectionId);
+        _statsCollector.RecordDisconnection(_presenceTracker.GetOnlineUserCount());
 
         if (username is not null && !_presenceTracker.IsOnline(username))
         {
@@ -100,7 +108,7 @@ public class ChatService : IChatService
             }
         }
 
-        _logger.LogInformation("{User} disconnected (ConnectionId: {ConnectionId})", username ?? "Unknown", connectionId);
+        _logger.LogDebug("{User} disconnected (ConnectionId: {ConnectionId})", username ?? "Unknown", connectionId);
         return username;
     }
 
@@ -165,7 +173,7 @@ public class ChatService : IChatService
                 await BroadcastToAllAsync(b => b.SendUserJoinedAsync(channelName, username, presence, connectionId));
             }
 
-            _logger.LogInformation("{User} joined channel '{Channel}'", username, channelName);
+            _logger.LogDebug("{User} joined channel '{Channel}'", username, channelName);
         }
 
         var history = await GetChannelHistoryAsync(channelName, HubConstants.DefaultHistoryCount);
@@ -177,7 +185,7 @@ public class ChatService : IChatService
         channelName = channelName.ToLowerInvariant().Trim();
         _presenceTracker.LeaveChannel(username, channelName);
         await BroadcastToAllAsync(b => b.SendUserLeftAsync(channelName, username));
-        _logger.LogInformation("{User} left channel '{Channel}'", username, channelName);
+        _logger.LogDebug("{User} left channel '{Channel}'", username, channelName);
     }
 
     public async Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content, string? originConnectionId = null, Guid? replyToMessageId = null)

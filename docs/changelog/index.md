@@ -4,6 +4,7 @@ Release history for EchoHub.
 
 ## Releases
 
+- [v0.2.16](v0.2.16.md) - Periodic Server-Stats Report, Upload & Moderation Logging & Quieter Connection Logs
 - [v0.2.15](v0.2.15.md) - Invite Codes, Data Export & Deletion, /me, /banner, Replies, Open Images In Browser & IRC Image Links
 - [v0.2.14](v0.2.14.md) - Clipboard Image & Multi-File Paste, E2E Room Unlock Fixes, Encrypted Key Cache & IRC Gateway Polish
 - [v0.2.13](v0.2.13.md) - Chat Visual Overhaul, Auto-Join All Channels & Persistent Read Positions

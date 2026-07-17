@@ -29,6 +29,7 @@ public class ChannelsController : ControllerBase
     private readonly IChatService _chatService;
     private readonly IMessageEncryptionService _encryption;
     private readonly UploadLimits _uploadLimits;
+    private readonly ILogger<ChannelsController> _logger;
 
     public ChannelsController(
         IChannelService channelService,
@@ -38,7 +39,8 @@ public class ChannelsController : ControllerBase
         IHttpClientFactory httpClientFactory,
         IChatService chatService,
         IMessageEncryptionService encryption,
-        UploadLimits uploadLimits)
+        UploadLimits uploadLimits,
+        ILogger<ChannelsController> logger)
     {
         _channelService = channelService;
         _db = db;
@@ -48,6 +50,7 @@ public class ChannelsController : ControllerBase
         _chatService = chatService;
         _encryption = encryption;
         _uploadLimits = uploadLimits;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -289,6 +292,12 @@ public class ChannelsController : ControllerBase
             });
             attachmentDtos.Add(new AttachmentDto(kind, url, file.FileName, file.Length,
                 _encryption.EncryptNullable(previewPlain)));
+
+            // Filename is client-encrypted ciphertext in E2E rooms — never log it there.
+            var loggedName = channelDto.IsEncrypted ? "[encrypted]" : file.FileName;
+            _logger.LogInformation(
+                "{User} uploaded {Kind} '{FileName}' ({Size} bytes) to '{Channel}': {Url}",
+                usernameClaim, kind, loggedName, file.Length, channelName, url);
         }
 
         var dbContent = _encryption.EncryptDatabaseEnabled ? _encryption.Encrypt(content) : content;
@@ -445,6 +454,10 @@ public class ChannelsController : ControllerBase
 
         _db.Messages.Add(message);
         await _db.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "{User} uploaded Image '{FileName}' ({Size} bytes) from URL to '{Channel}': {Url} (source: {Source})",
+            usernameClaim, fileName, imageBytes.Length, channelName, attachmentUrl, request.Url);
 
         var messageDto = new MessageDto(
             message.Id,

@@ -113,7 +113,7 @@ public sealed class IrcGatewayService : BackgroundService
         var connection = new IrcClientConnection(tcpClient, stream);
         _connections[connection.ConnectionId] = connection;
 
-        _logger.LogInformation("IRC client connected: {Id}", connection.ConnectionId);
+        _logger.LogDebug("IRC client connected: {Id}", connection.ConnectionId);
 
         IChatService? chatService = null;
 
@@ -148,7 +148,7 @@ public sealed class IrcGatewayService : BackgroundService
 
             _connections.TryRemove(connection.ConnectionId, out _);
             await connection.DisposeAsync();
-            _logger.LogInformation("IRC client {Id} ({Nick}) disconnected",
+            _logger.LogDebug("IRC client {Id} ({Nick}) disconnected",
                 connection.ConnectionId, connection.Nickname ?? "unregistered");
         }
     }
