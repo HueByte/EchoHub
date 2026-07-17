@@ -11,7 +11,19 @@ public record MessageDto(
     DateTimeOffset SentAt,
     List<AttachmentDto>? Attachments = null,
     List<EmbedDto>? Embeds = null,
-    string? SenderDisplayName = null);
+    string? SenderDisplayName = null,
+    ReplyRefDto? ReplyTo = null);
+
+/// <summary>
+/// Reference to the message a reply targets. <see cref="Content"/> is treated exactly like
+/// message content on the wire: transport-encrypted, and for end-to-end encrypted rooms it is
+/// room ciphertext the client must decrypt (the server truncates only plaintext snippets).
+/// Null on a <see cref="MessageDto"/> when the original message no longer exists.
+/// </summary>
+public record ReplyRefDto(
+    Guid MessageId,
+    string SenderUsername,
+    string Content);
 
 /// <summary>
 /// A file attached to a message. <see cref="AsciiPreview"/> holds the color-tag art for
@@ -33,7 +45,8 @@ public record ChannelDto(
     int MessageCount,
     DateTimeOffset CreatedAt,
     bool IsProtected = false,
-    bool IsEncrypted = false);
+    bool IsEncrypted = false,
+    bool IsSystem = false);
 
 public record UserDto(
     Guid Id,

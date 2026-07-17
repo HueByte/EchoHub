@@ -188,7 +188,7 @@ internal sealed class FakeChatService : IChatService
         return Task.CompletedTask;
     }
 
-    public Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content)
+    public Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content, string? originConnectionId = null, Guid? replyToMessageId = null)
     {
         SentMessages.Add((channelName, content));
         return Task.FromResult(SendMessageError);
@@ -210,6 +210,9 @@ internal sealed class FakeChatService : IChatService
         Task.CompletedTask;
 
     public Task BroadcastChannelUpdatedAsync(ChannelDto channel, string? channelName = null) =>
+        Task.CompletedTask;
+
+    public Task BroadcastChannelDeletedAsync(string channelName) =>
         Task.CompletedTask;
 
     public Task<List<string>> GetChannelsForUserAsync(string username) =>
@@ -277,6 +280,12 @@ internal sealed class FakeChannelService : IChannelService
 
     public Task<(bool Success, string? Error, bool PasswordRequired)> EnsureChannelMembershipAsync(Guid userId, string channelName, string? password = null) =>
         Task.FromResult(MembershipResult);
+
+    public ChannelDto? SystemChannelToReturn { get; set; }
+
+    public Task<ChannelDto> EnsureSystemChannelAsync(string channelName, string? topic = null) =>
+        Task.FromResult(SystemChannelToReturn ?? new ChannelDto(
+            Guid.NewGuid(), channelName, topic, false, 0, DateTimeOffset.UnixEpoch, false, false, true));
 }
 
 /// <summary>
@@ -302,9 +311,14 @@ internal sealed class FakeUserService : IUserService
         Task.FromResult(AuthResult
             ?? UserOperationResult.Fail(UserError.InvalidCredentials, "Invalid username or password."));
 
-    public Task<UserOperationResult> RegisterUserAsync(string username, string password, string? displayName = null) =>
-        Task.FromResult(RegisterResult
+    public List<string?> RegisterInviteCodes { get; } = [];
+
+    public Task<UserOperationResult> RegisterUserAsync(string username, string password, string? displayName = null, string? inviteCode = null)
+    {
+        RegisterInviteCodes.Add(inviteCode);
+        return Task.FromResult(RegisterResult
             ?? UserOperationResult.Fail(UserError.AlreadyExists, "Username is already taken."));
+    }
 
     public Task<UserProfileDto?> GetUserProfileAsync(string username) =>
         Task.FromResult(ProfileToReturn);

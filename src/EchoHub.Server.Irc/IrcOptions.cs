@@ -12,4 +12,11 @@ public sealed class IrcOptions
     public string? TlsCertPassword { get; set; }
     public string ServerName { get; set; } = "echohub";
     public string? Motd { get; set; }
+
+    /// <summary>
+    /// Public HTTP(S) base of this EchoHub server (e.g. "https://chat.example.com"),
+    /// used to turn relative attachment URLs into absolute links IRC clients can open.
+    /// When unset, attachment lines fall back to the relative path.
+    /// </summary>
+    public string? PublicBaseUrl { get; set; }
 }

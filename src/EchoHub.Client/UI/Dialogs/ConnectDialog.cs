@@ -11,7 +11,8 @@ namespace EchoHub.Client.UI.Dialogs;
 /// </summary>
 public record ConnectDialogResult(
     string ServerUrl, string Username, string Password,
-    bool IsRegister, bool RememberMe, string? SavedRefreshToken);
+    bool IsRegister, bool RememberMe, string? SavedRefreshToken,
+    string? DisplayName = null, string? InviteCode = null);
 
 /// <summary>
 /// A Terminal.Gui dialog for entering server connection and authentication details.
@@ -29,7 +30,7 @@ public sealed class ConnectDialog
         savedServers ??= [];
 
         var hasSavedServers = savedServers.Count > 0;
-        var dialogHeight = hasSavedServers ? 22 : 18;
+        var dialogHeight = hasSavedServers ? 24 : 20;
 
         var dialog = new Dialog { Title = "Connect to Server", Width = 60, Height = dialogHeight };
 
@@ -153,26 +154,41 @@ public sealed class ConnectDialog
             Width = Dim.Fill(2)
         };
 
+        // Only needed on servers with invite-gated registration; harmless elsewhere
+        var inviteLabel = new Label
+        {
+            Text = "Invite Code:",
+            X = 1,
+            Y = yOffset + 11
+        };
+        var inviteField = new TextField
+        {
+            Text = "",
+            X = 15,
+            Y = yOffset + 11,
+            Width = Dim.Fill(2)
+        };
+
         var loginButton = new Button
         {
             Text = "Login",
             IsDefault = true,
             X = Pos.Center() - 20,
-            Y = yOffset + 11
+            Y = yOffset + 13
         };
 
         var registerButton = new Button
         {
             Text = "Register",
             X = Pos.Center() - 5,
-            Y = yOffset + 11
+            Y = yOffset + 13
         };
 
         var cancelButton = new Button
         {
             Text = "Cancel",
             X = Pos.Center() + 10,
-            Y = yOffset + 11
+            Y = yOffset + 13
         };
 
         // Wire saved server selection to auto-fill fields
@@ -262,7 +278,11 @@ public sealed class ConnectDialog
                 return;
             }
 
-            result = new ConnectDialogResult(url, user, pass, IsRegister: true, rememberMe, SavedRefreshToken: null);
+            var displayName = displayField.Text?.Trim();
+            var inviteCode = inviteField.Text?.Trim();
+            result = new ConnectDialogResult(url, user, pass, IsRegister: true, rememberMe, SavedRefreshToken: null,
+                DisplayName: string.IsNullOrEmpty(displayName) ? null : displayName,
+                InviteCode: string.IsNullOrEmpty(inviteCode) ? null : inviteCode);
             e.Handled = true;
             app.RequestStop();
         };
@@ -276,6 +296,7 @@ public sealed class ConnectDialog
 
         dialog.Add(urlLabel, urlField, userLabel, userField, passLabel, passField,
             tokenHintLabel, rememberMeCheckbox, displayLabel, displayField,
+            inviteLabel, inviteField,
             loginButton, registerButton, cancelButton);
 
         if (hasSavedServers && savedServerList is not null)

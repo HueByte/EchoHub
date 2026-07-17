@@ -3,7 +3,9 @@ using EchoHub.Core.Constants;
 using EchoHub.Core.Contracts;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
+using EchoHub.Core.Security;
 using EchoHub.Server.Data;
+using EchoHub.Server.Services.ServerLogs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -19,6 +21,8 @@ public class ChatService : IChatService
     private readonly IMessageEncryptionService _encryption;
     private readonly IChannelService _channelService;
     private readonly FileStorageService _fileStorage;
+    private readonly SpamGuard _spamGuard;
+    private readonly ServerLogsService _serverLogs;
     private readonly ILogger<ChatService> _logger;
 
     public ChatService(
@@ -29,6 +33,8 @@ public class ChatService : IChatService
         IMessageEncryptionService encryption,
         IChannelService channelService,
         FileStorageService fileStorage,
+        SpamGuard spamGuard,
+        ServerLogsService serverLogs,
         ILogger<ChatService> logger)
     {
         _scopeFactory = scopeFactory;
@@ -38,6 +44,8 @@ public class ChatService : IChatService
         _encryption = encryption;
         _channelService = channelService;
         _fileStorage = fileStorage;
+        _spamGuard = spamGuard;
+        _serverLogs = serverLogs;
         _logger = logger;
     }
 
@@ -101,6 +109,27 @@ public class ChatService : IChatService
     {
         channelName = channelName.ToLowerInvariant().Trim();
 
+        // Join throttle — stops channel-cycling spam from any protocol. Only *first-time*
+        // joins (no membership yet) count: the client auto-joins every known channel on
+        // connect/reconnect, and that burst must never trip the guard.
+        if (_spamGuard.Enabled)
+        {
+            using var guardScope = _scopeFactory.CreateScope();
+            var guardDb = guardScope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
+
+            var isExistingMember = await guardDb.Channels
+                .Where(c => c.Name == channelName)
+                .AnyAsync(c => guardDb.ChannelMemberships.Any(m => m.ChannelId == c.Id && m.UserId == userId));
+
+            if (!isExistingMember)
+            {
+                var joiner = await guardDb.Users.FindAsync(userId);
+                var joinVerdict = _spamGuard.CheckJoin(userId, joiner?.Role ?? ServerRole.Member);
+                if (joinVerdict.Kind != SpamVerdictKind.Allowed)
+                    return ([], joinVerdict.Reason, false);
+            }
+        }
+
         // Delegate channel validation + membership (incl. password gate) to ChannelService
         var (success, error, passwordRequired) = await _channelService.EnsureChannelMembershipAsync(userId, channelName, password);
         if (!success)
@@ -151,12 +180,17 @@ public class ChatService : IChatService
         _logger.LogInformation("{User} left channel '{Channel}'", username, channelName);
     }
 
-    public async Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content)
+    public async Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content, string? originConnectionId = null, Guid? replyToMessageId = null)
     {
         channelName = channelName.ToLowerInvariant().Trim();
 
         if (!ValidationConstants.ChannelNameRegex().IsMatch(channelName))
             return "Invalid channel name.";
+
+        // The live log room is read-only for everyone, every role. Reject by name before any
+        // work so a streamed log line can never provoke a DB write or another log event.
+        if (_serverLogs.IsLogsChannel(channelName))
+            return "This channel is read-only.";
 
         // Decrypt content (client sends encrypted; IRC sends plaintext — Decrypt handles both)
         var plaintext = _encryption.Decrypt(content);
@@ -181,6 +215,9 @@ public class ChatService : IChatService
         if (channel is null)
             return $"Channel '{channelName}' does not exist.";
 
+        if (channel.IsSystem)
+            return "This channel is read-only.";
+
         var sender = await db.Users.FindAsync(userId);
 
         // Check mute status
@@ -196,6 +233,36 @@ public class ChatService : IChatService
             {
                 return "You are muted and cannot send messages.";
             }
+        }
+
+        // Spam guard — operates on the stored content (ciphertext for E2E rooms), never decrypts
+        if (sender is not null)
+        {
+            var verdict = _spamGuard.CheckMessage(userId, sender.Role, plaintext);
+            switch (verdict.Kind)
+            {
+                case SpamVerdictKind.AutoMute:
+                    // Escalate through the normal timed-mute machinery: moderation endpoints
+                    // list it and MuteExpirationService lifts it. Issued by the server itself.
+                    sender.IsMuted = true;
+                    sender.MutedUntil = DateTimeOffset.UtcNow.Add(verdict.MuteDuration);
+                    await db.SaveChangesAsync();
+                    _logger.LogWarning("Spam protection auto-muted {User} for {Minutes} minutes in '{Channel}'",
+                        username, (int)verdict.MuteDuration.TotalMinutes, channelName);
+                    return $"You have been automatically muted for {(int)verdict.MuteDuration.TotalMinutes} minutes (spam protection).";
+
+                case SpamVerdictKind.Rejected:
+                    return verdict.Reason;
+            }
+        }
+
+        // Replies must target an existing message in the same channel
+        Message? replyTarget = null;
+        if (replyToMessageId is { } replyId)
+        {
+            replyTarget = await db.Messages.FirstOrDefaultAsync(m => m.Id == replyId && m.ChannelId == channel.Id);
+            if (replyTarget is null)
+                return "The message you're replying to no longer exists.";
         }
 
         // Attempt to fetch link embeds for URLs in the plaintext message
@@ -223,6 +290,7 @@ public class ChatService : IChatService
             SenderUserId = userId,
             SenderUsername = username,
             EmbedJson = dbEmbedJson,
+            ReplyToMessageId = replyTarget?.Id,
         };
 
         db.Messages.Add(message);
@@ -238,9 +306,10 @@ public class ChatService : IChatService
             channelName,
             message.SentAt,
             Embeds: embeds,
-            SenderDisplayName: sender?.DisplayName);
+            SenderDisplayName: sender?.DisplayName,
+            ReplyTo: replyTarget is null ? null : BuildReplyRef(replyTarget));
 
-        await BroadcastToAllAsync(b => b.SendMessageToChannelAsync(channelName, messageDto));
+        await BroadcastToAllAsync(b => b.SendMessageToChannelAsync(channelName, messageDto, originConnectionId));
 
         _logger.LogDebug("{User} sent message in '{Channel}'", username, channelName);
         return null;
@@ -252,14 +321,57 @@ public class ChatService : IChatService
         count = Math.Clamp(count, 1, ValidationConstants.MaxHistoryCount);
         offset = Math.Max(offset, 0);
 
+        // The log room has no DB messages — its backlog is the tail of the rolling log file.
+        // Only the first page carries the backlog; older pages are empty (files are the archive).
+        if (_serverLogs.IsLogsChannel(channelName))
+            return offset > 0 ? [] : BuildLogBacklog(channelName);
+
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<EchoHubDbContext>();
 
         return await GetChannelHistoryInternalAsync(db, channelName, count, offset);
     }
 
+    /// <summary>
+    /// Turns the log-file backlog into transport-encrypted <see cref="MessageDto"/>s so clients
+    /// render past log lines exactly like streamed ones. Never touches the database.
+    /// </summary>
+    private List<MessageDto> BuildLogBacklog(string channelName)
+    {
+        return _serverLogs.ReadBacklog()
+            .Select(entry => new MessageDto(
+                Guid.NewGuid(),
+                _encryption.Encrypt(entry.Content),
+                ServerLogsService.SenderName,
+                null,
+                channelName,
+                entry.Timestamp))
+            .ToList();
+    }
+
+    /// <summary>
+    /// Builds the wire reference for a reply target. Plaintext snippets are truncated
+    /// server-side; end-to-end room ciphertext must pass through whole (a truncated blob
+    /// can't be decrypted), so the client truncates those after decrypting.
+    /// </summary>
+    private ReplyRefDto BuildReplyRef(Message target)
+    {
+        const int maxSnippetLength = 120;
+
+        // Strip the at-rest layer; E2E room content stays $RC1$ ciphertext
+        var plain = _encryption.Decrypt(target.Content);
+        if (!RoomCrypto.IsRoomCiphertext(plain) && plain.Length > maxSnippetLength)
+            plain = plain[..maxSnippetLength] + "…";
+
+        return new ReplyRefDto(target.Id, target.SenderUsername, _encryption.Encrypt(plain));
+    }
+
     public async Task<string?> UpdateStatusAsync(Guid userId, string username, UserStatus status, string? statusMessage)
     {
+        // SignalR happily binds any int to the enum parameter — reject undefined values
+        if (!Enum.IsDefined(status))
+            return "Invalid status. Use online, away, dnd, or invisible.";
+
         if (statusMessage is not null && statusMessage.Length > ValidationConstants.MaxStatusMessageLength)
             return $"Status message must not exceed {ValidationConstants.MaxStatusMessageLength} characters.";
 
@@ -320,6 +432,9 @@ public class ChatService : IChatService
     public Task BroadcastChannelUpdatedAsync(ChannelDto channel, string? channelName = null)
         => BroadcastToAllAsync(b => b.SendChannelUpdatedAsync(channel, channelName));
 
+    public Task BroadcastChannelDeletedAsync(string channelName)
+        => BroadcastToAllAsync(b => b.SendChannelDeletedAsync(channelName));
+
     private async Task BroadcastToAllAsync(Func<IChatBroadcaster, Task> action)
     {
         foreach (var broadcaster in _broadcasters)
@@ -379,18 +494,32 @@ public class ChatService : IChatService
         if (channel is null)
             return [];
 
+        // Left join: tombstoned messages (deleted accounts, SenderUserId cleared) must
+        // still appear in history — an inner join would silently drop them.
         var raw = await db.Messages
             .Where(m => m.ChannelId == channel.Id)
             .OrderByDescending(m => m.SentAt)
             .Skip(offset)
             .Take(count)
-            .Join(db.Users,
+            .GroupJoin(db.Users,
                 m => m.SenderUserId,
                 u => u.Id,
-                (m, u) => new { m, u.NicknameColor, u.DisplayName })
+                (m, users) => new { m, users })
+            .SelectMany(x => x.users.DefaultIfEmpty(),
+                (x, u) => new { x.m, NicknameColor = u != null ? u.NicknameColor : null, DisplayName = u != null ? u.DisplayName : null })
             .ToListAsync();
 
         raw.Reverse();
+
+        // Reply targets referenced by this batch, for quote snippets
+        var replyIds = raw
+            .Where(x => x.m.ReplyToMessageId.HasValue)
+            .Select(x => x.m.ReplyToMessageId!.Value)
+            .Distinct()
+            .ToList();
+        var replyTargets = replyIds.Count > 0
+            ? (await db.Messages.Where(m => replyIds.Contains(m.Id)).ToListAsync()).ToDictionary(m => m.Id)
+            : new Dictionary<Guid, Message>();
 
         var messageIds = raw.Select(x => x.m.Id).ToList();
         var attachmentsByMessage = (await db.Attachments
@@ -456,7 +585,10 @@ public class ChatService : IChatService
                 x.m.SentAt,
                 attachments,
                 embeds,
-                x.DisplayName));
+                x.DisplayName,
+                x.m.ReplyToMessageId is { } rid && replyTargets.TryGetValue(rid, out var replyTarget)
+                    ? BuildReplyRef(replyTarget)
+                    : null));
         }
 
         // Lazily delete the pruned messages (+ their attachment rows) as they're encountered.

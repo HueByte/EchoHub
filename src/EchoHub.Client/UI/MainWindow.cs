@@ -64,16 +64,18 @@ public sealed partial class MainWindow : Runnable
     // Available slash commands for Tab autocomplete
     private static readonly string[] SlashCommands =
     [
-        "/status", "/nick", "/color", "/theme", "/send",
+        "/status", "/nick", "/color", "/theme", "/send", "/me", "/banner",
         "/avatar", "/profile", "/servers", "/join", "/passwd", "/leave", "/clear", "/size", "/downloadpath",
         "/topic", "/users", "/kick", "/ban", "/unban",
-        "/mute", "/unmute", "/role", "/nuke", "/test-sound", "/quit", "/help"
+        "/mute", "/unmute", "/role", "/invite", "/export", "/deleteaccount",
+        "/nuke", "/test-sound", "/quit", "/help"
     ];
 
     private readonly List<string> _channelNames = [];
     private readonly Dictionary<string, string?> _channelTopics = [];
     private readonly Dictionary<string, bool> _channelPublic = [];
     private readonly HashSet<string> _channelProtected = [];
+    private readonly HashSet<string> _systemChannels = [];
     private readonly ChannelListSource _channelListSource;
     private readonly ChatMessageManager _messageManager;
     private string _connectionStatus = "Disconnected";
@@ -177,9 +179,26 @@ public sealed partial class MainWindow : Runnable
     public event Action<string, string>? OnImageSaveRequested;
 
     /// <summary>
+    /// Fired when the user activates an image's "[open]" action to view it without saving.
+    /// Parameters: attachmentUrl, fileName.
+    /// </summary>
+    public event Action<string, string>? OnImageOpenRequested;
+
+    /// <summary>
     /// Fired when the user presses Delete on the selected message. Parameter is the message id.
     /// </summary>
     public event Action<Guid>? OnDeleteMessageRequested;
+
+    /// <summary>
+    /// Fired when the user picks "Reply" on a message. Parameters: message id, sender username,
+    /// a short plain-text snippet for the reply strip.
+    /// </summary>
+    public event Action<Guid, string, string>? OnReplyRequested;
+
+    /// <summary>
+    /// Fired when the user cancels a pending reply (Esc in the input field).
+    /// </summary>
+    public event Action? OnReplyCancelRequested;
 
     /// <summary>
     /// Fired when the user activates a username (in userlist or message). Parameter is the username.
@@ -351,6 +370,9 @@ public sealed partial class MainWindow : Runnable
         KeyDown += OnWindowKeyDown;
     }
 
+    private string? _stagedTitleFragment;
+    private string? _replyTitleFragment;
+
     /// <summary>
     /// Updates the attachment staging indicator shown on the input frame's title, including the
     /// current ASCII-art size for images. Passing an empty list restores the default hint.
@@ -360,15 +382,46 @@ public sealed partial class MainWindow : Runnable
         _hasStagedAttachments = fileNames.Count > 0;
         if (fileNames.Count == 0)
         {
-            _inputFrame.Title = DefaultInputTitle;
+            _stagedTitleFragment = null;
         }
         else
         {
             var names = string.Join(", ", fileNames);
             if (names.Length > 45)
                 names = names[..42] + "...";
-            _inputFrame.Title = $"📎 {fileNames.Count}: {names} │ art: {asciiSizeLabel} (/size) │ Enter=send │ /clear";
+            _stagedTitleFragment = $"📎 {fileNames.Count}: {names} │ art: {asciiSizeLabel} (/size) │ Enter=send │ /clear";
         }
+        UpdateInputTitle();
+    }
+
+    /// <summary>
+    /// Shows/clears the "replying to" strip on the input frame's title. Pass null to clear.
+    /// </summary>
+    public void SetReplyingTo(string? label)
+    {
+        _replyTitleFragment = label is null ? null : $"↩ Replying to {label} │ Esc=cancel";
+        UpdateInputTitle();
+    }
+
+    public bool HasPendingReplyIndicator => _replyTitleFragment is not null;
+
+    private void UpdateInputTitle()
+    {
+        // Read-only channels (the live log room) override any reply/staged hint.
+        if (IsCurrentChannelReadOnly)
+        {
+            _inputFrame.Title = "Read-only channel — you cannot type here";
+            _inputFrame.SetNeedsDraw();
+            return;
+        }
+
+        _inputFrame.Title = (_replyTitleFragment, _stagedTitleFragment) switch
+        {
+            (null, null) => DefaultInputTitle,
+            ({ } reply, null) => reply,
+            (null, { } staged) => staged,
+            ({ } reply, { } staged) => $"{reply} │ {staged}",
+        };
         _inputFrame.SetNeedsDraw();
     }
 
@@ -513,6 +566,14 @@ public sealed partial class MainWindow : Runnable
         var line = source.GetLine(index.Value);
         if (line is null) return;
 
+        // A reply's quote line jumps to the original message (if it's in the buffer)
+        if (line.JumpToMessageId is { } jumpTarget)
+        {
+            ScrollToMessage(jumpTarget);
+            e.Handled = true;
+            return;
+        }
+
         // Audio/file attachments take priority
         if (line.AttachmentUrl is not null && line.AttachmentFileName is not null)
         {
@@ -532,7 +593,9 @@ public sealed partial class MainWindow : Runnable
 
             if (line.AttachmentKind == AttachmentKind.Image)
             {
-                OnImageSaveRequested?.Invoke(line.AttachmentUrl, line.AttachmentFileName);
+                // Keyboard/default activation opens the image for viewing;
+                // saving is the mouse span or the context menu.
+                OnImageOpenRequested?.Invoke(line.AttachmentUrl, line.AttachmentFileName);
                 e.Handled = true;
                 return;
             }
@@ -600,7 +663,8 @@ public sealed partial class MainWindow : Runnable
 
     private void OnMessageListMouseEvent(object? sender, Mouse e)
     {
-        if (!e.Flags.HasFlag(MouseFlags.RightButtonClicked))
+        var leftClick = e.Flags.HasFlag(MouseFlags.LeftButtonClicked);
+        if (!leftClick && !e.Flags.HasFlag(MouseFlags.RightButtonClicked))
             return;
 
         if (_messageList.Source is not ChatListSource source || source.Count == 0 || e.Position is not { } pos)
@@ -609,6 +673,30 @@ public sealed partial class MainWindow : Runnable
         var index = _messageList.TopItem + pos.Y;
         if (index < 0 || index >= source.Count)
             return;
+
+        // Left-click only activates the "[open]" / "[save original]" brackets on an
+        // attachment action line; anywhere else it falls through to normal selection.
+        if (leftClick)
+        {
+            var clicked = source.GetLine(index);
+            if (clicked?.ActionSpans is { } spans
+                && clicked.AttachmentUrl is { } url && clicked.AttachmentFileName is { } name)
+            {
+                foreach (var span in spans)
+                {
+                    if (pos.X < span.StartCol || pos.X > span.EndCol)
+                        continue;
+
+                    if (span.Action == AttachmentAction.OpenImage)
+                        OnImageOpenRequested?.Invoke(url, name);
+                    else
+                        OnImageSaveRequested?.Invoke(url, name);
+                    e.Handled = true;
+                    return;
+                }
+            }
+            return;
+        }
 
         // Select the right-clicked row (so the menu acts on it and it highlights), then show the menu.
         _messageList.SelectedItem = index;
@@ -636,6 +724,7 @@ public sealed partial class MainWindow : Runnable
             switch (kind)
             {
                 case AttachmentKind.Image:
+                    items.Add(new MenuItem("Open image", "", () => OnImageOpenRequested?.Invoke(url, name), Key.Empty));
                     items.Add(new MenuItem("Save original image", "", () => OnImageSaveRequested?.Invoke(url, name), Key.Empty));
                     break;
                 case AttachmentKind.Audio:
@@ -645,6 +734,20 @@ public sealed partial class MainWindow : Runnable
                     items.Add(new MenuItem("Download file", "", () => OnFileDownloadRequested?.Invoke(url, name), Key.Empty));
                     break;
             }
+        }
+
+        if (sender is not null && line.MessageId is { } replyTargetId)
+        {
+            items.Add(new MenuItem("Reply", "", () =>
+            {
+                // Strip the "HH:mm nick │ " header so the strip shows just the text
+                var snippet = line.ToString();
+                var railIdx = snippet.IndexOf(" │ ", StringComparison.Ordinal);
+                if (railIdx >= 0)
+                    snippet = snippet[(railIdx + 3)..];
+                OnReplyRequested?.Invoke(replyTargetId, sender, snippet.Trim());
+                _inputField.SetFocus();
+            }, Key.Empty));
         }
 
         if (sender is not null)
@@ -688,6 +791,30 @@ public sealed partial class MainWindow : Runnable
         }
     }
 
+    /// <summary>
+    /// Scrolls the message list to a message's first line (used by reply quote lines).
+    /// No-op when the message isn't in the loaded buffer.
+    /// </summary>
+    private void ScrollToMessage(Guid messageId)
+    {
+        if (_messageList.Source is not ChatListSource source)
+            return;
+
+        for (int i = 0; i < source.Count; i++)
+        {
+            var line = source.GetLine(i);
+            // Match the message's own lines, not other replies' quote lines pointing at it
+            if (line?.MessageId == messageId && line.JumpToMessageId is null)
+            {
+                _messageList.SelectedItem = i;
+                _messageList.TopItem = Math.Max(0, i - 3);
+                _messageList.SetFocus();
+                _messageList.SetNeedsDraw();
+                return;
+            }
+        }
+    }
+
     private void ConfirmDeleteMessage(Guid messageId)
     {
         var confirm = MessageBox.Query(_app, "Delete Message", "Delete this message?", "Delete", "Cancel");
@@ -723,11 +850,17 @@ public sealed partial class MainWindow : Runnable
                 TryAutocompleteCommand();
                 break;
 
+            case KeyCode.Esc when HasPendingReplyIndicator:
+                OnReplyCancelRequested?.Invoke();
+                break;
+
             case NewlineKey:
                 _inputField.InsertText("\n");
                 break;
 
             case EnterKey:
+                if (IsCurrentChannelReadOnly)
+                    break;
                 var text = _inputField.Text?.Trim() ?? string.Empty;
                 // Send when there's text, or when only attachments are staged (empty caption).
                 if ((!string.IsNullOrEmpty(text) || _hasStagedAttachments)
@@ -754,6 +887,9 @@ public sealed partial class MainWindow : Runnable
 
             case CtrlVKey:
             case CtrlYKey:
+                // Read-only channels can't receive text or attachments.
+                if (IsCurrentChannelReadOnly)
+                    break;
                 // Discord-style paste priority. Copied files in the OS file manager put a file
                 // list (not text) on the clipboard — attach them all. Copied image data (browser
                 // right-click copy, screenshot tools) is attached as a PNG. Otherwise paste text.
@@ -980,6 +1116,7 @@ public sealed partial class MainWindow : Runnable
         _channelTopics.Clear();
         _channelPublic.Clear();
         _channelProtected.Clear();
+        _systemChannels.Clear();
         foreach (var ch in channels)
         {
             _channelNames.Add(ch.Name);
@@ -987,6 +1124,8 @@ public sealed partial class MainWindow : Runnable
             _channelPublic[ch.Name] = ch.IsPublic;
             if (ch.IsProtected)
                 _channelProtected.Add(ch.Name);
+            if (ch.IsSystem)
+                _systemChannels.Add(ch.Name);
         }
         RefreshChannelList();
     }
@@ -994,7 +1133,8 @@ public sealed partial class MainWindow : Runnable
     /// <summary>
     /// Ensure a channel exists in the left panel list (used for private channels joined via /join).
     /// </summary>
-    public void EnsureChannelInList(string channelName, bool? isPublic = null, bool? isProtected = null)
+    public void EnsureChannelInList(string channelName, bool? isPublic = null, bool? isProtected = null,
+        bool? isSystem = null)
     {
         if (isPublic.HasValue)
             _channelPublic[channelName] = isPublic.Value;
@@ -1005,9 +1145,15 @@ public sealed partial class MainWindow : Runnable
             else _channelProtected.Remove(channelName);
         }
 
+        if (isSystem.HasValue)
+        {
+            if (isSystem.Value) _systemChannels.Add(channelName);
+            else _systemChannels.Remove(channelName);
+        }
+
         if (_channelNames.Contains(channelName))
         {
-            if (isProtected.HasValue)
+            if (isProtected.HasValue || isSystem.HasValue)
                 RefreshChannelList();
             return;
         }
@@ -1025,6 +1171,7 @@ public sealed partial class MainWindow : Runnable
         _channelTopics.Remove(channelName);
         _channelPublic.Remove(channelName);
         _channelProtected.Remove(channelName);
+        _systemChannels.Remove(channelName);
         RefreshChannelList();
     }
 
@@ -1215,12 +1362,26 @@ public sealed partial class MainWindow : Runnable
 
         RefreshMessages();
         UpdateTopicBar();
+        UpdateInputReadOnly();
         _statusLabel.SetNeedsDraw();
 
         // Update channel list selection
         var idx = _channelNames.IndexOf(channelName);
         if (idx >= 0)
             _channelList.SelectedItem = idx;
+    }
+
+    /// <summary>Whether the active channel is read-only (a system channel like the log room).</summary>
+    private bool IsCurrentChannelReadOnly => _systemChannels.Contains(_messageManager.CurrentChannel);
+
+    /// <summary>
+    /// Disables the input for read-only (system) channels so nothing can be typed there, and
+    /// reflects the state in the input frame title.
+    /// </summary>
+    private void UpdateInputReadOnly()
+    {
+        _inputField.ReadOnly = IsCurrentChannelReadOnly;
+        UpdateInputTitle();
     }
 
     /// <summary>
@@ -1233,6 +1394,7 @@ public sealed partial class MainWindow : Runnable
         _channelTopics.Clear();
         _channelPublic.Clear();
         _channelProtected.Clear();
+        _systemChannels.Clear();
         _channelListSource.Update([], [], string.Empty);
         _channelList.Source = _channelListSource;
         _chatFrame.Title = "Chat";
@@ -1337,11 +1499,21 @@ public sealed partial class MainWindow : Runnable
     /// </summary>
     private void RefreshChannelList()
     {
+        // Pin system channels (e.g. the live log room) to the very top, keeping the server's
+        // relative order otherwise. OrderBy is stable, so alphabetical order is preserved within
+        // each group. Reordering in place keeps _channelNames the source of truth for selection
+        // lookups. System channels are private by nature but shouldn't get the private (~) glyph,
+        // so exclude them from the private set.
+        var ordered = _channelNames.OrderBy(n => _systemChannels.Contains(n) ? 0 : 1).ToList();
+        _channelNames.Clear();
+        _channelNames.AddRange(ordered);
+
         var privateChannels = _channelNames
-            .Where(n => _channelPublic.TryGetValue(n, out var isPublic) && !isPublic)
+            .Where(n => !_systemChannels.Contains(n)
+                && _channelPublic.TryGetValue(n, out var isPublic) && !isPublic)
             .ToHashSet();
         _channelListSource.Update(_channelNames, _messageManager.GetUnreadCounts(), _messageManager.CurrentChannel,
-            _channelProtected, _messageManager.MentionChannels, privateChannels);
+            _channelProtected, _messageManager.MentionChannels, privateChannels, _systemChannels);
         _channelList.Source = _channelListSource;
 
         // Restore selection to current channel

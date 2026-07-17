@@ -99,11 +99,11 @@ public class ChatHub : Hub<IEchoHubClient>
         }
     }
 
-    public async Task SendMessage(string channelName, string content)
+    public async Task SendMessage(string channelName, string content, Guid? replyToMessageId = null)
     {
         try
         {
-            var error = await _chatService.SendMessageAsync(CurrentUserId, CurrentUsername, channelName, content);
+            var error = await _chatService.SendMessageAsync(CurrentUserId, CurrentUsername, channelName, content, Context.ConnectionId, replyToMessageId);
             if (error is not null)
                 await Clients.Caller.Error(error);
         }

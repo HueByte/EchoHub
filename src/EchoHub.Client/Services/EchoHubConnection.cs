@@ -58,6 +58,7 @@ public sealed class EchoHubConnection : IAsyncDisposable
     public event Action<string, string, string?>? OnUserKicked;
     public event Action<string, string?>? OnUserBanned;
     public event Action<string, Guid>? OnMessageDeleted;
+    public event Action<string>? OnChannelDeleted;
     public event Action<string>? OnChannelNuked;
     public event Action<string>? OnForceDisconnect;
     public event Action<string>? OnError;
@@ -144,6 +145,11 @@ public sealed class EchoHubConnection : IAsyncDisposable
             OnMessageDeleted?.Invoke(channelName, messageId);
         });
 
+        _connection.On<string>(nameof(Core.Contracts.IEchoHubClient.ChannelDeleted), channelName =>
+        {
+            OnChannelDeleted?.Invoke(channelName);
+        });
+
         _connection.On<string>(nameof(Core.Contracts.IEchoHubClient.ChannelNuked), channelName =>
         {
             OnChannelNuked?.Invoke(channelName);
@@ -192,7 +198,7 @@ public sealed class EchoHubConnection : IAsyncDisposable
         await _connection.InvokeAsync("LeaveChannel", channelName);
     }
 
-    public async Task SendMessageAsync(string channelName, string content)
+    public async Task SendMessageAsync(string channelName, string content, Guid? replyToMessageId = null)
     {
         // Room layer first (end-to-end, server can't read), then transport encryption
         if (_roomKeys.TryGetKey(channelName, out var roomKey))
@@ -201,7 +207,7 @@ public sealed class EchoHubConnection : IAsyncDisposable
             throw new RoomLockedException(channelName); // never fall through to plaintext
 
         var encrypted = _encryption.Encrypt(content);
-        await _connection.InvokeAsync("SendMessage", channelName, encrypted);
+        await _connection.InvokeAsync("SendMessage", channelName, encrypted, replyToMessageId);
     }
 
     public async Task<List<MessageDto>> GetHistoryAsync(string channelName, int count = HubConstants.DefaultHistoryCount, int offset = 0)
@@ -244,7 +250,12 @@ public sealed class EchoHubConnection : IAsyncDisposable
                 .ToList();
         }
 
-        return message with { Content = content, Attachments = attachments };
+        // Reply snippets are encrypted exactly like message content
+        var replyTo = message.ReplyTo is { } reply
+            ? reply with { Content = DecryptField(reply.Content, roomKey) ?? LockedMessagePlaceholder }
+            : null;
+
+        return message with { Content = content, Attachments = attachments, ReplyTo = replyTo };
     }
 
     /// <summary>

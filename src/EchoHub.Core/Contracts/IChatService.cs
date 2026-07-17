@@ -13,8 +13,11 @@ public interface IChatService
     Task<(List<MessageDto> History, string? Error, bool PasswordRequired)> JoinChannelAsync(string connectionId, Guid userId, string username, string channelName, string? password = null);
     Task LeaveChannelAsync(string connectionId, string username, string channelName);
 
-    // Messaging
-    Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content);
+    // Messaging. originConnectionId identifies the connection the message came from so
+    // broadcasters can avoid echoing it back to that one connection (IRC convention);
+    // the sender's other sessions still receive it. replyToMessageId references the message
+    // being replied to; it must exist in the same channel.
+    Task<string?> SendMessageAsync(Guid userId, string username, string channelName, string content, string? originConnectionId = null, Guid? replyToMessageId = null);
     Task<List<MessageDto>> GetChannelHistoryAsync(string channelName, int count, int offset = 0);
 
     // Presence
@@ -24,6 +27,7 @@ public interface IChatService
     // Broadcasting (used by controllers and IRC gateway)
     Task BroadcastMessageAsync(string channelName, MessageDto message);
     Task BroadcastChannelUpdatedAsync(ChannelDto channel, string? channelName = null);
+    Task BroadcastChannelDeletedAsync(string channelName);
 
     // Query operations (used by IRC gateway for WHOIS)
     Task<List<string>> GetChannelsForUserAsync(string username);

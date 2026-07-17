@@ -7,6 +7,16 @@ using Attribute = Terminal.Gui.Drawing.Attribute;
 
 namespace EchoHub.Client.UI.Chat;
 
+/// <summary>An action a click on an attachment line can trigger.</summary>
+public enum AttachmentAction
+{
+    OpenImage,
+    SaveImage,
+}
+
+/// <summary>Inclusive column range on a chat line that triggers an attachment action when clicked.</summary>
+public readonly record struct AttachmentActionSpan(int StartCol, int EndCol, AttachmentAction Action);
+
 /// <summary>
 /// A single line in the chat, composed of colored segments.
 /// </summary>
@@ -20,6 +30,20 @@ public partial class ChatLine
     public string? AttachmentFileName { get; set; }
     public AttachmentKind? AttachmentKind { get; set; }
     public string? SenderUsername { get; set; }
+
+    /// <summary>
+    /// Set on a reply's quote line: activating the line jumps to this message
+    /// if it is in the loaded history.
+    /// </summary>
+    public Guid? JumpToMessageId { get; set; }
+
+    /// <summary>
+    /// Clickable sub-line targets (e.g. the "[open]" and "[save original]" brackets under an
+    /// image). Columns are relative to the unwrapped line, so only the first wrapped line
+    /// keeps them. Null means the whole line uses the kind's default action.
+    /// </summary>
+    public List<AttachmentActionSpan>? ActionSpans { get; set; }
+
     /// <summary>Number of spaces to prepend on continuation lines when this line is word-wrapped.</summary>
     public int ContinuationIndent { get; set; }
 
@@ -158,7 +182,12 @@ public partial class ChatLine
             wrapped.MessageId = MessageId;
             wrapped.SenderUsername = SenderUsername;
             wrapped.IsMention = IsMention;
+            wrapped.JumpToMessageId = JumpToMessageId;
         }
+
+        // Span columns only line up with the first wrapped line; later lines fall
+        // back to the kind's default action.
+        results[0].ActionSpans = ActionSpans;
 
         return results;
     }

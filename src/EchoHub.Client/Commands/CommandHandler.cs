@@ -6,7 +6,19 @@ public record CommandResult(bool Handled, string? Message = null, bool IsError =
 
 public class CommandHandler
 {
-    public event Func<UserStatus, string?, Task>? OnSetStatus;
+    /// <summary>
+    /// Status update. A null status means "keep the current status"; a null message means
+    /// "keep the current message" and an empty message means "clear it". The orchestrator
+    /// resolves both against the session state.
+    /// </summary>
+    public event Func<UserStatus?, string?, Task>? OnSetStatus;
+    public event Func<string, Task>? OnSendAction;
+    public event Func<string, Task>? OnSendBanner;
+    public event Func<int?, int?, Task>? OnCreateInvite;
+    public event Func<Task>? OnListInvites;
+    public event Func<string, Task>? OnRevokeInvite;
+    public event Func<Task>? OnExportData;
+    public event Func<Task>? OnDeleteAccount;
     public event Func<string, Task>? OnSetNick;
     public event Func<string, Task>? OnSetColor;
     public event Func<string, Task>? OnSetTheme;
@@ -48,6 +60,11 @@ public class CommandHandler
         return command switch
         {
             "status" => await HandleStatus(args),
+            "me" => await HandleMe(args),
+            "banner" => await HandleBanner(args),
+            "invite" => await HandleInvite(args),
+            "export" => await HandleExport(),
+            "deleteaccount" => await HandleDeleteAccount(),
             "nick" => await HandleNick(args),
             "color" => await HandleColor(args),
             "theme" => await HandleTheme(args),
@@ -78,12 +95,28 @@ public class CommandHandler
         };
     }
 
+    private const string StatusUsage =
+        "Usage: /status <online|away|dnd|invisible> or /status msg <text> (empty text clears it)";
+
     private async Task<CommandResult> HandleStatus(string args)
     {
         if (string.IsNullOrWhiteSpace(args))
-            return new CommandResult(true, "Usage: /status <online|away|dnd|invisible> or /status <message>", IsError: true);
+            return new CommandResult(true, StatusUsage, IsError: true);
 
-        var statusArg = args.ToLowerInvariant().Trim();
+        var parts = args.Trim().Split(' ', 2, StringSplitOptions.TrimEntries);
+        var statusArg = parts[0].ToLowerInvariant();
+
+        // /status msg <text> — set/clear the message, keep the current status
+        if (statusArg is "msg" or "message")
+        {
+            var message = parts.Length > 1 ? parts[1] : string.Empty;
+            if (OnSetStatus is not null)
+                await OnSetStatus(null, message);
+            return new CommandResult(true, message.Length > 0
+                ? $"Status message set: {message}"
+                : "Status message cleared.");
+        }
+
         UserStatus? status = statusArg switch
         {
             "online" => UserStatus.Online,
@@ -93,17 +126,92 @@ public class CommandHandler
             _ => null,
         };
 
-        if (status.HasValue)
+        // Strict: anything else is an error — no silent "it became your status message"
+        if (!status.HasValue)
+            return new CommandResult(true, $"Unknown status '{parts[0]}'. {StatusUsage}", IsError: true);
+
+        if (parts.Length > 1)
+            return new CommandResult(true, StatusUsage, IsError: true);
+
+        if (OnSetStatus is not null)
+            await OnSetStatus(status.Value, null);
+        return new CommandResult(true, $"Status set to {status.Value}");
+    }
+
+    private async Task<CommandResult> HandleMe(string args)
+    {
+        if (string.IsNullOrWhiteSpace(args))
+            return new CommandResult(true, "Usage: /me <action> (e.g. /me waves)", IsError: true);
+
+        if (OnSendAction is not null)
+            await OnSendAction(args.Trim());
+        return new CommandResult(true);
+    }
+
+    private async Task<CommandResult> HandleBanner(string args)
+    {
+        if (string.IsNullOrWhiteSpace(args))
+            return new CommandResult(true, "Usage: /banner <text> (letters, digits, basic punctuation)", IsError: true);
+
+        if (OnSendBanner is not null)
+            await OnSendBanner(args.Trim());
+        return new CommandResult(true);
+    }
+
+    private async Task<CommandResult> HandleInvite(string args)
+    {
+        var parts = args.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        // /invite list
+        if (parts.Length > 0 && parts[0].Equals("list", StringComparison.OrdinalIgnoreCase))
         {
-            if (OnSetStatus is not null)
-                await OnSetStatus(status.Value, null);
-            return new CommandResult(true, $"Status set to {status.Value}");
+            if (OnListInvites is not null)
+                await OnListInvites();
+            return new CommandResult(true);
         }
 
-        // Treat as custom status message (keep current status)
-        if (OnSetStatus is not null)
-            await OnSetStatus(UserStatus.Online, args);
-        return new CommandResult(true, $"Status message set: {args}");
+        // /invite revoke <code>
+        if (parts.Length > 0 && parts[0].Equals("revoke", StringComparison.OrdinalIgnoreCase))
+        {
+            if (parts.Length < 2)
+                return new CommandResult(true, "Usage: /invite revoke <code>", IsError: true);
+            if (OnRevokeInvite is not null)
+                await OnRevokeInvite(parts[1]);
+            return new CommandResult(true);
+        }
+
+        // /invite [maxUses] [expiresHours] — defaults to a single-use, never-expiring code
+        int? maxUses = null, expiresHours = null;
+        if (parts.Length > 0)
+        {
+            if (!int.TryParse(parts[0], out var uses) || uses < 1)
+                return new CommandResult(true, "Usage: /invite [maxUses] [expiresHours] | /invite list | /invite revoke <code>", IsError: true);
+            maxUses = uses;
+        }
+        if (parts.Length > 1)
+        {
+            if (!int.TryParse(parts[1], out var hours) || hours < 1)
+                return new CommandResult(true, "Usage: /invite [maxUses] [expiresHours]", IsError: true);
+            expiresHours = hours;
+        }
+
+        if (OnCreateInvite is not null)
+            await OnCreateInvite(maxUses, expiresHours);
+        return new CommandResult(true);
+    }
+
+    private async Task<CommandResult> HandleExport()
+    {
+        if (OnExportData is not null)
+            await OnExportData();
+        return new CommandResult(true);
+    }
+
+    private async Task<CommandResult> HandleDeleteAccount()
+    {
+        if (OnDeleteAccount is not null)
+            await OnDeleteAccount();
+        return new CommandResult(true);
     }
 
     private async Task<CommandResult> HandleNick(string args)
@@ -392,7 +500,9 @@ public class CommandHandler
         return new CommandResult(true, """
             Available commands:
               /status <online|away|dnd|invisible>  - Set your status
-              /status <message>                    - Set status message
+              /status msg <text>                   - Set status message (empty = clear)
+              /me <action>                         - Action message (* nick waves)
+              /banner <text>                       - Send text as an ASCII banner
               /nick <name>                         - Set display name
               /color <#hex>                        - Set nickname color
               /theme <name>                        - Switch theme
@@ -413,6 +523,9 @@ public class CommandHandler
               /topic <text>                        - Set channel topic
               /users                               - List online users
               /meta                                - Show room info (size, messages, users, created, id)
+              /export                              - Download everything the server stores about you
+              /deleteaccount                       - Permanently delete your account
+            (Tip: right-click a message and pick Reply to quote it; Esc cancels a pending reply.)
             Moderation:
               /kick <user> [reason]                - Kick a user (Mod+)
               /ban <user> [reason]                 - Ban a user (Admin+)
@@ -420,6 +533,8 @@ public class CommandHandler
               /mute <user> [minutes]               - Mute a user (Mod+)
               /unmute <user>                       - Unmute a user (Mod+)
               /role <user> <admin|mod|member>      - Assign role (Admin+)
+              /invite [uses] [hours]               - Create a registration invite code (Admin+)
+              /invite list | revoke <code>         - Manage invite codes (Admin+)
               /nuke                                - Clear channel history (Mod+)
               /test-sound                          - Play notification sound
               /quit                                - Exit the app

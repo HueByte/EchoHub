@@ -19,7 +19,14 @@ public class FilesController : ControllerBase
         _fileStorage = fileStorage;
     }
 
+    /// <summary>
+    /// Serves an uploaded file. Anonymous by design: the unguessable GUID in the URL is the
+    /// access token (Discord-CDN-style capability URL), so attachment links can be opened
+    /// directly in a browser and shared to IRC clients. E2E-encrypted room blobs are
+    /// ciphertext at rest, so anonymous access reveals nothing for those channels.
+    /// </summary>
     [HttpGet("{fileId}")]
+    [AllowAnonymous]
     public IActionResult GetFile(string fileId)
     {
         if (!Guid.TryParse(fileId, out _))
@@ -47,6 +54,11 @@ public class FilesController : ControllerBase
             ".txt" => "text/plain",
             _ => "application/octet-stream"
         };
+
+        // Images and audio render inline so a browser displays them instead of
+        // downloading; everything else keeps the attachment disposition.
+        if (contentType.StartsWith("image/") || contentType.StartsWith("audio/"))
+            return PhysicalFile(filePath, contentType);
 
         var fileName = Path.GetFileName(filePath);
         return PhysicalFile(filePath, contentType, fileName);

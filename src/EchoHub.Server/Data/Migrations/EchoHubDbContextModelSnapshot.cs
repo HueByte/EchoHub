@@ -72,6 +72,9 @@ namespace EchoHub.Server.Data.Migrations
                     b.Property<bool>("IsPublic")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsSystem")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -117,6 +120,45 @@ namespace EchoHub.Server.Data.Migrations
                     b.ToTable("ChannelMemberships");
                 });
 
+            modelBuilder.Entity("EchoHub.Core.Models.InviteCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("CreatedAt")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CreatedByUsername")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<long?>("ExpiresAt")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MaxUses")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UseCount")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("InviteCodes");
+                });
+
             modelBuilder.Entity("EchoHub.Core.Models.Message", b =>
                 {
                     b.Property<Guid>("Id")
@@ -144,6 +186,9 @@ namespace EchoHub.Server.Data.Migrations
 
                     b.Property<string>("EmbedJson")
                         .HasMaxLength(32000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ReplyToMessageId")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("SenderUserId")

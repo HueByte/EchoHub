@@ -6,8 +6,11 @@ public class FileStorageService
 
     public FileStorageService(IConfiguration configuration)
     {
-        _storagePath = configuration["Storage:Path"]
-            ?? Path.Combine(AppContext.BaseDirectory, "uploads");
+        // Empty string (example config placeholder) means "unset", same as missing
+        var configured = configuration["Storage:Path"];
+        _storagePath = !string.IsNullOrWhiteSpace(configured)
+            ? configured
+            : Path.Combine(AppContext.BaseDirectory, "uploads");
 
         if (!Directory.Exists(_storagePath))
         {

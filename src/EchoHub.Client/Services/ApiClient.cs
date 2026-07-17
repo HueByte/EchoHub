@@ -29,9 +29,9 @@ public sealed class ApiClient : IDisposable
         };
     }
 
-    public async Task<LoginResponse> RegisterAsync(string username, string password, string? displayName = null)
+    public async Task<LoginResponse> RegisterAsync(string username, string password, string? displayName = null, string? inviteCode = null)
     {
-        var request = new RegisterRequest(username, password, displayName);
+        var request = new RegisterRequest(username, password, displayName, inviteCode);
         using var response = await _http.PostAsJsonAsync("/api/auth/register", request);
         await EnsureSuccessAsync(response);
 
@@ -309,6 +309,54 @@ public sealed class ApiClient : IDisposable
         EnsureAuthenticated();
         using var response = await AuthenticatedRequestAsync(() =>
             _http.DeleteAsync($"/api/channels/{Uri.EscapeDataString(channelName)}"));
+        await EnsureSuccessAsync(response);
+    }
+
+    // ── Invites / Account ─────────────────────────────────────────────────
+
+    public async Task<InviteDto?> CreateInviteAsync(int? maxUses = null, int? expiresInHours = null)
+    {
+        EnsureAuthenticated();
+        using var response = await AuthenticatedRequestAsync(() =>
+            _http.PostAsJsonAsync("/api/invites", new CreateInviteRequest(maxUses, expiresInHours)));
+        await EnsureSuccessAsync(response);
+        return await response.Content.ReadFromJsonAsync<InviteDto>();
+    }
+
+    public async Task<List<InviteDto>> GetInvitesAsync()
+    {
+        EnsureAuthenticated();
+        using var response = await AuthenticatedGetAsync("/api/invites");
+        await EnsureSuccessAsync(response);
+        return await response.Content.ReadFromJsonAsync<List<InviteDto>>() ?? [];
+    }
+
+    public async Task RevokeInviteAsync(string code)
+    {
+        EnsureAuthenticated();
+        using var response = await AuthenticatedRequestAsync(() =>
+            _http.DeleteAsync($"/api/invites/{Uri.EscapeDataString(code)}"));
+        await EnsureSuccessAsync(response);
+    }
+
+    /// <summary>Downloads the caller's full data export as raw JSON text.</summary>
+    public async Task<string> ExportMyDataAsync()
+    {
+        EnsureAuthenticated();
+        using var response = await AuthenticatedGetAsync("/api/users/me/export");
+        await EnsureSuccessAsync(response);
+        return await response.Content.ReadAsStringAsync();
+    }
+
+    /// <summary>Deletes the caller's account. The password re-confirms intent.</summary>
+    public async Task DeleteMyAccountAsync(string password)
+    {
+        EnsureAuthenticated();
+        using var response = await AuthenticatedRequestAsync(() =>
+            _http.SendAsync(new HttpRequestMessage(HttpMethod.Delete, "/api/users/me")
+            {
+                Content = JsonContent.Create(new DeleteAccountRequest(password)),
+            }));
         await EnsureSuccessAsync(response);
     }
 

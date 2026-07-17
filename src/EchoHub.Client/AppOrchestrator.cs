@@ -43,6 +43,9 @@ public sealed class AppOrchestrator : IDisposable
     // Cleared on connect/reconnect; an explicit /join or a send attempt re-offers the prompt.
     private readonly HashSet<string> _declinedUnlocks = new(StringComparer.OrdinalIgnoreCase);
 
+    // Pending reply target — the next text message in that channel is sent as a reply to it.
+    private (string Channel, Guid MessageId)? _pendingReply;
+
     private ClientConfig _config;
     private readonly UserSession _session = new();
 
@@ -110,6 +113,7 @@ public sealed class AppOrchestrator : IDisposable
         _mainWindow.OnAudioPlayRequested += HandleAudioPlayRequested;
         _mainWindow.OnFileDownloadRequested += HandleFileDownloadRequested;
         _mainWindow.OnImageSaveRequested += HandleImageSaveRequested;
+        _mainWindow.OnImageOpenRequested += HandleImageOpenRequested;
         _mainWindow.OnDeleteMessageRequested += HandleDeleteMessageRequested;
         _mainWindow.OnCheckForUpdatesRequested += HandleCheckForUpdatesRequested;
         _mainWindow.OnRollbackRequested += HandleRollbackRequested;
@@ -117,6 +121,8 @@ public sealed class AppOrchestrator : IDisposable
         _mainWindow.OnChannelJoinRequested += HandleChannelJoinFromMessage;
         _mainWindow.OnSearchRequested += HandleSearchRequested;
         _mainWindow.OnLoadMoreRequested += HandleLoadMoreRequested;
+        _mainWindow.OnReplyRequested += HandleReplyRequested;
+        _mainWindow.OnReplyCancelRequested += HandleReplyCancelRequested;
     }
 
     // ── Command Handler Wiring ─────────────────────────────────────────────
@@ -149,17 +155,200 @@ public sealed class AppOrchestrator : IDisposable
         _commandHandler.OnNukeChannel += HandleCmdNukeChannel;
         _commandHandler.OnTestSound += HandleCmdTestSound;
         _commandHandler.OnQuit += HandleCmdQuit;
+        _commandHandler.OnSendAction += HandleCmdSendAction;
+        _commandHandler.OnSendBanner += HandleCmdSendBanner;
+        _commandHandler.OnCreateInvite += HandleCmdCreateInvite;
+        _commandHandler.OnListInvites += HandleCmdListInvites;
+        _commandHandler.OnRevokeInvite += HandleCmdRevokeInvite;
+        _commandHandler.OnExportData += HandleCmdExportData;
+        _commandHandler.OnDeleteAccount += HandleCmdDeleteAccount;
     }
 
     // ── Command Handlers ──────────────────────────────────────────────────
 
-    private async Task HandleCmdSetStatus(UserStatus status, string? message)
+    private async Task HandleCmdSetStatus(UserStatus? status, string? message)
     {
         if (!_conn.IsConnected) return;
 
-        await _conn.UpdateStatusAsync(status, message);
-        _session.Status = status;
-        _session.StatusMessage = message;
+        // null status keeps the current one; null message keeps it, empty clears it —
+        // so "/status away" no longer wipes your message and "/status msg brb" keeps Away
+        var newStatus = status ?? _session.Status;
+        var newMessage = message is null
+            ? _session.StatusMessage
+            : (message.Length == 0 ? null : message);
+
+        await _conn.UpdateStatusAsync(newStatus, newMessage);
+        _session.Status = newStatus;
+        _session.StatusMessage = newMessage;
+    }
+
+    private Task HandleCmdSendAction(string text)
+    {
+        if (!_conn.IsConnected) return Task.CompletedTask;
+        var channel = _mainWindow.CurrentChannel;
+        if (string.IsNullOrEmpty(channel)) return Task.CompletedTask;
+
+        // CTCP ACTION content flows through the normal send path — room encryption included
+        RunAsync(async () =>
+        {
+            if (!await EnsureRoomUnlockedForSendAsync(channel))
+                return;
+            await _conn.SendMessageAsync(channel, MessageConventions.FormatAction(text));
+        }, "Send failed");
+        return Task.CompletedTask;
+    }
+
+    private Task HandleCmdSendBanner(string text)
+    {
+        if (!_conn.IsConnected) return Task.CompletedTask;
+        var channel = _mainWindow.CurrentChannel;
+        if (string.IsNullOrEmpty(channel)) return Task.CompletedTask;
+
+        var banner = AsciiBannerService.Render(text);
+        if (banner is null)
+        {
+            InvokeUI(() => _mainWindow.ShowError(
+                $"Nothing to render — /banner supports letters, digits, and basic punctuation (max {AsciiBannerService.MaxInputLength} chars)."));
+            return Task.CompletedTask;
+        }
+
+        RunAsync(async () =>
+        {
+            if (!await EnsureRoomUnlockedForSendAsync(channel))
+                return;
+            await _conn.SendMessageAsync(channel, banner);
+        }, "Send failed");
+        return Task.CompletedTask;
+    }
+
+    private Task HandleCmdCreateInvite(int? maxUses, int? expiresHours)
+    {
+        if (!_conn.IsAuthenticated) return Task.CompletedTask;
+        var channel = _mainWindow.CurrentChannel;
+        if (string.IsNullOrEmpty(channel)) return Task.CompletedTask;
+
+        RunAsync(async () =>
+        {
+            var invite = await _conn.Api!.CreateInviteAsync(maxUses, expiresHours);
+            if (invite is null) return;
+            var expiry = invite.ExpiresAt is { } exp ? $", expires {exp.ToLocalTime():yyyy-MM-dd HH:mm}" : "";
+            InvokeUI(() => _messageManager.AddSystemMessage(channel,
+                $"Invite code: {invite.Code} (uses: {invite.MaxUses}{expiry})\n" +
+                $"Share it out-of-band. Revoke with: /invite revoke {invite.Code}"));
+        }, "Failed to create invite");
+        return Task.CompletedTask;
+    }
+
+    private Task HandleCmdListInvites()
+    {
+        if (!_conn.IsAuthenticated) return Task.CompletedTask;
+        var channel = _mainWindow.CurrentChannel;
+        if (string.IsNullOrEmpty(channel)) return Task.CompletedTask;
+
+        RunAsync(async () =>
+        {
+            var invites = await _conn.Api!.GetInvitesAsync();
+            var text = invites.Count == 0
+                ? "No invite codes. Create one with /invite [uses] [hours]."
+                : string.Join('\n', invites.Select(i =>
+                {
+                    var state = i.UseCount >= i.MaxUses ? "used up"
+                        : i.ExpiresAt is { } exp && exp <= DateTimeOffset.UtcNow ? "expired"
+                        : i.ExpiresAt is { } e2 ? $"expires {e2.ToLocalTime():yyyy-MM-dd HH:mm}"
+                        : "active";
+                    return $"{i.Code}  {i.UseCount}/{i.MaxUses} used  ({state}, by {i.CreatedByUsername})";
+                }));
+            InvokeUI(() => _messageManager.AddSystemMessage(channel, text));
+        }, "Failed to list invites");
+        return Task.CompletedTask;
+    }
+
+    private Task HandleCmdRevokeInvite(string code)
+    {
+        if (!_conn.IsAuthenticated) return Task.CompletedTask;
+        var channel = _mainWindow.CurrentChannel;
+        if (string.IsNullOrEmpty(channel)) return Task.CompletedTask;
+
+        RunAsync(async () =>
+        {
+            await _conn.Api!.RevokeInviteAsync(code);
+            InvokeUI(() => _messageManager.AddSystemMessage(channel, $"Invite {code.ToUpperInvariant()} revoked."));
+        }, "Failed to revoke invite");
+        return Task.CompletedTask;
+    }
+
+    private Task HandleCmdExportData()
+    {
+        if (!_conn.IsAuthenticated) return Task.CompletedTask;
+        var channel = _mainWindow.CurrentChannel;
+
+        RunAsync(async () =>
+        {
+            var json = await _conn.Api!.ExportMyDataAsync();
+            var fileName = $"echohub-export-{_session.Username}-{DateTime.Now:yyyyMMdd-HHmmss}.json";
+            var destination = DedupPath(GetDownloadDir(), fileName);
+            await File.WriteAllTextAsync(destination, json);
+            InvokeUI(() =>
+            {
+                if (!string.IsNullOrEmpty(channel))
+                    _messageManager.AddSystemMessage(channel,
+                        $"Data export saved to: {destination}\n(Encrypted-room content in it is ciphertext — the server never had the plaintext.)");
+            });
+        }, "Export failed");
+        return Task.CompletedTask;
+    }
+
+    private Task HandleCmdDeleteAccount()
+    {
+        if (!_conn.IsAuthenticated) return Task.CompletedTask;
+
+        InvokeUI(() =>
+        {
+            var confirm = MessageBox.ErrorQuery(_app, "Delete Account",
+                $"This permanently deletes '{_session.Username}' on this server:\n" +
+                "profile, sessions, and every file you uploaded.\n" +
+                "Your messages remain, attributed to 'deleted-user'.\n\n" +
+                "This cannot be undone.",
+                "Cancel", "Delete my account");
+            if (confirm != 1) return;
+
+            var password = PromptPassword("Enter your password to confirm deletion:");
+            if (password is null) return;
+
+            PersistLastReads();
+            RunAsync(async () =>
+            {
+                var baseUrl = _conn.Api!.BaseUrl;
+                await _conn.Api!.DeleteMyAccountAsync(password);
+                ClearSavedToken(baseUrl);
+                await _conn.CleanupAsync();
+                InvokeUI(() =>
+                {
+                    _mainWindow.ClearAll();
+                    _mainWindow.UpdateStatusBar("Disconnected");
+                    MessageBox.Query(_app, "Account Deleted",
+                        "Your account and uploaded files have been deleted from this server.", "OK");
+                });
+            }, "Account deletion failed", "DeleteAccount");
+        });
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Modal password prompt; returns null when cancelled or empty.</summary>
+    private string? PromptPassword(string prompt)
+    {
+        string? result = null;
+        var dialog = new Dialog { Title = "Confirm Password", Width = 56, Height = 8 };
+        var label = new Label { Text = prompt, X = 1, Y = 1 };
+        var field = new TextField { X = 1, Y = 2, Width = Terminal.Gui.ViewBase.Dim.Fill(2), Secret = true };
+        var ok = new Button { Text = "Confirm", IsDefault = true, X = Terminal.Gui.ViewBase.Pos.Center() - 12, Y = 4 };
+        var cancel = new Button { Text = "Cancel", X = Terminal.Gui.ViewBase.Pos.Center() + 2, Y = 4 };
+        ok.Accepting += (_, e) => { result = field.Text; e.Handled = true; _app.RequestStop(); };
+        cancel.Accepting += (_, e) => { result = null; e.Handled = true; _app.RequestStop(); };
+        dialog.Add(label, field, ok, cancel);
+        field.SetFocus();
+        _app.Run(dialog);
+        return string.IsNullOrEmpty(result) ? null : result;
     }
 
     private async Task HandleCmdSetNick(string displayName)
@@ -1071,6 +1260,15 @@ public sealed class AppOrchestrator : IDisposable
         _conn.MessageDeleted += (channelName, messageId) =>
             InvokeUI(() => _messageManager.RemoveMessage(channelName, messageId));
 
+        _conn.ChannelDeleted += channelName =>
+        {
+            InvokeUI(() =>
+            {
+                _conn.UntrackChannel(channelName);
+                _mainWindow.RemoveChannel(channelName);
+            });
+        };
+
         _conn.ChannelNuked += channelName =>
         {
             InvokeUI(() =>
@@ -1183,6 +1381,8 @@ public sealed class AppOrchestrator : IDisposable
     {
         Log.Information("Disconnecting from server");
         lock (_channelUsersLock) _channelUsers.Clear();
+        _pendingReply = null;
+        InvokeUI(() => _mainWindow.SetReplyingTo(null));
         PersistLastReads();
 
         RunAsync(async () =>
@@ -1252,12 +1452,38 @@ public sealed class AppOrchestrator : IDisposable
             return;
         }
 
+        // A pending reply only applies to a plain text message in its own channel
+        Guid? replyTo = _pendingReply is { } pending
+            && pending.Channel.Equals(channelName, StringComparison.OrdinalIgnoreCase)
+            ? pending.MessageId : null;
+
         RunAsync(async () =>
         {
             if (!await EnsureRoomUnlockedForSendAsync(channelName))
                 return;
-            await _conn.SendMessageAsync(channelName, content);
+            await _conn.SendMessageAsync(channelName, content, replyTo);
+            if (replyTo is not null)
+                InvokeUI(ClearPendingReply);
         }, "Send failed");
+    }
+
+    private void HandleReplyRequested(Guid messageId, string sender, string snippet)
+    {
+        var channel = _mainWindow.CurrentChannel;
+        if (string.IsNullOrEmpty(channel)) return;
+
+        _pendingReply = (channel, messageId);
+        if (snippet.Length > 40)
+            snippet = snippet[..40] + "…";
+        _mainWindow.SetReplyingTo($"{sender}: {snippet}");
+    }
+
+    private void HandleReplyCancelRequested() => ClearPendingReply();
+
+    private void ClearPendingReply()
+    {
+        _pendingReply = null;
+        _mainWindow.SetReplyingTo(null);
     }
 
     private void HandleDeleteMessageRequested(Guid messageId)
@@ -1273,6 +1499,10 @@ public sealed class AppOrchestrator : IDisposable
     private void HandleChannelSelected(string channelName)
     {
         if (!_conn.IsConnected) return;
+
+        // A reply pending in the previous channel doesn't carry over
+        if (_pendingReply is { } pending && !pending.Channel.Equals(channelName, StringComparison.OrdinalIgnoreCase))
+            InvokeUI(ClearPendingReply);
 
         // Checkpoint read positions — the previous channel was just marked read
         PersistLastReads();
@@ -1693,6 +1923,62 @@ public sealed class AppOrchestrator : IDisposable
         }
 
         return tempPath;
+    }
+
+    /// <summary>File extensions the "[open]" action will hand to the OS image viewer for E2E rooms.</summary>
+    private static readonly HashSet<string> ImageOpenExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp",
+    };
+
+    /// <summary>
+    /// Views an image without saving it to the user's downloads. Plain channels open the
+    /// file's web URL in the default browser (the server serves files by capability URL, so
+    /// no auth token is needed). E2E-encrypted channels would render as ciphertext in a
+    /// browser, so the blob is downloaded, decrypted locally, and opened from a temp file.
+    /// </summary>
+    private void HandleImageOpenRequested(string attachmentUrl, string fileName)
+    {
+        if (!_conn.IsAuthenticated) return;
+
+        var channel = _mainWindow.CurrentChannel;
+        var isEncryptedRoom = !string.IsNullOrEmpty(channel) && _conn.RoomKeys.TryGetKey(channel, out _);
+
+        if (!isEncryptedRoom)
+        {
+            var webUrl = attachmentUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                || attachmentUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+                ? attachmentUrl
+                : $"{_conn.Api!.BaseUrl}/{attachmentUrl.TrimStart('/')}";
+
+            try
+            {
+                System.Diagnostics.Process.Start(
+                    new System.Diagnostics.ProcessStartInfo(webUrl) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Failed to open image URL in browser: {Url}", webUrl);
+                InvokeUI(() => _messageManager.AddSystemMessage(channel, $"Couldn't open a browser — image URL: {webUrl}"));
+            }
+            return;
+        }
+
+        // In E2E rooms the attachment kind is sender-declared, so only hand real image
+        // extensions to the OS viewer; anything else goes through the save path instead.
+        if (!ImageOpenExtensions.Contains(Path.GetExtension(fileName)))
+        {
+            HandleImageSaveRequested(attachmentUrl, fileName);
+            return;
+        }
+
+        RunAsync(async () =>
+        {
+            InvokeUI(() => _messageManager.AddSystemMessage(channel, $"Decrypting {fileName}..."));
+            var tempPath = await DownloadAttachmentAsync(attachmentUrl, fileName);
+            var psi = new System.Diagnostics.ProcessStartInfo(tempPath) { UseShellExecute = true };
+            System.Diagnostics.Process.Start(psi);
+        }, "Failed to open image");
     }
 
     private void HandleImageSaveRequested(string attachmentUrl, string fileName)

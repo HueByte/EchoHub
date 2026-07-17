@@ -24,6 +24,11 @@ public interface IChannelService
 
     // Membership
     Task<(bool Success, string? Error, bool PasswordRequired)> EnsureChannelMembershipAsync(Guid userId, string channelName, string? password = null);
+
+    // System channels (server-managed, e.g. the live server-log room). Creates the channel
+    // if missing and reclaims a same-named regular channel so server content never lands in
+    // a user-owned room.
+    Task<ChannelDto> EnsureSystemChannelAsync(string channelName, string? topic = null);
 }
 
 public record ChannelListItem(string Name, string? Topic, int OnlineCount, bool IsPublic = true, bool IsProtected = false);

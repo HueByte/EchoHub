@@ -16,6 +16,9 @@ public class Message
     public Guid SenderUserId { get; set; }
     public required string SenderUsername { get; set; }
 
+    /// <summary>Message this one replies to, if any. The target may since have been deleted.</summary>
+    public Guid? ReplyToMessageId { get; set; }
+
     /// <summary>Files attached to this message. Empty for a plain text message.</summary>
     public List<Attachment> Attachments { get; set; } = [];
 

@@ -400,6 +400,16 @@ public sealed class IrcCommandHandler
                 continue;
             }
 
+            // System channels (e.g. the live log room) stream over SignalR only — the IRC
+            // gateway never carries their content, so block joins outright.
+            var channelInfo = await _channelService.GetChannelByNameAsync(channelName);
+            if (channelInfo?.IsSystem == true)
+            {
+                await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_NOSUCHCHANNEL,
+                    $"#{channelName} :Cannot join channel — server-managed, use the EchoHub client");
+                continue;
+            }
+
             var (history, error, passwordRequired) = await _chatService.JoinChannelAsync(
                 _conn.ConnectionId, _conn.UserId!.Value, _conn.Nickname!, channelName, key);
 
@@ -432,8 +442,12 @@ public sealed class IrcCommandHandler
             // Replay history (decrypt — history is encrypted for SignalR transport)
             foreach (var m in history)
             {
-                var decrypted = m with { Content = _encryption.Decrypt(m.Content) };
-                var lines = IrcMessageFormatter.FormatMessage(decrypted);
+                var decrypted = m with
+                {
+                    Content = _encryption.Decrypt(m.Content),
+                    ReplyTo = m.ReplyTo is { } reply ? reply with { Content = _encryption.Decrypt(reply.Content) } : null,
+                };
+                var lines = IrcMessageFormatter.FormatMessage(decrypted, _options.PublicBaseUrl);
                 foreach (var line in lines)
                     await _conn.SendAsync(line);
             }
@@ -486,7 +500,7 @@ public sealed class IrcCommandHandler
         if (channelName is null) return;
 
         var error = await _chatService.SendMessageAsync(
-            _conn.UserId!.Value, _conn.Nickname!, channelName, content);
+            _conn.UserId!.Value, _conn.Nickname!, channelName, content, _conn.ConnectionId);
 
         if (error is not null)
         {

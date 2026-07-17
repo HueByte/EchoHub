@@ -1,6 +1,6 @@
 namespace EchoHub.Core.DTOs;
 
-public record RegisterRequest(string Username, string Password, string? DisplayName = null);
+public record RegisterRequest(string Username, string Password, string? DisplayName = null, string? InviteCode = null);
 
 public record LoginRequest(string Username, string Password);
 

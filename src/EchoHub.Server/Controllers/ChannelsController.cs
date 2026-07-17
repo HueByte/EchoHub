@@ -162,6 +162,8 @@ public class ChannelsController : ControllerBase
         if (!result.IsSuccess)
             return MapChannelError(result);
 
+        await _chatService.BroadcastChannelDeletedAsync(channel.ToLowerInvariant().Trim());
+
         return NoContent();
     }
 
@@ -198,6 +200,9 @@ public class ChannelsController : ControllerBase
         var channelDto = await _channelService.GetChannelByNameAsync(channelName);
         if (channelDto is null)
             return NotFound(new ErrorResponse($"Channel '{channelName}' does not exist."));
+
+        if (channelDto.IsSystem)
+            return StatusCode(403, new ErrorResponse("This channel is read-only."));
 
         if (!Request.HasFormContentType)
             return BadRequest(new ErrorResponse("Expected multipart form data."));
@@ -341,6 +346,9 @@ public class ChannelsController : ControllerBase
         var channelDto = await _channelService.GetChannelByNameAsync(channelName);
         if (channelDto is null)
             return NotFound(new ErrorResponse($"Channel '{channelName}' does not exist."));
+
+        if (channelDto.IsSystem)
+            return StatusCode(403, new ErrorResponse("This channel is read-only."));
 
         if (channelDto.IsEncrypted)
             return BadRequest(new ErrorResponse(

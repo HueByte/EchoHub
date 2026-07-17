@@ -46,6 +46,7 @@ internal sealed class ConnectionManager : IAsyncDisposable
     public event Action<string, string?>? UserBanned;
     public event Action<string>? ForceDisconnected;
     public event Action<string, Guid>? MessageDeleted;
+    public event Action<string>? ChannelDeleted;
     public event Action<string>? ChannelNuked;
     public event Action<ChannelDto>? ChannelUpdated;
     public event Action<string>? Error;
@@ -77,7 +78,8 @@ internal sealed class ConnectionManager : IAsyncDisposable
             }
             else if (info.IsRegister)
             {
-                loginResponse = await _apiClient.RegisterAsync(info.Username, info.Password);
+                loginResponse = await _apiClient.RegisterAsync(
+                    info.Username, info.Password, info.DisplayName, info.InviteCode);
             }
             else
             {
@@ -243,8 +245,8 @@ internal sealed class ConnectionManager : IAsyncDisposable
 
     // ── Delegate Operations ───────────────────────────────────────────────
 
-    public Task SendMessageAsync(string channel, string content) =>
-        _connection?.SendMessageAsync(channel, content)
+    public Task SendMessageAsync(string channel, string content, Guid? replyToMessageId = null) =>
+        _connection?.SendMessageAsync(channel, content, replyToMessageId)
         ?? throw new InvalidOperationException("Not connected");
 
     public Task<List<MessageDto>> GetHistoryAsync(string channel, int count = HubConstants.DefaultHistoryCount, int offset = 0) =>
@@ -300,6 +302,7 @@ internal sealed class ConnectionManager : IAsyncDisposable
         connection.OnUserBanned += (user, reason) => UserBanned?.Invoke(user, reason);
         connection.OnForceDisconnect += reason => ForceDisconnected?.Invoke(reason);
         connection.OnMessageDeleted += (ch, id) => MessageDeleted?.Invoke(ch, id);
+        connection.OnChannelDeleted += ch => ChannelDeleted?.Invoke(ch);
         connection.OnChannelNuked += ch => ChannelNuked?.Invoke(ch);
         connection.OnChannelUpdated += ch =>
         {

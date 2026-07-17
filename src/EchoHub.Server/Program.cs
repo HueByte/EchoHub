@@ -10,6 +10,7 @@ using EchoHub.Server.Data;
 using EchoHub.Server.Hubs;
 using EchoHub.Server.Irc;
 using EchoHub.Server.Services;
+using EchoHub.Server.Services.ServerLogs;
 using EchoHub.Server.Setup;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
@@ -41,9 +42,23 @@ while (true)
         builder.Services.Configure<HostOptions>(options =>
             options.ShutdownTimeout = TimeSpan.FromSeconds(5));
 
+        // ── Server log room (admin-configurable via the "ServerLogs" section) ─
+        // Bound before Serilog so the live-log sink can be wired into the pipeline. The sink
+        // is a singleton shared between Serilog (producer) and the stream service (consumer).
+        var serverLogsOptions = builder.Configuration.GetSection("ServerLogs").Get<ServerLogsOptions>() ?? new ServerLogsOptions();
+        builder.Services.AddSingleton(serverLogsOptions);
+        builder.Services.AddSingleton<ServerLogsService>();
+        var serverLogsSink = serverLogsOptions.Enabled ? new ServerLogsSink(serverLogsOptions) : null;
+        if (serverLogsSink is not null)
+            builder.Services.AddSingleton(serverLogsSink);
+
         // ── Serilog ──────────────────────────────────────────────────────────
         builder.Host.UseSerilog((context, config) =>
-            config.ReadFrom.Configuration(context.Configuration));
+        {
+            config.ReadFrom.Configuration(context.Configuration);
+            if (serverLogsSink is not null)
+                config.WriteTo.Sink(serverLogsSink);
+        });
 
         // ── SQLite + EF Core ─────────────────────────────────────────────────
         var defaultDbPath = Path.Combine(AppContext.BaseDirectory, "echohub.db");
@@ -106,6 +121,11 @@ while (true)
         // ── Upload limits (admin-configurable via the "Uploads" section) ─────
         var uploadLimits = builder.Configuration.GetSection("Uploads").Get<UploadLimits>() ?? new UploadLimits();
         builder.Services.AddSingleton(uploadLimits);
+
+        // ── Spam protection (admin-configurable via the "Spam" section) ──────
+        var spamOptions = builder.Configuration.GetSection("Spam").Get<SpamOptions>() ?? new SpamOptions();
+        builder.Services.AddSingleton(spamOptions);
+        builder.Services.AddSingleton<SpamGuard>();
         // Raise the multipart form ceiling to match the configured limits; per-endpoint
         // request-body limits are applied at the action from the same values.
         builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(o =>
@@ -121,6 +141,10 @@ while (true)
         builder.Services.AddHostedService<ServerDirectoryService>();
         builder.Services.AddHostedService<FileCleanupService>();
         builder.Services.AddHostedService<MuteExpirationService>();
+
+        // Live server-log streaming (only when the sink is active)
+        if (serverLogsSink is not null)
+            builder.Services.AddHostedService<ServerLogsStreamService>();
 
         // ── Encryption ─────────────────────────────────────────────────────
         builder.Services.AddSingleton<IMessageEncryptionService, MessageEncryptionService>();

@@ -62,13 +62,11 @@ public class DataMigrationServiceTests
     }
 
     [Fact]
-    public void AnsiToColorTags_RoundTrip_WithColorTagsToAnsi()
+    public void AnsiToColorTags_ForegroundBackgroundAndReset_AllConverted()
     {
-        // AnsiToColorTags and IrcMessageFormatter.ColorTagsToAnsi should be inverses
-        var original = "{F:FF0000}red{B:00FF00}green{X}";
-        var ansi = EchoHub.Server.Irc.IrcMessageFormatter.ColorTagsToAnsi(original);
+        var ansi = "\x1b[38;2;255;0;0mred\x1b[48;2;0;255;0mgreen\x1b[0m";
         var backToTags = DataMigrationService.AnsiToColorTags(ansi);
 
-        Assert.Equal(original, backToTags);
+        Assert.Equal("{F:FF0000}red{B:00FF00}green{X}", backToTags);
     }
 }

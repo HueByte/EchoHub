@@ -98,8 +98,11 @@ Access tokens expire after 15 minutes, refresh tokens after 30 days with rotatio
 | `Server:Name` | `My EchoHub Server` | Display name shown to clients |
 | `Server:Description` | `A self-hosted EchoHub chat server` | Server description |
 | `Server:PublicServer` | `false` | Register on the [public directory](https://echohub.voidcube.cloud/servers) |
-| `Server:PublicHost` | *(empty)* | Public hostname for the directory listing (e.g. `chat.example.com:5000`) |
+| `Server:PublicHosts` | `[]` | Hostnames advertised to the directory (array, e.g. `["chat.example.com"]`). Required when `PublicServer` is `true` |
+| `Server:Tags` | `[]` | Topic tags surfaced in the directory browser (array, e.g. `["community", "gaming"]`) |
 | `Server:Admins` | `[]` | Array of admin usernames (e.g. `["alice", "bob"]`) |
+| `Server:Registration` | `open` | Registration mode: `open`, `invite` (codes via `/invite`, Admin+), or `closed` |
+| `Server:DirectoryClaimPath` | *(empty)* | Overrides where the directory claim token file is stored. Empty = `directory-claim.json` next to the SQLite database. Treat it as a secret and back it up with the database |
 
 ### Uploads
 
@@ -118,6 +121,26 @@ absent or partial `Uploads` section keeps the built-in defaults. See
 The server sizes its request-body limits from these values, so raising a limit here is all
 that's needed — no separate Kestrel tuning.
 
+### Spam Protection
+
+Per-user flood, duplicate, join, and channel-create limits with auto-mute escalation. Mods and
+above are always exempt, and the defaults are lenient enough that a fast typist never trips them.
+An absent or partial `Spam` section keeps these defaults.
+
+| Key | Default | Description |
+| --- | --- | --- |
+| `Spam:Enabled` | `true` | Master switch for all spam protection |
+| `Spam:MaxMessagesPerWindow` | `8` | Max messages per `WindowSeconds` before a send is rejected |
+| `Spam:WindowSeconds` | `5` | Sliding window (seconds) for the message-rate check |
+| `Spam:MaxDuplicateMessages` | `3` | Identical messages in a row tolerated before rejection (E2E rooms are exempt — ciphertext differs each time) |
+| `Spam:AutoMuteMinutes` | `5` | Auto-mute duration once a user hits the violation threshold. `0` disables auto-mute (rejections still apply) |
+| `Spam:ViolationThreshold` | `5` | Rejected sends within `ViolationWindowMinutes` that trigger an auto-mute |
+| `Spam:ViolationWindowMinutes` | `5` | Window (minutes) over which violations accumulate |
+| `Spam:MaxJoinsPerWindow` | `25` | Max first-time channel joins per `JoinWindowSeconds` — keep this above your public channel count |
+| `Spam:JoinWindowSeconds` | `30` | Sliding window (seconds) for the join-rate check |
+| `Spam:MaxChannelCreatesPerWindow` | `3` | Max channel creations per `ChannelCreateWindowMinutes` |
+| `Spam:ChannelCreateWindowMinutes` | `10` | Window (minutes) for the channel-create check |
+
 ### Encryption
 
 | Key | Default | Description |
@@ -129,6 +152,7 @@ that's needed — no separate Kestrel tuning.
 
 | Key | Default | Description |
 | --- | --- | --- |
+| `Storage:Path` | *(empty)* | Directory for uploaded file blobs (attachments, avatars). Empty = `uploads/` in the app directory; the Docker image sets it to `/app/data/uploads` on the persistent volume |
 | `Storage:CleanupIntervalHours` | `1` | How often the cleanup job runs (hours) |
 | `Storage:RetentionDays` | `30` | Days to keep uploaded files before cleanup |
 
@@ -144,6 +168,23 @@ that's needed — no separate Kestrel tuning.
 | `Irc:TlsCertPassword` | *(empty)* | Password for the certificate file |
 | `Irc:ServerName` | `echohub` | IRC server name in protocol messages |
 | `Irc:Motd` | `Welcome to EchoHub IRC Gateway!` | Message of the day |
+
+### Server Logs Room
+
+When enabled, EchoHub auto-creates a read-only system channel and streams log events to it live,
+so operators can watch the server from inside the app. Log lines are **never stored as messages** —
+the rolling Serilog files remain the only persistence, and the room replays recent lines from those
+files when someone opens it.
+
+| Key | Default | Description |
+| --- | --- | --- |
+| `ServerLogs:Enabled` | `true` | Master switch for the live log room |
+| `ServerLogs:RoomName` | `server-logs` | Name of the auto-created channel (reserved — users can't create a channel with this name) |
+| `ServerLogs:MinRole` | `Mod` | Minimum server role that can see and join the room (`Member`, `Mod`, `Admin`, `Owner`) |
+| `ServerLogs:MinLevel` | `Information` | Minimum log level streamed to the room (`Verbose`, `Debug`, `Information`, `Warning`, `Error`, `Fatal`) — affects only the room, not the file/console sinks |
+| `ServerLogs:BacklogLines` | `100` | Recent log lines replayed from file when someone opens the room |
+| `ServerLogs:LogDirectory` | `logs` | Directory holding the rolling log files (must match the Serilog file sink path below) |
+| `ServerLogs:LogFilePattern` | `echohub-server-*.log` | Filename glob for the rolling log files inside `LogDirectory` |
 
 ### Logging
 

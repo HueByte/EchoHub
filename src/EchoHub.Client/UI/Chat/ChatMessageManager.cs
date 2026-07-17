@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using EchoHub.Client.UI.Helpers;
+using EchoHub.Core.Constants;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
 using Terminal.Gui.Drawing;
@@ -312,7 +313,9 @@ public sealed class ChatMessageManager
         if (!string.IsNullOrEmpty(_currentUser))
         {
             var pattern = $@"@{Regex.Escape(_currentUser)}\b";
-            if (messages.Skip(firstUnread).Any(m => Regex.IsMatch(m.Content, pattern, RegexOptions.IgnoreCase)))
+            if (messages.Skip(firstUnread).Any(m =>
+                    Regex.IsMatch(m.Content, pattern, RegexOptions.IgnoreCase)
+                    || (m.ReplyTo is { } reply && reply.SenderUsername.Equals(_currentUser, StringComparison.OrdinalIgnoreCase))))
                 _mentionChannels.Add(channelName);
         }
     }
@@ -391,8 +394,36 @@ public sealed class ChatMessageManager
         var hasContent = !string.IsNullOrWhiteSpace(message.Content);
         var attachments = message.Attachments ?? [];
 
+        // Reply → dim quote line above the message; activating it jumps to the original
+        if (message.ReplyTo is { } replyTo)
+            lines.Add(ReplyQuoteLine(replyTo));
+
+        // /me action → "* nick waves" (CTCP ACTION content)
+        string? actionText = null;
+        var isAction = hasContent && MessageConventions.TryParseAction(message.Content, out actionText);
+        if (isAction)
+        {
+            var actionLines = EmojiHelper.ReplaceEmoji(actionText!).Split('\n');
+            var header = ActionHeaderSegments(time);
+            header.Add(new(senderName, senderColor));
+            header.Add(new(" ", null));
+            header.AddRange(ChatColors.SplitMentions(actionLines[0].TrimEnd('\r')));
+            lines.Add(new ChatLine(header));
+
+            for (int i = 1; i < actionLines.Length; i++)
+            {
+                var segments = RailPrefix();
+                segments.AddRange(ChatColors.SplitMentions(actionLines[i].TrimEnd('\r')));
+                lines.Add(new ChatLine(segments));
+            }
+        }
+
         // Header line: caption text, or a summary when the message is attachments-only
-        if (hasContent)
+        if (isAction)
+        {
+            // already rendered above
+        }
+        else if (hasContent)
         {
             var displayContent = EmojiHelper.ReplaceEmoji(message.Content);
             var contentLines = displayContent.Split('\n');
@@ -443,9 +474,7 @@ public sealed class ChatMessageManager
                             lines.Add(new ChatLine(segments));
                         }
                     }
-                    lines.Add(AttachmentActionLine(
-                        $"[↓ save original] {attachment.FileName} [{FormatFileSize(attachment.FileSize)}]",
-                        ChatColors.FileAttr, attachment));
+                    lines.Add(ImageActionLine(attachment));
                     break;
 
                 case Core.Models.AttachmentKind.Audio:
@@ -476,10 +505,14 @@ public sealed class ChatMessageManager
             line.SenderUsername = message.SenderUsername;
         }
 
-        if (hasContent && !string.IsNullOrEmpty(_currentUser))
+        if (!string.IsNullOrEmpty(_currentUser))
         {
+            // Being replied to counts as a mention, same as an explicit @nick
+            var isReplyToMe = message.ReplyTo is { } reply
+                && reply.SenderUsername.Equals(_currentUser, StringComparison.OrdinalIgnoreCase);
             var pattern = $@"@{Regex.Escape(_currentUser)}\b";
-            if (Regex.IsMatch(message.Content, pattern, RegexOptions.IgnoreCase))
+            if (isReplyToMe
+                || ((hasContent || isAction) && Regex.IsMatch(message.Content, pattern, RegexOptions.IgnoreCase)))
             {
                 foreach (var line in lines)
                     line.IsMention = true;
@@ -487,6 +520,41 @@ public sealed class ChatMessageManager
         }
 
         return lines;
+    }
+
+    /// <summary>
+    /// Builds the action line below an image preview: "[open] [↓ save original] name [size]".
+    /// Each bracket is an <see cref="AttachmentActionSpan"/> so a mouse click can target it;
+    /// keyboard activation (Enter) uses the default action, open.
+    /// </summary>
+    private static ChatLine ImageActionLine(AttachmentDto attachment)
+    {
+        var segments = RailPrefix();
+        var col = segments.Sum(s => s.Text.GetColumns());
+        var spans = new List<AttachmentActionSpan>();
+
+        void AddAction(string text, AttachmentAction action)
+        {
+            var width = text.GetColumns();
+            spans.Add(new AttachmentActionSpan(col, col + width - 1, action));
+            segments.Add(new(text, ChatColors.FileAttr));
+            col += width;
+        }
+
+        AddAction("[open]", AttachmentAction.OpenImage);
+        segments.Add(new(" ", null));
+        col += 1;
+        AddAction("[↓ save original]", AttachmentAction.SaveImage);
+        segments.Add(new($" {attachment.FileName} [{FormatFileSize(attachment.FileSize)}]", ChatColors.FileAttr));
+
+        return new ChatLine(segments)
+        {
+            AttachmentUrl = attachment.Url,
+            AttachmentFileName = attachment.FileName,
+            AttachmentKind = attachment.Kind,
+            ActionSpans = spans,
+            ContinuationPrefixSegments = RailPrefix(),
+        };
     }
 
     /// <summary>
@@ -524,6 +592,54 @@ public sealed class ChatMessageManager
         new(PadNick("--"), ChatColors.TimestampAttr),
         new(" │ ", ChatColors.RailAttr),
     ];
+
+    /// <summary>Header variant for /me actions: "*" in the nick column, "* nick text" content.</summary>
+    private static List<ChatSegment> ActionHeaderSegments(string time) =>
+    [
+        new($"{time} ", ChatColors.TimestampAttr),
+        new(PadNick("*"), ChatColors.TimestampAttr),
+        new(" │ ", ChatColors.RailAttr),
+    ];
+
+    /// <summary>
+    /// The dim "┌ nick: snippet" line above a reply. Carries the original message id so
+    /// activating it jumps there. Room-encrypted snippets arrive already decrypted (or as
+    /// the locked placeholder) — this only truncates for display.
+    /// </summary>
+    private static ChatLine ReplyQuoteLine(ReplyRefDto replyTo)
+    {
+        const int maxSnippetCols = 60;
+
+        var snippet = replyTo.Content.Replace('\n', ' ').Replace('\r', ' ');
+        if (MessageConventions.TryParseAction(snippet, out var actionText))
+            snippet = $"* {replyTo.SenderUsername} {actionText}";
+
+        snippet = EmojiHelper.ReplaceEmoji(snippet);
+        if (snippet.GetColumns() > maxSnippetCols)
+        {
+            var sb = new StringBuilder();
+            int used = 0;
+            foreach (var g in GraphemeHelper.GetGraphemes(snippet))
+            {
+                var gCols = Math.Max(g.GetColumns(), 1);
+                if (used + gCols > maxSnippetCols - 1) break;
+                sb.Append(g);
+                used += gCols;
+            }
+            snippet = sb.Append('…').ToString();
+        }
+
+        var segments = RailPrefix();
+        segments.Add(new("┌ ", ChatColors.RailAttr));
+        segments.Add(new($"{replyTo.SenderUsername}: ", NickColorHelper.GetAttribute(replyTo.SenderUsername)));
+        segments.Add(new(snippet, ChatColors.SystemAttr));
+
+        return new ChatLine(segments)
+        {
+            JumpToMessageId = replyTo.MessageId,
+            ContinuationPrefixSegments = RailPrefix(),
+        };
+    }
 
     /// <summary>
     /// Indent segments aligning continuation/attachment/embed lines under the message
