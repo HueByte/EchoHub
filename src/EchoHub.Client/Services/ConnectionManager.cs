@@ -15,7 +15,8 @@ namespace EchoHub.Client.Services;
 internal record ConnectResult(
     LoginResponse Login,
     List<ChannelDto> Channels,
-    Dictionary<string, List<MessageDto>> Histories);
+    Dictionary<string, List<MessageDto>> Histories,
+    ServerStatusDto? ServerInfo = null);
 
 /// <summary>
 /// Owns connection lifecycle, authentication, SignalR event wiring, and channel tracking.
@@ -67,6 +68,17 @@ internal sealed class ConnectionManager : IAsyncDisposable
 
         try
         {
+            onStatus("Fetching server info...");
+            ServerStatusDto? serverInfo = null;
+            try
+            {
+                serverInfo = await _apiClient.GetServerInfoAsync();
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Failed to fetch server info");
+            }
+
             onStatus("Authenticating...");
 
             LoginResponse loginResponse;
@@ -165,7 +177,7 @@ internal sealed class ConnectionManager : IAsyncDisposable
             }
 
             onStatus("Connected");
-            return new ConnectResult(loginResponse, channels, histories);
+            return new ConnectResult(loginResponse, channels, histories, serverInfo);
         }
         catch
         {
