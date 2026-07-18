@@ -1373,6 +1373,21 @@ public sealed class AppOrchestrator : IDisposable
                 _mainWindow.FocusInput();
                 FetchAndUpdateOnlineUsers();
             });
+
+            if (result.ServerInfo is not null && !string.IsNullOrEmpty(result.ServerInfo.Version)
+                && result.ServerInfo.Version != UpdateChecker.CurrentVersion)
+            {
+                InvokeUI(() => {
+                    var choice = MessageBox.Query(_app, "Version Mismatch",
+                    $"Server version {result.ServerInfo.Version} does not match client version {UpdateChecker.CurrentVersion}.\n\n" +
+                    "Some features may not work correctly. Consider updating both to the same version.",
+                    "Continue", "Disconnect");
+
+                    if (choice == 1)
+                        HandleDisconnect();
+                });
+            }
+
             SaveServerToConfig(dialogResult);
         }, "Connection failed", "Connect");
     }
