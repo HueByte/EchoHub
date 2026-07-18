@@ -138,34 +138,41 @@ public static class IrcMessageFormatter
     }
 
     /// <summary>
-    /// Split a message into chunks of approximately maxBytes (UTF-8), at word boundaries.
+    /// Split a message into chunks of approximately maxBytes (UTF-8), at line and word boundaries.
     /// </summary>
     public static List<string> SplitMessage(string content, int maxBytes)
     {
-        if (Encoding.UTF8.GetByteCount(content) <= maxBytes)
-            return [content];
-
         var chunks = new List<string>();
-        var current = new StringBuilder();
-        var currentBytes = 0;
 
-        foreach (var word in content.Split(' '))
+        foreach (var line in content.Split('\n'))
         {
-            var wordBytes = Encoding.UTF8.GetByteCount(word) + 1; // +1 for space
-
-            if (currentBytes + wordBytes > maxBytes && current.Length > 0)
+            if (Encoding.UTF8.GetByteCount(line) <= maxBytes)
             {
-                chunks.Add(current.ToString().TrimEnd());
-                current.Clear();
-                currentBytes = 0;
+                chunks.Add(line);
+                continue;
             }
 
-            current.Append(word).Append(' ');
-            currentBytes += wordBytes;
-        }
+            var current = new StringBuilder();
+            var currentBytes = 0;
 
-        if (current.Length > 0)
-            chunks.Add(current.ToString().TrimEnd());
+            foreach (var word in line.Split(' '))
+            {
+                var wordBytes = Encoding.UTF8.GetByteCount(word) + 1; // +1 for space
+
+                if (currentBytes + wordBytes > maxBytes && current.Length > 0)
+                {
+                    chunks.Add(current.ToString().TrimEnd());
+                    current.Clear();
+                    currentBytes = 0;
+                }
+
+                current.Append(word).Append(' ');
+                currentBytes += wordBytes;
+            }
+
+            if (current.Length > 0)
+                chunks.Add(current.ToString().TrimEnd());
+        }
 
         return chunks;
     }
