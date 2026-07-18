@@ -1377,7 +1377,8 @@ public sealed class AppOrchestrator : IDisposable
             if (result.ServerInfo is not null && !string.IsNullOrEmpty(result.ServerInfo.Version)
                 && result.ServerInfo.Version != UpdateChecker.CurrentVersion)
             {
-                InvokeUI(() => {
+                InvokeUI(() =>
+                {
                     var choice = MessageBox.Query(_app, "Version Mismatch",
                     $"Server version {result.ServerInfo.Version} does not match client version {UpdateChecker.CurrentVersion}.\n\n" +
                     "Some features may not work correctly. Consider updating both to the same version.",
