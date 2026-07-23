@@ -1,0 +1,3295 @@
+{
+  "schema": "auriondocs.agent-graph/v1",
+  "repository": "HueByte/EchoHub",
+  "commit": "4dcb480d1d43e4efaaa9b2e190c7275fcab94d23",
+  "grouping": "communities",
+  "stats": {
+    "symbols": 201,
+    "files": 128,
+    "edges": 648,
+    "subsystems": 24
+  },
+  "subsystems": [
+    {
+      "label": "src/EchoHub.Core/DTOs · ChatService",
+      "symbols": 23
+    },
+    {
+      "label": "src/EchoHub.Client/Services · AppOrchestrator",
+      "symbols": 21
+    },
+    {
+      "label": "src/EchoHub.Client/UI · MainWindow",
+      "symbols": 21
+    },
+    {
+      "label": "src/EchoHub.Core/DTOs · ApiClient",
+      "symbols": 19
+    },
+    {
+      "label": "src/EchoHub.Server · User",
+      "symbols": 17
+    },
+    {
+      "label": "src/EchoHub.Core/DTOs · ChannelService",
+      "symbols": 13
+    },
+    {
+      "label": "src/EchoHub.Server · Program",
+      "symbols": 13
+    },
+    {
+      "label": "src/EchoHub.Client/Config",
+      "symbols": 7
+    },
+    {
+      "label": "src/EchoHub.Server · ServerDirectoryService",
+      "symbols": 7
+    },
+    {
+      "label": "src/EchoHub.Client/UI · Channel",
+      "symbols": 6
+    },
+    {
+      "label": "src/EchoHub.Core/DTOs · ChannelsController",
+      "symbols": 6
+    },
+    {
+      "label": "src/EchoHub.Core/Models",
+      "symbols": 6
+    },
+    {
+      "label": "src/EchoHub.Client/Services · UpdateBackupService",
+      "symbols": 5
+    },
+    {
+      "label": "src/EchoHub.Client/Themes",
+      "symbols": 5
+    },
+    {
+      "label": "src/EchoHub.Server · ServerLogsStreamService",
+      "symbols": 5
+    },
+    {
+      "label": "src/EchoHub.Client/Services · IMessageEncryptionService",
+      "symbols": 4
+    },
+    {
+      "label": "src/EchoHub.Client/UI · InviteCode",
+      "symbols": 4
+    },
+    {
+      "label": "src/EchoHub.Client/Services · FolderPickResult",
+      "symbols": 3
+    },
+    {
+      "label": "src/EchoHub.Core/DTOs · UserDataExportDto",
+      "symbols": 3
+    },
+    {
+      "label": "src/EchoHub.Server · ServerStatsReportService",
+      "symbols": 3
+    },
+    {
+      "label": "src/EchoHub.Server · SpamGuard",
+      "symbols": 3
+    },
+    {
+      "label": "src/EchoHub.Server.Irc",
+      "symbols": 3
+    },
+    {
+      "label": "src/EchoHub.Tests/Irc",
+      "symbols": 3
+    },
+    {
+      "label": "src/EchoHub.Core/DTOs",
+      "symbols": 1
+    }
+  ],
+  "symbols": [
+    {
+      "id": "src/EchoHub.Client/AppOrchestrator.cs::AppOrchestrator",
+      "name": "AppOrchestrator",
+      "kind": "class",
+      "file": "src/EchoHub.Client/AppOrchestrator.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": 0.093,
+      "inDegree": 3,
+      "outDegree": 47,
+      "doc": "Code/src/EchoHub.Client/AppOrchestrator.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Commands/CommandHandler.cs::CommandHandler",
+        "src/EchoHub.Client/Config/ClientConfig.cs::AccountPreset",
+        "src/EchoHub.Client/Config/ClientConfig.cs::ClientConfig",
+        "src/EchoHub.Client/Config/ConfigManager.cs::ConfigManager",
+        "src/EchoHub.Client/Services/AsyncRunner.cs::AsyncRunner",
+        "src/EchoHub.Client/Services/AudioPlaybackService.cs::AudioPlaybackService",
+        "src/EchoHub.Client/Services/AvatarHelper.cs::AvatarHelper",
+        "src/EchoHub.Client/Services/ConnectionManager.cs::ConnectResult",
+        "src/EchoHub.Client/Services/ConnectionManager.cs::ConnectionManager",
+        "src/EchoHub.Client/Services/EchoHubConnection.cs::ChannelPasswordRequiredException",
+        "src/EchoHub.Client/Services/EchoHubConnection.cs::JoinOutcome",
+        "src/EchoHub.Client/Services/NotificationSoundService.cs::NotificationSoundService",
+        "src/EchoHub.Client/Services/OutgoingAttachment.cs::OutgoingAttachment",
+        "src/EchoHub.Client/Services/UpdateChecker.cs::UpdateChecker",
+        "src/EchoHub.Client/Services/UserSession.cs::UserSession",
+        "src/EchoHub.Client/Themes/Theme.cs::Theme",
+        "src/EchoHub.Client/Themes/ThemeManager.cs::ThemeManager",
+        "src/EchoHub.Client/UI/Chat/ChatMessageManager.cs::ChatMessageManager",
+        "src/EchoHub.Client/UI/Dialogs/ChannelPasswordDialog.cs::ChannelPasswordDialog",
+        "src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs::ConnectDialog",
+        "src/EchoHub.Client/UI/Dialogs/CreateChannelDialog.cs::CreateChannelDialog",
+        "src/EchoHub.Client/UI/Dialogs/ProfileEditDialog.cs::ProfileEditDialog",
+        "src/EchoHub.Client/UI/Dialogs/ProfileViewDialog.cs::ProfileAction",
+        "src/EchoHub.Client/UI/Dialogs/ProfileViewDialog.cs::ProfileViewDialog",
+        "src/EchoHub.Client/UI/Dialogs/SearchDialog.cs::SearchDialog",
+        "src/EchoHub.Client/UI/Dialogs/SearchDialog.cs::SearchResultType",
+        "src/EchoHub.Client/UI/Dialogs/StatusDialog.cs::StatusDialog",
+        "src/EchoHub.Client/UI/MainWindow.cs::MainWindow",
+        "src/EchoHub.Core/Constants/HubConstants.cs::HubConstants",
+        "src/EchoHub.Core/Constants/MessageConventions.cs::MessageConventions",
+        "src/EchoHub.Core/Constants/ValidationConstants.cs::ValidationConstants",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelCryptoDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::RekeyChannelRequest",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UpdateProfileRequest",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserPresenceDto",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserProfileDto",
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Core/Models/Message.cs::Message",
+        "src/EchoHub.Core/Models/RefreshToken.cs::RefreshToken",
+        "src/EchoHub.Core/Models/ServerRole.cs::ServerRole",
+        "src/EchoHub.Core/Models/User.cs::User",
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus",
+        "src/EchoHub.Core/Security/RoomCrypto.cs::RoomCrypto",
+        "src/EchoHub.Core/Services/AsciiBannerService.cs::AsciiBannerService",
+        "src/EchoHub.Core/Services/FileValidationHelper.cs::FileValidationHelper",
+        "src/EchoHub.Core/Services/ImageToAsciiService.cs::ImageToAsciiService"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Commands/CommandHandler.cs::CommandHandler",
+      "name": "CommandHandler",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Commands/CommandHandler.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": null,
+      "inDegree": 1,
+      "outDegree": 4,
+      "doc": "Code/src/EchoHub.Client/Commands/CommandHandler.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Commands/CommandHandler.cs::CommandResult",
+        "src/EchoHub.Client/Themes/Theme.cs::Theme",
+        "src/EchoHub.Core/Models/User.cs::User",
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Commands/CommandHandler.cs::CommandResult",
+      "name": "CommandResult",
+      "kind": "record",
+      "file": "src/EchoHub.Client/Commands/CommandHandler.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": 0.101,
+      "inDegree": 1,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/Commands/CommandHandler.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/Message.cs::Message"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Config/ClientConfig.cs::AccountPreset",
+      "name": "AccountPreset",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Config/ClientConfig.cs",
+      "subsystem": "src/EchoHub.Client/Config",
+      "complexity": 0.231,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/Config/ClientConfig.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/Config/ClientConfig.cs::ClientConfig",
+      "name": "ClientConfig",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Config/ClientConfig.cs",
+      "subsystem": "src/EchoHub.Client/Config",
+      "complexity": 0.331,
+      "inDegree": 4,
+      "outDegree": 3,
+      "doc": "Code/src/EchoHub.Client/Config/ClientConfig.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Config/ClientConfig.cs::AccountPreset",
+        "src/EchoHub.Client/Config/ClientConfig.cs::NotificationConfig",
+        "src/EchoHub.Client/Config/ClientConfig.cs::SavedServer"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Config/ClientConfig.cs::NotificationConfig",
+      "name": "NotificationConfig",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Config/ClientConfig.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": 0.231,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/Config/ClientConfig.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/Config/ClientConfig.cs::SavedServer",
+      "name": "SavedServer",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Config/ClientConfig.cs",
+      "subsystem": "src/EchoHub.Client/Config",
+      "complexity": 0.384,
+      "inDegree": 5,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Client/Config/ClientConfig.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Services/RoomKeyProtector.cs::RoomKeyProtector",
+        "src/EchoHub.Core/Models/RefreshToken.cs::RefreshToken"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Config/ConfigManager.cs::ConfigManager",
+      "name": "ConfigManager",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Config/ConfigManager.cs",
+      "subsystem": "src/EchoHub.Client/Config",
+      "complexity": 0.477,
+      "inDegree": 4,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Client/Config/ConfigManager.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Config/ClientConfig.cs::ClientConfig",
+        "src/EchoHub.Client/Config/ClientConfig.cs::SavedServer"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Program.cs::Program",
+      "name": "Program",
+      "kind": "file",
+      "file": "src/EchoHub.Client/Program.cs",
+      "subsystem": "src/EchoHub.Client/Themes",
+      "complexity": 0.245,
+      "inDegree": 0,
+      "outDegree": 8,
+      "doc": "Code/src/EchoHub.Client/Program.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/AppOrchestrator.cs::AppOrchestrator",
+        "src/EchoHub.Client/Config/ConfigManager.cs::ConfigManager",
+        "src/EchoHub.Client/Services/PathSetup.cs::PathSetup",
+        "src/EchoHub.Client/Services/UpdateBackupService.cs::UpdateBackupService",
+        "src/EchoHub.Client/Themes/Theme.cs::Theme",
+        "src/EchoHub.Client/Themes/ThemeManager.cs::ThemeManager",
+        "src/EchoHub.Client/UI/MainWindow.cs::MainWindow",
+        "src/EchoHub.Core/Models/Message.cs::Message"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Services/ApiClient.cs::ApiClient",
+      "name": "ApiClient",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Services/ApiClient.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ApiClient",
+      "complexity": 0.086,
+      "inDegree": 3,
+      "outDegree": 29,
+      "doc": "Code/src/EchoHub.Client/Services/ApiClient.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Services/EchoHubConnection.cs::EchoHubConnection",
+        "src/EchoHub.Client/Services/OutgoingAttachment.cs::OutgoingAttachment",
+        "src/EchoHub.Core/DTOs/AccountDtos.cs::DeleteAccountRequest",
+        "src/EchoHub.Core/DTOs/AuthDtos.cs::LoginRequest",
+        "src/EchoHub.Core/DTOs/AuthDtos.cs::LoginResponse",
+        "src/EchoHub.Core/DTOs/AuthDtos.cs::RefreshRequest",
+        "src/EchoHub.Core/DTOs/AuthDtos.cs::RegisterRequest",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelCryptoDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelMetaDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::CreateChannelRequest",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::RekeyChannelRequest",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::SendUrlRequest",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::UpdateTopicRequest",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::PaginatedResponse",
+        "src/EchoHub.Core/DTOs/InviteDtos.cs::CreateInviteRequest",
+        "src/EchoHub.Core/DTOs/InviteDtos.cs::InviteDto",
+        "src/EchoHub.Core/DTOs/ModerationDtos.cs::AssignRoleRequest",
+        "src/EchoHub.Core/DTOs/ModerationDtos.cs::BanRequest",
+        "src/EchoHub.Core/DTOs/ModerationDtos.cs::KickRequest",
+        "src/EchoHub.Core/DTOs/ModerationDtos.cs::MuteRequest",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::AvatarUploadResponse",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UpdateProfileRequest",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserProfileDto",
+        "src/EchoHub.Core/DTOs/ServerDtos.cs::EncryptionKeyResponse",
+        "src/EchoHub.Core/DTOs/ServerDtos.cs::ServerStatusDto",
+        "src/EchoHub.Core/Models/RefreshToken.cs::RefreshToken",
+        "src/EchoHub.Core/Models/ServerRole.cs::ServerRole"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Services/AsyncRunner.cs::AsyncRunner",
+      "name": "AsyncRunner",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Services/AsyncRunner.cs",
+      "subsystem": "src/EchoHub.Core/Models",
+      "complexity": 0.299,
+      "inDegree": 1,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/Services/AsyncRunner.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/Message.cs::Message"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Services/AudioPlaybackService.cs::AudioPlaybackService",
+      "name": "AudioPlaybackService",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Services/AudioPlaybackService.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": 0.519,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/Services/AudioPlaybackService.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/Services/AvatarHelper.cs::AvatarHelper",
+      "name": "AvatarHelper",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Services/AvatarHelper.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ApiClient",
+      "complexity": 0.294,
+      "inDegree": 1,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/Services/AvatarHelper.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Services/ApiClient.cs::ApiClient"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Services/ClientEncryptionService.cs::ClientEncryptionService",
+      "name": "ClientEncryptionService",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Services/ClientEncryptionService.cs",
+      "subsystem": "src/EchoHub.Client/Services · IMessageEncryptionService",
+      "complexity": 0.542,
+      "inDegree": 2,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/Services/ClientEncryptionService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Contracts/IMessageEncryptionService.cs::IMessageEncryptionService"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Services/ClipboardFiles.cs::ClipboardFiles",
+      "name": "ClipboardFiles",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Services/ClipboardFiles.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": 0.493,
+      "inDegree": 1,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/Services/ClipboardFiles.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/Services/ClipboardImage.cs::ClipboardImage",
+      "name": "ClipboardImage",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Services/ClipboardImage.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": 0.62,
+      "inDegree": 1,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/Services/ClipboardImage.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/Services/ConnectionManager.cs::ConnectResult",
+      "name": "ConnectResult",
+      "kind": "record",
+      "file": "src/EchoHub.Client/Services/ConnectionManager.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": 0.167,
+      "inDegree": 2,
+      "outDegree": 4,
+      "doc": "Code/src/EchoHub.Client/Services/ConnectionManager.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/AppOrchestrator.cs::AppOrchestrator",
+        "src/EchoHub.Core/DTOs/AuthDtos.cs::LoginResponse",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Services/ConnectionManager.cs::ConnectionManager",
+      "name": "ConnectionManager",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Services/ConnectionManager.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": 0.77,
+      "inDegree": 1,
+      "outDegree": 22,
+      "doc": "Code/src/EchoHub.Client/Services/ConnectionManager.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/AppOrchestrator.cs::AppOrchestrator",
+        "src/EchoHub.Client/Config/ClientConfig.cs::ClientConfig",
+        "src/EchoHub.Client/Config/ClientConfig.cs::SavedServer",
+        "src/EchoHub.Client/Config/ConfigManager.cs::ConfigManager",
+        "src/EchoHub.Client/Services/ApiClient.cs::ApiClient",
+        "src/EchoHub.Client/Services/ClientEncryptionService.cs::ClientEncryptionService",
+        "src/EchoHub.Client/Services/ConnectionManager.cs::ConnectResult",
+        "src/EchoHub.Client/Services/EchoHubConnection.cs::ChannelPasswordRequiredException",
+        "src/EchoHub.Client/Services/EchoHubConnection.cs::EchoHubConnection",
+        "src/EchoHub.Client/Services/EchoHubConnection.cs::JoinOutcome",
+        "src/EchoHub.Client/Services/RoomKeyStore.cs::RoomKeyStore",
+        "src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs::ConnectDialogResult",
+        "src/EchoHub.Core/Constants/HubConstants.cs::HubConstants",
+        "src/EchoHub.Core/DTOs/AuthDtos.cs::LoginResponse",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserPresenceDto",
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Core/Models/InviteCode.cs::InviteCode",
+        "src/EchoHub.Core/Models/RefreshToken.cs::RefreshToken",
+        "src/EchoHub.Core/Models/User.cs::User",
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Services/EchoHubConnection.cs::ChannelPasswordRequiredException",
+      "name": "ChannelPasswordRequiredException",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Services/EchoHubConnection.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": 0.275,
+      "inDegree": 3,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/Services/EchoHubConnection.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/Services/EchoHubConnection.cs::EchoHubConnection",
+      "name": "EchoHubConnection",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Services/EchoHubConnection.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.652,
+      "inDegree": 2,
+      "outDegree": 16,
+      "doc": "Code/src/EchoHub.Client/Services/EchoHubConnection.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Services/ApiClient.cs::ApiClient",
+        "src/EchoHub.Client/Services/ClientEncryptionService.cs::ClientEncryptionService",
+        "src/EchoHub.Client/Services/EchoHubConnection.cs::ChannelPasswordRequiredException",
+        "src/EchoHub.Client/Services/EchoHubConnection.cs::JoinOutcome",
+        "src/EchoHub.Client/Services/EchoHubConnection.cs::RoomLockedException",
+        "src/EchoHub.Client/Services/RoomKeyStore.cs::RoomKeyStore",
+        "src/EchoHub.Core/Constants/HubConstants.cs::HubConstants",
+        "src/EchoHub.Core/Contracts/IEchoHubClient.cs::IEchoHubClient",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::AttachmentDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::JoinChannelResult",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserPresenceDto",
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus",
+        "src/EchoHub.Core/Security/RoomCrypto.cs::RoomCrypto"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Services/EchoHubConnection.cs::JoinOutcome",
+      "name": "JoinOutcome",
+      "kind": "record",
+      "file": "src/EchoHub.Client/Services/EchoHubConnection.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": 0.234,
+      "inDegree": 3,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/Services/EchoHubConnection.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Services/EchoHubConnection.cs::RoomLockedException",
+      "name": "RoomLockedException",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Services/EchoHubConnection.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.264,
+      "inDegree": 1,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/Services/EchoHubConnection.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/Services/NativeFolderPicker.cs::FolderPickResult",
+      "name": "FolderPickResult",
+      "kind": "record",
+      "file": "src/EchoHub.Client/Services/NativeFolderPicker.cs",
+      "subsystem": "src/EchoHub.Client/Services · FolderPickResult",
+      "complexity": 0.093,
+      "inDegree": 2,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/Services/NativeFolderPicker.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Services/NativeFolderPicker.cs::PickerOutcome"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Services/NativeFolderPicker.cs::NativeFolderPicker",
+      "name": "NativeFolderPicker",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Services/NativeFolderPicker.cs",
+      "subsystem": "src/EchoHub.Client/Services · FolderPickResult",
+      "complexity": 0.408,
+      "inDegree": 0,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Client/Services/NativeFolderPicker.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Services/NativeFolderPicker.cs::FolderPickResult",
+        "src/EchoHub.Client/Services/NativeFolderPicker.cs::PickerOutcome"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Services/NativeFolderPicker.cs::PickerOutcome",
+      "name": "PickerOutcome",
+      "kind": "enum",
+      "file": "src/EchoHub.Client/Services/NativeFolderPicker.cs",
+      "subsystem": "src/EchoHub.Client/Services · FolderPickResult",
+      "complexity": 0.026,
+      "inDegree": 2,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/Services/NativeFolderPicker.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Services/NativeFolderPicker.cs::FolderPickResult"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Services/NotificationSoundService.cs::NotificationSoundService",
+      "name": "NotificationSoundService",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Services/NotificationSoundService.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": 0.501,
+      "inDegree": 1,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/Services/NotificationSoundService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Config/ClientConfig.cs::NotificationConfig"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Services/OutgoingAttachment.cs::OutgoingAttachment",
+      "name": "OutgoingAttachment",
+      "kind": "record",
+      "file": "src/EchoHub.Client/Services/OutgoingAttachment.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ApiClient",
+      "complexity": 0.169,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/Services/OutgoingAttachment.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/Services/PathSetup.cs::PathSetup",
+      "name": "PathSetup",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Services/PathSetup.cs",
+      "subsystem": "src/EchoHub.Client/Themes",
+      "complexity": 0.345,
+      "inDegree": 1,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/Services/PathSetup.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/User.cs::User"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Services/RoomKeyProtector.cs::RoomKeyProtector",
+      "name": "RoomKeyProtector",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Services/RoomKeyProtector.cs",
+      "subsystem": "src/EchoHub.Client/Config",
+      "complexity": 0.472,
+      "inDegree": 2,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/Services/RoomKeyProtector.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Security/RoomCrypto.cs::RoomCrypto"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Services/RoomKeyStore.cs::RoomKeyStore",
+      "name": "RoomKeyStore",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Services/RoomKeyStore.cs",
+      "subsystem": "src/EchoHub.Client/Config",
+      "complexity": 0.62,
+      "inDegree": 2,
+      "outDegree": 6,
+      "doc": "Code/src/EchoHub.Client/Services/RoomKeyStore.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Config/ClientConfig.cs::ClientConfig",
+        "src/EchoHub.Client/Config/ClientConfig.cs::SavedServer",
+        "src/EchoHub.Client/Config/ConfigManager.cs::ConfigManager",
+        "src/EchoHub.Client/Services/RoomKeyProtector.cs::RoomKeyProtector",
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Core/Security/RoomCrypto.cs::RoomCrypto"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Services/UpdateBackupService.cs::BackupInfo",
+      "name": "BackupInfo",
+      "kind": "record",
+      "file": "src/EchoHub.Client/Services/UpdateBackupService.cs",
+      "subsystem": "src/EchoHub.Client/Services · UpdateBackupService",
+      "complexity": 0.101,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/Services/UpdateBackupService.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/Services/UpdateBackupService.cs::BackupJsonContext",
+      "name": "BackupJsonContext",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Services/UpdateBackupService.cs",
+      "subsystem": "src/EchoHub.Client/Services · UpdateBackupService",
+      "complexity": 0.158,
+      "inDegree": 1,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/Services/UpdateBackupService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Services/UpdateBackupService.cs::BackupInfo"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Services/UpdateBackupService.cs::UpdateBackupService",
+      "name": "UpdateBackupService",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Services/UpdateBackupService.cs",
+      "subsystem": "src/EchoHub.Client/Services · UpdateBackupService",
+      "complexity": 0.535,
+      "inDegree": 3,
+      "outDegree": 3,
+      "doc": "Code/src/EchoHub.Client/Services/UpdateBackupService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Services/UpdateBackupService.cs::BackupInfo",
+        "src/EchoHub.Client/Services/UpdateBackupService.cs::BackupJsonContext",
+        "src/EchoHub.Client/Services/UpdateChecker.cs::UpdateChecker"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Services/UpdateChecker.cs::UpdateChecker",
+      "name": "UpdateChecker",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Services/UpdateChecker.cs",
+      "subsystem": "src/EchoHub.Client/Services · UpdateBackupService",
+      "complexity": 0.554,
+      "inDegree": 2,
+      "outDegree": 3,
+      "doc": "Code/src/EchoHub.Client/Services/UpdateChecker.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Services/UpdateBackupService.cs::UpdateBackupService",
+        "src/EchoHub.Client/UI/Dialogs/UpdateConfirmDialog.cs::UpdateConfirmDialog",
+        "src/EchoHub.Core/Models/Message.cs::Message"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Services/UserSession.cs::UserSession",
+      "name": "UserSession",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Services/UserSession.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": 0.244,
+      "inDegree": 1,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/Services/UserSession.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Themes/Theme.cs::Theme",
+      "name": "Theme",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Themes/Theme.cs",
+      "subsystem": "src/EchoHub.Client/Themes",
+      "complexity": 0.379,
+      "inDegree": 4,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/Themes/Theme.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Themes/Theme.cs::ThemeColors"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/Themes/Theme.cs::ThemeColors",
+      "name": "ThemeColors",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Themes/Theme.cs",
+      "subsystem": "src/EchoHub.Client/Themes",
+      "complexity": 0.252,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/Themes/Theme.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/Themes/ThemeManager.cs::ThemeManager",
+      "name": "ThemeManager",
+      "kind": "class",
+      "file": "src/EchoHub.Client/Themes/ThemeManager.cs",
+      "subsystem": "src/EchoHub.Client/Themes",
+      "complexity": null,
+      "inDegree": 3,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Client/Themes/ThemeManager.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Themes/Theme.cs::Theme",
+        "src/EchoHub.Client/Themes/Theme.cs::ThemeColors"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Chat/ChatColors.cs::ChatColors",
+      "name": "ChatColors",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/Chat/ChatColors.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": 0.582,
+      "inDegree": 4,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/UI/Chat/ChatColors.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/UI/Chat/ChatSegment.cs::ChatSegment"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Chat/ChatLine.cs::AttachmentAction",
+      "name": "AttachmentAction",
+      "kind": "enum",
+      "file": "src/EchoHub.Client/UI/Chat/ChatLine.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": 0.026,
+      "inDegree": 3,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/UI/Chat/ChatLine.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Chat/ChatLine.cs::AttachmentActionSpan",
+      "name": "AttachmentActionSpan",
+      "kind": "record",
+      "file": "src/EchoHub.Client/UI/Chat/ChatLine.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": 0.301,
+      "inDegree": 2,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/UI/Chat/ChatLine.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/UI/Chat/ChatLine.cs::AttachmentAction"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Chat/ChatLine.cs::ChatLine",
+      "name": "ChatLine",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/Chat/ChatLine.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": 0.635,
+      "inDegree": 5,
+      "outDegree": 4,
+      "doc": "Code/src/EchoHub.Client/UI/Chat/ChatLine.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/UI/Chat/ChatColors.cs::ChatColors",
+        "src/EchoHub.Client/UI/Chat/ChatLine.cs::AttachmentActionSpan",
+        "src/EchoHub.Client/UI/Chat/ChatSegment.cs::ChatSegment",
+        "src/EchoHub.Core/Models/AttachmentKind.cs::AttachmentKind"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Chat/ChatListSource.cs::ChatListSource",
+      "name": "ChatListSource",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/Chat/ChatListSource.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": 0.678,
+      "inDegree": 2,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Client/UI/Chat/ChatListSource.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/UI/Chat/ChatColors.cs::ChatColors",
+        "src/EchoHub.Client/UI/Chat/ChatLine.cs::ChatLine"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Chat/ChatMessageManager.cs::ChatMessageManager",
+      "name": "ChatMessageManager",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/Chat/ChatMessageManager.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": null,
+      "inDegree": 2,
+      "outDegree": 15,
+      "doc": "Code/src/EchoHub.Client/UI/Chat/ChatMessageManager.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/UI/Chat/ChatColors.cs::ChatColors",
+        "src/EchoHub.Client/UI/Chat/ChatLine.cs::AttachmentAction",
+        "src/EchoHub.Client/UI/Chat/ChatLine.cs::AttachmentActionSpan",
+        "src/EchoHub.Client/UI/Chat/ChatLine.cs::ChatLine",
+        "src/EchoHub.Client/UI/Chat/ChatSegment.cs::ChatSegment",
+        "src/EchoHub.Client/UI/Helpers/EmojiHelper.cs::EmojiHelper",
+        "src/EchoHub.Client/UI/Helpers/HexColorHelper.cs::HexColorHelper",
+        "src/EchoHub.Client/UI/Helpers/NickColorHelper.cs::NickColorHelper",
+        "src/EchoHub.Core/Constants/MessageConventions.cs::MessageConventions",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::AttachmentDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::EmbedDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ReplyRefDto",
+        "src/EchoHub.Core/Models/AttachmentKind.cs::AttachmentKind",
+        "src/EchoHub.Core/Models/Message.cs::Message"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Chat/ChatSegment.cs::ChatSegment",
+      "name": "ChatSegment",
+      "kind": "record",
+      "file": "src/EchoHub.Client/UI/Chat/ChatSegment.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": 0.093,
+      "inDegree": 5,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/UI/Chat/ChatSegment.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Chat/RenderHelpers.cs::RenderHelpers",
+      "name": "RenderHelpers",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/Chat/RenderHelpers.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": 0.304,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/UI/Chat/RenderHelpers.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Chat/WelcomeBanner.cs::WelcomeBanner",
+      "name": "WelcomeBanner",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/Chat/WelcomeBanner.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": 0.358,
+      "inDegree": 1,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Client/UI/Chat/WelcomeBanner.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/UI/Chat/ChatLine.cs::ChatLine",
+        "src/EchoHub.Client/UI/Chat/ChatSegment.cs::ChatSegment"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Dialogs/AudioPlayerDialog.cs::AudioPlayerDialog",
+      "name": "AudioPlayerDialog",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/Dialogs/AudioPlayerDialog.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": 0.425,
+      "inDegree": 0,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/UI/Dialogs/AudioPlayerDialog.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Services/AudioPlaybackService.cs::AudioPlaybackService"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Dialogs/ChannelPasswordDialog.cs::ChannelPasswordDialog",
+      "name": "ChannelPasswordDialog",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/Dialogs/ChannelPasswordDialog.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": 0.265,
+      "inDegree": 1,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/UI/Dialogs/ChannelPasswordDialog.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs::ConnectDialog",
+      "name": "ConnectDialog",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs",
+      "subsystem": "src/EchoHub.Client/UI · InviteCode",
+      "complexity": 0.292,
+      "inDegree": 1,
+      "outDegree": 4,
+      "doc": "Code/src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Config/ClientConfig.cs::SavedServer",
+        "src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs::ConnectDialogResult",
+        "src/EchoHub.Core/Models/InviteCode.cs::InviteCode",
+        "src/EchoHub.Core/Models/RefreshToken.cs::RefreshToken"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs::ConnectDialogResult",
+      "name": "ConnectDialogResult",
+      "kind": "record",
+      "file": "src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs",
+      "subsystem": "src/EchoHub.Client/UI · InviteCode",
+      "complexity": 0.138,
+      "inDegree": 2,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/InviteCode.cs::InviteCode"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Dialogs/CreateChannelDialog.cs::CreateChannelDialog",
+      "name": "CreateChannelDialog",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/Dialogs/CreateChannelDialog.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": 0.22,
+      "inDegree": 1,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Client/UI/Dialogs/CreateChannelDialog.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/UI/Dialogs/CreateChannelDialog.cs::CreateChannelResult",
+        "src/EchoHub.Core/Models/Channel.cs::Channel"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Dialogs/CreateChannelDialog.cs::CreateChannelResult",
+      "name": "CreateChannelResult",
+      "kind": "record",
+      "file": "src/EchoHub.Client/UI/Dialogs/CreateChannelDialog.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": 0.108,
+      "inDegree": 1,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/UI/Dialogs/CreateChannelDialog.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Dialogs/ProfileEditDialog.cs::ProfileEditDialog",
+      "name": "ProfileEditDialog",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/Dialogs/ProfileEditDialog.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": 0.301,
+      "inDegree": 1,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Client/UI/Dialogs/ProfileEditDialog.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/UI/Dialogs/ProfileEditDialog.cs::ProfileEditResult",
+        "src/EchoHub.Client/UI/Helpers/HexColorHelper.cs::HexColorHelper"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Dialogs/ProfileEditDialog.cs::ProfileEditResult",
+      "name": "ProfileEditResult",
+      "kind": "record",
+      "file": "src/EchoHub.Client/UI/Dialogs/ProfileEditDialog.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": 0.123,
+      "inDegree": 1,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/UI/Dialogs/ProfileEditDialog.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Dialogs/ProfileViewDialog.cs::ProfileAction",
+      "name": "ProfileAction",
+      "kind": "enum",
+      "file": "src/EchoHub.Client/UI/Dialogs/ProfileViewDialog.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": 0.026,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/UI/Dialogs/ProfileViewDialog.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Dialogs/ProfileViewDialog.cs::ProfileViewDialog",
+      "name": "ProfileViewDialog",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/Dialogs/ProfileViewDialog.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": 0.398,
+      "inDegree": 1,
+      "outDegree": 8,
+      "doc": "Code/src/EchoHub.Client/UI/Dialogs/ProfileViewDialog.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/UI/Chat/ChatLine.cs::ChatLine",
+        "src/EchoHub.Client/UI/Chat/ChatListSource.cs::ChatListSource",
+        "src/EchoHub.Client/UI/Dialogs/ProfileViewDialog.cs::ProfileAction",
+        "src/EchoHub.Client/UI/Helpers/HexColorHelper.cs::HexColorHelper",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserProfileDto",
+        "src/EchoHub.Core/Models/Message.cs::Message",
+        "src/EchoHub.Core/Models/User.cs::User",
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Dialogs/SearchDialog.cs::SearchDialog",
+      "name": "SearchDialog",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/Dialogs/SearchDialog.cs",
+      "subsystem": "src/EchoHub.Client/UI · Channel",
+      "complexity": 0.295,
+      "inDegree": 1,
+      "outDegree": 4,
+      "doc": "Code/src/EchoHub.Client/UI/Dialogs/SearchDialog.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/UI/Dialogs/SearchDialog.cs::SearchResult",
+        "src/EchoHub.Client/UI/Dialogs/SearchDialog.cs::SearchResultType",
+        "src/EchoHub.Client/UI/ListSources/SearchListSource.cs::SearchListSource",
+        "src/EchoHub.Core/Models/Channel.cs::Channel"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Dialogs/SearchDialog.cs::SearchResult",
+      "name": "SearchResult",
+      "kind": "record",
+      "file": "src/EchoHub.Client/UI/Dialogs/SearchDialog.cs",
+      "subsystem": "src/EchoHub.Client/UI · Channel",
+      "complexity": 0.101,
+      "inDegree": 2,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/UI/Dialogs/SearchDialog.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/UI/Dialogs/SearchDialog.cs::SearchResultType"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Dialogs/SearchDialog.cs::SearchResultType",
+      "name": "SearchResultType",
+      "kind": "enum",
+      "file": "src/EchoHub.Client/UI/Dialogs/SearchDialog.cs",
+      "subsystem": "src/EchoHub.Client/UI · Channel",
+      "complexity": 0.026,
+      "inDegree": 4,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/UI/Dialogs/SearchDialog.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/Channel.cs::Channel"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Dialogs/StatusDialog.cs::StatusDialog",
+      "name": "StatusDialog",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/Dialogs/StatusDialog.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.25,
+      "inDegree": 1,
+      "outDegree": 3,
+      "doc": "Code/src/EchoHub.Client/UI/Dialogs/StatusDialog.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/UI/Dialogs/StatusDialog.cs::StatusDialogResult",
+        "src/EchoHub.Core/Models/Message.cs::Message",
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Dialogs/StatusDialog.cs::StatusDialogResult",
+      "name": "StatusDialogResult",
+      "kind": "record",
+      "file": "src/EchoHub.Client/UI/Dialogs/StatusDialog.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.093,
+      "inDegree": 1,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/UI/Dialogs/StatusDialog.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Dialogs/UpdateConfirmDialog.cs::UpdateConfirmDialog",
+      "name": "UpdateConfirmDialog",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/Dialogs/UpdateConfirmDialog.cs",
+      "subsystem": "src/EchoHub.Client/Services · UpdateBackupService",
+      "complexity": 0.21,
+      "inDegree": 1,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/UI/Dialogs/UpdateConfirmDialog.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Helpers/DroppedFileParser.cs::DroppedFileParser",
+      "name": "DroppedFileParser",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/Helpers/DroppedFileParser.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": 0.481,
+      "inDegree": 1,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/UI/Helpers/DroppedFileParser.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Helpers/EmojiHelper.cs::EmojiHelper",
+      "name": "EmojiHelper",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/Helpers/EmojiHelper.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": 0.376,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/UI/Helpers/EmojiHelper.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Helpers/HexColorHelper.cs::HexColorHelper",
+      "name": "HexColorHelper",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/Helpers/HexColorHelper.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": 0.32,
+      "inDegree": 4,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/UI/Helpers/HexColorHelper.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/UI/Helpers/NickColorHelper.cs::NickColorHelper",
+      "name": "NickColorHelper",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/Helpers/NickColorHelper.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": 0.33,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/UI/Helpers/NickColorHelper.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/UI/ListSources/ChannelListSource.cs::ChannelListSource",
+      "name": "ChannelListSource",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/ListSources/ChannelListSource.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": 0.642,
+      "inDegree": 1,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Client/UI/ListSources/ChannelListSource.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/UI/Chat/RenderHelpers.cs::RenderHelpers"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/UI/ListSources/SearchListSource.cs::SearchListSource",
+      "name": "SearchListSource",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/ListSources/SearchListSource.cs",
+      "subsystem": "src/EchoHub.Client/UI · Channel",
+      "complexity": 0.581,
+      "inDegree": 1,
+      "outDegree": 4,
+      "doc": "Code/src/EchoHub.Client/UI/ListSources/SearchListSource.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/UI/Chat/RenderHelpers.cs::RenderHelpers",
+        "src/EchoHub.Client/UI/Dialogs/SearchDialog.cs::SearchResult",
+        "src/EchoHub.Client/UI/Dialogs/SearchDialog.cs::SearchResultType",
+        "src/EchoHub.Core/Models/Channel.cs::Channel"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Client/UI/ListSources/UserListSource.cs::UserListSource",
+      "name": "UserListSource",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/ListSources/UserListSource.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": 0.592,
+      "inDegree": 1,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Client/UI/ListSources/UserListSource.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Client/UI/MainWindow.cs::MainWindow",
+      "name": "MainWindow",
+      "kind": "class",
+      "file": "src/EchoHub.Client/UI/MainWindow.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": 0.132,
+      "inDegree": 2,
+      "outDegree": 25,
+      "doc": "Code/src/EchoHub.Client/UI/MainWindow.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Client/Services/ClipboardFiles.cs::ClipboardFiles",
+        "src/EchoHub.Client/Services/ClipboardImage.cs::ClipboardImage",
+        "src/EchoHub.Client/Services/UpdateBackupService.cs::UpdateBackupService",
+        "src/EchoHub.Client/Themes/ThemeManager.cs::ThemeManager",
+        "src/EchoHub.Client/UI/Chat/ChatColors.cs::ChatColors",
+        "src/EchoHub.Client/UI/Chat/ChatLine.cs::AttachmentAction",
+        "src/EchoHub.Client/UI/Chat/ChatLine.cs::ChatLine",
+        "src/EchoHub.Client/UI/Chat/ChatListSource.cs::ChatListSource",
+        "src/EchoHub.Client/UI/Chat/ChatMessageManager.cs::ChatMessageManager",
+        "src/EchoHub.Client/UI/Chat/ChatSegment.cs::ChatSegment",
+        "src/EchoHub.Client/UI/Chat/WelcomeBanner.cs::WelcomeBanner",
+        "src/EchoHub.Client/UI/Helpers/DroppedFileParser.cs::DroppedFileParser",
+        "src/EchoHub.Client/UI/Helpers/EmojiHelper.cs::EmojiHelper",
+        "src/EchoHub.Client/UI/Helpers/HexColorHelper.cs::HexColorHelper",
+        "src/EchoHub.Client/UI/Helpers/NickColorHelper.cs::NickColorHelper",
+        "src/EchoHub.Client/UI/ListSources/ChannelListSource.cs::ChannelListSource",
+        "src/EchoHub.Client/UI/ListSources/UserListSource.cs::UserListSource",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelDto",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserPresenceDto",
+        "src/EchoHub.Core/Models/AttachmentKind.cs::AttachmentKind",
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Core/Models/Message.cs::Message",
+        "src/EchoHub.Core/Models/ServerRole.cs::ServerRole",
+        "src/EchoHub.Core/Models/User.cs::User",
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/Constants/HubConstants.cs::HubConstants",
+      "name": "HubConstants",
+      "kind": "class",
+      "file": "src/EchoHub.Core/Constants/HubConstants.cs",
+      "subsystem": "src/EchoHub.Server · Program",
+      "complexity": 0.48,
+      "inDegree": 16,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/Constants/HubConstants.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/Constants/MessageConventions.cs::MessageConventions",
+      "name": "MessageConventions",
+      "kind": "class",
+      "file": "src/EchoHub.Core/Constants/MessageConventions.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": 0.349,
+      "inDegree": 3,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/Constants/MessageConventions.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/Constants/ValidationConstants.cs::ValidationConstants",
+      "name": "ValidationConstants",
+      "kind": "class",
+      "file": "src/EchoHub.Core/Constants/ValidationConstants.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChannelService",
+      "complexity": 0.431,
+      "inDegree": 6,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/Constants/ValidationConstants.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/Contracts/IChannelService.cs::ChannelListItem",
+      "name": "ChannelListItem",
+      "kind": "record",
+      "file": "src/EchoHub.Core/Contracts/IChannelService.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChannelService",
+      "complexity": 0.116,
+      "inDegree": 3,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/Contracts/IChannelService.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/Contracts/IChannelService.cs::IChannelService",
+      "name": "IChannelService",
+      "kind": "interface",
+      "file": "src/EchoHub.Core/Contracts/IChannelService.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChannelService",
+      "complexity": 0.653,
+      "inDegree": 9,
+      "outDegree": 7,
+      "doc": "Code/src/EchoHub.Core/Contracts/IChannelService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Contracts/IChannelService.cs::ChannelListItem",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelCryptoDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelMetaDto",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::ChannelOperationResult",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::PaginatedResponse",
+        "src/EchoHub.Core/Models/Channel.cs::Channel"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/Contracts/IChatBroadcaster.cs::IChatBroadcaster",
+      "name": "IChatBroadcaster",
+      "kind": "interface",
+      "file": "src/EchoHub.Core/Contracts/IChatBroadcaster.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.602,
+      "inDegree": 7,
+      "outDegree": 3,
+      "doc": "Code/src/EchoHub.Core/Contracts/IChatBroadcaster.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserPresenceDto"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/Contracts/IChatService.cs::IChatService",
+      "name": "IChatService",
+      "kind": "interface",
+      "file": "src/EchoHub.Core/Contracts/IChatService.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.625,
+      "inDegree": 8,
+      "outDegree": 5,
+      "doc": "Code/src/EchoHub.Core/Contracts/IChatService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserPresenceDto",
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/Contracts/IEchoHubClient.cs::IEchoHubClient",
+      "name": "IEchoHubClient",
+      "kind": "interface",
+      "file": "src/EchoHub.Core/Contracts/IEchoHubClient.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.595,
+      "inDegree": 4,
+      "outDegree": 3,
+      "doc": "Code/src/EchoHub.Core/Contracts/IEchoHubClient.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserPresenceDto"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/Contracts/IMessageEncryptionService.cs::IMessageEncryptionService",
+      "name": "IMessageEncryptionService",
+      "kind": "interface",
+      "file": "src/EchoHub.Core/Contracts/IMessageEncryptionService.cs",
+      "subsystem": "src/EchoHub.Client/Services · IMessageEncryptionService",
+      "complexity": 0.39,
+      "inDegree": 11,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/Contracts/IMessageEncryptionService.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/Contracts/IUserService.cs::IUserService",
+      "name": "IUserService",
+      "kind": "interface",
+      "file": "src/EchoHub.Core/Contracts/IUserService.cs",
+      "subsystem": "src/EchoHub.Server · User",
+      "complexity": 0.488,
+      "inDegree": 7,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Core/Contracts/IUserService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::UserOperationResult",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserProfileDto"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/AccountDtos.cs::DeleteAccountRequest",
+      "name": "DeleteAccountRequest",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/AccountDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ApiClient",
+      "complexity": 0.286,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/AccountDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/AccountDtos.cs::ExportedAttachmentDto",
+      "name": "ExportedAttachmentDto",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/AccountDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · UserDataExportDto",
+      "complexity": 0.123,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/AccountDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/AccountDtos.cs::ExportedMessageDto",
+      "name": "ExportedMessageDto",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/AccountDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · UserDataExportDto",
+      "complexity": 0.116,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/AccountDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/AccountDtos.cs::UserDataExportDto",
+      "name": "UserDataExportDto",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/AccountDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · UserDataExportDto",
+      "complexity": 0.116,
+      "inDegree": 1,
+      "outDegree": 3,
+      "doc": "Code/src/EchoHub.Core/DTOs/AccountDtos.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/DTOs/AccountDtos.cs::ExportedAttachmentDto",
+        "src/EchoHub.Core/DTOs/AccountDtos.cs::ExportedMessageDto",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserProfileDto"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/AuthDtos.cs::LoginRequest",
+      "name": "LoginRequest",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/AuthDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ApiClient",
+      "complexity": 0.093,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/AuthDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/AuthDtos.cs::LoginResponse",
+      "name": "LoginResponse",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/AuthDtos.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": 0.123,
+      "inDegree": 4,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Core/DTOs/AuthDtos.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/RefreshToken.cs::RefreshToken"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/AuthDtos.cs::RefreshRequest",
+      "name": "RefreshRequest",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/AuthDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ApiClient",
+      "complexity": 0.086,
+      "inDegree": 2,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Core/DTOs/AuthDtos.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/RefreshToken.cs::RefreshToken"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/AuthDtos.cs::RegisterRequest",
+      "name": "RegisterRequest",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/AuthDtos.cs",
+      "subsystem": "src/EchoHub.Client/UI · InviteCode",
+      "complexity": 0.108,
+      "inDegree": 2,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Core/DTOs/AuthDtos.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/InviteCode.cs::InviteCode"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ChatDtos.cs::AttachmentDto",
+      "name": "AttachmentDto",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ChatDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.176,
+      "inDegree": 5,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/AttachmentKind.cs::AttachmentKind"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelCryptoDto",
+      "name": "ChannelCryptoDto",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ChatDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChannelService",
+      "complexity": 0.293,
+      "inDegree": 5,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelDto",
+      "name": "ChannelDto",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ChatDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.146,
+      "inDegree": 16,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelMetaDto",
+      "name": "ChannelMetaDto",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ChatDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChannelService",
+      "complexity": 0.146,
+      "inDegree": 4,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ChatDtos.cs::CreateChannelRequest",
+      "name": "CreateChannelRequest",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ChatDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChannelsController",
+      "complexity": 0.108,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ChatDtos.cs::EmbedDto",
+      "name": "EmbedDto",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ChatDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.123,
+      "inDegree": 6,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ChatDtos.cs::JoinChannelResult",
+      "name": "JoinChannelResult",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ChatDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.123,
+      "inDegree": 2,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto",
+      "name": "MessageDto",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ChatDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.153,
+      "inDegree": 20,
+      "outDegree": 3,
+      "doc": "Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::AttachmentDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::EmbedDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ReplyRefDto"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ChatDtos.cs::RekeyChannelRequest",
+      "name": "RekeyChannelRequest",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ChatDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChannelsController",
+      "complexity": 0.182,
+      "inDegree": 3,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ChatDtos.cs::ReplyRefDto",
+      "name": "ReplyRefDto",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ChatDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.234,
+      "inDegree": 4,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ChatDtos.cs::SendMessageRequest",
+      "name": "SendMessageRequest",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ChatDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs",
+      "complexity": 0.093,
+      "inDegree": 0,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ChatDtos.cs::SendUrlRequest",
+      "name": "SendUrlRequest",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ChatDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChannelsController",
+      "complexity": 0.086,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ChatDtos.cs::UpdateTopicRequest",
+      "name": "UpdateTopicRequest",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ChatDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChannelsController",
+      "complexity": 0.086,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ChatDtos.cs::UserDto",
+      "name": "UserDto",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ChatDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.123,
+      "inDegree": 0,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/CommonDtos.cs::ApiResponse",
+      "name": "ApiResponse",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/CommonDtos.cs",
+      "subsystem": "src/EchoHub.Core/Models",
+      "complexity": 0.108,
+      "inDegree": 0,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Core/DTOs/CommonDtos.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/Message.cs::Message"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/CommonDtos.cs::ChannelError",
+      "name": "ChannelError",
+      "kind": "enum",
+      "file": "src/EchoHub.Core/DTOs/CommonDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChannelService",
+      "complexity": 0.026,
+      "inDegree": 5,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/CommonDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/CommonDtos.cs::ChannelOperationResult",
+      "name": "ChannelOperationResult",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/CommonDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChannelService",
+      "complexity": 0.188,
+      "inDegree": 5,
+      "outDegree": 3,
+      "doc": "Code/src/EchoHub.Core/DTOs/CommonDtos.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelDto",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::ChannelError",
+        "src/EchoHub.Core/Models/Channel.cs::Channel"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/CommonDtos.cs::ErrorResponse",
+      "name": "ErrorResponse",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/CommonDtos.cs",
+      "subsystem": "src/EchoHub.Server · User",
+      "complexity": 0.093,
+      "inDegree": 7,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/CommonDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/CommonDtos.cs::PaginatedResponse",
+      "name": "PaginatedResponse",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/CommonDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChannelService",
+      "complexity": 0.108,
+      "inDegree": 4,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/CommonDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/CommonDtos.cs::UserError",
+      "name": "UserError",
+      "kind": "enum",
+      "file": "src/EchoHub.Core/DTOs/CommonDtos.cs",
+      "subsystem": "src/EchoHub.Server · User",
+      "complexity": 0.026,
+      "inDegree": 5,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/CommonDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/CommonDtos.cs::UserOperationResult",
+      "name": "UserOperationResult",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/CommonDtos.cs",
+      "subsystem": "src/EchoHub.Server · User",
+      "complexity": 0.188,
+      "inDegree": 5,
+      "outDegree": 3,
+      "doc": "Code/src/EchoHub.Core/DTOs/CommonDtos.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::UserError",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserProfileDto",
+        "src/EchoHub.Core/Models/User.cs::User"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/InviteDtos.cs::CreateInviteRequest",
+      "name": "CreateInviteRequest",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/InviteDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ApiClient",
+      "complexity": 0.093,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/InviteDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/InviteDtos.cs::InviteDto",
+      "name": "InviteDto",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/InviteDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ApiClient",
+      "complexity": 0.123,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/InviteDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ModerationDtos.cs::AssignRoleRequest",
+      "name": "AssignRoleRequest",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ModerationDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ApiClient",
+      "complexity": 0.093,
+      "inDegree": 2,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Core/DTOs/ModerationDtos.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/ServerRole.cs::ServerRole"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ModerationDtos.cs::BanRequest",
+      "name": "BanRequest",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ModerationDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ApiClient",
+      "complexity": 0.086,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/ModerationDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ModerationDtos.cs::KickRequest",
+      "name": "KickRequest",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ModerationDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ApiClient",
+      "complexity": 0.086,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/ModerationDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ModerationDtos.cs::MuteRequest",
+      "name": "MuteRequest",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ModerationDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ApiClient",
+      "complexity": 0.093,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/ModerationDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ProfileDtos.cs::AvatarUploadResponse",
+      "name": "AvatarUploadResponse",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ProfileDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ApiClient",
+      "complexity": 0.086,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/ProfileDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ProfileDtos.cs::UpdateProfileRequest",
+      "name": "UpdateProfileRequest",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ProfileDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ApiClient",
+      "complexity": 0.101,
+      "inDegree": 3,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/ProfileDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ProfileDtos.cs::UpdateStatusRequest",
+      "name": "UpdateStatusRequest",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ProfileDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.093,
+      "inDegree": 0,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Core/DTOs/ProfileDtos.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserPresenceDto",
+      "name": "UserPresenceDto",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ProfileDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.131,
+      "inDegree": 12,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Core/DTOs/ProfileDtos.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/ServerRole.cs::ServerRole",
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserProfileDto",
+      "name": "UserProfileDto",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ProfileDtos.cs",
+      "subsystem": "src/EchoHub.Server · User",
+      "complexity": 0.161,
+      "inDegree": 9,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Core/DTOs/ProfileDtos.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/ServerRole.cs::ServerRole",
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ServerDtos.cs::EncryptionKeyResponse",
+      "name": "EncryptionKeyResponse",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ServerDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ApiClient",
+      "complexity": 0.086,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/ServerDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/DTOs/ServerDtos.cs::ServerStatusDto",
+      "name": "ServerStatusDto",
+      "kind": "record",
+      "file": "src/EchoHub.Core/DTOs/ServerDtos.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ApiClient",
+      "complexity": 0.116,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/DTOs/ServerDtos.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/Models/Attachment.cs::Attachment",
+      "name": "Attachment",
+      "kind": "class",
+      "file": "src/EchoHub.Core/Models/Attachment.cs",
+      "subsystem": "src/EchoHub.Core/Models",
+      "complexity": 0.467,
+      "inDegree": 5,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Core/Models/Attachment.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/AttachmentKind.cs::AttachmentKind",
+        "src/EchoHub.Core/Models/Message.cs::Message"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/Models/AttachmentKind.cs::AttachmentKind",
+      "name": "AttachmentKind",
+      "kind": "enum",
+      "file": "src/EchoHub.Core/Models/AttachmentKind.cs",
+      "subsystem": "src/EchoHub.Client/UI · MainWindow",
+      "complexity": 0.226,
+      "inDegree": 9,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/Models/AttachmentKind.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/Models/Channel.cs::Channel",
+      "name": "Channel",
+      "kind": "class",
+      "file": "src/EchoHub.Core/Models/Channel.cs",
+      "subsystem": "src/EchoHub.Client/UI · Channel",
+      "complexity": 0.465,
+      "inDegree": 29,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Core/Models/Channel.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/Message.cs::Message"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/Models/ChannelMembership.cs::ChannelMembership",
+      "name": "ChannelMembership",
+      "kind": "class",
+      "file": "src/EchoHub.Core/Models/ChannelMembership.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChannelService",
+      "complexity": 0.231,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/Models/ChannelMembership.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/Models/InviteCode.cs::InviteCode",
+      "name": "InviteCode",
+      "kind": "class",
+      "file": "src/EchoHub.Core/Models/InviteCode.cs",
+      "subsystem": "src/EchoHub.Client/UI · InviteCode",
+      "complexity": 0.339,
+      "inDegree": 7,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/Models/InviteCode.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/Models/Message.cs::Message",
+      "name": "Message",
+      "kind": "class",
+      "file": "src/EchoHub.Core/Models/Message.cs",
+      "subsystem": "src/EchoHub.Core/Models",
+      "complexity": 0.509,
+      "inDegree": 21,
+      "outDegree": 4,
+      "doc": "Code/src/EchoHub.Core/Models/Message.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/Attachment.cs::Attachment",
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Core/Models/MessageType.cs::MessageType",
+        "src/EchoHub.Server/Setup/DataMigrationService.cs::DataMigrationService"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/Models/MessageType.cs::MessageType",
+      "name": "MessageType",
+      "kind": "enum",
+      "file": "src/EchoHub.Core/Models/MessageType.cs",
+      "subsystem": "src/EchoHub.Core/Models",
+      "complexity": 0.026,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/Models/MessageType.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/Models/RefreshToken.cs::RefreshToken",
+      "name": "RefreshToken",
+      "kind": "class",
+      "file": "src/EchoHub.Core/Models/RefreshToken.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": 0.427,
+      "inDegree": 9,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Core/Models/RefreshToken.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/User.cs::User"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/Models/ServerRole.cs::ServerRole",
+      "name": "ServerRole",
+      "kind": "enum",
+      "file": "src/EchoHub.Core/Models/ServerRole.cs",
+      "subsystem": "src/EchoHub.Server · User",
+      "complexity": 0.026,
+      "inDegree": 19,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/Models/ServerRole.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/Models/ServerStatsReport.cs::ServerStatsReport",
+      "name": "ServerStatsReport",
+      "kind": "class",
+      "file": "src/EchoHub.Core/Models/ServerStatsReport.cs",
+      "subsystem": "src/EchoHub.Server · ServerStatsReportService",
+      "complexity": 0.48,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/Models/ServerStatsReport.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/Models/User.cs::User",
+      "name": "User",
+      "kind": "class",
+      "file": "src/EchoHub.Core/Models/User.cs",
+      "subsystem": "src/EchoHub.Server · User",
+      "complexity": 0.458,
+      "inDegree": 20,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Core/Models/User.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/ServerRole.cs::ServerRole",
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Core/Models/UserStatus.cs::UserStatus",
+      "name": "UserStatus",
+      "kind": "enum",
+      "file": "src/EchoHub.Core/Models/UserStatus.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.026,
+      "inDegree": 21,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/Models/UserStatus.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/Security/RoomCrypto.cs::RoomCrypto",
+      "name": "RoomCrypto",
+      "kind": "class",
+      "file": "src/EchoHub.Core/Security/RoomCrypto.cs",
+      "subsystem": "src/EchoHub.Client/Config",
+      "complexity": 0.679,
+      "inDegree": 7,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/Security/RoomCrypto.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/Services/AsciiBannerService.cs::AsciiBannerService",
+      "name": "AsciiBannerService",
+      "kind": "class",
+      "file": "src/EchoHub.Core/Services/AsciiBannerService.cs",
+      "subsystem": "src/EchoHub.Client/Services · AppOrchestrator",
+      "complexity": 0.411,
+      "inDegree": 1,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/Services/AsciiBannerService.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/Services/FileValidationHelper.cs::FileValidationHelper",
+      "name": "FileValidationHelper",
+      "kind": "class",
+      "file": "src/EchoHub.Core/Services/FileValidationHelper.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChannelsController",
+      "complexity": 0.473,
+      "inDegree": 3,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Core/Services/FileValidationHelper.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Core/Services/ImageToAsciiService.cs::ImageToAsciiService",
+      "name": "ImageToAsciiService",
+      "kind": "class",
+      "file": "src/EchoHub.Core/Services/ImageToAsciiService.cs",
+      "subsystem": "src/EchoHub.Server · Program",
+      "complexity": 0.476,
+      "inDegree": 4,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Core/Services/ImageToAsciiService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Constants/HubConstants.cs::HubConstants"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server.Irc/IrcBroadcaster.cs::IrcBroadcaster",
+      "name": "IrcBroadcaster",
+      "kind": "class",
+      "file": "src/EchoHub.Server.Irc/IrcBroadcaster.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.712,
+      "inDegree": 1,
+      "outDegree": 9,
+      "doc": "Code/src/EchoHub.Server.Irc/IrcBroadcaster.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Contracts/IChatBroadcaster.cs::IChatBroadcaster",
+        "src/EchoHub.Core/Contracts/IMessageEncryptionService.cs::IMessageEncryptionService",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserPresenceDto",
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Core/Models/Message.cs::Message",
+        "src/EchoHub.Server.Irc/IrcGatewayService.cs::IrcGatewayService",
+        "src/EchoHub.Server.Irc/IrcMessageFormatter.cs::IrcMessageFormatter"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server.Irc/IrcClientConnection.cs::IrcClientConnection",
+      "name": "IrcClientConnection",
+      "kind": "class",
+      "file": "src/EchoHub.Server.Irc/IrcClientConnection.cs",
+      "subsystem": "src/EchoHub.Tests/Irc",
+      "complexity": 0.6,
+      "inDegree": 3,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Server.Irc/IrcClientConnection.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Constants/HubConstants.cs::HubConstants",
+        "src/EchoHub.Core/Models/Channel.cs::Channel"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server.Irc/IrcCommandHandler.cs::IrcCommandHandler",
+      "name": "IrcCommandHandler",
+      "kind": "class",
+      "file": "src/EchoHub.Server.Irc/IrcCommandHandler.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChannelService",
+      "complexity": 0.131,
+      "inDegree": 1,
+      "outDegree": 16,
+      "doc": "Code/src/EchoHub.Server.Irc/IrcCommandHandler.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Constants/ValidationConstants.cs::ValidationConstants",
+        "src/EchoHub.Core/Contracts/IChannelService.cs::IChannelService",
+        "src/EchoHub.Core/Contracts/IChatService.cs::IChatService",
+        "src/EchoHub.Core/Contracts/IMessageEncryptionService.cs::IMessageEncryptionService",
+        "src/EchoHub.Core/Contracts/IUserService.cs::IUserService",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::ChannelError",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::ChannelOperationResult",
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Core/Models/Message.cs::Message",
+        "src/EchoHub.Core/Models/User.cs::User",
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus",
+        "src/EchoHub.Server.Irc/IrcClientConnection.cs::IrcClientConnection",
+        "src/EchoHub.Server.Irc/IrcMessage.cs::IrcMessage",
+        "src/EchoHub.Server.Irc/IrcMessageFormatter.cs::IrcMessageFormatter",
+        "src/EchoHub.Server.Irc/IrcNumericReply.cs::IrcNumericReply",
+        "src/EchoHub.Server.Irc/IrcOptions.cs::IrcOptions"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server.Irc/IrcGatewayService.cs::IrcGatewayService",
+      "name": "IrcGatewayService",
+      "kind": "class",
+      "file": "src/EchoHub.Server.Irc/IrcGatewayService.cs",
+      "subsystem": "src/EchoHub.Server.Irc",
+      "complexity": 0.586,
+      "inDegree": 2,
+      "outDegree": 7,
+      "doc": "Code/src/EchoHub.Server.Irc/IrcGatewayService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Contracts/IChannelService.cs::IChannelService",
+        "src/EchoHub.Core/Contracts/IChatService.cs::IChatService",
+        "src/EchoHub.Core/Contracts/IMessageEncryptionService.cs::IMessageEncryptionService",
+        "src/EchoHub.Core/Contracts/IUserService.cs::IUserService",
+        "src/EchoHub.Server.Irc/IrcClientConnection.cs::IrcClientConnection",
+        "src/EchoHub.Server.Irc/IrcCommandHandler.cs::IrcCommandHandler",
+        "src/EchoHub.Server.Irc/IrcOptions.cs::IrcOptions"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server.Irc/IrcMessage.cs::IrcMessage",
+      "name": "IrcMessage",
+      "kind": "class",
+      "file": "src/EchoHub.Server.Irc/IrcMessage.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChannelService",
+      "complexity": 0.421,
+      "inDegree": 1,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Server.Irc/IrcMessage.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Server.Irc/IrcMessageFormatter.cs::IrcMessageFormatter",
+      "name": "IrcMessageFormatter",
+      "kind": "class",
+      "file": "src/EchoHub.Server.Irc/IrcMessageFormatter.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.485,
+      "inDegree": 2,
+      "outDegree": 6,
+      "doc": "Code/src/EchoHub.Server.Irc/IrcMessageFormatter.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Constants/MessageConventions.cs::MessageConventions",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::EmbedDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ReplyRefDto",
+        "src/EchoHub.Core/Models/AttachmentKind.cs::AttachmentKind",
+        "src/EchoHub.Core/Security/RoomCrypto.cs::RoomCrypto"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server.Irc/IrcNumericReply.cs::IrcNumericReply",
+      "name": "IrcNumericReply",
+      "kind": "class",
+      "file": "src/EchoHub.Server.Irc/IrcNumericReply.cs",
+      "subsystem": "src/EchoHub.Client/UI · Channel",
+      "complexity": 0.458,
+      "inDegree": 1,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Server.Irc/IrcNumericReply.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/Channel.cs::Channel"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server.Irc/IrcOptions.cs::IrcOptions",
+      "name": "IrcOptions",
+      "kind": "class",
+      "file": "src/EchoHub.Server.Irc/IrcOptions.cs",
+      "subsystem": "src/EchoHub.Server.Irc",
+      "complexity": 0.382,
+      "inDegree": 3,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Server.Irc/IrcOptions.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Server.Irc/IrcServiceExtensions.cs::IrcServiceExtensions",
+      "name": "IrcServiceExtensions",
+      "kind": "class",
+      "file": "src/EchoHub.Server.Irc/IrcServiceExtensions.cs",
+      "subsystem": "src/EchoHub.Server.Irc",
+      "complexity": 0.232,
+      "inDegree": 0,
+      "outDegree": 4,
+      "doc": "Code/src/EchoHub.Server.Irc/IrcServiceExtensions.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Contracts/IChatBroadcaster.cs::IChatBroadcaster",
+        "src/EchoHub.Server.Irc/IrcBroadcaster.cs::IrcBroadcaster",
+        "src/EchoHub.Server.Irc/IrcGatewayService.cs::IrcGatewayService",
+        "src/EchoHub.Server.Irc/IrcOptions.cs::IrcOptions"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Auth/JwtTokenService.cs::JwtTokenService",
+      "name": "JwtTokenService",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Auth/JwtTokenService.cs",
+      "subsystem": "src/EchoHub.Server · User",
+      "complexity": 0.467,
+      "inDegree": 2,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Server/Auth/JwtTokenService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserProfileDto",
+        "src/EchoHub.Core/Models/User.cs::User"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Config/ServerLogsOptions.cs::ServerLogsOptions",
+      "name": "ServerLogsOptions",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Config/ServerLogsOptions.cs",
+      "subsystem": "src/EchoHub.Server · ServerLogsStreamService",
+      "complexity": 0.409,
+      "inDegree": 4,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Server/Config/ServerLogsOptions.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Core/Models/ServerRole.cs::ServerRole"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Config/SpamOptions.cs::SpamOptions",
+      "name": "SpamOptions",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Config/SpamOptions.cs",
+      "subsystem": "src/EchoHub.Server · Program",
+      "complexity": 0.432,
+      "inDegree": 2,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Server/Config/SpamOptions.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Server/Services/MuteExpirationService.cs::MuteExpirationService"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Config/StatsOptions.cs::StatsOptions",
+      "name": "StatsOptions",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Config/StatsOptions.cs",
+      "subsystem": "src/EchoHub.Server · ServerStatsReportService",
+      "complexity": 0.301,
+      "inDegree": 2,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Server/Config/StatsOptions.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Server/Config/UploadLimits.cs::UploadLimits",
+      "name": "UploadLimits",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Config/UploadLimits.cs",
+      "subsystem": "src/EchoHub.Server · Program",
+      "complexity": 0.492,
+      "inDegree": 3,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Server/Config/UploadLimits.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Constants/HubConstants.cs::HubConstants",
+        "src/EchoHub.Core/Models/AttachmentKind.cs::AttachmentKind"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Controllers/AuthController.cs::AuthController",
+      "name": "AuthController",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Controllers/AuthController.cs",
+      "subsystem": "src/EchoHub.Server · User",
+      "complexity": 0.493,
+      "inDegree": 0,
+      "outDegree": 13,
+      "doc": "Code/src/EchoHub.Server/Controllers/AuthController.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Contracts/IUserService.cs::IUserService",
+        "src/EchoHub.Core/DTOs/AuthDtos.cs::LoginRequest",
+        "src/EchoHub.Core/DTOs/AuthDtos.cs::LoginResponse",
+        "src/EchoHub.Core/DTOs/AuthDtos.cs::RefreshRequest",
+        "src/EchoHub.Core/DTOs/AuthDtos.cs::RegisterRequest",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::ErrorResponse",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::UserError",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::UserOperationResult",
+        "src/EchoHub.Core/Models/InviteCode.cs::InviteCode",
+        "src/EchoHub.Core/Models/RefreshToken.cs::RefreshToken",
+        "src/EchoHub.Core/Models/User.cs::User",
+        "src/EchoHub.Server/Auth/JwtTokenService.cs::JwtTokenService",
+        "src/EchoHub.Server/Data/EchoHubDbContext.cs::EchoHubDbContext"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Controllers/ChannelsController.cs::ChannelsController",
+      "name": "ChannelsController",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Controllers/ChannelsController.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChannelsController",
+      "complexity": 0.146,
+      "inDegree": 0,
+      "outDegree": 25,
+      "doc": "Code/src/EchoHub.Server/Controllers/ChannelsController.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Constants/HubConstants.cs::HubConstants",
+        "src/EchoHub.Core/Constants/ValidationConstants.cs::ValidationConstants",
+        "src/EchoHub.Core/Contracts/IChannelService.cs::IChannelService",
+        "src/EchoHub.Core/Contracts/IChatService.cs::IChatService",
+        "src/EchoHub.Core/Contracts/IMessageEncryptionService.cs::IMessageEncryptionService",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::AttachmentDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::CreateChannelRequest",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::RekeyChannelRequest",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::SendUrlRequest",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::UpdateTopicRequest",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::ChannelError",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::ChannelOperationResult",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::ErrorResponse",
+        "src/EchoHub.Core/Models/Attachment.cs::Attachment",
+        "src/EchoHub.Core/Models/AttachmentKind.cs::AttachmentKind",
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Core/Models/Message.cs::Message",
+        "src/EchoHub.Core/Models/User.cs::User",
+        "src/EchoHub.Core/Security/RoomCrypto.cs::RoomCrypto",
+        "src/EchoHub.Core/Services/FileValidationHelper.cs::FileValidationHelper",
+        "src/EchoHub.Core/Services/ImageToAsciiService.cs::ImageToAsciiService",
+        "src/EchoHub.Server/Config/UploadLimits.cs::UploadLimits",
+        "src/EchoHub.Server/Data/EchoHubDbContext.cs::EchoHubDbContext",
+        "src/EchoHub.Server/Services/FileStorageService.cs::FileStorageService"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Controllers/FilesController.cs::FilesController",
+      "name": "FilesController",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Controllers/FilesController.cs",
+      "subsystem": "src/EchoHub.Server · User",
+      "complexity": 0.381,
+      "inDegree": 0,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Server/Controllers/FilesController.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::ErrorResponse",
+        "src/EchoHub.Server/Services/FileStorageService.cs::FileStorageService"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Controllers/InvitesController.cs::InvitesController",
+      "name": "InvitesController",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Controllers/InvitesController.cs",
+      "subsystem": "src/EchoHub.Server · User",
+      "complexity": 0.518,
+      "inDegree": 0,
+      "outDegree": 7,
+      "doc": "Code/src/EchoHub.Server/Controllers/InvitesController.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::ErrorResponse",
+        "src/EchoHub.Core/DTOs/InviteDtos.cs::CreateInviteRequest",
+        "src/EchoHub.Core/DTOs/InviteDtos.cs::InviteDto",
+        "src/EchoHub.Core/Models/InviteCode.cs::InviteCode",
+        "src/EchoHub.Core/Models/ServerRole.cs::ServerRole",
+        "src/EchoHub.Core/Models/User.cs::User",
+        "src/EchoHub.Server/Data/EchoHubDbContext.cs::EchoHubDbContext"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Controllers/ModerationController.cs::ModerationController",
+      "name": "ModerationController",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Controllers/ModerationController.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ApiClient",
+      "complexity": 0.729,
+      "inDegree": 0,
+      "outDegree": 16,
+      "doc": "Code/src/EchoHub.Server/Controllers/ModerationController.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Contracts/IChatBroadcaster.cs::IChatBroadcaster",
+        "src/EchoHub.Core/Contracts/IChatService.cs::IChatService",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::ErrorResponse",
+        "src/EchoHub.Core/DTOs/ModerationDtos.cs::AssignRoleRequest",
+        "src/EchoHub.Core/DTOs/ModerationDtos.cs::BanRequest",
+        "src/EchoHub.Core/DTOs/ModerationDtos.cs::KickRequest",
+        "src/EchoHub.Core/DTOs/ModerationDtos.cs::MuteRequest",
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Core/Models/Message.cs::Message",
+        "src/EchoHub.Core/Models/ServerRole.cs::ServerRole",
+        "src/EchoHub.Core/Models/User.cs::User",
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus",
+        "src/EchoHub.Server/Data/EchoHubDbContext.cs::EchoHubDbContext",
+        "src/EchoHub.Server/Services/FileStorageService.cs::FileStorageService",
+        "src/EchoHub.Server/Services/PresenceTracker.cs::PresenceTracker",
+        "src/EchoHub.Server/Services/Stats/ServerStatsCollector.cs::ServerStatsCollector"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Controllers/ServerController.cs::ServerController",
+      "name": "ServerController",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Controllers/ServerController.cs",
+      "subsystem": "src/EchoHub.Server · User",
+      "complexity": 0.455,
+      "inDegree": 0,
+      "outDegree": 7,
+      "doc": "Code/src/EchoHub.Server/Controllers/ServerController.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::ErrorResponse",
+        "src/EchoHub.Core/DTOs/ServerDtos.cs::EncryptionKeyResponse",
+        "src/EchoHub.Core/DTOs/ServerDtos.cs::ServerStatusDto",
+        "src/EchoHub.Core/Models/ServerRole.cs::ServerRole",
+        "src/EchoHub.Core/Models/User.cs::User",
+        "src/EchoHub.Server/Data/EchoHubDbContext.cs::EchoHubDbContext",
+        "src/EchoHub.Server/Services/DirectoryClaimStore.cs::DirectoryClaimStore"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Controllers/UsersController.cs::UsersController",
+      "name": "UsersController",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Controllers/UsersController.cs",
+      "subsystem": "src/EchoHub.Server · User",
+      "complexity": 0.617,
+      "inDegree": 1,
+      "outDegree": 21,
+      "doc": "Code/src/EchoHub.Server/Controllers/UsersController.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Contracts/IChatBroadcaster.cs::IChatBroadcaster",
+        "src/EchoHub.Core/Contracts/IMessageEncryptionService.cs::IMessageEncryptionService",
+        "src/EchoHub.Core/Contracts/IUserService.cs::IUserService",
+        "src/EchoHub.Core/DTOs/AccountDtos.cs::DeleteAccountRequest",
+        "src/EchoHub.Core/DTOs/AccountDtos.cs::ExportedAttachmentDto",
+        "src/EchoHub.Core/DTOs/AccountDtos.cs::ExportedMessageDto",
+        "src/EchoHub.Core/DTOs/AccountDtos.cs::UserDataExportDto",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::ErrorResponse",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::UserError",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::UserOperationResult",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::AvatarUploadResponse",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UpdateProfileRequest",
+        "src/EchoHub.Core/Models/ServerRole.cs::ServerRole",
+        "src/EchoHub.Core/Models/User.cs::User",
+        "src/EchoHub.Core/Services/FileValidationHelper.cs::FileValidationHelper",
+        "src/EchoHub.Core/Services/ImageToAsciiService.cs::ImageToAsciiService",
+        "src/EchoHub.Server/Config/UploadLimits.cs::UploadLimits",
+        "src/EchoHub.Server/Data/EchoHubDbContext.cs::EchoHubDbContext",
+        "src/EchoHub.Server/Services/FileStorageService.cs::FileStorageService",
+        "src/EchoHub.Server/Services/PresenceTracker.cs::PresenceTracker",
+        "src/EchoHub.Server/Services/UserService.cs::UserService"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Data/EchoHubDbContext.cs::EchoHubDbContext",
+      "name": "EchoHubDbContext",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Data/EchoHubDbContext.cs",
+      "subsystem": "src/EchoHub.Server · User",
+      "complexity": 0.448,
+      "inDegree": 14,
+      "outDegree": 8,
+      "doc": "Code/src/EchoHub.Server/Data/EchoHubDbContext.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/Attachment.cs::Attachment",
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Core/Models/ChannelMembership.cs::ChannelMembership",
+        "src/EchoHub.Core/Models/InviteCode.cs::InviteCode",
+        "src/EchoHub.Core/Models/Message.cs::Message",
+        "src/EchoHub.Core/Models/RefreshToken.cs::RefreshToken",
+        "src/EchoHub.Core/Models/ServerStatsReport.cs::ServerStatsReport",
+        "src/EchoHub.Core/Models/User.cs::User"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Hubs/ChatHub.cs::ChatHub",
+      "name": "ChatHub",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Hubs/ChatHub.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.597,
+      "inDegree": 3,
+      "outDegree": 11,
+      "doc": "Code/src/EchoHub.Server/Hubs/ChatHub.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Constants/HubConstants.cs::HubConstants",
+        "src/EchoHub.Core/Contracts/IChannelService.cs::IChannelService",
+        "src/EchoHub.Core/Contracts/IChatService.cs::IChatService",
+        "src/EchoHub.Core/Contracts/IEchoHubClient.cs::IEchoHubClient",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::JoinChannelResult",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserPresenceDto",
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Core/Models/Message.cs::Message",
+        "src/EchoHub.Core/Models/User.cs::User",
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Program.cs::Program",
+      "name": "Program",
+      "kind": "file",
+      "file": "src/EchoHub.Server/Program.cs",
+      "subsystem": "src/EchoHub.Server · Program",
+      "complexity": 0.189,
+      "inDegree": 0,
+      "outDegree": 34,
+      "doc": "Code/src/EchoHub.Server/Program.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Constants/HubConstants.cs::HubConstants",
+        "src/EchoHub.Core/Contracts/IChannelService.cs::IChannelService",
+        "src/EchoHub.Core/Contracts/IChatBroadcaster.cs::IChatBroadcaster",
+        "src/EchoHub.Core/Contracts/IChatService.cs::IChatService",
+        "src/EchoHub.Core/Contracts/IMessageEncryptionService.cs::IMessageEncryptionService",
+        "src/EchoHub.Core/Contracts/IUserService.cs::IUserService",
+        "src/EchoHub.Core/Services/ImageToAsciiService.cs::ImageToAsciiService",
+        "src/EchoHub.Server/Auth/JwtTokenService.cs::JwtTokenService",
+        "src/EchoHub.Server/Config/ServerLogsOptions.cs::ServerLogsOptions",
+        "src/EchoHub.Server/Config/SpamOptions.cs::SpamOptions",
+        "src/EchoHub.Server/Config/StatsOptions.cs::StatsOptions",
+        "src/EchoHub.Server/Config/UploadLimits.cs::UploadLimits",
+        "src/EchoHub.Server/Data/EchoHubDbContext.cs::EchoHubDbContext",
+        "src/EchoHub.Server/Hubs/ChatHub.cs::ChatHub",
+        "src/EchoHub.Server/Services/ChannelService.cs::ChannelService",
+        "src/EchoHub.Server/Services/ChatService.cs::ChatService",
+        "src/EchoHub.Server/Services/DirectoryClaimStore.cs::DirectoryClaimStore",
+        "src/EchoHub.Server/Services/FileCleanupService.cs::FileCleanupService",
+        "src/EchoHub.Server/Services/FileStorageService.cs::FileStorageService",
+        "src/EchoHub.Server/Services/LinkEmbedService.cs::LinkEmbedService",
+        "src/EchoHub.Server/Services/MessageEncryptionService.cs::MessageEncryptionService",
+        "src/EchoHub.Server/Services/MuteExpirationService.cs::MuteExpirationService",
+        "src/EchoHub.Server/Services/PresenceTracker.cs::PresenceTracker",
+        "src/EchoHub.Server/Services/ServerDirectoryService.cs::ServerDirectoryService",
+        "src/EchoHub.Server/Services/ServerLogs/ServerLogsService.cs::ServerLogsService",
+        "src/EchoHub.Server/Services/ServerLogs/ServerLogsSink.cs::ServerLogsSink",
+        "src/EchoHub.Server/Services/ServerLogs/ServerLogsStreamService.cs::ServerLogsStreamService",
+        "src/EchoHub.Server/Services/SignalRBroadcaster.cs::SignalRBroadcaster",
+        "src/EchoHub.Server/Services/SpamGuard.cs::SpamGuard",
+        "src/EchoHub.Server/Services/Stats/ServerStatsCollector.cs::ServerStatsCollector",
+        "src/EchoHub.Server/Services/Stats/ServerStatsReportService.cs::ServerStatsReportService",
+        "src/EchoHub.Server/Services/UserService.cs::UserService",
+        "src/EchoHub.Server/Setup/DatabaseSetup.cs::DatabaseSetup",
+        "src/EchoHub.Server/Setup/FirstRunSetup.cs::FirstRunSetup"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Services/ChannelService.cs::ChannelService",
+      "name": "ChannelService",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Services/ChannelService.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChannelService",
+      "complexity": 0.116,
+      "inDegree": 3,
+      "outDegree": 18,
+      "doc": "Code/src/EchoHub.Server/Services/ChannelService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Constants/HubConstants.cs::HubConstants",
+        "src/EchoHub.Core/Constants/ValidationConstants.cs::ValidationConstants",
+        "src/EchoHub.Core/Contracts/IChannelService.cs::ChannelListItem",
+        "src/EchoHub.Core/Contracts/IChannelService.cs::IChannelService",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelCryptoDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelMetaDto",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::ChannelError",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::ChannelOperationResult",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::PaginatedResponse",
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Core/Models/ChannelMembership.cs::ChannelMembership",
+        "src/EchoHub.Core/Models/ServerRole.cs::ServerRole",
+        "src/EchoHub.Server/Data/EchoHubDbContext.cs::EchoHubDbContext",
+        "src/EchoHub.Server/Services/PresenceTracker.cs::PresenceTracker",
+        "src/EchoHub.Server/Services/ServerLogs/ServerLogsService.cs::ServerLogsService",
+        "src/EchoHub.Server/Services/SpamGuard.cs::SpamGuard",
+        "src/EchoHub.Server/Services/SpamGuard.cs::SpamVerdictKind"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Services/ChatService.cs::ChatService",
+      "name": "ChatService",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Services/ChatService.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.161,
+      "inDegree": 2,
+      "outDegree": 29,
+      "doc": "Code/src/EchoHub.Server/Services/ChatService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Constants/HubConstants.cs::HubConstants",
+        "src/EchoHub.Core/Constants/ValidationConstants.cs::ValidationConstants",
+        "src/EchoHub.Core/Contracts/IChannelService.cs::IChannelService",
+        "src/EchoHub.Core/Contracts/IChatBroadcaster.cs::IChatBroadcaster",
+        "src/EchoHub.Core/Contracts/IChatService.cs::IChatService",
+        "src/EchoHub.Core/Contracts/IMessageEncryptionService.cs::IMessageEncryptionService",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::AttachmentDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::EmbedDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ReplyRefDto",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserPresenceDto",
+        "src/EchoHub.Core/Models/Attachment.cs::Attachment",
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Core/Models/Message.cs::Message",
+        "src/EchoHub.Core/Models/ServerRole.cs::ServerRole",
+        "src/EchoHub.Core/Models/User.cs::User",
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus",
+        "src/EchoHub.Core/Security/RoomCrypto.cs::RoomCrypto",
+        "src/EchoHub.Server/Data/EchoHubDbContext.cs::EchoHubDbContext",
+        "src/EchoHub.Server/Services/ChannelService.cs::ChannelService",
+        "src/EchoHub.Server/Services/FileStorageService.cs::FileStorageService",
+        "src/EchoHub.Server/Services/LinkEmbedService.cs::LinkEmbedService",
+        "src/EchoHub.Server/Services/MuteExpirationService.cs::MuteExpirationService",
+        "src/EchoHub.Server/Services/PresenceTracker.cs::PresenceTracker",
+        "src/EchoHub.Server/Services/ServerLogs/ServerLogsService.cs::ServerLogsService",
+        "src/EchoHub.Server/Services/SpamGuard.cs::SpamGuard",
+        "src/EchoHub.Server/Services/SpamGuard.cs::SpamVerdictKind",
+        "src/EchoHub.Server/Services/Stats/ServerStatsCollector.cs::ServerStatsCollector"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Services/DirectoryClaimStore.cs::DirectoryClaimStore",
+      "name": "DirectoryClaimStore",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Services/DirectoryClaimStore.cs",
+      "subsystem": "src/EchoHub.Server · Program",
+      "complexity": 0.6,
+      "inDegree": 3,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Server/Services/DirectoryClaimStore.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Server/Services/DirectoryClaimStore.cs::RegistrationStatus"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Services/DirectoryClaimStore.cs::RegistrationStatus",
+      "name": "RegistrationStatus",
+      "kind": "record",
+      "file": "src/EchoHub.Server/Services/DirectoryClaimStore.cs",
+      "subsystem": "src/EchoHub.Server · Program",
+      "complexity": 0.116,
+      "inDegree": 1,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Server/Services/DirectoryClaimStore.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Server/Services/FileCleanupService.cs::FileCleanupService",
+      "name": "FileCleanupService",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Services/FileCleanupService.cs",
+      "subsystem": "src/EchoHub.Server · Program",
+      "complexity": 0.407,
+      "inDegree": 1,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Server/Services/FileCleanupService.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Server/Services/FileStorageService.cs::FileStorageService",
+      "name": "FileStorageService",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Services/FileStorageService.cs",
+      "subsystem": "src/EchoHub.Server · User",
+      "complexity": 0.451,
+      "inDegree": 6,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Server/Services/FileStorageService.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Server/Services/LinkEmbedService.cs::LinkEmbedService",
+      "name": "LinkEmbedService",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Services/LinkEmbedService.cs",
+      "subsystem": "src/EchoHub.Server · Program",
+      "complexity": 0.714,
+      "inDegree": 2,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Server/Services/LinkEmbedService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Constants/HubConstants.cs::HubConstants",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::EmbedDto"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Services/MessageEncryptionService.cs::MessageEncryptionService",
+      "name": "MessageEncryptionService",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Services/MessageEncryptionService.cs",
+      "subsystem": "src/EchoHub.Client/Services · IMessageEncryptionService",
+      "complexity": 0.518,
+      "inDegree": 1,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Server/Services/MessageEncryptionService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Contracts/IMessageEncryptionService.cs::IMessageEncryptionService"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Services/MuteExpirationService.cs::MuteExpirationService",
+      "name": "MuteExpirationService",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Services/MuteExpirationService.cs",
+      "subsystem": "src/EchoHub.Server · Program",
+      "complexity": 0.425,
+      "inDegree": 3,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Server/Services/MuteExpirationService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Server/Data/EchoHubDbContext.cs::EchoHubDbContext"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Services/PresenceTracker.cs::PresenceTracker",
+      "name": "PresenceTracker",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Services/PresenceTracker.cs",
+      "subsystem": "src/EchoHub.Server · Program",
+      "complexity": 0.608,
+      "inDegree": 8,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Server/Services/PresenceTracker.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Constants/HubConstants.cs::HubConstants"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Services/ServerDirectoryService.cs::DirectoryProtocol",
+      "name": "DirectoryProtocol",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Services/ServerDirectoryService.cs",
+      "subsystem": "src/EchoHub.Server · ServerDirectoryService",
+      "complexity": 0.179,
+      "inDegree": 1,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Server/Services/ServerDirectoryService.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Server/Services/ServerDirectoryService.cs::DirectoryRegistrationErrors",
+      "name": "DirectoryRegistrationErrors",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Services/ServerDirectoryService.cs",
+      "subsystem": "src/EchoHub.Server · ServerDirectoryService",
+      "complexity": 0.348,
+      "inDegree": 1,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Server/Services/ServerDirectoryService.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Server/Services/ServerDirectoryService.cs::ErrorDetail",
+      "name": "ErrorDetail",
+      "kind": "record",
+      "file": "src/EchoHub.Server/Services/ServerDirectoryService.cs",
+      "subsystem": "src/EchoHub.Server · ServerDirectoryService",
+      "complexity": 0.226,
+      "inDegree": 2,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Server/Services/ServerDirectoryService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/Message.cs::Message",
+        "src/EchoHub.Server/Services/ServerDirectoryService.cs::Response"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Services/ServerDirectoryService.cs::RegisterServerDto",
+      "name": "RegisterServerDto",
+      "kind": "record",
+      "file": "src/EchoHub.Server/Services/ServerDirectoryService.cs",
+      "subsystem": "src/EchoHub.Server · ServerDirectoryService",
+      "complexity": 0.122,
+      "inDegree": 1,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Server/Services/ServerDirectoryService.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Server/Services/ServerDirectoryService.cs::RegisterServerResult",
+      "name": "RegisterServerResult",
+      "kind": "record",
+      "file": "src/EchoHub.Server/Services/ServerDirectoryService.cs",
+      "subsystem": "src/EchoHub.Server · ServerDirectoryService",
+      "complexity": 0.085,
+      "inDegree": 1,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Server/Services/ServerDirectoryService.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Server/Services/ServerDirectoryService.cs::Response",
+      "name": "Response",
+      "kind": "record",
+      "file": "src/EchoHub.Server/Services/ServerDirectoryService.cs",
+      "subsystem": "src/EchoHub.Server · ServerDirectoryService",
+      "complexity": 0.1,
+      "inDegree": 2,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Server/Services/ServerDirectoryService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Server/Services/ServerDirectoryService.cs::ErrorDetail"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Services/ServerDirectoryService.cs::ServerDirectoryService",
+      "name": "ServerDirectoryService",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Services/ServerDirectoryService.cs",
+      "subsystem": "src/EchoHub.Server · ServerDirectoryService",
+      "complexity": 0.108,
+      "inDegree": 1,
+      "outDegree": 10,
+      "doc": "Code/src/EchoHub.Server/Services/ServerDirectoryService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Core/Models/Message.cs::Message",
+        "src/EchoHub.Server/Services/DirectoryClaimStore.cs::DirectoryClaimStore",
+        "src/EchoHub.Server/Services/PresenceTracker.cs::PresenceTracker",
+        "src/EchoHub.Server/Services/ServerDirectoryService.cs::DirectoryProtocol",
+        "src/EchoHub.Server/Services/ServerDirectoryService.cs::DirectoryRegistrationErrors",
+        "src/EchoHub.Server/Services/ServerDirectoryService.cs::ErrorDetail",
+        "src/EchoHub.Server/Services/ServerDirectoryService.cs::RegisterServerDto",
+        "src/EchoHub.Server/Services/ServerDirectoryService.cs::RegisterServerResult",
+        "src/EchoHub.Server/Services/ServerDirectoryService.cs::Response"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Services/ServerLogs/ServerLogsService.cs::LogBacklogEntry",
+      "name": "LogBacklogEntry",
+      "kind": "record",
+      "file": "src/EchoHub.Server/Services/ServerLogs/ServerLogsService.cs",
+      "subsystem": "src/EchoHub.Server · ServerLogsStreamService",
+      "complexity": 0.093,
+      "inDegree": 1,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Server/Services/ServerLogs/ServerLogsService.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Server/Services/ServerLogs/ServerLogsService.cs::ServerLogsService",
+      "name": "ServerLogsService",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Services/ServerLogs/ServerLogsService.cs",
+      "subsystem": "src/EchoHub.Server · ServerLogsStreamService",
+      "complexity": 0.64,
+      "inDegree": 4,
+      "outDegree": 3,
+      "doc": "Code/src/EchoHub.Server/Services/ServerLogs/ServerLogsService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/ServerRole.cs::ServerRole",
+        "src/EchoHub.Server/Config/ServerLogsOptions.cs::ServerLogsOptions",
+        "src/EchoHub.Server/Services/ServerLogs/ServerLogsService.cs::LogBacklogEntry"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Services/ServerLogs/ServerLogsSink.cs::ServerLogsSink",
+      "name": "ServerLogsSink",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Services/ServerLogs/ServerLogsSink.cs",
+      "subsystem": "src/EchoHub.Server · ServerLogsStreamService",
+      "complexity": 0.333,
+      "inDegree": 2,
+      "outDegree": 3,
+      "doc": "Code/src/EchoHub.Server/Services/ServerLogs/ServerLogsSink.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Server/Config/ServerLogsOptions.cs::ServerLogsOptions",
+        "src/EchoHub.Server/Services/ServerLogs/ServerLogsStreamService.cs::ServerLogsStreamService"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Services/ServerLogs/ServerLogsStreamService.cs::ServerLogsStreamService",
+      "name": "ServerLogsStreamService",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Services/ServerLogs/ServerLogsStreamService.cs",
+      "subsystem": "src/EchoHub.Server · ServerLogsStreamService",
+      "complexity": 0.504,
+      "inDegree": 2,
+      "outDegree": 9,
+      "doc": "Code/src/EchoHub.Server/Services/ServerLogs/ServerLogsStreamService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Constants/HubConstants.cs::HubConstants",
+        "src/EchoHub.Core/Contracts/IChannelService.cs::IChannelService",
+        "src/EchoHub.Core/Contracts/IEchoHubClient.cs::IEchoHubClient",
+        "src/EchoHub.Core/Contracts/IMessageEncryptionService.cs::IMessageEncryptionService",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto",
+        "src/EchoHub.Server/Config/ServerLogsOptions.cs::ServerLogsOptions",
+        "src/EchoHub.Server/Hubs/ChatHub.cs::ChatHub",
+        "src/EchoHub.Server/Services/ServerLogs/ServerLogsService.cs::ServerLogsService",
+        "src/EchoHub.Server/Services/ServerLogs/ServerLogsSink.cs::ServerLogsSink"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Services/SignalRBroadcaster.cs::SignalRBroadcaster",
+      "name": "SignalRBroadcaster",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Services/SignalRBroadcaster.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.658,
+      "inDegree": 1,
+      "outDegree": 7,
+      "doc": "Code/src/EchoHub.Server/Services/SignalRBroadcaster.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Contracts/IChatBroadcaster.cs::IChatBroadcaster",
+        "src/EchoHub.Core/Contracts/IEchoHubClient.cs::IEchoHubClient",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserPresenceDto",
+        "src/EchoHub.Server/Hubs/ChatHub.cs::ChatHub",
+        "src/EchoHub.Server/Services/PresenceTracker.cs::PresenceTracker"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Services/SpamGuard.cs::SpamGuard",
+      "name": "SpamGuard",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Services/SpamGuard.cs",
+      "subsystem": "src/EchoHub.Server · SpamGuard",
+      "complexity": 0.656,
+      "inDegree": 3,
+      "outDegree": 6,
+      "doc": "Code/src/EchoHub.Server/Services/SpamGuard.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/ServerRole.cs::ServerRole",
+        "src/EchoHub.Server/Config/SpamOptions.cs::SpamOptions",
+        "src/EchoHub.Server/Services/ChannelService.cs::ChannelService",
+        "src/EchoHub.Server/Services/ChatService.cs::ChatService",
+        "src/EchoHub.Server/Services/SpamGuard.cs::SpamVerdict",
+        "src/EchoHub.Server/Services/SpamGuard.cs::SpamVerdictKind"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Services/SpamGuard.cs::SpamVerdict",
+      "name": "SpamVerdict",
+      "kind": "record",
+      "file": "src/EchoHub.Server/Services/SpamGuard.cs",
+      "subsystem": "src/EchoHub.Server · SpamGuard",
+      "complexity": 0.122,
+      "inDegree": 1,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Server/Services/SpamGuard.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Server/Services/SpamGuard.cs::SpamVerdictKind"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Services/SpamGuard.cs::SpamVerdictKind",
+      "name": "SpamVerdictKind",
+      "kind": "enum",
+      "file": "src/EchoHub.Server/Services/SpamGuard.cs",
+      "subsystem": "src/EchoHub.Server · SpamGuard",
+      "complexity": 0.026,
+      "inDegree": 4,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Server/Services/SpamGuard.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Server/Services/Stats/ServerStatsCollector.cs::ServerStatsCollector",
+      "name": "ServerStatsCollector",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Services/Stats/ServerStatsCollector.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ApiClient",
+      "complexity": 0.372,
+      "inDegree": 5,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Server/Services/Stats/ServerStatsCollector.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Server/Services/Stats/ServerStatsCollector.cs::StatsCounters"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Services/Stats/ServerStatsCollector.cs::StatsCounters",
+      "name": "StatsCounters",
+      "kind": "record",
+      "file": "src/EchoHub.Server/Services/Stats/ServerStatsCollector.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ApiClient",
+      "complexity": 0.116,
+      "inDegree": 1,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Server/Services/Stats/ServerStatsCollector.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Server/Services/Stats/ServerStatsCollector.cs::ServerStatsCollector"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Services/Stats/ServerStatsReportService.cs::ServerStatsReportService",
+      "name": "ServerStatsReportService",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Services/Stats/ServerStatsReportService.cs",
+      "subsystem": "src/EchoHub.Server · ServerStatsReportService",
+      "complexity": 0.414,
+      "inDegree": 1,
+      "outDegree": 5,
+      "doc": "Code/src/EchoHub.Server/Services/Stats/ServerStatsReportService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Models/ServerStatsReport.cs::ServerStatsReport",
+        "src/EchoHub.Server/Config/StatsOptions.cs::StatsOptions",
+        "src/EchoHub.Server/Data/EchoHubDbContext.cs::EchoHubDbContext",
+        "src/EchoHub.Server/Services/PresenceTracker.cs::PresenceTracker",
+        "src/EchoHub.Server/Services/Stats/ServerStatsCollector.cs::ServerStatsCollector"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Services/UserService.cs::UserService",
+      "name": "UserService",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Services/UserService.cs",
+      "subsystem": "src/EchoHub.Server · User",
+      "complexity": 0.698,
+      "inDegree": 2,
+      "outDegree": 9,
+      "doc": "Code/src/EchoHub.Server/Services/UserService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Constants/ValidationConstants.cs::ValidationConstants",
+        "src/EchoHub.Core/Contracts/IUserService.cs::IUserService",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::UserError",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::UserOperationResult",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserProfileDto",
+        "src/EchoHub.Core/Models/ServerRole.cs::ServerRole",
+        "src/EchoHub.Core/Models/User.cs::User",
+        "src/EchoHub.Server/Controllers/UsersController.cs::UsersController",
+        "src/EchoHub.Server/Data/EchoHubDbContext.cs::EchoHubDbContext"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Setup/DataMigrationService.cs::DataMigrationService",
+      "name": "DataMigrationService",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Setup/DataMigrationService.cs",
+      "subsystem": "src/EchoHub.Core/Models",
+      "complexity": 0.578,
+      "inDegree": 2,
+      "outDegree": 8,
+      "doc": "Code/src/EchoHub.Server/Setup/DataMigrationService.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Constants/HubConstants.cs::HubConstants",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::EmbedDto",
+        "src/EchoHub.Core/Models/Attachment.cs::Attachment",
+        "src/EchoHub.Core/Models/AttachmentKind.cs::AttachmentKind",
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Core/Models/MessageType.cs::MessageType",
+        "src/EchoHub.Core/Models/ServerRole.cs::ServerRole",
+        "src/EchoHub.Server/Data/EchoHubDbContext.cs::EchoHubDbContext"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Setup/DatabaseSetup.cs::DatabaseSetup",
+      "name": "DatabaseSetup",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Setup/DatabaseSetup.cs",
+      "subsystem": "src/EchoHub.Server · Program",
+      "complexity": 0.334,
+      "inDegree": 1,
+      "outDegree": 4,
+      "doc": "Code/src/EchoHub.Server/Setup/DatabaseSetup.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Constants/HubConstants.cs::HubConstants",
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Server/Data/EchoHubDbContext.cs::EchoHubDbContext",
+        "src/EchoHub.Server/Setup/DataMigrationService.cs::DataMigrationService"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Server/Setup/FirstRunSetup.cs::FirstRunSetup",
+      "name": "FirstRunSetup",
+      "kind": "class",
+      "file": "src/EchoHub.Server/Setup/FirstRunSetup.cs",
+      "subsystem": "src/EchoHub.Server · Program",
+      "complexity": 0.371,
+      "inDegree": 1,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Server/Setup/FirstRunSetup.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Tests/Irc/TestHelpers.cs::FakeChannelService",
+      "name": "FakeChannelService",
+      "kind": "class",
+      "file": "src/EchoHub.Tests/Irc/TestHelpers.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChannelService",
+      "complexity": 0.754,
+      "inDegree": 0,
+      "outDegree": 8,
+      "doc": "Code/src/EchoHub.Tests/Irc/TestHelpers.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Contracts/IChannelService.cs::ChannelListItem",
+        "src/EchoHub.Core/Contracts/IChannelService.cs::IChannelService",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelCryptoDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelMetaDto",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::ChannelError",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::ChannelOperationResult",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::PaginatedResponse"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Tests/Irc/TestHelpers.cs::FakeChatService",
+      "name": "FakeChatService",
+      "kind": "class",
+      "file": "src/EchoHub.Tests/Irc/TestHelpers.cs",
+      "subsystem": "src/EchoHub.Core/DTOs · ChatService",
+      "complexity": 0.695,
+      "inDegree": 0,
+      "outDegree": 6,
+      "doc": "Code/src/EchoHub.Tests/Irc/TestHelpers.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Contracts/IChatService.cs::IChatService",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::ChannelDto",
+        "src/EchoHub.Core/DTOs/ChatDtos.cs::MessageDto",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserPresenceDto",
+        "src/EchoHub.Core/Models/Channel.cs::Channel",
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Tests/Irc/TestHelpers.cs::FakeEncryptionService",
+      "name": "FakeEncryptionService",
+      "kind": "class",
+      "file": "src/EchoHub.Tests/Irc/TestHelpers.cs",
+      "subsystem": "src/EchoHub.Client/Services · IMessageEncryptionService",
+      "complexity": 0.423,
+      "inDegree": 0,
+      "outDegree": 1,
+      "doc": "Code/src/EchoHub.Tests/Irc/TestHelpers.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Contracts/IMessageEncryptionService.cs::IMessageEncryptionService"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Tests/Irc/TestHelpers.cs::FakeUserService",
+      "name": "FakeUserService",
+      "kind": "class",
+      "file": "src/EchoHub.Tests/Irc/TestHelpers.cs",
+      "subsystem": "src/EchoHub.Server · User",
+      "complexity": 0.634,
+      "inDegree": 0,
+      "outDegree": 6,
+      "doc": "Code/src/EchoHub.Tests/Irc/TestHelpers.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Core/Contracts/IUserService.cs::IUserService",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::UserError",
+        "src/EchoHub.Core/DTOs/CommonDtos.cs::UserOperationResult",
+        "src/EchoHub.Core/DTOs/ProfileDtos.cs::UserProfileDto",
+        "src/EchoHub.Core/Models/ServerRole.cs::ServerRole",
+        "src/EchoHub.Core/Models/UserStatus.cs::UserStatus"
+      ]
+    },
+    {
+      "id": "src/EchoHub.Tests/Irc/TestHelpers.cs::TestDuplexStream",
+      "name": "TestDuplexStream",
+      "kind": "class",
+      "file": "src/EchoHub.Tests/Irc/TestHelpers.cs",
+      "subsystem": "src/EchoHub.Tests/Irc",
+      "complexity": 0.617,
+      "inDegree": 1,
+      "outDegree": 0,
+      "doc": "Code/src/EchoHub.Tests/Irc/TestHelpers.cs.md",
+      "dependsOn": []
+    },
+    {
+      "id": "src/EchoHub.Tests/Irc/TestHelpers.cs::TestIrcConnectionFactory",
+      "name": "TestIrcConnectionFactory",
+      "kind": "class",
+      "file": "src/EchoHub.Tests/Irc/TestHelpers.cs",
+      "subsystem": "src/EchoHub.Tests/Irc",
+      "complexity": 0.395,
+      "inDegree": 0,
+      "outDegree": 2,
+      "doc": "Code/src/EchoHub.Tests/Irc/TestHelpers.cs.md",
+      "dependsOn": [
+        "src/EchoHub.Server.Irc/IrcClientConnection.cs::IrcClientConnection",
+        "src/EchoHub.Tests/Irc/TestHelpers.cs::TestDuplexStream"
+      ]
+    }
+  ]
+}
