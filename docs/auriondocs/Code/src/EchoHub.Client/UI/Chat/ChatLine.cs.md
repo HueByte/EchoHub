@@ -19,36 +19,17 @@ public partial class ChatLine
 ```
 
 
-Represents a single rendered chat line made up of colored ChatSegment pieces and associated display metadata. Use ChatLine when preparing or manipulating a line for rendering in the chat view (layout, wrapping, attachment actions, separators, mention/highlight state) rather than working with raw strings or segments directly.
+A single visual line in the chat view composed of one or more colored [`ChatSegment`](ChatSegment.cs.md)s. Use `ChatLine` when preparing data for rendering or layout (wrapping, separators, attachments, and reply jump targets) rather than when working with raw message text; it carries both the display segments and metadata the view needs (attachment info, rule labels, continuation/indent hints, and navigation markers).
 
 ## Remarks
-ChatLine is the view-level unit for a message or a rule separator: it aggregates ChatSegment instances (text + color), stores metadata such as MessageId, sender, attachment info and clickable action spans, and exposes logic to break the line into multiple display lines that fit a viewport width. It centralizes presentation concerns (continuation indentation, colored continuation prefixes, non-wrapping rule lines, and unread-marker behavior) so the chat rendering layer can ask a ChatLine to produce the wrapped pieces it needs rather than implementing wrapping and metadata handling itself.
-
-## Example
-```csharp
-// Construct from plain text
-var line = new ChatLine("Hello, world!");
-// Optional metadata
-line.MessageId = Guid.NewGuid();
-line.SenderUsername = "alice";
-
-// Wrap to a viewport width of 40 columns, with a 4-space continuation indent
-var wrapped = line.Wrap(40, continuationIndent: 4);
-
-// Construct from explicit segments (preserves per-segment color attributes)
-var segments = new List<ChatSegment>
-{
-    new ChatSegment("[alice] ", ChatColors.RailAttr),
-    new ChatSegment("This is a message", null)
-};
-var coloredLine = new ChatLine(segments);
-```
+`ChatLine` models what the UI actually renders: a sequence of colored segments in `Segments` plus a small set of rendering hints and metadata. It centralizes information the view needs for word-wrapping (`TextLength`, `Wrap`, `ContinuationIndent`, `ContinuationPrefixSegments`), special-line rendering (`RuleLabel`, `RuleAttr`, `IsUnreadMarker`), and attachment/interactivity (`AttachmentUrl`, `AttachmentFileName`, [`AttachmentKind`](../../../EchoHub.Core/Models/AttachmentKind.cs.md), `ActionSpans`). The `Wrap` method produces multiple `ChatLine` instances that fit a given column `width`, and `JumpToMessageId` links reply-quote lines back to their source message when present in the loaded history.
 
 ## Notes
-- RuleLabel makes the line a separator rule; such lines are not word-wrapped and are regenerated to the viewport width by the view.
-- If ContinuationPrefixSegments is set, it overrides ContinuationIndent: continuation lines use the prefix segments' column width instead of plain-space indentation.
-- ActionSpans (when present) are column positions relative to the unwrapped line; only the first wrapped line preserves those spans — subsequent wrapped continuation lines do not.
-- Wrapping respects grapheme clusters and column widths (uses GetGraphemes and GetColumns), so wide characters and combining sequences are handled when measuring width. If width <= 0 or the line already fits, Wrap returns the original line in a single-element list.
+- `TextLength` is computed once in the constructors (via `GetColumns()` on the provided text/segments). Because `Segments` is a mutable `List<ChatSegment>`, mutating `Segments` after construction will not update `TextLength`; keep them consistent or recreate the `ChatLine`.
+- If `ContinuationPrefixSegments` is set it takes precedence over `ContinuationIndent` when computing the indent for continuation lines; the prefix's column width is used instead of the plain-space indent.
+- `ActionSpans` columns are relative to the unwrapped line, so only the first wrapped line preserves clickable sub-line targets; setting `ActionSpans` to `null` means the whole line should use the kind's default action.
+
+
 
 ---
 
@@ -69,14 +50,15 @@ public readonly record struct AttachmentActionSpan(int StartCol, int EndCol, Att
 | `Action` | `AttachmentAction` | — |
 
 
-It encodes an inclusive horizontal span on a chat line that maps to an AttachmentAction when clicked. This readonly record struct pairs StartCol and EndCol (both inclusive) with an Action to designate a specific clickable region that triggers an attachment operation.
+Represents an inclusive range of columns on a single chat line that, when clicked, triggers the given `AttachmentAction`. This lightweight, immutable value type pairs a `StartCol`, an `EndCol`, and an `AttachmentAction` to describe what should happen if a user interacts with that span during chat rendering or interaction handling.
 
 ## Remarks
-Because it's a value type with immutable fields, AttachmentActionSpan is cheap to copy and compare, which helps with hit-testing and rendering across frames. It expresses the intent of interactive regions alongside their coordinates and associated action, keeping the UI layer decoupled from how actions are executed. This symbol complements other line-rendering data structures that describe clickable spans, enabling straightforward collection, filtering, and application during rendering.
+This abstraction decouples the definition of clickable regions from the actions they perform, allowing the chat UI to map user interactions to behavior without embedding logic in the rendering layer. As a `readonly record struct`, it is cheap to copy and supports value-based equality, which makes it convenient to accumulate multiple spans in collections or pass them through APIs without risking unintended mutation. The actual interpretation of the `AttachmentAction` is delegated to higher-level components that handle click events, enabling reuse across different chat layouts or themes.
 
 ## Notes
-- EndCol is inclusive; ensure range checks treat EndCol as inclusive to avoid off-by-one errors.
-- Overlapping spans may require careful resolution logic at render or hit-test time to determine which action should fire.
+- The range is inclusive; ensure `EndCol >= StartCol` before constructing an instance.
+- Being a `readonly` record struct, instances are immutable; treat them as value-identity objects rather than mutable state.
+- The spans should align with the chat line rendering coordinate space; changes in layout or font metrics may require revalidation of column mappings to avoid misaligned interactions.
 
 ---
 
@@ -93,28 +75,26 @@ public enum AttachmentAction
 ```
 
 
-An enum that represents the action a click on an attachment line can trigger in the chat UI. It lets the click handler distinguish between opening the image for viewing and saving the image to disk, promoting explicit, testable logic rather than ad-hoc behavior.
+Represents the user action triggered by clicking an attachment line in the chat UI. It encodes the two currently supported outcomes for image attachments: opening the image for viewing or saving it to disk.
 
 ## Remarks
-By codifying the possible outcomes as an enum, AttachmentAction defines a clear contract for how attachment clicks should be handled. It decouples the UI event from the concrete actions, making it easy to extend with new options (for example, ShareImage) without changing call sites. This abstraction supports consistent behavior across different chat lines and simplifies testing by allowing mocks or verifications based on the enum value.
+This enumeration decouples the click-handler from concrete UI behavior, enabling a single dispatch to determine what to do with an attachment. It also makes future extension easier; adding new actions (for example, copying a link or sharing) would be done by extending this enum and updating the handlers accordingly.
 
 ## Example
 ```csharp
-AttachmentAction action = /* determined by UI context */;
-switch (action)
+AttachmentAction action = AttachmentAction.OpenImage;
+if (action == AttachmentAction.OpenImage)
 {
-    case AttachmentAction.OpenImage:
-        // Open the image in a viewer
-        break;
-    case AttachmentAction.SaveImage:
-        // Persist the image to disk
-        break;
+    // Open the image for viewing
+}
+else if (action == AttachmentAction.SaveImage)
+{
+    // Persist the image to disk
 }
 ```
 
 ## Notes
-- If you later add actions to the enum, remember to handle them in all switch expressions and tests.
-- Prefer explicit enum-based logic over string-based representations to avoid misinterpretation.
-- Ensure UI-to-action mappings are consistent across chat lines to prevent user confusion.
+- Adding new values requires revisiting all switch/if chains that enumerate the actions.
+- Exhaustive checks are safer; consider a default fallback to surface unknown actions gracefully.
 
 ---

@@ -8,16 +8,14 @@ public sealed class ChannelPasswordDialog
 ```
 
 
-Prompts for a channel password when joining a protected channel and returns the entered password, or null if the user cancels. Use this helper whenever you need a consistent, modal password prompt instead of duplicating dialog boilerplate across join flows.
+ChannelPasswordDialog is a lightweight UI helper that prompts the user for the password required to join a password-protected channel. Its static `Show` method returns the entered password as a `string?`, or `null` if the user cancels, after presenting a small modal dialog built from `Dialog` with a channel-specific message (defaulting to `#{channelName} is password protected.`).
 
 ## Remarks
-This class centralizes the user flow for joining password-protected channels. It presents a modal dialog titled Join #<channel>, collects the password, and returns it to the caller, ensuring a single, predictable contract. The UI avoids displaying the actual password text by using a redacted caption and automatically focusing the password field, while the dialog lifecycle is orchestrated through the application (app.Run and app.RequestStop).
 
-## Example
-```csharp
-string? password = ChannelPasswordDialog.Show(app, "mychannel", "Enter password to join #mychannel.");
-```
+Encapsulates the password-prompt UX for channel joins, avoiding duplication of UI logic across callers. The dialog wires up a password input and two actions: a join action that validates a non-empty password and a cancel action that returns `null`, ensuring the caller proceeds only after a password is provided or the user cancels. Providing a custom `message` lets callers tailor the prompt while preserving a consistent default behavior when none is supplied.
 
 ## Notes
-- The method is synchronous and modal; it blocks the caller until the user completes the interaction.
-- A null return value indicates the user canceled the operation. If the user submits an empty password, a brief error dialog is shown and the prompt remains active until a non-empty password is provided.
+
+- The call is synchronous and blocks until the user completes interaction with the dialog.
+- The return value must be checked for `null` to distinguish between a canceled join and a provided password.
+- The implementation relies on UI primitives (`Dialog`, `Label`, `Button`, `MessageBox`) and a password input field; ensure this is invoked on an appropriate UI thread context in your application.

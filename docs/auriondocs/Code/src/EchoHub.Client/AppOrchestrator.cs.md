@@ -13,10 +13,17 @@
   - [BuildOutgoingAttachmentAsync](#buildoutgoingattachmentasync)
   - [CleanupPastedTempFiles](#cleanuppastedtempfiles)
   - [ClearPendingReply](#clearpendingreply)
+  - [ClearSavedToken](#clearsavedtoken)
+  - [DedupPath](#deduppath)
   - [Dispose](#dispose)
+  - [DownloadAttachmentAsync](#downloadattachmentasync)
   - [EnsureRoomUnlockedForSendAsync](#ensureroomunlockedforsendasync)
+  - [FetchAndUpdateOnlineUsers](#fetchandupdateonlineusers)
+  - [GetDownloadDir](#getdownloaddir)
+  - [HandleAudioPlayRequested](#handleaudioplayrequested)
   - [HandleChannelJoinFromMessage](#handlechanneljoinfrommessage)
   - [HandleChannelSelected](#handlechannelselected)
+  - [HandleCheckForUpdatesRequested](#handlecheckforupdatesrequested)
   - [HandleCmdAssignRole](#handlecmdassignrole)
   - [HandleCmdBanUser](#handlecmdbanuser)
   - [HandleCmdChangeRoomPassword](#handlecmdchangeroompassword)
@@ -32,6 +39,7 @@
   - [HandleCmdMeta](#handlecmdmeta)
   - [HandleCmdMuteUser](#handlecmdmuteuser)
   - [HandleCmdNukeChannel](#handlecmdnukechannel)
+  - [HandleCmdOpenProfile](#handlecmdopenprofile)
   - [HandleCmdOpenServers](#handlecmdopenservers)
   - [HandleCmdQuit](#handlecmdquit)
   - [HandleCmdRevokeInvite](#handlecmdrevokeinvite)
@@ -41,6 +49,7 @@
   - [HandleCmdSetAsciiSize](#handlecmdsetasciisize)
   - [HandleCmdSetAvatar](#handlecmdsetavatar)
   - [HandleCmdSetColor](#handlecmdsetcolor)
+  - [HandleCmdSetDownloadPath](#handlecmdsetdownloadpath)
   - [HandleCmdSetNick](#handlecmdsetnick)
   - [HandleCmdSetStatus](#handlecmdsetstatus)
   - [HandleCmdSetTheme](#handlecmdsettheme)
@@ -50,18 +59,24 @@
   - [HandleCmdUnmuteUser](#handlecmdunmuteuser)
   - [HandleConnect](#handleconnect)
   - [HandleCreateChannelRequested](#handlecreatechannelrequested)
+  - [HandleDeleteChannelRequested](#handledeletechannelrequested)
   - [HandleDeleteMessageRequested](#handledeletemessagerequested)
   - [HandleDisconnect](#handledisconnect)
   - [HandleEditProfile](#handleeditprofile)
+  - [HandleFileDownloadRequested](#handlefiledownloadrequested)
   - [HandleFilesStaged](#handlefilesstaged)
+  - [HandleImageOpenRequested](#handleimageopenrequested)
   - [HandleImagePasted](#handleimagepasted)
+  - [HandleImageSaveRequested](#handleimagesaverequested)
   - [HandleLoadMoreRequested](#handleloadmorerequested)
   - [HandleLogout](#handlelogout)
   - [HandleMessageSubmitted](#handlemessagesubmitted)
   - [HandleProfileRequested](#handleprofilerequested)
   - [HandleReplyCancelRequested](#handlereplycancelrequested)
   - [HandleReplyRequested](#handlereplyrequested)
+  - [HandleRollbackRequested](#handlerollbackrequested)
   - [HandleSavedServersRequested](#handlesavedserversrequested)
+  - [HandleSearchRequested](#handlesearchrequested)
   - [HandleStatusRequested](#handlestatusrequested)
   - [HandleThemeSelected](#handlethemeselected)
   - [HandleViewProfile](#handleviewprofile)
@@ -69,17 +84,21 @@
   - [JoinChannelWithPasswordPromptAsync](#joinchannelwithpasswordpromptasync)
   - [NeedsUnlockPrompt](#needsunlockprompt)
   - [NormalizeAsciiSize](#normalizeasciisize)
+  - [PersistLastReads](#persistlastreads)
+  - [PromptPassword](#promptpassword)
+  - [RefreshStagingTray](#refreshstagingtray)
   - [RunAsync](#runasync)
+  - [SaveServerToConfig](#saveservertoconfig)
   - [SendStagedMessage](#sendstagedmessage)
+  - [SetDownloadPath](#setdownloadpath)
+  - [UnlockRoomKeyAsync](#unlockroomkeyasync)
   - [UnlockTrackedChannelAsync](#unlocktrackedchannelasync)
+  - [UpdateServerConfig](#updateserverconfig)
   - [WireCommandHandlerEvents](#wirecommandhandlerevents)
   - [WireConnectionManagerEvents](#wireconnectionmanagerevents)
   - [WireMainWindowEvents](#wiremainwindowevents)
-- [HandleCmdOpenProfile](#handlecmdopenprofile)
-- [HandleSearchRequested](#handlesearchrequested)
-- [PromptPassword](#promptpassword)
-- [RefreshStagingTray](#refreshstagingtray)
-- [UnlockRoomKeyAsync](#unlockroomkeyasync)
+  - [ImageOpenExtensions](#imageopenextensions)
+  - [SafeOpenExtensions](#safeopenextensions)
 
 ---
 
@@ -92,17 +111,16 @@ public sealed class AppOrchestrator : IDisposable
 ```
 
 
-Central coordinator for the EchoHub terminal UI client: it wires MainWindow UI events and command input to the underlying services (connection manager, message manager, audio/update services, etc.), maintains ephemeral UI-facing state (staged attachments, per-channel user lists, temporary pasted files, declined E2E unlocks, pending reply targets), and exposes a small host-facing surface (MainWindow and PendingUpdate). Reach for AppOrchestrator when you need a single place to orchestrate cross-cutting app behavior rather than wiring UI components and services together manually.
+Central coordinator that wires the Terminal UI to the client services and connection layer. Reach for `AppOrchestrator` when hosting the EchoHub TUI: it attaches `MainWindow` events to service calls, routes incoming connection events back into the UI, manages message staging/attachments, and exposes lifecycle hooks such as `PendingUpdate` and `Dispose` so the host can integrate cleanly with the application loop.
 
 ## Remarks
-AppOrchestrator exists to centralize responsibilities that span UI, networking and local client state so the rest of the codebase can remain focused: UI widgets raise events and the orchestrator translates those into service calls, and connection/service events are translated back into UI updates. It owns short-lived caches (case-insensitive channel user lists), staging buffers (attachments and temporary pasted files), and user-interaction policies (for example, remembering which E2E unlock prompts were declined so the user isn't repeatedly nagged). It also exposes PendingUpdate so the host can perform an in-place restart safely after the TUI's main loop exits.
+`AppOrchestrator` exists to decouple the UI surface (`MainWindow`) from the lower-level services ([`ConnectionManager`](Services/ConnectionManager.cs.md), `ChatMessageManager`, [`UpdateChecker`](Services/UpdateChecker.cs.md), [`NotificationSoundService`](Services/NotificationSoundService.cs.md), [`AudioPlaybackService`](Services/AudioPlaybackService.cs.md), etc.). It centralizes event wiring and background task scheduling (via the `RunAsync` helper) so UI code can remain thin and reactive while the orchestrator handles async operations, error reporting, and state such as `_channelUsers`, `_stagedAttachments`, and `_tempPastedFiles`. The class exposes `MainWindow` and `PendingUpdate` so the host can present the TUI and then perform post-loop actions (for example applying an in-place updater) after the terminal is restored.
 
 ## Notes
-- PendingUpdate must be executed by the host only after the Terminal.Gui main loop and TUI have exited (console restored); running the updater while the TUI is still active can conflict with terminal state and in-place restart behavior. 
-- Temporary PNG files created for clipboard-image pastes are tracked and removed when their message is sent or when the staging tray is cleared—do not assume pasted screenshots persist on disk indefinitely. 
-- The channel user cache is case-insensitive (StringComparer.OrdinalIgnoreCase) and is guarded by an internal lock; callers should not bypass the orchestrator to modify that state directly.
-
-
+- Call `Dispose` when shutting down the TUI so the orchestrator can perform its teardown work (the source notes it should "capture read positions before tearing down").
+- `PendingUpdate` is intended to be executed after the Terminal.Gui main loop exits (the host must run it once the terminal is restored); running an updater while the TUI is still active can conflict with the console state.
+- The class tracks temporary pasted files in `_tempPastedFiles` and staged attachments in `_stagedAttachments`; these are cleaned when messages are sent or the staging tray is cleared — failing to clear them may leave temporary files in the system temp directory.
+- Threading: use `InvokeUI` to marshal UI updates back onto the `IApplication` thread and prefer the orchestrator's `RunAsync` helper for fire-and-forget background work to avoid blocking the UI thread.
 
 ---
 
@@ -122,15 +140,13 @@ public AppOrchestrator(IApplication app, ClientConfig config)
 | `config` | [`ClientConfig`](Config/ClientConfig.cs.md) | — |
 
 
-The AppOrchestrator constructor initializes the client by capturing the application context and configuration, creating core UI and service collaborators, wiring their inter-component events, and starting the update checker. It then initializes the main window with a disconnected state, readying the app for user interaction.
+Initializes the application orchestration by constructing the core UI and services from the provided `IApplication` and [`ClientConfig`](Config/ClientConfig.cs.md), creating `ChatMessageManager`, `MainWindow`, `CommandHandler`, [`NotificationSoundService`](Services/NotificationSoundService.cs.md), and [`UpdateChecker`](Services/UpdateChecker.cs.md), wiring their events, starting the update checker, and finally setting the initial status to Disconnected.
 
 ## Remarks
-As the composition root for the EchoHub client, AppOrchestrator centralizes the creation and wiring of the UI and service layer. It ensures that all collaborators exist before the app becomes interactive and that the event pipelines are in place so user actions, commands, and connection state changes flow through a single, predictable lifecycle. The initial 'Disconnected' status communicates to users that the app is not yet connected, and will transition as connections and updates occur.
+AppOrchestrator acts as the composition root for the client, ensuring that UI and operational subsystems are created with the correct dependencies and interconnected before the application becomes interactive. By wiring event handlers before starting background services, it centralises lifecycle management and guarantees predictable startup sequencing.
 
 ## Notes
-- The constructor immediately starts the update checker via Start(); this can trigger asynchronous network activity during startup.
-- The initialization sequence assumes non-null app and config; null values will throw during assignment.
-- Be mindful of multiple AppOrchestrator instances: event subscriptions are established in the constructor and may accumulate if the object is created more than once.
+- Startup work runs on the creating thread; long-running initialization (such as the work kicked off by `UpdateChecker.Start()`) may block startup in some hosting environments. Consider ensuring the constructor runs in a context that allows background work to proceed without delaying UI readiness.
 
 ---
 
@@ -143,15 +159,7 @@ public MainWindow MainWindow => _mainWindow
 ```
 
 
-Exposes the application's main window as a read-only property. It returns the private _mainWindow field, allowing callers to access the current MainWindow instance without exposing a setter or the backing field directly. Use this property when UI or orchestration code needs to interact with the main window in a controlled way, e.g., to trigger window-bound actions or dialogs, while preserving encapsulation.
-
-## Remarks
-This property serves as an abstraction boundary between the app orchestrator and the UI layer. It decouples consumers from the concrete storage of the main window and provides a stable access point that can be replaced or mocked in tests without changing call sites. It also communicates ownership: the orchestrator owns and manages the MainWindow reference. If initialization order guarantees the value, callers can rely on its presence; otherwise, guard against nulls.
-
-## Notes
-- Access before initialization may yield null; ensure initialization before first use.
-- If the main window can be swapped at runtime (for testing or multi-window scenarios), consider adding a controlled mechanism to rebind the reference or introduce an interface the rest of the code depends on.
-- This property is a simple passthrough of the backing field; for testability, consider introducing an abstraction (e.g., IMainWindow) if you need to mock interactions with the window.
+Read-only accessor `MainWindow` exposes the underlying `_mainWindow` instance to callers. It provides a convenient way to access the application's main window from the `AppOrchestrator` without exposing the backing field directly, keeping encapsulation intact while enabling coordinated UI interactions.
 
 ---
 
@@ -164,25 +172,13 @@ public Func<Task>? PendingUpdate => _updateService.PendingUpdate
 ```
 
 
-PendingUpdate is a nullable `Func<Task>` that becomes non-null once the user confirms an in-app update. The host should invoke this function after the Terminal.Gui main loop exits and the console has been restored, allowing the updater to restart in-place without fighting the TUI. This property simply proxies the update action from the update service, decoupling the UI lifecycle from the restart logic.
+PendingUpdate is a nullable `Func<Task>` that becomes set when the user confirms an update. The host should invoke this delegate after the `Terminal.Gui` main loop exits to perform the updater's in-place restart without fighting the TUI, since it simply forwards to `_updateService.PendingUpdate`.
 
 ## Remarks
-PendingUpdate exists to separate the moment of user confirmation from the actual restart work. It ensures the update runs after the UI has been torn down, avoiding conflicts with the Terminal.Gui lifecycle. By delegating to the update service's PendingUpdate, the hosting code remains agnostic of the specifics of how updates are performed.
-
-## Example
-```csharp
-// After the Terminal.Gui loop completes and the UI is torn down
-var pending = appOrchestrator.PendingUpdate;
-if (pending != null)
-{
-    await pending.Invoke();
-}
-```
+PendingUpdate acts as a thin bridge between the UI decision and the update lifecycle. By exposing the updater hook via `_updateService.PendingUpdate`, the design keeps the UI layer decoupled from the restart mechanics while ensuring the host sequences console restoration prior to starting the update.
 
 ## Notes
-- PendingUpdate may be null; guard against null before invoking.
-- Because it returns a Task, await the invocation to ensure the update process completes (as appropriate for your app lifecycle).
-- Call this only after the UI teardown to avoid interfering with the TUI.
+- Check for null before invocation; the property is nullable and may be absent if no update is pending.
 
 ---
 
@@ -203,38 +199,7 @@ private void ApplyAsciiSize(string flag)
 **Returns:** `void`
 
 
-Applies a user-selected ASCII size by updating the in-memory configuration, persisting it to disk, and refreshing the staging UI. If a current channel is active, it also broadcasts a system message to inform users that the image ASCII size has been updated, formatting the value via AsciiSizeLabel(flag).
-
-## Remarks
-This method centralizes the side effects of changing the ASCII size: it updates the config, persists the change, updates the staging tray, and notifies the channel. It relies on AsciiSizeLabel to render a user-friendly label and on ConfigManager.Save to persist settings; callers should be aware exceptions from these operations propagate to the caller.
-
-## Notes
-- Assumes _config is non-null; a null _config would cause a NullReferenceException.
-- No input validation: the flag string is stored directly and passed to AsciiSizeLabel; ensure downstream code handles invalid values.
-- Synchronous IO: ConfigManager.Save(_config) may block if disk IO is slow; consider invoking from a background task if called from UI event handlers.
-
-## Dependencies
-- ConfigManager
-
-## Dependency APIs (verified signatures)
-
-- class [`ConfigManager`](Config/ConfigManager.cs.md) (`src/EchoHub.Client/Config/ConfigManager.cs`)
-  - field `string ConfigDir`
-  - field `string ConfigPath`
-  - property `string ConfigDirectory`
-  - field `Lock FileLock`
-  - field `JsonSerializerOptions JsonOptions`
-  - `ClientConfig Load()`
-  - `void Save(ClientConfig config)`
-  - `void SaveServer(SavedServer server)`
-  - `void RemoveServer(string url)`
-
-## Symbol To Document
-- Name: `ApplyAsciiSize`
-- Kind: `method`
-- File: `src/EchoHub.Client/AppOrchestrator.cs`
-- Language: `csharp`
-- ID: `db251379-6f70-4217-ba11-e574fbf08e9d`
+Updates the in-memory `DefaultAsciiSize` to the provided `flag`, saves the updated config with `ConfigManager.Save`, refreshes the staging tray via `RefreshStagingTray`, and, if a `CurrentChannel` exists, emits a system message announcing the new size using `AsciiSizeLabel(flag)`.
 
 ---
 
@@ -255,20 +220,15 @@ private static string AsciiSizeLabel(string flag) => flag switch
 **Returns:** `string`
 
 
-Converts a single-character size flag into a human-readable ASCII size label used by the UI. This private helper centralizes the mapping so callers don't duplicate string literals across the codebase. For flag \"s\" it yields \"Small (40x40)\", for flag \"l\" it yields \"Large (120x120)\", and for any other value it yields \"Medium (80x80)\".
+Converts a compact ASCII size flag into a human-readable label for display in the UI. Given the `flag` argument, it returns `Small (40x40)` for `s`, `Large (120x120)` for `l`, and `Medium (80x80)` for any other value. This centralizes the mapping so the rest of the ASCII rendering logic uses consistent strings rather than duplicating literals.
 
 ## Remarks
-By keeping the label logic in one private, static method, the rest of the codebase benefits from a single source of truth for size labels. The switch expression makes the mapping straightforward to extend if new flags are introduced. Its private scope keeps coupling low and makes intent explicit within its containing type.
 
-## Example
-```csharp
-// Example usage within the same class
-string small = AsciiSizeLabel("s"); // "Small (40x40)"
-string defaultLabel = AsciiSizeLabel("x"); // "Medium (80x80)"
-```
+This small helper encapsulates the mapping between the size flag and its display label, making future changes to the labels centralized. Its private static scope signals it's an internal detail of the hosting class and should not be relied on from outside.
 
 ## Notes
-- Access scope: AsciiSizeLabel is private to its declaring type, so it cannot be called from outside the class. If external callers need the same mapping, expose a public wrapper or move the method to a shared utility.
+
+- The switch is case-sensitive; values other than `s` or `l` result in `Medium (80x80)`.
 
 ---
 
@@ -291,15 +251,15 @@ private static async Task<OutgoingAttachment> BuildOutgoingAttachmentAsync(strin
 **Returns:** `Task<OutgoingAttachment>`
 
 
-Reads a staged file into an OutgoingAttachment. If a roomKey is provided, the method reads the file into memory, determines whether it is a valid image, and for images generates a local ASCII preview using ImageToAsciiService at the requested size; the preview text is then encrypted with roomKey. The file bytes are encrypted with RoomCrypto and encapsulated in the attachment; the attachment also records a declaredKind of image, audio, or file, and includes the (encrypted) preview when available. If no roomKey is supplied, the method returns an OutgoingAttachment that streams the file directly with its name, skipping encryption and preview generation. This design enables end-to-end protection in encrypted channels while keeping behaviors for non-encrypted channels simple.
+BuildOutgoingAttachmentAsync reads a file from disk and returns an [`OutgoingAttachment`](Services/OutgoingAttachment.cs.md) suitable for transmission. If a `roomKey` is provided, it encrypts the file bytes with that key, and for image files it also renders a local ASCII preview (at the size indicated by `size`) and encrypts the preview; the server never sees the original file or image contents. If `roomKey` is null, it returns a plain attachment backed by the raw file stream.
 
 ## Remarks
-This method acts as the orchestration point for turning a local file into the transportable OutgoingAttachment used by the client’s outbound pipeline. It encapsulates the conditional encryption and, for images, an on-device ASCII preview to surface a visual cue without exposing the raw image. By delegating validation, ASCII rendering, and crypto to dedicated helpers, it keeps the code focused on assembling the attachment rather than the details of how each piece works.
+By centralizing the attachment preparation for encrypted channels, this method hides the intricacies of file type detection, client-side preview rendering, and encryption behind a single helper. It relies on [`RoomCrypto`](../EchoHub.Core/Security/RoomCrypto.cs.md) for encryption and on [`ImageToAsciiService`](../EchoHub.Core/Services/ImageToAsciiService.cs.md) to generate human-friendly previews, ensuring consistent behavior across callers when dealing with encrypted attachments.
 
 ## Notes
-- If roomKey is null, the file is streamed directly without encryption or a preview.
-- Large files will be fully loaded into memory for encryption; consider streaming or chunking if this is a concern.
-- The preview is only produced for valid images; non-image files skip the preview.
+- When `roomKey` is null, the method returns a non-encrypted attachment without a preview.
+- The ASCII preview is generated only for valid images; non-image files produce no `preview` (it remains null). The declared kind is set to `image` for images, `audio` for audio files, and `file` otherwise.
+
 
 ---
 
@@ -320,14 +280,13 @@ private static void CleanupPastedTempFiles(IReadOnlyList<string> files)
 **Returns:** `void`
 
 
-Best-effort cleanup of pasted-image temp files and their per-paste folders. The method iterates the provided file paths, deletes each file, and then attempts to remove the containing directory if present; any failures are caught and logged at Debug level, so cleanup does not disrupt the calling workflow.
+Best-effort cleanup of pasted-image temp files and their per-paste folders. For each path in the supplied `IReadOnlyList<string>`, it deletes the file with `File.Delete` and, if available, deletes the directory that contains the file (via `Path.GetDirectoryName` and `Directory.Delete`). Any exceptions are caught and logged with `Log.Debug` so cleanup does not propagate to the caller.
 
 ## Remarks
-Encapsulates the cleanup behavior so the paste pathway remains focused on its primary task. It uses a forgiving error-handling strategy: delete what you can, swallow failures, and report them only via debug logs. Because the directory deletion happens after the file removal, the directory will be removed only if it is empty, aligning with typical per-paste directory semantics.
+This helper favors safety and simplicity: it never throws from the cleanup loop; failures are swallowed to avoid impacting the user flow after a paste. It provides diagnostic visibility through debug logging, aiding investigation if artifacts persist after cleanup.
 
 ## Notes
-- Directory.Delete is non-recursive by default; the directory will be removed only if empty after file deletion.
-- Exceptions are swallowed; failures are only logged at Debug level; callers can't rely on exceptions to signal cleanup success.
+- `Directory.Delete(dir)` will only delete an empty directory; if the per-paste folder still contains files, the delete will fail and be swallowed, potentially leaving artifacts.
 
 ---
 
@@ -342,13 +301,60 @@ private void ClearPendingReply()
 **Returns:** `void`
 
 
-Clears the active pending-reply state by assigning null to the internal _pendingReply field and informing the UI that there is no current reply in progress by calling _mainWindow.SetReplyingTo(null). As a private helper, it's used within the orchestrator to finalize or abort the reply workflow and keep both the data and the user interface in sync.
+Clears the currently pending reply by setting the private field `_pendingReply` to `null`. It also notifies the UI by calling `_mainWindow.SetReplyingTo(null)` to reflect that there is no active reply target.
 
 ## Remarks
-Centralizes reply-cleanup logic to avoid duplicating state-management across multiple code paths. By updating both the internal _pendingReply and the main window's replying-to state in one place, it guarantees consistent behavior whenever the reply flow ends. This abstraction helps decouple the decision to clear a reply from the specific UI or flow that triggers it, making future changes to the cleanup process easier.
+By centralizing this two-step reset, the method guarantees that both the internal model (`_pendingReply`) and the UI state (`_mainWindow.SetReplyingTo(null)`) stay in sync when a reply is canceled or completed. It provides a single, discoverable place to revert to idle state, reducing the chance of stale state leaking into the user interface.
+
+---
+
+### ClearSavedToken
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private void ClearSavedToken(string serverUrl)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `serverUrl` | `string` | — |
+
+**Returns:** `void`
+
+
+Clears the locally saved refresh token for a specific server by mutating the client configuration. It loads the current configuration via `ConfigManager.Load()`, searches the `SavedServers` collection for an entry whose `Url` matches the provided `serverUrl` using `StringComparison.OrdinalIgnoreCase`, and if found sets its `RefreshToken` to `null`. The updated config is then persisted with `ConfigManager.Save(config)` and the in-memory `_config` reference is refreshed to the latest object.
+
+## Remarks
+This private helper centralizes the token-clearing mutation to a single server URL, ensuring both the persisted configuration and the in-memory copy remain in sync. It encapsulates a security-sensitive operation (token removal) behind a tidy, reusable unit to avoid duplicating credential-clearing logic across call sites.
 
 ## Notes
-- Must run on the UI thread due to SetReplyingTo updating the UI; calling from a background thread may cause cross-thread exceptions or UI glitches.
+- Only affects the server that matches `serverUrl`; if no matching entry exists, no action is taken.
+- The URL comparison uses `StringComparison.OrdinalIgnoreCase` to tolerate casing differences in server URLs.
+
+---
+
+### DedupPath
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private static string DedupPath(string dir, string fileName)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `dir` | `string` | — |
+| `fileName` | `string` | — |
+
+**Returns:** `string`
+
+
+DedupPath is a private static helper that returns a non-colliding file path within `dir` for a given `fileName` by appending a numeric suffix in the form ` (n)` before the extension when the initial name already exists. It relies on `Path.GetFileNameWithoutExtension`, `Path.GetExtension`, `Path.Combine`, and `File.Exists` to probe candidate names—starting with the original, then variants that insert ` (1)`, ` (2)`, etc.—until a path that does not exist is found, so the caller can save without overwriting existing files.
 
 ---
 
@@ -363,16 +369,36 @@ public void Dispose()
 **Returns:** `void`
 
 
-Disposes EchoHub client resources in a defined teardown order. On disposal, it persists the last reads, then synchronously disposes the underlying connection, and finally disposes the update service. Call this when the orchestrator is shutting down to ensure all resources are released and the connection is cleanly closed.
+Disposes the orchestrator's resources synchronously. When invoked, it first persists the last read positions via `PersistLastReads()`, then synchronously disposes the underlying connection by awaiting `_conn.DisposeAsync()` through `AsTask().GetAwaiter().GetResult()`, and finally disposes `_updateService`.
 
 ## Remarks
-This Dispose implements a synchronous disposal flow that bridges an asynchronous disposal of the connection. The explicit GetAwaiter().GetResult() ensures the connection is fully closed before proceeding, but it can introduce deadlocks if called on a synchronization context that blocks. The order of operations — persist reads, close connection, then dispose updates — ensures state is captured before teardown and that dependent services are torn down only after the connection is terminated.
+This ordering guarantees that in-flight read state is captured before tearing down the connection and that dependent resources are released in a safe sequence. Bridging the asynchronous disposal of the connection into the synchronous `Dispose` method via `AsTask().GetAwaiter().GetResult()` is a pragmatic pattern for the classic `IDisposable` contract, but it can introduce deadlock risk if called from certain synchronization contexts; callers should ensure an appropriate execution context (e.g., non-UI threads) when disposing.
 
 ## Notes
-- Blocking on asynchronous disposal can lead to deadlocks in certain synchronization contexts; prefer calling this from a non-UI thread or consider an asynchronous disposal pattern if possible.
-- If an exception is thrown during PersistLastReads, DisposeAsync, or _updateService.Dispose, disposal may be interrupted and not all resources may be released.
-- This method is not guarded for multiple invocations; repeated calls may encounter disposed resources.
+- Bridging `DisposeAsync()` with `GetAwaiter().GetResult()` can deadlock in some synchronization contexts; prefer disposing from a context without a synchronization trap or consider a fully asynchronous disposal pattern if needed.
 
+
+---
+
+### DownloadAttachmentAsync
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private async Task<string> DownloadAttachmentAsync(string attachmentUrl, string fileName)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `attachmentUrl` | `string` | — |
+| `fileName` | `string` | — |
+
+**Returns:** `Task<string>`
+
+
+Downloads an attachment to a temporary file via `_conn.Api!.DownloadFileToTempAsync`, and, if the current channel has a room key available in `_conn.RoomKeys`, decrypts the file locally with `RoomCrypto.DecryptBytes` using that key. If no key is available or decryption fails, the temp file remains with the downloaded bytes and a warning is logged. The method returns the path to the temporary file for downstream usage.
 
 ---
 
@@ -393,15 +419,71 @@ private async Task<bool> EnsureRoomUnlockedForSendAsync(string channelName)
 **Returns:** `Task<bool>`
 
 
-This private guard ensures outbound messages to a channel are only sent when the room is accessible: if the channel is not end-to-end encrypted or already has a key, sending is allowed immediately. If the channel is encrypted but locked, it triggers the unlock flow and returns true only when unlocking succeeds; otherwise it reports an error and blocks the send.
+Ensure sending on an end-to-end encrypted channel is allowed only when the room is unlocked. It checks the encryption state via `_conn.RoomKeys.IsChannelEncrypted(channelName)` and `_conn.RoomKeys.HasKey(channelName)`, attempts to unlock with `UnlockTrackedChannelAsync(channelName)`, and surfaces an error via `InvokeUI(() => _mainWindow.ShowError(...))` if unlocking isn’t possible, returning false in that case. This guard centralizes the encryption-state handling so callers don’t leak plaintext or duplicate unlock logic when sending on protected channels.
+
+---
+
+### FetchAndUpdateOnlineUsers
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private void FetchAndUpdateOnlineUsers()
+```
+
+**Returns:** `void`
+
+
+FetchAndUpdateOnlineUsers is a private helper that fetches the online users for the current channel and refreshes the UI, but only when there is a non-empty channel and the connection is active (`_conn.IsConnected`). It runs on a background thread via `Task.Run`, calls `_conn.GetOnlineUsersAsync(channel)` to obtain the list, stores the result in the shared cache `_channelUsers` under the lock `_channelUsersLock`, and then marshals the update to the UI with `InvokeUI(() => _mainWindow.UpdateOnlineUsers(users))`; any exceptions are caught and logged with `Log.Debug`.
 
 ## Remarks
-By centralizing the gating logic here, the sending path consistently enforces encryption constraints and user interaction for unlocking. It bridges the connection manager's RoomKeys state, the unlocking prompt, and the UI feedback loop so callers don't have to duplicate this logic. Keeping this logic in this dedicated helper reduces the risk of inconsistent encryption checks scattered across the codebase.
+This private helper isolates data retrieval, cache synchronization, and UI refresh from the foreground path, keeping the UI responsive and ensuring thread-safety when updating the `_channelUsers` collection. It coordinates with `_mainWindow` and `_conn` collaborators to reflect current online users for the active channel.
+
+---
+
+### GetDownloadDir
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private string GetDownloadDir()
+```
+
+**Returns:** `string`
+
+
+Private helper `GetDownloadDir()` determines where downloads should be written by preferring the configured `ClientConfig.DownloadPath`; if that is not set, it resolves to the OS Downloads folder derived from the current user's profile. It then ensures the directory exists by calling `Directory.CreateDirectory` and, if an exception occurs, logs a warning via `Log.Warning` and falls back to the system temp folder from `Path.GetTempPath()`.
+
+## Remarks
+Centralizes download-path resolution in one place, shielding callers from platform differences and misconfigurations. By performing the directory creation with `Directory.CreateDirectory` and handling failures with a graceful fallback and warning log via `Log.Warning`, this method provides a robust foundation for all download operations and keeps higher-level code focused on business logic.
+
+---
+
+### HandleAudioPlayRequested
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private void HandleAudioPlayRequested(string attachmentUrl, string fileName)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `attachmentUrl` | `string` | — |
+| `fileName` | `string` | — |
+
+**Returns:** `void`
+
+
+Handles a request to play an audio attachment by validating authentication, downloading the file, and presenting playback UI. If authenticated, it runs an asynchronous operation that posts a system message to the current channel indicating download progress, downloads the attachment to a temporary path via `DownloadAttachmentAsync(attachmentUrl, fileName)`, and then marshals back to the UI thread to display the playback dialog with `AudioPlayerDialog.Show(_app, _audioPlayback, tempPath, fileName)`. If anything goes wrong, the operation is reported via the RunAsync error handler with the message `Failed to play audio`.
+
+## Remarks
+This method encapsulates the full user flow for playing an audio attachment, combining authentication guard, background download, and UI orchestration into a single, testable unit. By offloading IO to `RunAsync` and marshaling UI work with `InvokeUI`, it keeps the orchestrator responsive while the file downloads, and then hands off to `AudioPlayerDialog.Show` to present playback. This separation makes it easy to swap the underlying playback UI or the download mechanism without changing the caller.
 
 ## Notes
-- Short-circuits and returns true if the channel doesn't require unlocking or already has a key; otherwise it may present an unlock prompt and potentially abort the send.
-- If unlocking is required, it calls UnlockTrackedChannelAsync and may present a prompt to the user; a declined or failed unlock results in a false return and an error message.
-- It relies on the RoomKeys state and uses UI feedback (via _mainWindow.ShowError) to communicate failures to the user; callers should respect the returned boolean and refrain from sending when false.
+- Silent no-op when `_conn.IsAuthenticated` is false; there is no user-visible feedback in that case.
 
 ---
 
@@ -422,14 +504,13 @@ private void HandleChannelJoinFromMessage(string channelName)
 **Returns:** `void`
 
 
-Responds to a request to join a channel coming from a message by first ensuring the connection is active; if not connected, it exits early. When connected, it marshals execution to the UI thread, guarantees the channel is present in the UI channel list, switches the UI to that channel, and then delegates to HandleChannelSelected to trigger further channel-activation handling.
+HandleChannelJoinFromMessage processes a channel-join request derived from an incoming message. If the connection is active, it marshals the UI work to the main thread via `InvokeUI` to ensure the channel is present in the list (`_mainWindow.EnsureChannelInList(channelName)`) and switches to the channel (`_mainWindow.SwitchToChannel(channelName)`), then delegates to `HandleChannelSelected(channelName)` to perform any downstream selection logic.
 
 ## Remarks
-Acts as the glue between the messaging flow and the UI state. By marshaling to the UI thread and centralizing the sequence of ensuring the channel exists and becomes active, it helps prevent cross-thread issues and keeps the UI in sync with inbound join requests. The subsequent call to HandleChannelSelected ensures that any additional, per-channel activation logic is applied in a single, well-defined step.
+This method acts as a small UI-facing bridge that keeps channel state in sync when a join event arrives from a message. It enforces UI-thread affinity by wrapping updates in `InvokeUI` and centralizes the ordering: connectivity check, UI update, then downstream selection logic via `HandleChannelSelected`.
 
 ## Notes
-- No input validation is performed on channelName here; downstream UI methods may interpret empty or invalid values in different ways. Validate as needed at call-sites if that matters for your scenario.
-- The method is a no-op when not connected, so callers relying on its side effects must ensure connection lifecycle is managed appropriately.
+- Early return on `_conn.IsConnected` being false means join events are ignored until a live connection is established; callers should anticipate that messages about channel joins may be deferred.
 
 ---
 
@@ -450,12 +531,38 @@ private void HandleChannelSelected(string channelName)
 **Returns:** `void`
 
 
-HandleChannelSelected is invoked when a user selects a channel in the client UI. It first verifies the client is connected and returns immediately if it is not; it also clears any pending reply that does not belong to the newly selected channel and persists the last-read positions before switching context.
+HandleChannelSelected coordinates the client’s response when a user selects a channel. If the connection is active, it clears any pending reply for a different channel, persists last-read positions, and then performs the join/unlock/history-refresh flow in the background, updating the UI and online user list.
 
-In the asynchronous workflow that follows, the method attempts to track the selected channel. If tracking succeeds, it prompts for a password as needed and, on a successful join, clears the left-channel exclusion for the joined channel. If the user cancels the password prompt, the channel is untracked and the UI switches back to the default channel. If tracking is not required but an unlock is needed, it triggers an unlock of the tracked channel.
+## Remarks
+`HandleChannelSelected` serves as the central orchestrator for channel switching, merging connection state, channel-tracking behavior, and UI updates. By centralizing this logic, it ensures that selecting a channel results in a consistent state transition: joining with a password when required, unlocking tracked channels when prompted, loading the channel history, and refreshing the list of online users. It also guards against cross-channel carryover of pending replies and read markers to avoid confusing user experiences.
 
-After handling join/unlock, the method tries to retrieve the channel history and load it into the UI; failures to fetch history are ignored. Finally, it refreshes the list of online users.
+## Notes
+- History retrieval failures are swallowed (the `catch` block is empty), so history may be unavailable without crashing the UI.
+- If a user cancels the password prompt for a join, the method untracks the channel and returns the user to the default channel via `HubConstants.DefaultChannel` (and the UI is switched accordingly).
 
+---
+
+### HandleCheckForUpdatesRequested
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private void HandleCheckForUpdatesRequested()
+```
+
+**Returns:** `void`
+
+
+It handles a request to check for updates by starting an asynchronous check via `_updateService.CheckNowAsync`, wrapped in the shared `RunAsync` error-handling helper with the failure message "Failed to check for updates". This method is invoked by the orchestrator in response to a user action or system event requesting an update check, ensuring the call runs asynchronously and failures are surfaced consistently.
+
+## Remarks
+
+This method encapsulates the common pattern of executing an asynchronous operation with centralized error handling. By delegating the actual work to `_updateService` and using the `RunAsync` helper for orchestration, the orchestrator remains decoupled from the details of the update mechanism while still providing a uniform failure experience to the user. It promotes consistent UX for update checks and keeps the orchestration logic tidy by avoiding direct await/try-catch boilerplate in the caller.
+
+## Notes
+
+- The method is private; it is not part of the public API.
+- It does not return a value; it fires off the asynchronous operation and relies on `RunAsync` to handle completion and errors.
 
 ---
 
@@ -477,15 +584,15 @@ private async Task HandleCmdAssignRole(string username, string roleStr)
 **Returns:** `Task`
 
 
-Processes a user-issued command to assign a role to a specific user. It short-circuits when the current connection is not authenticated, preventing unauthorized role changes. It normalizes the incoming role string into a ServerRole enum (admin maps to Admin, mod to Mod, and any other value defaults to Member) and then calls the server API to apply that role to the given username.
+Processes the client-side assign-role command by translating a textual role into the corresponding [`ServerRole`](../EchoHub.Core/Models/ServerRole.cs.md) and invoking the server API to apply it, but only when the connection is authenticated. It resolves `roleStr` via a switch: "admin" becomes `ServerRole.Admin`, "mod" becomes `ServerRole.Mod`, and all other inputs default to `ServerRole.Member`, before calling `_conn.Api!.AssignRoleAsync(username, role)`.
 
 ## Remarks
-Acts as a small wrapper around the underlying API to centralize access control and input normalization for role assignment commands. By guarding the operation behind the authentication check, it ensures only authenticated sessions can modify roles. The conservative default to Member for unknown role strings provides a safe fallback that avoids elevating privileges due to unrecognized input.
+It exists as a small, internal command handler that enforces authentication and translates user input into a server mutation. It centralizes the role-mapping policy and delegates the actual mutation to the server, keeping the command-text parsing separate from server interaction.
 
 ## Notes
-- The operation does nothing if the client is not authenticated.
-- Despite the authentication check, Api is accessed with a null-forgiving operator; if _conn.Api is null, this will throw at runtime. Ensure the API client is initialized alongside authentication.
-- The role default to Member for unknown values can mask invalid input; if explicit validation is desired, this behavior may need to be revisited.
+- Silent no-op when not authenticated may mask misuse; consider returning a status or throwing an exception to signal that authentication is required.
+- Unrecognized role strings default to `ServerRole.Member` — this can hide input errors; consider explicit validation or user feedback.
+- The method uses null-forgiving `_conn.Api!` — ensure `_conn.Api` is initialized post-authentication to avoid a `NullReferenceException`.
 
 ---
 
@@ -507,13 +614,14 @@ private async Task HandleCmdBanUser(string username, string? reason)
 **Returns:** `Task`
 
 
-Handles the ban-user command by ensuring the client is authenticated and then delegating to the API to perform the ban. It accepts a target username and an optional reason; if the current connection is not authenticated, it returns without taking action. When authenticated, it invokes BanUserAsync on the API, passing along the username and reason.
+`HandleCmdBanUser` is a private async command handler that translates a ban command into a backend action. It first ensures the current connection is authenticated (`_conn.IsAuthenticated`). If authenticated, it calls [`BanUserAsync`](Services/ApiClient.cs.md) on `_conn.Api` with the target `username` and optional `reason` to perform the ban.
 
 ## Remarks
-This method acts as a focused command handler: it enforces authentication and delegates the ban operation behind a single, well-defined API boundary. By isolating the authentication gate here, the rest of the command processing remains decoupled from the specifics of how a ban is performed. Any failures from BanUserAsync propagate to the caller, enabling centralized error handling or user feedback at a higher level.
+This symbol serves as the orchestration layer between command input and moderation API calls. By encapsulating the authentication check and the API invocation, it keeps the higher-level command handling clean and focused on input parsing. It relies on the surrounding connection context (`_conn`) to route the request to the moderation API, making it easy to swap or mock the API in tests.
 
 ## Notes
-- Silent return when not authenticated means callers may not observe a failure path for unauthenticated ban attempts; consider logging or surfacing a result if caller feedback is required.
+- The call uses the null-forgiving operator on `_conn.Api` (as shown in `_conn.Api!.BanUserAsync(...)`); if `_conn.Api` can be null after authentication, this may throw at runtime.
+- Exceptions from [`BanUserAsync`](Services/ApiClient.cs.md) will propagate to the caller of `HandleCmdBanUser`; ensure the returned `Task` is awaited to observe failures.
 
 ---
 
@@ -535,15 +643,17 @@ private async Task HandleCmdChangeRoomPassword(string oldPassphrase, string newP
 **Returns:** `Task`
 
 
-Handles the user command to change the end-to-end encryption passphrase for the currently active channel. It validates that the client is authenticated and connected, that a channel is selected and encrypted, and then re-derives the join credentials for both the old and new passphrases. It then asks the backend to re-key the channel by wrapping the cached room key with the new derived key. History remains readable; the room key itself does not change, so previously encrypted content stays decryptable by existing history, while new members/devices must use the new passphrase.
+Changes the current encrypted channel's passphrase by re-deriving the join credential and re-wrapping the cached room content key under the new passphrase. History is never re-encrypted — the room key itself doesn't change.
+
+This private method is the UI action invoked when a user requests to rotate the passphrase for the currently selected end-to-end encrypted channel. It derives the old and new join credentials, re-wraps the room key with the new derived key, and applies the update via the channel API, leaving historical content intact.
 
 ## Remarks
-This function coordinates client state (the current channel and the cached room key) with a server-side RekeyChannelAsync call to effect a passphrase transition. It guards against common failure modes (not authenticated, no channel selected, channel not end-to-end encrypted, missing room key) by showing targeted UI errors. The derived key material (old and new) and a fresh salt ensure that only someone with the new passphrase can wrap/unwrap the room key going forward.
+This logic centralizes the rekey flow in the client orchestrator, ensuring proper preconditions (authenticated and connected, with a current channel selected) and using the existing crypto surface ([`RoomCrypto`](../EchoHub.Core/Security/RoomCrypto.cs.md)) to derive keys and wrap the room key. The actual server-side mutation is performed through `RekeyChannelAsync` on the channel API, which applies the new passphrase consistently for future access while preserving existing history. It relies on `RoomKeys` to locate the channel key before proceeding.
 
 ## Notes
-- If the channel is not end-to-end encrypted or lacks an encryption salt, the operation aborts with a user-facing error.
-- The action requires that the room key for the channel is cached; otherwise the user is prompted to unlock/rejoin the channel.
-- The change does not re-encrypt historical messages; it only re-wraps the room key under the new passphrase, so access for existing history remains intact while access for new participants depends on the new passphrase.
+- It aborts early if the client is not authenticated or not connected, or if no channel is selected.
+- It requires the channel to be end-to-end encrypted and to have a non-null encryption salt; otherwise it reports that the channel is not encrypted.
+- If the channel key cannot be retrieved (e.g., the channel is not unlocked), it prompts the user to unlock the channel first and retry.
 
 ---
 
@@ -558,27 +668,14 @@ private Task HandleCmdClearAttachments()
 **Returns:** `Task`
 
 
-Clears the currently staged attachments, removing any files that are also present in the temporary pasted set, cleans up their temporary copies, clears the staging collection, and refreshes the staging UI. Invoke this when the user requests to discard all attachments added during the current operation; it centralizes the cleanup logic to keep in-memory state and the UI in sync.
+Clears the currently staged attachments as part of handling the 'Clear Attachments' command, removing any matching temporary pasted files, performing cleanup, and resetting the in-memory staging state. It returns a completed `Task` to align with asynchronous call patterns while performing the work synchronously.
 
 ## Remarks
-
-This method coordinates between in-memory state (_stagedAttachments), the temporary-file tracking (_tempPastedFiles), and the UI update path (InvokeUI(RefreshStagingTray)). By encapsulating the cleanup sequence, callers avoid duplicating disposal and UI-refresh logic, and it guarantees that temporary files created for pasted content are removed in tandem with the in-memory state.
-
-## Example
-
-```csharp
-// Example usage within the same class
-private async Task DemoClearAttachmentsUsage()
-{
-    await HandleCmdClearAttachments();
-}
-```
+This method centralizes the cleanup sequence for the attachment staging area: it computes the intersection of `_stagedAttachments` with `_tempPastedFiles`, removes those temps from `_tempPastedFiles`, calls `CleanupPastedTempFiles(temps)`, clears `_stagedAttachments`, and refreshes the UI via `InvokeUI(RefreshStagingTray)`.
+By coupling these steps in one place, the rest of the UI command handlers benefit from a consistent cleanup path, reducing risk of leaks or stale UI state. It also makes the intent explicit: clearing attachments is a single, atomic operation from the user's perspective.
 
 ## Notes
-
-- The method returns Task.CompletedTask, so from a caller's perspective it is effectively synchronous; awaiting it does not introduce real asynchronous work.
-- If other code mutates _stagedAttachments or _tempPastedFiles concurrently, results may be inconsistent; this method assumes a single-threaded (UI) invocation context.
-- If CleanupPastedTempFiles(temps) throws, the task will fault; callers should consider exception handling around the command invocation.
+- This operation discards all staged attachments; any unsaved items will be removed and cannot be recovered.
 
 ---
 
@@ -600,16 +697,13 @@ private Task HandleCmdCreateInvite(int? maxUses, int? expiresHours)
 **Returns:** `Task`
 
 
-Creates a channel-scoped invite by calling the API with the optional maxUses and expiresHours and displays the resulting code in the current channel; it includes uses, an optional expiry, and a tip to revoke with a slash command. If the user is not authenticated or there is no current channel, it exits early and performs the work asynchronously to keep the UI responsive.
+HandleCmdCreateInvite is a private command handler that orchestrates the creation of a channel invite. When invoked, it first checks that the user is authenticated (`_conn.IsAuthenticated`) and that there is a current channel (`_mainWindow.CurrentChannel`); if both preconditions hold, it runs an asynchronous flow that calls the API (`_conn.Api!.CreateInviteAsync(maxUses, expiresHours)`) to obtain an invite, and upon success formats an optional expiry from `invite.ExpiresAt` and posts a system message to the channel with the invite code, allowed uses, expiry if present, and a reminder to revoke the invite via `/invite revoke {invite.Code}`.
 
 ## Remarks
-This method orchestrates authentication state, UI context, and remote API to provide a seamless command experience. It isolates the network call and UI update from the main thread using RunAsync, reducing UI latency and potential blocking, while presenting the user with a clear revoke path to manage the created invite.
+HandleCmdCreateInvite encapsulates the end-to-end flow of invite generation in the UI, coordinating authentication state, channel context, API interaction, and user notification. It relies on the components `_conn`, `_mainWindow`, `_messageManager`, and the helper `RunAsync` to perform the work without blocking the UI thread, keeping the command-handling logic focused and testable.
 
 ## Notes
-- Relies on _conn.Api being non-null after authentication; if that invariant is violated, the null-forgiving operator may lead to a NullReferenceException.
-- The expiry timestamp is formatted in local time when available, via ToLocalTime with the pattern "yyyy-MM-dd HH:mm".
-- The outer method returns Task.CompletedTask immediately; the actual invite creation and UI update run asynchronously, so callers should not expect any awaitable work from this method.
-
+- If the API becomes unexpectedly null while authenticated, the null-forgiving usage `_conn.Api!` could throw; ensure API initialization is tightly coupled with the authentication state.
 
 ---
 
@@ -624,9 +718,10 @@ private Task HandleCmdDeleteAccount()
 **Returns:** `Task`
 
 
-Deletes the currently authenticated user’s account from the server as part of the user command workflow. It first ensures the client is authenticated, presents a destructive confirmation dialog explaining that the account will be permanently removed (including profile, sessions, and uploaded files, with messages remaining attributed to 'deleted-user'), and only proceeds if the user confirms. If confirmation is given, it prompts for the account password, then asynchronously performs the deletion via the server API, clears saved tokens for the server, and performs cleanup. On success, the UI is reset (main window cleared, status set to Disconnected) and the user is informed that the account and uploaded data have been deleted.
+HandleCmdDeleteAccount coordinates the user-initiated account-deletion workflow. It first ensures the client is authenticated via `_conn.IsAuthenticated` and aborts with `Task.CompletedTask` if not; it then presents a warning dialog explaining that deleting the account permanently removes the user on this server (including profile, sessions, and uploads) while leaving messages attributed to 'deleted-user'. If the user confirms and provides a `password`, the handler proceeds asynchronously: it calls `_conn.Api!.DeleteMyAccountAsync(password)`, clears the saved token for the current `baseUrl` with `ClearSavedToken(baseUrl)`, performs cleanup via `_conn.CleanupAsync()`, and updates the UI to reflect a disconnected state and to display an "Account Deleted" confirmation."
 
-The operation is designed to run asynchronously to keep the UI responsive and to encapsulate the end-to-end flow of a high-risk action within a single command handler.
+## Remarks
+HandleCmdDeleteAccount centralizes the end-to-end destructive flow in a single, private handler, ensuring a consistent user experience from confirmation to disconnection. The operation is carried out asynchronously (via `RunAsync` and `InvokeUI` for UI thread marshalling), preserving UI responsiveness while performing server-side deletion and thorough cleanup of session state. This tight coupling of authentication check, user confirmation, credential handling, server API invocation, token invalidation, and UI refresh helps avoid partial/inconsistent states around a critical, irreversible action.
 
 ---
 
@@ -641,15 +736,7 @@ private Task HandleCmdExportData()
 **Returns:** `Task`
 
 
-Exports the authenticated user\'s data by calling the server API and writing the resulting JSON to a timestamped file in the local downloads directory. The file is named echohub-export-{username}-{yyyyMMdd-HHmmss}.json to avoid collisions. The operation runs asynchronously so the UI remains responsive. After the file is created, a system message is posted to the current channel (if any) indicating the destination path and clarifying that the content is ciphertext and the server never had plaintext.
-
-## Remarks
-The method centralizes the data-export workflow behind a command handler, encapsulating authentication gating, local persistence, and user feedback. It ensures the UI remains responsive by offloading work to an asynchronous runner and then dispatching a UI update once the export completes. This abstraction keeps the channel-communication logic separate from the networking and file-system concerns, making the export action reusable from the UI command surface.
-
-## Notes
-- The final user notification is sent only when a non-empty channel is present; otherwise, no in-channel message is posted.
-- If authentication fails, the method completes without performing the export, avoiding unnecessary work or side effects.
-- The exported payload is treated as ciphertext in the UI message, reflecting that the server-side data is not plaintext within the export artifact.
+HandleCmdExportData exports the authenticated user's data to a local file by guarding against unauthenticated invocations, then asynchronously fetching the data via [`ExportMyDataAsync`](Services/ApiClient.cs.md), writing it to a timestamped file named `echohub-export-{_session.Username}-{DateTime.Now:yyyyMMdd-HHmmss}.json` in the download directory after deduplication with `DedupPath(GetDownloadDir(), fileName)`, and finally posting a system message in the current channel with the file path and a ciphertext disclaimer.
 
 ---
 
@@ -671,16 +758,16 @@ private async Task HandleCmdJoinChannel(string channelName, string? password)
 **Returns:** `Task`
 
 
-Handles the user command to join a channel by validating the connection, prompting for a password when required, removing any left-channel exclusion for the channel on success, updating the UI to include and switch to the channel, and loading previous history if available. It is invoked as part of the command execution flow when a user requests to join a channel, encapsulating the join logic and related UI updates in one place.
+HandleCmdJoinChannel is the central handler for a user-initiated join-channel action. It ensures the client is connected, invokes a password prompt via `JoinChannelWithPasswordPromptAsync`, and, if a non-null history is returned, clears any prior left-channel exclusion from `LeftChannels` before updating the UI to list and switch to the channel and loading its history.
 
 ## Remarks
-It centralizes the channel-join flow in AppOrchestrator, coordinating connection state, password prompting, server configuration, and UI navigation. By clearing the left-channel exclusion on join (RemoveAll with a case-insensitive match), it ensures a fresh entry for the channel. UI updates are dispatched to the main thread via InvokeUI, and history loading is triggered when available, keeping the user experience cohesive even when past sessions exist.
+This method coordinates cross-cutting concerns across connection state, server configuration, and the user interface. It encapsulates the complete join flow: validating connectivity, obtaining necessary credentials, mutating the server-side exclusion list so the channel can be rejoined, and driving UI navigation and history display. By handling errors centrally (showing a user-facing error via the main window), it provides a consistent UX and keeps the join logic isolated from higher-level command parsing.
 
 ## Notes
-- Skips work if there is no active connection; the method exits early when _conn.IsConnected is false.
-- If the password prompt is canceled (history is null), the join is aborted without altering server state or UI.
-- The cleanup of LeftChannels uses a case-insensitive match to ensure the channel name is removed regardless of casing.
-- Exceptions are caught and shown to the user via the main window, which prevents the app from crashing but may hide internal details.
+- If `history` is `null`, the operation is considered cancelled (e.g., the user dismissed the password prompt) and no side effects occur. 
+- The removal from `LeftChannels` uses `StringComparison.OrdinalIgnoreCase`, making the operation robust to channel name casing.
+- All UI updates are dispatched via `InvokeUI` to marshal work to the UI thread; exceptions during this path surface to the user through [`ShowError`](UI/MainWindow.cs.md).
+
 
 ---
 
@@ -702,15 +789,14 @@ private async Task HandleCmdKickUser(string username, string? reason)
 **Returns:** `Task`
 
 
-Handles the Kick User command by delegating to the underlying API to remove a user from the session. Before performing the kick, it checks that the connection is authenticated; if not, it exits without taking action. When authenticated, it calls KickUserAsync on the API, passing the target username and the optional reason. This method centralizes the guard logic and the actual kick call under a single handler, so higher-level command processing can rely on a single moderation action point rather than invoking the API directly.
+Kick a user command handling is performed by this private asynchronous method. It first checks the current authentication state via `_conn.IsAuthenticated` and exits early if the client is not authenticated; when authenticated, it delegates the kick operation to the remote API by calling `_conn.Api!.KickUserAsync(username, reason)` with the target `username` and an optional `reason`.
 
 ## Remarks
-Acts as a boundary between command parsing and server-side moderation actions. It ensures that only authenticated sessions can initiate a kick, preventing unauthorized disruptions. The use of the null-forgiving operator on Api implies the API instance is expected to be non-null once authentication is established; this contract should be preserved by the surrounding code.
+By encapsulating the command-handling path and delegating the actual removal to `_conn.Api!.KickUserAsync`, this method keeps the orchestrator focused on command flow while isolating API interaction behind a single channel. It enforces an authentication check before issuing the kick, preventing unauthorized attempts from progressing in the command pipeline. The private scope signals that this logic is internal to the orchestrator and should not be invoked directly from external callers.
 
 ## Notes
-- Be aware that Api is accessed with the null-forgiving operator, so a non-null Api is required after authentication; otherwise a NullReferenceException may be thrown.
-- Exceptions from KickUserAsync propagate to the caller; callers may need to catch and handle errors (e.g., log failures or surface user-visible errors).
-- The reason parameter is optional; passing null means no reason will be recorded.
+- The code uses the null-forgiving operator on `_conn.Api` to assume a non-null API client after authentication. If `_conn.Api` could be null in certain states, this could throw a `NullReferenceException` when calling [`KickUserAsync`](Services/ApiClient.cs.md).
+
 
 ---
 
@@ -725,16 +811,13 @@ private async Task HandleCmdLeaveChannel()
 **Returns:** `Task`
 
 
-Handles the user command to leave a channel. It exits early when not connected or when no channel is selected, blocks leaving the default channel, calls LeaveChannelAsync, records the leave in the server configuration's LeftChannels so auto-join won't pull you back in, and posts a system message confirming the departure. If something goes wrong, it reports the error to the UI.
+HandleCmdLeaveChannel is the asynchronous command handler that leaves the currently selected channel when the client is connected and the channel is not the default one (`HubConstants.DefaultChannel`). It delegates the actual leave to `_conn.LeaveChannelAsync(channel)`, and on success persists the departure by adding the channel to the server configuration’s `LeftChannels` (via `UpdateServerConfig`) using a case-insensitive check (`StringComparer.OrdinalIgnoreCase`) to avoid duplicates, then informs the user with a system message through `_messageManager.AddSystemMessage`. If an error occurs, it surfaces a failure message via `_mainWindow.ShowError`.
 
 ## Remarks
-Coordinates UI feedback, connection state, and user preferences. It separates the transient action of leaving a channel from the persistent config, ensuring the user's choice is remembered and doesn’t get undone by auto-join logic on reconnect. The UI thread marshalling via InvokeUI and the defensive checks guard against invalid states and repeated leaves.
+This method acts as the orchestrator between the connection layer, persistent configuration, and the UI. By recording the channel in `LeftChannels`, it preserves the user’s intent across restarts and prevents automatic re-entry during subsequent connections. UI updates are marshalled to the main thread with `InvokeUI`, ensuring thread-safety when the operation completes asynchronously.
 
 ## Notes
-- If the user is not connected or no channel is selected, the method returns without side effects.
-- Leaving the DefaultChannel is explicitly blocked to avoid breaking the core chat experience.
-- LeftChannels is updated using a case-insensitive check (OrdinalIgnoreCase) to deduplicate and persist the user's choice across sessions.
-- Any exception during LeaveChannelAsync is surfaced to the user via ShowError.
+- `LeftChannels` updates use `StringComparer.OrdinalIgnoreCase` to avoid duplicates regardless of channel name casing.
 
 ---
 
@@ -749,17 +832,10 @@ private Task HandleCmdListInvites()
 **Returns:** `Task`
 
 
-After verifying authentication and a current channel, this method fetches invite codes from the API, formats each invite’s usage and state into a readable list, and posts the result as a system message to the active channel. If no invites exist, it guides the user on how to create one.
+If the user is authenticated and a channel is selected, `HandleCmdListInvites` fetches invite codes with `_conn.Api!.GetInvitesAsync()` and builds a human-readable summary listing each invite's `Code` and `UseCount`/`MaxUses`, annotating state as `used up`, `expired`, `expires <date>`, or `active` depending on expiry and usage. The resulting text is then posted to the current channel as a system message via `InvokeUI(() => _messageManager.AddSystemMessage(channel, text))`.
 
 ## Remarks
-
-Serves as the UI-facing adapter for the invite-list feature by coordinating API access, formatting, and UI updates. Each invite is categorized as used up, expired, or active based on UseCount, MaxUses, and ExpiresAt: used up when UseCount >= MaxUses; expired when ExpiresAt has a value and is in the past; otherwise active. If ExpiresAt has a value, the expiration date is shown in local time using the format yyyy-MM-dd HH:mm. The multi-line message is posted to the channel via InvokeUI to ensure thread-safety, and failures are surfaced by RunAsync with the message Failed to list invites.
-
-## Notes
-
-- Early exits guard: returns Task.CompletedTask if not authenticated or there is no current channel, preventing API calls or UI updates.
-- The method accesses _conn.Api using the null-forgiving operator, which assumes Api is non-null after authentication.
-- Expiration handling relies on ExpiresAt being present to show an expiration timestamp and formats it using local time; if ExpiresAt is null, the invite is considered active unless UseCount/MaxUses dictate otherwise.
+This symbol acts as a presentation conduit for invites and keeps UI-thread interaction isolated from the data fetch by wrapping the operation in `RunAsync`. It enforces simple preconditions via `_conn.IsAuthenticated` and a non-empty `channel` to avoid unnecessary network calls. The per-invite state logic encodes the business rules for visibility: `used up` when `i.UseCount >= i.MaxUses`, `expired` when `i.ExpiresAt` exists and is in the past, `expires <date>` when a future expiry exists (formatted in local time as `yyyy-MM-dd HH:mm`), or `active` otherwise.
 
 ---
 
@@ -774,15 +850,15 @@ private async Task HandleCmdListUsers()
 **Returns:** `Task`
 
 
-HandleCmdListUsers retrieves and displays the list of online users for the currently selected channel when the client is connected. It requests the online user list from the underlying connection and then updates the UI to present each user with their display name (falling back to username) and their status, including any status message. If there is no active connection or no channel selected, the method exits without performing work; any error during retrieval or UI update is caught and reported to the user.
+HandleCmdListUsers fetches the online users for the currently selected channel when the client is connected and renders them as system messages in the channel UI. It guards against missing connection or channel, retrieves the users via `_conn.GetOnlineUsersAsync(channel)`, and uses `InvokeUI` to add a header line and a per-user entry that shows the user’s `DisplayName` (falling back to `Username`) and their `Status` (plus optional `StatusMessage`).
 
 ## Remarks
-By centralizing the command handling for listing users, this method cleanly separates networking concerns from UI rendering. It uses InvokeUI to marshal updates to the main thread, ensuring thread-safety when modifying the UI. The rendered output displays a header indicating the channel, followed by one line per user that shows a display name and a textual status, including any optional status message when present.
+This method acts as a small bridge between the connection service and the UI layer. By performing an asynchronous fetch and then marshaling the results onto the UI thread, it isolates the command's intent—listing channel presence—from the details of how messages are rendered, promoting consistency across similar commands and making it easier to reason about threading and error handling in the UI-bound flow.
 
 ## Notes
-- Guards against no connection or empty channel by returning early, making the call effectively a no-op in those cases.
-- All exceptions during retrieval or UI updates are caught and surfaced to the user via a dialog, preventing crashes.
-- The rendering relies on Status.ToString(); ensure Status is non-null in your UserSession model or guard accordingly to avoid potential NullReferenceException.
+- The status line for each user uses `Status` (converted to string) and conditionally appends `StatusMessage` when it is present, providing richer presence information without clutter when there is no message.
+- The method gracefully handles scenarios where there is no active connection or no channel selected by returning early, avoiding unnecessary work or exceptions.
+- All UI updates are performed through `InvokeUI` to ensure they execute on the UI thread, preserving thread-safety for `_messageManager` and the main window.
 
 
 ---
@@ -798,15 +874,15 @@ private async Task HandleCmdMeta()
 **Returns:** `Task`
 
 
-Fetches the current channel's metadata from the API and renders a concise room-info block in the chat UI. The method only runs when the client is connected and a channel is selected, and it gracefully handles missing metadata or API errors by reporting them to the user.
+Fetches and displays room metadata for the currently selected channel when a connection is active. It retrieves the channel name from `_mainWindow.CurrentChannel`, calls `_conn.Api.GetChannelMetaAsync(channel)` to obtain metadata, and, if found, renders a concise room-info panel including topic, room ID, creation time, message count, unique users, estimated size, and protection status; if not found or an error occurs, it reports an error to the user.
 
 ## Remarks
-This symbol acts as the UI-facing bridge between the network layer and the chat view, encapsulating the logic to fetch channel metadata and translate raw values into human-friendly text. It centralizes formatting decisions (such as the estimated size display and the protection status label) and ensures all UI updates occur on the UI thread through InvokeUI, preventing cross-thread UI mutations. By using early returns for preconditions and clear error signaling, it keeps the UI responsive and predictable even when the channel information cannot be retrieved.
+This method encapsulates the UI-driven flow for presenting server-provided channel metadata. It coordinates the network fetch, null-checks, and UI updates via `InvokeUI` to ensure the information is shown on the correct thread, and it formats the display values (for example, the estimated size using `ChatMessageManager.FormatFileSize` and the creation time via `CreatedAt.ToLocalTime()`).
 
 ## Notes
-- If meta.EstimatedSizeBytes <= 0, the size is displayed as "0 B"; otherwise the value is converted via FormatFileSize to a human-friendly string.
-- When the API returns null for the channel metadata, the method surfaces a user-facing error {Channel #<channel>} not found to avoid throwing.
-- All UI updates are dispatched to the UI thread via InvokeUI to maintain thread safety during cross-thread operations.
+- The method guards its core path with `_conn.IsConnected` and a non-null `_conn.Api`, returning early otherwise.
+- If `GetChannelMetaAsync` returns `null`, a user-facing error like "Channel #<channel> not found." is shown.
+- Exceptions are caught and surfaced to the user through a UI error message, so callers should not rely on exceptions propagating from this method.
 
 
 ---
@@ -829,15 +905,15 @@ private async Task HandleCmdMuteUser(string username, int? duration)
 **Returns:** `Task`
 
 
-Handles the mute-user command by delegating to the API after ensuring the client is authenticated. If the client is not authenticated, it exits early without performing any action.
+Handles the command to mute a user by validating authentication and delegating to the server-side API to apply the mute for the optional duration. The operation short-circuits when the client is not authenticated and, when authenticated, forwards the `username` and `duration` to the server via `_conn.Api!.MuteUserAsync(username, duration)`.
 
 ## Remarks
-This method serves as a small glue layer between command-handling logic and the backend API. It enforces the precondition that only authenticated sessions can mute users and centralizes that guard in one place. The actual mute action is performed by the Api.MuteUserAsync call; the code uses the null-forgiving operator on Api, which implies Api must be non-null when IsAuthenticated is true.
+This method is a focused wrapper around the server mutation that enforces a simple client-side security boundary: authentication must be established before muting. It coordinates between the orchestrator's connection state (`_conn`) and the server API (`_conn.Api`). If the invariant that `_conn.IsAuthenticated` implies a non-null `_conn.Api` is violated, this method can throw a `NullReferenceException`.
 
 ## Notes
-- Silent no-op when not authenticated means callers may not see feedback; consider surfacing an explicit denial to the user at the call site.
-- The null-forgiving operator on Api implies Api must be initialized for authenticated sessions; a mismatch could throw NullReferenceException.
-- There is no cancellation support in this path; the caller cannot cancel the operation here.
+- The operation short-circuits on unauthenticated state: if `!_conn.IsAuthenticated`, the method returns immediately without calling the server.
+- It uses the null-forgiving operator on `_conn.Api` (`_conn.Api!`) which assumes the API is non-null after authentication; if this invariant is violated, a `NullReferenceException` may be thrown.
+- No validation is performed on `username` or `duration` at this layer; callers or the server should enforce any required constraints.
 
 ---
 
@@ -852,21 +928,41 @@ private async Task HandleCmdNukeChannel()
 **Returns:** `Task`
 
 
-This private async method performs a destructive operation on the currently selected channel by calling NukeChannelAsync on the authenticated API. It first ensures there is an authenticated connection and a non-empty channel; if either condition is not met, it returns early. Otherwise, it invokes the server-side NukeChannelAsync with the selected channel.
+HandleCmdNukeChannel is a private asynchronous command handler that triggers a channel-nuke operation for the currently selected channel. It validates preconditions by ensuring the user is authenticated and a channel is selected, then delegates to `_conn.Api!.NukeChannelAsync(channel)` to perform the action; if preconditions are not met, it exits without issuing a request.
 
 ## Remarks
-This method encapsulates the preconditions required to perform a channel-nuke, keeping the UI-orchestrator code free from direct API calls. It acts as a gatekeeper, ensuring that only an authenticated user with a selected channel can trigger the destructive server-side operation. The actual deletion is delegated to the API via NukeChannelAsync; thus, changes to the nuking behavior should be made at the API level.
-
-## Example
-```csharp
-// Example usage from within the same class
-await HandleCmdNukeChannel();
-```
+Centralizes precondition checks for a destructive action and encapsulates the invocation pattern for nuking a channel, aiding consistency across UI commands and simplifying testing. It reads the target channel from `_mainWindow.CurrentChannel` and relies on `_conn.IsAuthenticated` to gate the API invocation, delegating the actual work to the API client. This separation makes unit testing easier by isolating the orchestration logic from the network call.
 
 ## Notes
-- The method relies on _conn.IsAuthenticated and a non-empty current channel; if _conn.Api is null at this point, the null-forgiving access (_conn.Api!) could produce a NullReferenceException. Ensure the API surface is initialized after authentication.
-- The operation is destructive; it intentionally performs a server-side action only when preconditions are satisfied, and it swallows precondition failures by returning early without throwing.
-- This method does not guard against changes to authentication or channel state between the precondition checks and the API call, so consider synchronization if those state changes can occur concurrently.
+- Be aware that the call uses `_conn.Api!`, so if the API client is not initialized even when authenticated, a `NullReferenceException` can occur.
+- Exceptions from [`NukeChannelAsync`](Services/ApiClient.cs.md) are not handled here and will bubble to the caller.
+
+---
+
+### HandleCmdOpenProfile
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private Task HandleCmdOpenProfile(string? username)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `username` | `string?` | — |
+
+**Returns:** `Task`
+
+
+Acts as a compact command handler that opens the profile view for the given `username`. It forwards the request to the UI layer by scheduling `HandleViewProfile(username)` through `InvokeUI`, and returns `Task.CompletedTask` to satisfy its asynchronous contract.
+
+## Remarks
+This method acts as a UI-thread orchestration boundary: it guarantees that `HandleViewProfile` executes on the UI thread via `InvokeUI`, while keeping the command logic separate from view navigation. By returning a completed `Task`, it preserves an async-compatible signature without awaiting the UI action, which helps keep the caller's flow linear and testable.
+
+## Notes
+- The returned `Task` is completed immediately; the actual profile opening occurs on the UI thread and is not awaited by the caller.
 
 ---
 
@@ -881,15 +977,13 @@ private Task HandleCmdOpenServers()
 **Returns:** `Task`
 
 
-Dispatches a UI action to open the saved servers UI by invoking HandleSavedServersRequested on the UI thread, and returns a completed Task. It acts as a command-handling bridge that does not perform long-running work itself, delegating the actual UI work to the UI layer.
+Handles the Open Servers command by dispatching the UI operation to show saved servers. It forwards to `HandleSavedServersRequested` via `InvokeUI` and returns `Task.CompletedTask`, making it a minimal adapter in the command pipeline that ensures the UI logic runs in the proper context.
 
 ## Remarks
-Helps keep command-handling code decoupled from UI-thread specifics. This abstraction lets the orchestrator trigger UI flows without assuming any UI state or thread affinity, and it centralizes the UI-dispatch pattern via InvokeUI.
+It acts as a small bridge between the command-handling path and the UI flow, ensuring the actual UI logic runs on the appropriate UI thread via `InvokeUI`. Because it returns `Task.CompletedTask`, the method itself does not perform asynchronous work; any long-running processing must be offloaded inside `HandleSavedServersRequested` or its downstream actions.
 
 ## Notes
-- The returned Task is completed immediately; the actual UI work runs asynchronously on the UI thread.
-- Exceptions raised by HandleSavedServersRequested are not propagated through the returned Task and should be handled within the UI path.
-- This method is private and intended for internal orchestration; callers should not rely on its Task representing the completion of the UI action.
+- Avoid UI-thread blocking: this wrapper returns immediately; long-running work should not run on the UI thread; if `HandleSavedServersRequested` starts long tasks, ensure they are offloaded appropriately.
 
 ---
 
@@ -904,15 +998,13 @@ private Task HandleCmdQuit()
 **Returns:** `Task`
 
 
-HandleCmdQuit is a private command handler that initiates application shutdown by marshaling a stop request to the UI thread and returning a completed Task. It is intended for quit commands where the actual stop must be executed within the UI context.
+Handles the quit command by marshaling a stop request to the UI thread through `InvokeUI`, which executes `_app.RequestStop()`. It then returns `Task.CompletedTask`, allowing callers to continue asynchronously while the application shutdown proceeds on the UI thread.
 
 ## Remarks
-By funneling the stop through InvokeUI, this symbol ensures the shutdown sequence runs on the UI thread, preventing cross-thread access issues. It centralizes quit behavior in the orchestrator, keeping UI concerns isolated from the command-processing path. The method returns a completed Task to maintain an asynchronous signature, while the actual stopping occurs asynchronously on the UI thread via RequestStop. If the UI thread handling fails, the shutdown may surface as an exception in that context.
+This tiny wrapper ensures the quit action is performed on the UI thread, preventing cross-thread access issues when altering the application's stopping state. By returning a completed `Task`, it preserves an async-friendly signature without awaiting the (potentially long) shutdown sequence.
 
 ## Notes
-- It does not await the stop; the caller should not assume the application is fully stopped after this method returns.
-- Exceptions during UI marshaling or in the UI thread may propagate outside this method.
-- Assumes _app is non-null and that RequestStop is safe to call on the UI thread.
+- The returned `Task` completes immediately; the actual stop is performed on the UI thread via `_app.RequestStop()`, so awaiting this method does not wait for shutdown to finish.
 
 ---
 
@@ -933,10 +1025,13 @@ private Task HandleCmdRevokeInvite(string code)
 **Returns:** `Task`
 
 
-HandleCmdRevokeInvite revokes an invite by code when the user issues the revoke command. It first ensures the client is authenticated and that a channel is currently selected; if either check fails, it completes without performing any action. When both conditions are met, it runs the revoke operation asynchronously against the API and, after revocation, inserts a system message into the active channel confirming that the invite has been revoked, using the code formatted in upper-case via ToUpperInvariant().
+HandleCmdRevokeInvite processes the revoke invite command by validating authentication (`_conn.IsAuthenticated`) and the current channel (`_mainWindow.CurrentChannel`); if both conditions are met, it revokes the invite via `_conn.Api!.RevokeInviteAsync(code)` and posts a channel system message: `Invite {code.ToUpperInvariant()} revoked.`.
 
 ## Remarks
-Encapsulates the command-handling concerns for invites by coordinating authentication state, channel context, API invocation, and UI feedback. The early returns prevent unnecessary API calls and potential exceptions in invalid contexts. Using RunAsync ensures the UI remains responsive and that failures surface with a clear error message ("Failed to revoke invite").
+Conceptually, it serves as a bridge between user input, network action, and channel feedback. It uses `RunAsync` to perform the revoke without blocking the UI thread and `InvokeUI` to surface the confirmation via `_messageManager.AddSystemMessage` in the active channel. It relies on `_conn.Api` being non-null after authentication and on `_mainWindow.CurrentChannel` providing a valid destination; if those preconditions are missing, the method is a no-op.
+
+## Notes
+- Uses `_conn.Api!` (null-forgiving) to call [`RevokeInviteAsync`](Services/ApiClient.cs.md); if `Api` is null, this can throw.
 
 ---
 
@@ -957,14 +1052,10 @@ private Task HandleCmdSendAction(string text)
 **Returns:** `Task`
 
 
-HandleCmdSendAction orchestrates sending a CTCP ACTION message to the currently selected channel. It guards against being disconnected or lacking a channel, and when invoked, schedules a background send that first unlocks the room for sending and then dispatches the formatted action payload through the established connection, preserving the encryption used for ordinary messages.
+HandleCmdSendAction processes a CTCP ACTION command (the /me action) by routing it through the standard message path. It validates that there is an active `_conn` connection and a non-empty current channel, returning immediately otherwise; when both exist, it uses `RunAsync` to asynchronously ensure the room is unlocked via `EnsureRoomUnlockedForSendAsync` and then sends the formatted action with `_conn.SendMessageAsync(channel, MessageConventions.FormatAction(text))`, so CTCP content benefits from the same encryption and sending pipeline as regular messages.
 
 ## Remarks
-This method centralizes the CTCP ACTION sending logic: it validates the connection and channel state, formats the action text using the project’s action conventions, and routes the payload through the same encrypted send path used for regular messages. By gating the unlock step with EnsureRoomUnlockedForSendAsync, it respects per-channel locking and avoids sending actions to rooms that are not ready for sending. The CTCP ACTION content therefore benefits from the same encryption, routing, and error handling as normal messages.
-
-## Notes
-- The actual network send is performed asynchronously inside RunAsync; failures surface through the RunAsync error path with the message 'Send failed'.
-- If EnsureRoomUnlockedForSendAsync(channel) returns false, no message is sent; the operation aborts gracefully.
+This abstraction centralizes CTCP ACTION formatting via `MessageConventions.FormatAction` and guarantees that action content is subject to the same encryption and room-state checks as normal messages, preventing edge cases where an action could bypass the standard safeguards.
 
 ---
 
@@ -985,16 +1076,15 @@ private Task HandleCmdSendBanner(string text)
 **Returns:** `Task`
 
 
-Handles the user command to render and send an ASCII banner to the currently selected channel. It validates connectivity and a non-empty channel, renders the banner via AsciiBannerService.Render, and, if rendering succeeds, dispatches a background task to ensure the room is unlocked before sending the banner over the active connection. If rendering yields nothing, it surfaces a UI error detailing the allowed characters and the maximum input length sourced from AsciiBannerService.MaxInputLength.
+Handles the banner sending workflow: it returns early if `_conn.IsConnected` is false or the current channel (obtained from `_mainWindow.CurrentChannel`) is null or empty; otherwise it renders the ASCII banner from the input text with `AsciiBannerService.Render(text)` and, if rendering yields `null`, shows an error via `InvokeUI` about allowed characters and the maximum input length (`AsciiBannerService.MaxInputLength`) before returning. When rendering succeeds, it schedules an asynchronous operation with `RunAsync` that first awaits `EnsureRoomUnlockedForSendAsync(channel)` and, if that succeeds, sends the banner with `_conn.SendMessageAsync(channel, banner)`.
 
 ## Remarks
-Consolidates the end-to-end flow from user command to network transmission by coordinating the UI layer, the ASCII banner renderer, and the messaging connection. It delegates permission checks to EnsureRoomUnlockedForSendAsync and offloads the actual send to a background task via RunAsync, preserving UI responsiveness and isolating concerns among rendering, validation, and transport.
+This method acts as a focused orchestrator bridging UI feedback, banner rendering, and network dispatch. By delegating rendering to [`AsciiBannerService`](../EchoHub.Core/Services/AsciiBannerService.cs.md) and gating the actual send behind `EnsureRoomUnlockedForSendAsync`, it keeps concerns separated and avoids blocking the UI thread. It relies on `InvokeUI` to marshal error messages to the UI thread for a responsive user experience.
 
 ## Notes
-- Early exits (not connected or no channel) return immediately without user-facing feedback.
-- Rendering failures produce a user-facing error rather than throwing, tying the UX to the banner rendering service.
-- The error message reflects AsciiBannerService.MaxInputLength, tying user feedback to the configured rendering limits.
-- The banner is sent only after EnsureRoomUnlockedForSendAsync(channel) confirms the room is unlocked.
+- Early exits occur when `_conn.IsConnected` is false or the current channel is empty; the method completes with no exception. 
+- If rendering fails, the user receives a UI error explaining the allowed characters and the maximum input length via `AsciiBannerService.MaxInputLength`. 
+- The actual send is performed asynchronously within `RunAsync` and is labeled with the failure caption "Send failed" to aid troubleshooting.
 
 ---
 
@@ -1016,17 +1106,7 @@ private Task HandleCmdSendFile(string target, string? size)
 **Returns:** `Task`
 
 
-Handles the /send command to attach local files or transmit a URL to the current chat channel, validating authentication and a selected channel; URLs are sent immediately for non-encrypted channels while local files are staged for a single subsequent message up to the attachment limit, and any provided size flag updates the default ASCII size for future sends.
-
-## Remarks
-
-URLs are sent immediately when allowed by the channel's encryption state, bypassing the staging area; local files are queued in a staging collection and dispatched together with a caption when the user confirms. This separation ensures encrypted channels remain protected and enforces HubConstants.MaxAttachmentsPerMessage to prevent oversized messages; UI refresh via the staging tray keeps the user informed of what will be sent.
-
-## Notes
-
-- URL sends are blocked in encrypted channels; users see an error guiding them to download the file and send it instead.
-- If the user is not authenticated, not connected, or no channel is selected, the method returns a completed task without user feedback.
-- The ASCII size flag updates a global default for subsequent sends rather than applying to the current staged set.
+HandleCmdSendFile orchestrates sending a target from the UI by validating preconditions, distinguishing between a URL and a local file, and routing the action accordingly. It first bails out early if the connection is not authenticated or not active, and if there is no current channel selected. If the target resolves to a HTTP(S) URL (detected via `Uri.TryCreate(target, UriKind.Absolute, out var uri)` with a scheme of `http` or `https`), the method attempts to send the URL through the API by invoking `_conn.Api!.SendUrlAsync(channel, target, size)` inside a background `RunAsync` task, but only when the current channel has no room keys and is not encrypted; otherwise it shows an error message stating that sending by URL isn\'t available in encrypted channels. For local files, it enforces a maximum per-message attachment limit using `HubConstants.MaxAttachmentsPerMessage`, and if the limit is reached it displays an error. The function also respects an optional ASCII size hint by evaluating `NormalizeAsciiSize(size)` and, if present, updating `_config.DefaultAsciiSize`. Finally, it stages the target by adding it to `_stagedAttachments` and triggers a UI refresh of the staging tray via `RefreshStagingTray`, so that pressing Enter sends all staged items as one message with the typed caption.
 
 ---
 
@@ -1047,16 +1127,13 @@ private Task HandleCmdSetAsciiSize(string args)
 **Returns:** `Task`
 
 
-Opens or sets the ASCII-art size for attached images. If a recognizable argument is supplied, the size is applied immediately; otherwise, a UI dialog prompts the user to choose Small, Medium, or Large, and the chosen size is persisted as a preference for future attachments.
+Handles the command to configure the ASCII rendering size for attached images. If an explicit size is provided via the `args` parameter, it parses and applies it immediately with `NormalizeAsciiSize` and `ApplyAsciiSize`, marshaling the update to the UI thread via `InvokeUI`. If no argument is given, it prompts the user with a `MessageBox.Query` to pick between Small, Medium, or Large, and applies the chosen size (the selection is persisted as a preference for future attachments).
 
 ## Remarks
-This method centralizes the user experience for configuring ASCII art size by handling both direct argument parsing and an interactive picker. Parsing is delegated to NormalizeAsciiSize, and the actual update is performed by ApplyAsciiSize, with UI-affecting work marshaled through InvokeUI to ensure thread-safety. The two-path design supports quick scripted usage and an explicit, user-driven selection while keeping behavior consistent.
+This method centralizes the ASCII size configuration for the image-attachment flow. It cleanly separates argument-based updates from the interactive prompt while ensuring all size changes run on the UI thread through `InvokeUI`. The persistent preference is applied to future attachments, providing a consistent rendering size across sessions.
 
 ## Notes
-- If the argument does not yield a non-null flag, the interactive picker is shown; pressing Cancel results in no change.
-- The mapping from the picker result to the internal values is explicit (Small -> "s", Medium -> "m", Large -> "l").
-- The method completes its Task synchronously from the caller's perspective; UI updates are executed asynchronously via InvokeUI.
-
+- The method returns `Task.CompletedTask` in both branches; awaiting it does not guarantee that the size change has completed, since the actual application happens asynchronously on the UI thread via `InvokeUI`.
 
 ---
 
@@ -1077,16 +1154,16 @@ private async Task HandleCmdSetAvatar(string target)
 **Returns:** `Task`
 
 
-Handles the Set Avatar command by updating the user's avatar when the client is authenticated. It uploads the specified target avatar via AvatarHelper.UploadAsync using the current API client, and on success posts a system message in the current channel to indicate that the avatar was updated. If an error occurs, the method logs the exception and shows a user-facing error dialog with the exception message.
+Handles the command to set the avatar by first short-circuiting when `_conn.IsAuthenticated` is false. When authenticated, it calls `AvatarHelper.UploadAsync(_conn.Api!, target)` to upload the avatar. If the upload succeeds and there is a current channel (`_mainWindow.CurrentChannel` is non-empty), it uses `InvokeUI` to add a system message `Avatar updated.` to that channel via `_messageManager.AddSystemMessage`. If an exception occurs during upload, it is logged with `Log.Error(ex, "Avatar upload failed for {Target}", target)` and a UI error is shown via `InvokeUI` calling `_mainWindow.ShowError(`Avatar upload failed: {ex.Message}`)`.
 
 ## Remarks
-
-This method acts as an orchestration boundary between authentication, server communication, and UI feedback. It delegates the actual upload to AvatarHelper.UploadAsync and uses InvokeUI to marshal UI updates onto the UI thread. Because the method ignores the UploadAsync result, its success is determined solely by the absence of an exception.
+Remains focused on bridging authentication state, backend interaction, and user feedback. It delegates the actual upload to [`AvatarHelper`](Services/AvatarHelper.cs.md), while UI feedback is mediated through `InvokeUI` and `_messageManager` to keep the user informed of results. The method demonstrates a pattern of gating backend calls behind authentication and marshaling UI updates to the correct thread.
 
 ## Notes
+- The call is a no-op if `_conn.IsAuthenticated` is false, ensuring unauthenticated commands cannot trigger avatar uploads.
+- Exceptions are caught and surfaced to the user via a UI error message, while also being logged for diagnostics; consider safer messaging in production to avoid leaking internal details.
+- The success notification is emitted only when there is an active channel (`_mainWindow.CurrentChannel` not empty); in a channelless context, the only effect is the backend upload.
 
-- If not authenticated, the method returns early with no side effects.
-- The error path surfaces ex.Message to the user, which may reveal internal details; consider masking sensitive information in production.
 
 ---
 
@@ -1107,16 +1184,43 @@ private async Task HandleCmdSetColor(string color)
 **Returns:** `Task`
 
 
-Handles a color-setting command by updating the current user's nickname color via the profile API, but only when the client connection is authenticated. If not authenticated it exits early without performing any update. When authenticated, it constructs an UpdateProfileRequest with NicknameColor set to the supplied color and invokes UpdateProfileAsync on the API client to persist the change.
+HandleCmdSetColor is a command handler that, when the client is authenticated, updates the current user's nickname color on the server. If the client is not authenticated, it returns early without issuing any API calls; when authenticated, it builds an [`UpdateProfileRequest`](../EchoHub.Core/DTOs/ProfileDtos.cs.md) with `NicknameColor: color` and awaits `_conn.Api!.UpdateProfileAsync(...)` to persist the change.
 
 ## Remarks
-Acts as a small command handler within AppOrchestrator that translates a user-issued color command into a persistence operation. It cleanly separates command validation (authentication check) from the transport to the backend profile service, delegating the actual update to the API layer.
+Acting as a small facade around the profile update API, this symbol centralizes the handling of a user-facing color-change command and the corresponding server update. It relies on `_conn.IsAuthenticated` to gate the operation and on `_conn.Api` being non-null after authentication (the null-forgiving operator signals this expectation). This keeps color customization logic isolated in one place, simplifying testing and future enhancements to command handling.
 
 ## Notes
-- The method relies on _conn.IsAuthenticated being accurate; if that state changes between the check and the API call, updates could occur inconsistently.
-- It assumes _conn.Api is non-null after authentication (using the null-forgiving operator). If Api is unexpectedly null, a NullReferenceException may be thrown.
-- There is no input validation on the color value; invalid colors may be rejected by the backend or cause API-side validation errors.
-- Exceptions from UpdateProfileAsync propagate to the caller; callers should handle potential failures when updating the profile.
+- No local validation of `color` is performed here; invalid values may cause the API call to fail. Validate or constrain `color` prior to invocation if necessary to avoid server rejection.
+
+
+---
+
+### HandleCmdSetDownloadPath
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private Task HandleCmdSetDownloadPath(string args)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `args` | `string` | — |
+
+**Returns:** `Task`
+
+
+HandleCmdSetDownloadPath updates the application's download folder. If called with an argument, it applies that path directly; otherwise it opens the OS-native folder picker (when available) and updates the path based on the user's selection, or informs the user if the picker is unavailable or the operation is cancelled.
+
+## Remarks
+This private command handler centralizes the logic for configuring the download directory, supporting both direct path input and interactive picking. It initializes the target directory from `_config.DownloadPath` or `GetDownloadDir()`, invokes the native picker via `NativeFolderPicker.PickFolderAsync(current)`, and applies the outcome on the UI thread using `InvokeUI`. It treats three outcomes: `PickerOutcome.Chosen` (set path to `result.Path`), `PickerOutcome.Cancelled` (show "Download folder unchanged."), and `PickerOutcome.Unavailable` (show a hint that no native picker exists and offer manual setup).
+
+## Notes
+- Calling with a non-empty `args` bypasses the picker and completes after `SetDownloadPath(args.Trim())`.
+- If the native folder picker is unavailable (headless environments or missing tooling), the user is guided to set the path directly using `/downloadpath <path>`.
+- The method uses `RunAsync` to perform the picker operation asynchronously and marshals UI updates to the main thread via `InvokeUI`.
 
 ---
 
@@ -1137,14 +1241,15 @@ private async Task HandleCmdSetNick(string displayName)
 **Returns:** `Task`
 
 
-Handles nickname changes by persisting the new DisplayName to the server when the client is authenticated, and then updates the UI to reflect the new nickname and a connected status. If the client is not authenticated, it exits early without performing any network or UI changes.
+Handles the command to set the user’s nickname by updating the authenticated user’s profile through the client API and then refreshing the UI to reflect the new display name and the connected status. If the user is not authenticated, the method exits early without performing any update.
 
 ## Remarks
-Centralizes the nickname-change flow inside the AppOrchestrator, bridging the command, network call, and UI update. The UI updates are marshaled via InvokeUI to ensure thread affinity, and the Api reference is assumed non-null once IsAuthenticated holds, as evidenced by the null-forgiving operator.
+This method acts as a small bridge between authentication, the API client, and the UI, centralizing the nickname update behavior to keep command handling consistent. It relies on the convention that an authenticated session provides a non-null `Api` and uses `InvokeUI` to marshal UI updates onto the main thread.
 
 ## Notes
-- The method uses _conn.Api! to pass UpdateProfileRequest to the API, relying on IsAuthenticated to guarantee Api is non-null; if that guarantee ever fails, a NullReferenceException could occur.
-- No input validation of displayName is performed here; validation and sanitization should occur at higher layers or via server-side checks.
+- Update operations may fail due to network or server errors; no internal retry logic is present here, so callers should handle exceptions as appropriate.
+- The `DisplayName` is passed directly via [`UpdateProfileRequest`](../EchoHub.Core/DTOs/ProfileDtos.cs.md) without local validation; ensure inputs are validated by callers to avoid invalid nicknames.
+- The code uses a null-forgiving `!` on `_conn.Api`, assuming it is non-null when `_conn.IsAuthenticated` is true; if this invariant is violated, a `NullReferenceException` could occur.
 
 ---
 
@@ -1166,32 +1271,7 @@ private async Task HandleCmdSetStatus(UserStatus? status, string? message)
 **Returns:** `Task`
 
 
-Handles the command to set the current user's status and optional message. It only executes when the client is connected; it determines the final status and message from the provided arguments, preserving existing values when an argument is omitted and clearing the message when an empty string is supplied. The method updates the remote server via UpdateStatusAsync and then synchronizes the local session state.
-
-## Remarks
-This abstraction centralizes how a user-initiated status change is applied across both server and client state. It ensures consistent behavior for preserving or clearing values and guarantees the UI and session reflect the server after a successful update. The operation is a no-op when the connection is unavailable, avoiding unintended network activity.
-
-## Notes
-- Early return when not connected means there is no network call or local state change in offline scenarios.
-- Null status or null message preserves the current values; an empty message clears the status message.
-- The server update is performed before mutating the local session; if UpdateStatusAsync throws, the session remains unchanged.
-
-## Dependencies
-- _conn
-- _session
-
-## Dependency APIs
-- _conn.IsConnected: bool
-- _conn.UpdateStatusAsync(UserStatus newStatus, string? newMessage): Task
-- _session.Status: UserStatus
-- _session.StatusMessage: string?
-
-## Symbol To Document
-- Name: HandleCmdSetStatus
-- Kind: method
-- File: src/EchoHub.Client/AppOrchestrator.cs
-- Language: csharp
-- ID: 2eb21054-d449-44d8-a265-4b55287688a4
+HandleCmdSetStatus applies a requested status and optional message for the current user. If the client is not connected, the method exits early and makes no changes. With the two parameters, a null `status` preserves the current session status, while a non-null `status` overrides it; for the `message` parameter, a null value keeps the existing message and an empty string clears it, enabling commands like `/status away` to change the status without erasing the message, or `/status msg brb` to set a new message while keeping the current status. It pushes the updated values to the server via `_conn.UpdateStatusAsync(newStatus, newMessage)` and then synchronizes the in-memory session by assigning `_session.Status` and `_session.StatusMessage`.
 
 ---
 
@@ -1212,14 +1292,10 @@ private Task HandleCmdSetTheme(string name)
 **Returns:** `Task`
 
 
-Marshals a theme-change request to the UI thread via InvokeUI by invoking HandleThemeSelected(name). It does not perform the theme switch itself; instead it queues the work on the UI thread and returns a completed Task. This is useful when a command handler or non-UI code needs to trigger a theme change while preserving proper UI thread affinity.
+`HandleCmdSetTheme` acts as a command handler that, given a theme name, schedules the actual theme application on the UI thread by invoking `HandleThemeSelected(name)` through `InvokeUI`. It then returns `Task.CompletedTask` to integrate with asynchronous command pipelines without awaiting the UI work.
 
 ## Remarks
-HandleCmdSetTheme acts as a small bridge between command reception and UI state mutation. By decoupling the theme-name parameter from the actual UI update, it keeps non-UI layers free of UI-thread requirements and centralizes the invocation in InvokeUI. The pattern helps prevent cross-thread access issues while keeping a concise, test-friendly signature.
-
-## Notes
-- Awaiting the returned Task does not guarantee the theme has been applied; the UI action runs asynchronously on the UI thread after this call returns.
-- Exceptions raised during HandleThemeSelected occur on the UI thread and are not surfaced through this Task; consider handling errors inside the UI action or via a global UI exception handler.
+By using `InvokeUI`, the method ensures that UI-affecting work runs on the UI thread, avoiding cross-thread access violations when applying a new theme. The method is a lightweight bridge between the command surface and the UI logic, returning a completed `Task` to keep async-call sites simple and non-blocking while the actual work is dispatched to the UI context.
 
 ---
 
@@ -1240,15 +1316,14 @@ private async Task HandleCmdSetTopic(string topic)
 **Returns:** `Task`
 
 
-HandleCmdSetTopic is the internal handler for the user command that sets the topic of the current channel. It first guards against an unauthenticated user and a missing channel context; if either condition is not met, it exits without performing any update. When both checks pass, it updates the channel topic via the API, and on success it marshals back to the UI thread to refresh the display and emit a system message confirming the new topic. If an error occurs during the API call or UI update, it surfaces an error message to the user.
+The `HandleCmdSetTopic` method processes the user command to set the topic of the currently selected channel. It first ensures the user is authenticated via `_conn.IsAuthenticated` and that a channel is selected (`_mainWindow.CurrentChannel` is not null or empty); if either check fails, it exits without making changes. When both checks pass, it calls the API via `_conn.Api!.UpdateChannelTopicAsync(channel, topic)` to apply the new topic, and, on success, updates the UI (`_mainWindow.SetChannelTopic`) and logs a system message through `_messageManager.AddSystemMessage`. If an exception occurs, it surfaces an error using `_mainWindow.ShowError`.
 
 ## Remarks
-This method serves as the glue between the command processing layer, the network API, and the user interface. It encapsulates the end-to-end workflow for a topic update: validation of preconditions, server-side update, and immediate UI feedback, ensuring consistent state across the client and server while minimizing duplication of error handling across the command pipeline.
+This method encapsulates a small, user-initiated operation that spans authentication, network, and UI concerns. It coordinates the backend update and the corresponding UI feedback, ensuring that the channel's topic appears consistent after a successful API call, or an error is surfaced otherwise. The use of `InvokeUI` ensures UI updates run on the main thread, preserving thread-safety while the operation executes asynchronously.
 
 ## Notes
-- The API reference is accessed with a null-forgiving operator (_conn.Api!), so a null Api client can result in a NullReferenceException. Consider guarding Api’ availability or ensuring lifecycle management guarantees a non-null Api before invocation.
-- If authentication is missing or there is no active channel, the method returns without user-facing feedback, which means callers should ensure appropriate UX messaging when these preconditions fail.
-- Exceptions raised by the API call or by UI updates invoked in the success path are caught and surfaced as a user-visible error message; such exceptions are not propagated to the caller.
+- Silent early returns on unauthenticated state or missing channel can surprise users; consider surfacing feedback earlier in the flow.
+- The null-forgiving operator on `_conn.Api` assumes the API client is non-null after authentication; if it isn't, a `NullReferenceException` may occur.
 
 ---
 
@@ -1263,14 +1338,10 @@ private async Task HandleCmdTestSound()
 **Returns:** `Task`
 
 
-When invoked, this private async handler triggers a test playback of the notification sound by delegating to the injected _notificationSound and awaiting PlayTestAsync. It serves as a small command-handler within AppOrchestrator to validate audio feedback without blocking the command processing flow.
+Handles the `HandleCmdTestSound` command by asynchronously invoking the underlying `_notificationSound.PlayTestAsync()` to emit a test notification sound. This method is a targeted bridge that lets the orchestrator trigger audible verification of the notification path without exposing playback specifics to higher-level command logic. Use it during development or diagnostics when you need to confirm that notification sounds play correctly.
 
 ## Remarks
-Acts as a thin orchestration boundary, delegating to the notification sound service. This keeps the command-handling flow decoupled from the specifics of sound playback, enabling the sound provider to be swapped or mocked in tests. Being private ensures it's only called from within the orchestrator's command-processing logic, preserving encapsulation.
-
-## Notes
-- No cancellation token is passed to PlayTestAsync from this wrapper; if cancellation is required, consider extending the API or wiring cancellation from the caller.
-- Exceptions from PlayTestAsync will bubble up to the caller; consider adding error handling if resilience is needed in the command pipeline.
+By encapsulating the playback call behind a private method, the code keeps command handling decoupled from the concrete sound implementation, easing testing and future substitutions of `_notificationSound`. This small abstraction centralizes the test-path behavior in one place, so changes to how test sounds are produced won't ripple through the command routing.
 
 ---
 
@@ -1291,14 +1362,15 @@ private async Task HandleCmdUnbanUser(string username)
 **Returns:** `Task`
 
 
-Unbans a user by delegating to the client API after confirming the current connection is authenticated. If the connection is not authenticated, the method returns immediately without performing any API call. When authenticated, it invokes Api.UnbanUserAsync with the provided username and awaits its completion, ensuring the operation completes asynchronously without blocking the caller.
+Handles the unban-user command by first checking `_conn.IsAuthenticated`; if not authenticated, it exits without making a request. When authenticated, it forwards the request to the server by awaiting `_conn.Api!.UnbanUserAsync(username)`.
 
 ## Remarks
-This method serves as a small command-handler primitive within the orchestration layer. It encapsulates the authentication check and the unban operation, so higher-level command wiring does not need to duplicate this guard. By awaiting the API call, it preserves responsiveness and enables proper exception propagation to the caller if the unban fails. The null-forgiving operator on Api expresses the expectation that the API client is prepared after a successful authentication handshake.
+This method encapsulates the small, command-level action of unbanning a user behind an authentication gate. Keeping the authentication check and the API call in one place reduces duplication across command handlers and makes the flow easier to modify (for example, to add logging or auditing around unban operations). The implementation relies on the invariant that a valid, non-null `_conn.Api` is available when `_conn.IsAuthenticated` is true; the null-forgiving operator expresses this contract but could surface a `NullReferenceException` if the invariant is violated.
 
 ## Notes
-- Exceptions from Api.UnbanUserAsync may propagate to the caller; callers should handle errors at a higher level.
-- If invoked while not authenticated, the method performs no action and returns immediately.
+- Silent no-op when unauthenticated; callers should provide appropriate user feedback at a higher level if needed.
+- The call uses the null-forgiving operator on `_conn.Api`, which assumes a non-null API client when authenticated; ensure the invariant is maintained to avoid `NullReferenceException`.
+
 
 ---
 
@@ -1319,15 +1391,14 @@ private async Task HandleCmdUnmuteUser(string username)
 **Returns:** `Task`
 
 
-Unmutes a user by delegating to the remote API after verifying that the current session is authenticated. If the client is not authenticated, the method returns immediately without issuing any API call.
+Unmutes a user by username by forwarding the request to the backend API after validating the connection is authenticated. If the client is not authenticated, it returns early and does not call the API. 
 
 ## Remarks
-This method is a small piece of the command-handling layer in AppOrchestrator. It couples the authentication check to the concrete unmute operation, ensuring that unmute requests are only sent to the API when a user is authenticated. By encapsulating this flow in one place, it keeps higher-level command logic focused on parsing input while the API interaction remains centralized and straightforward.
+This small wrapper isolates the moderation action from the underlying API call, enforcing the authentication precondition and delegating the actual unmute to the API client. It helps keep higher-level command handling uniform by providing a single path for unmute operations. It relies on the API client being initialized when authentication is established, tying its correctness to the lifecycle that creates `_conn.Api`.
 
 ## Notes
-- No error handling within this method; any exception thrown by UnmuteUserAsync will propagate to the caller.
-- If _conn.Api is null even after authentication, the null-forgiving operator is used, which will throw at runtime if the API reference is missing.
-- The method is private, so its behavior is only observable within the containing class (and tests) and is not part of the public API.
+- If `_conn.IsAuthenticated` is true but `_conn.Api` is null, the call will throw due to the null-forgiving operator used on `_conn.Api`.
+
 
 ---
 
@@ -1342,14 +1413,10 @@ private void HandleConnect()
 **Returns:** `void`
 
 
-HandleConnect coordinates the user-initiated connection workflow. It first checks whether a connection is already active and, if so, prompts the user to disconnect before proceeding; if the user confirms, it initiates a disconnect. Otherwise it shows a ConnectDialog to select a server and credentials, logs the attempt, and runs the asynchronous connection. It calls _conn.ConnectAsync and updates the status bar as the connection progresses. If a saved refresh token exists but the attempt fails due to an expired or revoked session, it logs a warning, clears the saved token, informs the user, and aborts the connection attempt. On success, it records the resulting login, clears any pending unlocks, loads the last-read markers for the target server from the saved config, and updates the UI: sets the current user, loads channels, switches to the default channel, loads per-channel histories (honoring lastRead where available), focuses the input, and fetches the list of online users. Finally it persists the selected server configuration.
+HandleConnect orchestrates the user-initiated connection flow: if already connected it prompts to disconnect via `MessageBox.Query`, then shows the connect dialog with `ConnectDialog.Show(_app, _config.SavedServers)` and starts an asynchronous connect via `_conn.ConnectAsync`, updating the UI status as it progresses. On success it updates the current user, populates channels, switches to the default channel (`HubConstants.DefaultChannel`), replays channel histories seeded from persisted last-read markers, focuses the input, fetches online users, and persists the server to configuration.
 
 ## Remarks
-HandleConnect serves as the central flow controller that binds the UI to the authentication/connection protocol and the post-connection UI state. It isolates network logic from the UI by performing the connect work inside RunAsync and marshaling UI updates via InvokeUI; it also coordinates reading and applying per-server state (channels, histories, last-read markers) so the user sees an up-to-date workspace after connecting.
-
-## Notes
-- It only handles a special exception path when a saved refresh token is present; other exceptions bubble to the RunAsync failure handler and surface a generic "Connection failed" message, so callers should be prepared for a generic error state.
-- The last-read history seeding relies on the SavedServers list in the config; if the server URL isn't found, lastRead will be null and histories will start from the most recent history loaded from the server.
+By centralizing the connect logic, this method coordinates cross-cutting concerns across `_conn`, `_mainWindow`, and [`ConfigManager`](Config/ConfigManager.cs.md) while preserving UI responsiveness through `RunAsync` and `InvokeUI`. It also handles a graceful recovery path when a saved refresh token is invalid: it logs a warning, clears the saved token, resets the UI status to "Disconnected", and prompts the user to reauthenticate.
 
 ---
 
@@ -1364,10 +1431,28 @@ private void HandleCreateChannelRequested()
 **Returns:** `void`
 
 
-Handles the user-initiated request to create a channel. It validates that the client is authenticated and connected, prompts the user for channel details via a dialog, and, if the user proceeds, performs the creation workflow asynchronously. If a password is provided for the channel, it derives a per-channel join credential and locally wraps a new room key so that the channel content remains end-to-end encrypted (the passphrase never leaves the client). The workflow includes salt generation, key derivation, room key generation, base64-encoding of the salt, and wrapping the room key with the derived key, before sending the resulting wirePassword, saltB64, and wrappedKey to the server. On success, any generated room key is stored for the channel, the client joins the channel, and its history is loaded if present. UI state is updated to show the new channel, set its topic, and switch focus to it, followed by a refresh of online users. If the user cancels the dialog or the channel creation fails, the method exits without side effects.
+`HandleCreateChannelRequested` orchestrates the end-to-end flow when a user requests to create a new channel: it validates authentication and connection, collects channel details via `CreateChannelDialog.Show(_app)`, and, if the user confirms, asynchronously creates the channel and updates the UI. If a password is provided, it enforces the minimum length, derives join credentials with [`RoomCrypto`](../EchoHub.Core/Security/RoomCrypto.cs.md), generates a new room key, and wraps the key for secure transmission, sending the password-derived data as `wirePassword`, `saltB64`, and `wrappedKey` to `CreateChannelAsync`. On success, it stores the room key (when present), joins the channel to fetch history, and refreshes the channel list and topic in the UI, finally refreshing online user information.
 
-The method orchestrates UI interaction, server communication, encryption preparation, and post-create UI updates in a single, cohesive flow, thereby providing a predictable and secure channel creation experience from a single entry point.
+## Remarks
+It acts as a focused orchestration layer that coordinates input collection ([`CreateChannelDialog`](UI/Dialogs/CreateChannelDialog.cs.md)), security setup ([`RoomCrypto`](../EchoHub.Core/Security/RoomCrypto.cs.md)), server interaction (`_conn.Api.CreateChannelAsync`), and UI state updates (`_mainWindow`, `_messageManager`). The encryption path is isolated to the password flow, ensuring that password-derived credentials and the wrapped room key are prepared locally before transmission. The method is a private responder to a user action and relies on `RunAsync` to surface failures with the message 'Failed to create channel'.
 
+## Notes
+- The work is scheduled via `RunAsync`, so the caller remains responsive; any failure surfaces through the provided error caption (e.g., 'Failed to create channel').
+
+---
+
+### HandleDeleteChannelRequested
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private void HandleDeleteChannelRequested()
+```
+
+**Returns:** `void`
+
+
+The `HandleDeleteChannelRequested` method coordinates the delete-channel flow, validating that the user is authenticated and connected and that a non-default channel is selected. If the user confirms, it deletes the channel via the API (`DeleteChannelAsync`), stops tracking the channel, switches the UI to the default channel (`HubConstants.DefaultChannel`), and posts a system message announcing the deletion. It also surfaces error messages if authentication/connection fails, no channel is selected, or the default channel is attempted to be deleted.
 
 ---
 
@@ -1388,24 +1473,14 @@ private void HandleDeleteMessageRequested(Guid messageId)
 **Returns:** `void`
 
 
-Deletes a message in response to a user-initiated delete request.
-
-The method first guards against unauthenticated calls by returning early if the connection is not authenticated. When authenticated, it delegates the actual deletion to the server via the API and relies on the server to enforce the hierarchy rule (own message or Mod+ over a strictly lower role) and to broadcast the deletion to all clients. The local message list is updated only in response to that broadcast, not by mutating internal state directly within this method.
+HandleDeleteMessageRequested handles a user-initiated request to delete a message identified by `messageId`. It prevents unauthenticated deletions by returning early if `_conn.IsAuthenticated` is false, and, when authenticated, asynchronously calls `_conn.Api!.DeleteMessageAsync(messageId)` via `RunAsync`, relying on server-side enforcement of the hierarchy rule and on the deletion broadcast to refresh the local list.
 
 ## Remarks
-
-This function acts as a thin bridge between the UI action (delete request) and the network operation, deferring permission checks to the server to ensure consistent enforcement across clients. It also centralizes error handling through RunAsync, which surfaces a user-facing message ("Failed to delete message") if the server operation fails. By relying on the server broadcast to refresh local state, it avoids duplicating deletion logic on the client and keeps the UI in sync with server-side state changes.
-
-## Example
-
-```csharp
-// Called when the user confirms deletion of a message with ID messageId
-HandleDeleteMessageRequested(messageId);
-```
+By design, this method is a thin orchestrator that encapsulates the authentication check and delegates the deletion to the server. It does not mutate the local message collection directly; instead, the client updates its UI when the server broadcasts the deletion.
 
 ## Notes
-- The method is a no-op when the connection is not authenticated, avoiding any local or server interaction.
-- The local message list is updated via server broadcasts rather than direct mutation inside this method, ensuring consistency with server-side state and other clients.
+- No local persistence occurs inside this method; the local view updates in response to the server's deletion broadcast.
+- `RunAsync` is supplied with the error message "Failed to delete message" to surface failures consistent with other API operations.
 
 ---
 
@@ -1420,23 +1495,7 @@ private void HandleDisconnect()
 **Returns:** `void`
 
 
-Handles the disconnection sequence for the EchoHub client orchestrator. It is invoked when the connection to the server is lost or a deliberate disconnect is initiated. The method centralizes teardown steps to ensure a consistent, user-friendly shutdown: it logs the disconnect, clears per-channel user state under a dedicated lock, resets the pending reply to avoid processing stale data, updates the UI to reflect that no reply is expected, persists the last-read state, and then kicks off an asynchronous cleanup of the underlying connection. The UI is updated on the main thread to display a disconnected state after cleanup, preserving responsiveness during teardown.
-
-## Remarks
-This abstraction exists to provide a single, well-defined path for disconnect scenarios, reducing the risk of partial teardown and inconsistent UI state across call sites. By guarding channel-user state with a lock, it prevents race conditions during teardown, and by marshaling UI updates through InvokeUI, it maintains proper thread affinity between background work and the UI. Running the cleanup asynchronously ensures the user interface remains responsive while the connection is terminated and resources are released.
-
-## Example
-```csharp
-// Example usage: internally invoked when the underlying connection reports a disconnect
-HandleDisconnect();
-```
-
-## Notes
-- Clearing _channelUsers is performed under _channelUsersLock to prevent races with other threads that may access the collection during disconnect.
-- _pendingReply is set to null to avoid handling a stale or invalid reply after disconnect.
-- UI updates are dispatched through InvokeUI to guarantee execution on the UI thread, even when called from a background context.
-- The actual connection teardown happens asynchronously via RunAsync, so any resulting UI changes (e.g., the status bar showing "Disconnected") occur after cleanup completes.
-
+HandleDisconnect is a private method that gracefully tears down the client’s connection to the server and resets the UI and internal state. It logs the impending disconnect with `Log.Information("Disconnecting from server")`, clears `_channelUsers` under `_channelUsersLock`, sets `_pendingReply` to null, clears the reply target in the UI with `_mainWindow.SetReplyingTo(null)`, and persists the last reads by calling `PersistLastReads()`. It then starts an asynchronous cleanup by calling `_conn.CleanupAsync()` inside `RunAsync` with the labels `"Disconnect error"` and `"Disconnect"`, and on completion clears the UI (`_mainWindow.ClearAll()`) and updates the status bar to `Disconnected` via `_mainWindow.UpdateStatusBar("Disconnected")`.
 
 ---
 
@@ -1457,17 +1516,44 @@ private void HandleEditProfile(UserProfileDto? currentProfile)
 **Returns:** `void`
 
 
-Drives the user-initiated profile editing flow. It opens a ProfileEditDialog pre-populated with the current profile values, and if the user submits changes, it updates the server (when authenticated), refreshes the UI with the new display name, and optionally uploads a new avatar. It also applies any updated notification settings and persists the updated profile as the default preset in the local configuration.
-
-It encapsulates the end-to-end sequence as an asynchronous operation: show the dialog, validate the result, perform server updates, and reflect changes in both the UI and local config. The operation is guarded by an authentication check and is executed via RunAsync to avoid blocking the UI thread, with careful UI updates performed on the main thread where appropriate.
+Orchestrates the end-to-end profile-edit operation: displays the [`ProfileEditDialog`](UI/Dialogs/ProfileEditDialog.cs.md) to collect changes, pushes updates to the server via [`UpdateProfileRequest`](../EchoHub.Core/DTOs/ProfileDtos.cs.md) when authenticated, updates the UI with the new display name, optionally uploads an avatar, updates notification preferences, and saves the updated profile as the default preset using `ConfigManager.Save`.
 
 ## Remarks
-Centralizes the profile-edit workflow in a single coordinator: it integrates the user dialog, the remote profile update, avatar handling, notification preference updates, and the persistence of a default profile preset. This orchestration ensures consistency across server state, UI presentation (display name and status), avatar state, and locally stored configuration.
+HandleEditProfile acts as a coordinator that binds together the UI, API, avatar service, and configuration persistence. It ensures that updates are attempted only when `_conn.IsAuthenticated` is true, handles avatar upload failure gracefully by logging and showing an error, and keeps the user experience in sync by updating the main window and status bar when a display name is provided. When an avatar is uploaded, a system message is posted to the current channel to inform users, if one exists.
 
 ## Notes
-- The code uses _conn.Api! after verifying IsAuthenticated; if Api can be null in edge cases, this could throw at runtime. Consider guarding Api against nulls or enforcing a stronger invariant that IsAuthenticated implies a non-null Api.
-- Avatar upload failures are isolated: an exception will be logged and a user-visible error shown, but the rest of the profile updates (name, bio, colors, notifications) still apply.
+- If the user is not authenticated, the operation aborts early and makes no changes.
+- The UI update of the display name is conditional on `editResult.DisplayName` not being null; otherwise the display name remains unchanged.
+- The configuration is saved via `ConfigManager.Save` regardless of avatar upload success, so avatar failures do not automatically roll back server or UI updates.
 
+---
+
+### HandleFileDownloadRequested
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private void HandleFileDownloadRequested(string attachmentUrl, string fileName)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `attachmentUrl` | `string` | — |
+| `fileName` | `string` | — |
+
+**Returns:** `void`
+
+
+HandleFileDownloadRequested downloads an attachment from `attachmentUrl` with the given `fileName`. It only proceeds if `_conn.IsAuthenticated` is true; it downloads the file asynchronously, saves it to a deduplicated destination, notifies the UI about progress and the saved path, and, for extensions in `SafeOpenExtensions`, launches the file with the system default application, logging any failure to open.
+
+## Remarks
+This method encapsulates the end-to-end download-and-open pattern, shielding callers from the details of authentication checks, UI messaging, and filesystem operations behind a single, intention-revealing API. It collaborates with `_conn` for authentication, `_messageManager` and `_mainWindow` for user feedback, and `SafeOpenExtensions` to decide when to launch the file automatically, fitting into the app's orchestration layer that responds to file-download requests.
+
+## Notes
+- If the user is not authenticated, the operation is short-circuited (returns early) with no downloads.
+- Automatic opening is gated by `SafeOpenExtensions`; only safe extensions are opened; failures to launch are logged via `Log.Warning` and do not throw.
 
 ---
 
@@ -1489,14 +1575,34 @@ private void HandleFilesStaged(string channel, IReadOnlyList<string> files)
 **Returns:** `void`
 
 
-Stages a batch of local files (multi-file paste or drag-and-drop) as attachments for the next message. It executes synchronously on the UI thread to ensure the staged attachment list is updated before the message is sent, preventing races with the routing path. If the client is not authenticated or connected, it returns immediately. It adds only up to the remaining attachment slots, reports an error if more files were provided than can be staged, and then refreshes the staging tray.
+Stages a batch of local file paths as attachments for the next message. This runs on the UI thread to ensure the staging list cannot race with a subsequent send command, so a multi-file paste won’t slip past the limit. If the connection is not authenticated or not connected, the method exits early; otherwise it appends as many files as can fit within the per-message cap.
+
+It computes the remaining slots as `HubConstants.MaxAttachmentsPerMessage - _stagedAttachments.Count` and adds up to that many files from `files` via `files.Take(Math.Max(0, slotsLeft))`. If more files are provided than there are slots, it shows an error message to the user: "You can attach at most {HubConstants.MaxAttachmentsPerMessage} files per message." Finally it calls `RefreshStagingTray()` to update the UI.
 
 ## Remarks
-This method centralizes the per-message attachment staging logic, tying the UI state (`_stagedAttachments`) to the maximum allowed attachments (`HubConstants.MaxAttachmentsPerMessage`). It guarantees a deterministic UI update by running on the UI thread and by refreshing the staging tray after updates, reducing the chance of inconsistent attachment state when users paste many files quickly.
+Keeping this logic on the UI thread ensures the staging operation is atomic with respect to user interactions, avoiding interleaving with the sending path. The method relies on `_stagedAttachments` to track current attachments and enforces the per-message cap via `HubConstants.MaxAttachmentsPerMessage`. It also depends on `_conn` to determine whether staging should proceed and on `_mainWindow` to surface errors, with `RefreshStagingTray()` updating the visual staging area.
 
-## Notes
-- The channel parameter is currently unused by this method.
-- If files.Count exceeds the available slots, only the portion that fits is staged; the user is shown an error message and the extras are ignored.
+---
+
+### HandleImageOpenRequested
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private void HandleImageOpenRequested(string attachmentUrl, string fileName)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `attachmentUrl` | `string` | — |
+| `fileName` | `string` | — |
+
+**Returns:** `void`
+
+
+Views an image attachment without saving it to the user's downloads. It requires authentication and branches on whether the current channel is encrypted: for unencrypted rooms it opens a full URL in the default browser (constructing the URL from `_conn.Api.BaseUrl` when needed) via `System.Diagnostics.Process.Start`; for encrypted rooms it only proceeds if the file extension is in `ImageOpenExtensions`, otherwise it delegates to the save flow, decrypts with `DownloadAttachmentAsync`, and opens the resulting temporary file with `Process.Start` after indicating progress via a system message.
 
 ---
 
@@ -1518,26 +1624,38 @@ private void HandleImagePasted(string channel, byte[] png)
 **Returns:** `void`
 
 
-Handles an image pasted from the clipboard by staging it as a temporary PNG in a per-paste folder so it flows through the same path-based staging and encryption pipeline as regular attachments. The temporary file is deleted once the message is sent.
-
-If the client is not authenticated or connected, the method returns early without attempting to stage anything.
-
-If the attachment limit for the current message has been reached, it shows an error and returns.
-
-It uses a unique, per-paste folder under the system temporary path (EchoHub/pasted/{8-char}) to preserve the familiar image.png name while letting multiple pasted images coexist in a single message. It writes the PNG as image.png, tracks the path in the internal _tempPastedFiles and _stagedAttachments collections, and refreshes the staging tray UI.
-
-If anything goes wrong, it logs the exception and informs the user via the main window.
+Stashes a PNG image pasted from the clipboard into the message workflow by writing the raw PNG data to a per-paste temporary folder and registering the file with the current message’s staging pipeline so it flows through the same path-based handling as regular attachments. It only runs when `_conn.IsAuthenticated` and `_conn.IsConnected` are true, enforces the per-message attachment cap via `HubConstants.MaxAttachmentsPerMessage`, and ensures the temporary file is deleted once the message is sent; on failure, the error is logged and the user is notified via `_mainWindow.ShowError`.
 
 ## Remarks
-
-This symbol acts as a glue between clipboard paste handling and the attachment pipeline, reducing ad-hoc clipboard writes and ensuring consistent processing downstream. By isolating each paste, it avoids file-name clashes and keeps UI behavior predictable (the image shows as image.png, even when multiple pastes exist). It relies on the existing authentication/connection state and the global attachment limit to maintain a robust UX.
+Centralizes pasted-image handling to keep the user experience consistent with other attachments and to reuse the existing staging/cleanup logic. It creates a unique per-paste folder under the system temp path and stores the image as `image.png` to preserve a familiar display name while allowing multiple pasted images to coexist in a single message.
 
 ## Notes
+- Potential thread-safety trap: `_tempPastedFiles` and `_stagedAttachments` are mutated here without visible synchronization; ensure calls are serialized or synchronized when invoked from multiple threads.
 
-- No operation occurs if the user is not authenticated or not connected; the method returns quietly in that case.
-- Temporary files are not cleaned up by this method; cleanup occurs later in the message lifecycle when the message is sent.
-- Pasting images enforces HubConstants.MaxAttachmentsPerMessage; once reached, a user-visible error is shown and gating prevents further staging.
+---
 
+### HandleImageSaveRequested
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private void HandleImageSaveRequested(string attachmentUrl, string fileName)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `attachmentUrl` | `string` | — |
+| `fileName` | `string` | — |
+
+**Returns:** `void`
+
+
+HandleImageSaveRequested is a private method in `AppOrchestrator` that saves an image when a save is requested. It guards the operation with `_conn.IsAuthenticated`, then asynchronously downloads the attachment via `DownloadAttachmentAsync`, moves it to a deduplicated destination under the directory from `GetDownloadDir()` using `DedupPath` and `File.Move`, and reports progress to the UI with `InvokeUI` and `_messageManager.AddSystemMessage`. If authentication is not present, it exits early.
+
+## Remarks
+Combines an authentication guard (`_conn.IsAuthenticated`), asynchronous work (`RunAsync`), and UI feedback via `InvokeUI` and `_messageManager.AddSystemMessage` to keep the user informed while the image is downloaded and moved. It relies on `DownloadAttachmentAsync`, `GetDownloadDir`, `DedupPath`, and `File.Move` to perform I/O in a deduplicated, user-visible way. This arrangement keeps authentication, I/O, and presentation concerns clearly separated in the orchestration flow.
 
 ---
 
@@ -1552,16 +1670,7 @@ private void HandleLoadMoreRequested()
 **Returns:** `void`
 
 
-Loads the next page of chat history for the currently selected channel when the user requests more messages. It executes asynchronously and prepends the retrieved history to the channel's message list, typically in response to a 'Load more' action in the chat UI.
-
-## Remarks
-
-Separates concerns by consolidating the load-more behavior in this method, acting as the bridge between the connection layer, the currently selected channel, and the in-memory history store. It uses RunAsync to perform the network call off the UI thread and InvokeUI to apply the updated history safely to the UI. The per-channel guard (_channelsLoadingMore) prevents overlapping loads for the same channel, preserving responsiveness when users tap repeatedly.
-
-## Notes
-
-- Exits early if the client is not connected or no channel is selected, avoiding unnecessary work.
-- The fetch uses HubConstants.DefaultHistoryCount as the batch size and computes the offset from the current message count; a finally block ensures the per-channel loading flag is cleared even if the fetch fails, and RunAsync surfaces a 'Failed to load more messages' error to the user.
+This private method handles the user-initiated request to load older messages for the currently selected channel. It returns early unless `_conn.IsConnected` and a non-empty `_mainWindow.CurrentChannel` are present, then uses `_channelsLoadingMore` to prevent concurrent loads for the same channel and computes the offset as `_messageManager.GetMessages(channel)?.Count ?? 0`. It runs a background task with `RunAsync` to fetch history via `_conn.GetHistoryAsync(channel, HubConstants.DefaultHistoryCount, offset)` and, on success, invokes `InvokeUI(() => _messageManager.PrependHistory(channel, history))`; finally, the channel is removed from `_channelsLoadingMore`, and any failure surfaces the message `Failed to load more messages`.
 
 ---
 
@@ -1576,15 +1685,15 @@ private void HandleLogout()
 **Returns:** `void`
 
 
-Orchestrates the end-to-end logout sequence for the client: it logs the logout, persists pending read state, and initiates an asynchronous server logout. It then conditionally clears the saved token based on the API base URL, performs cleanup, and updates the UI to show a disconnected state.
+Coordinates the client-side logout sequence when the user signs out: it logs the event, persists the last-read state, and kicks off an asynchronous flow that signs out from the server, clears any saved token tied to the API's [`BaseUrl`](Services/ApiClient.cs.md), performs cleanup, and updates the UI to reflect a disconnected state.
 
 ## Remarks
-This method centralizes the logout workflow in AppOrchestrator, coordinating server communication, local state cleanup, and UI transitions. It delegates UI changes to InvokeUI to guarantee thread-safety and relies on RunAsync to provide contextual error handling with the 'Logout error' title.
+Acts as the centralized logout orchestrator within the app, encapsulating server communication, token management, and UI reset behind a single private method. By using `RunAsync`, it defers error handling to a consistent pathway and keeps UI threading concerns isolated to the `InvokeUI` call. It collaborates with `_conn` for logout/cleanup and with `_mainWindow` to reflect the disconnected state.
 
 ## Notes
-- ClearSavedToken(baseUrl) is invoked only when baseUrl is non-null, preventing token removal in contexts without a configured API.
-- UI updates are scheduled on the main thread via InvokeUI to avoid cross-thread interaction issues.
-- If LogoutAsync fails, RunAsync provides the contextual error information ('Logout error'); subsequent steps inside the lambda are contingent on successful logout.
+- If `baseUrl` is null, `ClearSavedToken(baseUrl)` is not invoked, so a saved token may remain.
+- The logout sequence runs asynchronously via `RunAsync`; the method returns immediately while the operations execute in the background.
+- UI updates occur on the UI thread through `InvokeUI` to avoid cross-thread issues.
 
 ---
 
@@ -1606,17 +1715,15 @@ private void HandleMessageSubmitted(string channelName, string content)
 **Returns:** `void`
 
 
-Handles the submission of a user-typed message for a specific channel. It validates the connection and routes the content through command handling, staged attachments, or a plain text send, while updating the UI with errors or system messages as appropriate.
+HandleMessageSubmitted coordinates the user’s message submission in a channel by performing connectivity checks, routing command input through the `_commandHandler`, handling staged attachments via `SendStagedMessage`, and computing a potential `replyTo` for threaded replies before sending asynchronously through `_conn.SendMessageAsync` after ensuring the room is unlocked. It also surfaces command results as either errors or system messages and clears any pending reply once the message is sent.
 
 ## Remarks
-
-This method serves as the central orchestrator for message submission, coordinating the UI layer, command processor, and network transport. It enforces preconditions (an active connection and an unlocked room) and uses asynchronous execution to avoid blocking the UI thread, ensuring proper state transitions such as clearing a pending reply after a successful send.
+This function is the single entry point for all message submissions, enforcing connectivity, handling commands, attachments, and reply threading in one place to maintain consistent user experience and state transitions across the chat UI and network layer.
 
 ## Notes
+- The method has several early returns; a caller cannot assume a message was sent after invoking it.
+- The reply-to resolution is channel-sensitive and uses a case-insensitive comparison; mismatched channels will skip applying the pending reply.
 
-- Not connected: shows an error and aborts before performing any network activity.
-- Command handling: commands are detected via IsCommand; when HandleAsync returns a result with a non-null Message, the UI is updated either with an error (if IsError) or a system message.
-- Message sending paths: if there are staged attachments, a staged message is sent with the caption and attachments; otherwise, if there is a per-channel pending reply, the message is sent with a replyTo ID; in all sending paths, EnsureRoomUnlockedForSendAsync is awaited; after a pending-reply send, ClearPendingReply is invoked on the UI thread.
 
 ---
 
@@ -1631,14 +1738,13 @@ private void HandleProfileRequested()
 **Returns:** `void`
 
 
-Handles the internal action when a profile is requested by the user. It delegates directly to HandleViewProfile(null), which triggers the shared profile-view workflow for the current user without requiring a specific user identifier.
+This private method handles the 'Profile Requested' action by delegating to the shared profile-viewing workflow. It calls `HandleViewProfile` with a `null` argument to trigger the default/current profile display.
 
 ## Remarks
-By routing through this private method, the code preserves a clean separation between the act of requesting a profile and the details of how a profile is displayed. It keeps the event-name binding lightweight while centralizing the actual view logic in HandleViewProfile. If future requirements ever need to view a non-current profile, this wrapper can be adapted or extended to pass a concrete identifier without broadening the public API.
+This forwarding method isolates the action-handling glue from the actual view logic. By funneling through `HandleViewProfile`, the orchestrator maintains a single path for presenting a profile, reducing duplication and centralizing validation or normalization of input when no specific target is provided. It remains a small wrapper around the real work, preserving a clean public surface while reusing the underlying view logic.
 
 ## Notes
-- The wrapper relies on the null argument to signal 'current user' to the profile viewer; changing the contract of HandleViewProfile would require updating this method.
-- Because the method is private, tests must exercise the public paths that lead to this method rather than invoking it directly.
+- Relies on `HandleViewProfile` being able to handle a `null` input; if that contract changes, this method will need adjustment.
 
 ---
 
@@ -1653,14 +1759,10 @@ private void HandleReplyCancelRequested() => ClearPendingReply()
 **Returns:** `void`
 
 
-This private method handles a cancel request for a pending reply by clearing any in-progress reply state. It delegates to ClearPendingReply to perform the reset, providing a semantically meaningful hook within the orchestrator's reply lifecycle.
+As a private handler, `HandleReplyCancelRequested` responds to a cancellation signal for the current reply by clearing any pending reply state. It simply delegates to `ClearPendingReply()` to perform the actual cleanup, ensuring the cancellation path does not duplicate the clearing logic elsewhere.
 
 ## Remarks
-By naming this hook, the code communicates intent: cancellation of a pending reply is a distinct moment in the flow, and all necessary cleanup should be centralized here. This makes future changes to the cancellation behavior easier to implement without touching multiple call sites.
-
-## Notes
-- This method is private; external callers should trigger cancellation through public channels that eventually surface this path.
-- It is a synchronous wrapper around ClearPendingReply; no asynchronous operations are performed in this method.
+By providing a dedicated private handler, cancellation triggers can be wired to a specific action (e.g., user-initiated cancel or protocol signal) without scattering the cleanup details across callers. The method keeps the cleanup behavior centralized in `ClearPendingReply()` while exposing a clear semantic hook for cancellation paths.
 
 ---
 
@@ -1683,15 +1785,41 @@ private void HandleReplyRequested(Guid messageId, string sender, string snippet)
 **Returns:** `void`
 
 
-Handles a user action to reply to a specific message. It first checks for an active channel from the main window; if none exists, it returns without altering any UI state. When a channel is present, it records the target message and channel as the pending reply, shortens the provided snippet to a concise preview (40 characters max, with an ellipsis added if truncation occurs), and updates the UI to show who is being replied to along with that preview.
+HandleReplyRequested processes a user action to reply to a specific message by establishing the reply context for the current channel and updating the user interface to reflect that intent. If there is no active channel, the method exits early and makes no changes. When a channel exists, it records the target channel and message in `_pendingReply`, truncates the provided snippet to at most 40 characters (appending a Unicode ellipsis when truncated), and updates the main window with a header showing who is being replied to and the short snippet.
 
 ## Remarks
-Handles the internal UX state for message replies by coupling the selected message (messageId) with its channel and exposing a concise preview to the user. This keeps the reply context consistent across subsequent actions without requiring the higher-level UI to recompute the target context on every interaction. It also prevents initiating a reply when there is no active channel.
+By centralizing the reply-flow logic, this method ensures a consistent user experience for replying to messages across the application. It creates a lightweight, UI-facing preview and a stored reply target that subsequent compose/send logic can use to route the reply to the correct channel and message. The operation ties the reply context to the active channel, ensuring the reply target remains meaningful within the current conversation.
+
+## Example
+```csharp
+// Example: long snippet is truncated for the reply header
+Guid messageId = Guid.NewGuid();
+string sender = "Alice";
+string longSnippet = "This is a long snippet that will be truncated to keep the reply header compact.";
+HandleReplyRequested(messageId, sender, longSnippet);
+```
 
 ## Notes
-- Early return when there is no current channel; the method exits without updating pending state or UI.
-- Snippet truncated to 40 characters with a trailing ellipsis (the character '…') when longer, ensuring a compact in-UI preview.
-- This method directly manipulates UI state via _mainWindow; callers should ensure execution on the appropriate UI thread to avoid cross-thread exceptions.
+- If `CurrentChannel` is null or empty, the method returns immediately and does not modify state.
+- Snippet truncation uses 40 characters and appends the Unicode ellipsis '…' when needed.
+- The UI update calls `_mainWindow.SetReplyingTo` to reflect the reply context; ensure `_mainWindow` is initialized and that this runs on the UI thread to avoid cross-thread issues.
+
+---
+
+### HandleRollbackRequested
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private void HandleRollbackRequested()
+```
+
+**Returns:** `void`
+
+
+Orchestrates the rollback flow for an in-progress update by restoring from a previously created backup. It first validates the existence of a backup via `UpdateBackupService.BackupExists()`. If none exists, it shows an error dialog through `MessageBox.ErrorQuery` and returns. If a backup is present, it retrieves backup details with `UpdateBackupService.GetBackupInfo()` to display the target version in a confirmation prompt via `MessageBox.Query(_app, "Rollback Update", `$"Restore to version {info?.Version ?? "unknown"}?
+
+The app will restart."`, "Restore", "Cancel")`. If the user confirms (the result is 0), it calls `UpdateBackupService.RestoreBackup()`, after which `Environment.Exit(0)` terminates the application. Any exception raised during restoration is caught, logged with `Log.Error`, and shown to the user via an error dialog containing the exception message.
 
 ---
 
@@ -1706,15 +1834,26 @@ private void HandleSavedServersRequested()
 **Returns:** `void`
 
 
-Shows the list of saved servers to the user by reading from the configuration and presenting it in a modal dialog. If there are no saved servers, it informs the user that none exist.
+This private UI helper reads the configured list of saved servers from `_config.SavedServers` and presents it to the user. If the list is empty, it informs the user via a message box that no saved servers exist yet. If there are saved servers, it formats each entry as: server name, URL, username (defaulting to `?` when missing), and the last connected date formatted as `yyyy-MM-dd`; if a refresh token is present, it appends ` [session saved]`. The resulting lines are displayed in a `MessageBox.Query` under the title `Saved Servers`.
 
 ## Remarks
-This method centralizes the presentation logic for saved servers, decoupling data retrieval from display concerns. It relies on the configuration's SavedServers collection and uses a straightforward LINQ projection to build human-readable lines, including a session indicator when a refresh token is present and the last connected date. The formatting rules (username fallback to ? and the optional [session saved] tag) are encapsulated here, making future changes localized to this UI path.
+By isolating the saved servers rendering here, the UI layer has a single place to manage how server metadata is presented. It relies on `_config.SavedServers` for data and on `MessageBox.Query` for presentation, which keeps the behavior consistent with other similarly presented lists in the app. If later the display format changes (e.g., additional metadata is shown or localization), only this method needs adjustment.
 
-## Notes
-- The function renders a modal dialog via MessageBox.Query, which blocks until the user dismisses it; callers should ensure this is invoked on the UI thread.
-- The last connected date is formatted as yyyy-MM-dd, a culture-invariant representation; if LastConnected can be default or null, this may warrant data validation upstream.
-- Username defaults to "?" when missing, and a server is labeled with "[session saved]" only if RefreshToken is non-empty, tying display state to authentication/session data.
+---
+
+### HandleSearchRequested
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private void HandleSearchRequested()
+```
+
+**Returns:** `void`
+
+
+HandleSearchRequested is a private handler that processes the result of the search dialog by presenting channel names and routing the user to either channel navigation or an action handler. It calls `SearchDialog.Show(_app, _mainWindow.GetChannelNames())` and, if the result is `null`, returns; otherwise it branches on `result.Type` to either switch to a channel via `_mainWindow.SwitchToChannel(result.Key)` and call `HandleChannelSelected(result.Key)`, or dispatch to the appropriate action handler (e.g., `HandleConnect()`, `HandleDisconnect()`, `HandleLogout()`, `HandleProfileRequested()`, `HandleStatusRequested()`, `HandleCreateChannelRequested()`, `HandleDeleteChannelRequested()`, `HandleSavedServersRequested()`), or perform UI operations like toggling the users panel or quitting the app.
+
 
 ---
 
@@ -1729,15 +1868,13 @@ private void HandleStatusRequested()
 **Returns:** `void`
 
 
-Handles a user-initiated request to change the current status. It presents StatusDialog to gather a new status and optional message, updates the local session with the chosen values, and, if a connection is active, persists the change asynchronously via the connection.
+Handles a user-initiated request to change the current status by presenting a [`StatusDialog`](UI/Dialogs/StatusDialog.cs.md) to collect a new `Status` and optional `StatusMessage`. If the user cancels (the dialog returns `null`), the method returns early; otherwise it updates the in-memory `_session.Status` and `_session.StatusMessage` and, when a connection exists, asynchronously sends the update to the server via `_conn.UpdateStatusAsync(...)` inside `RunAsync` with a failure message.
 
 ## Remarks
-This method is the bridge between the UI dialog and the rest of the application's state. It encapsulates the common pattern of mutating local session state plus a conditional remote update, so callers don't need to duplicate the sequence. If the user cancels the dialog (StatusDialog.Show returns null), no state is changed. The remote update runs asynchronously and uses a dedicated error message, allowing the UI to remain responsive and errors to be surfaced in a uniform way.
+`HandleStatusRequested` acts as a small orchestration unit between the UI and the persistence layer. It delegates the prompting to `StatusDialog.Show`, then applies the resulting values to the local session and conditionally persists them to the server, ensuring the UI remains responsive through `RunAsync`. The local session is updated immediately, so the in-memory representation reflects the user's choice even if the remote update is deferred due to lack of connectivity.
 
 ## Notes
-- The local session state is updated regardless of connectivity; the remote update only runs when _conn.IsConnected.
-- If the user cancels the dialog, indicated by a null result, the method returns without modifying state.
-- This method is private; callers should trigger it through the UI flow rather than invoking it directly.
+- When offline (`_conn.IsConnected` is false), the remote update is skipped; the local session state changes still apply, which may require reconciliation once connectivity is restored.
 
 ---
 
@@ -1758,14 +1895,10 @@ private void HandleThemeSelected(string themeName)
 **Returns:** `void`
 
 
-Orchestrates the end-to-end theme switch when the user selects a theme. It loads the chosen theme via ThemeManager.GetTheme, applies it with ThemeManager.ApplyTheme, persists the selection by saving the updated config through ConfigManager.Save, and refreshes the UI to reflect the change.
+Handles a user-initiated theme selection by resolving the requested theme with `ThemeManager.GetTheme(themeName)`, applying it through `ThemeManager.ApplyTheme(theme)`, persisting the chosen name to `_config.ActiveTheme` with `ConfigManager.Save(_config)`, and finally refreshing the UI via `InvokeUI` to re-apply color schemes and redraw the main window. This method serves as the central coordinator for the end-to-end theme-change workflow, ensuring the in-memory state, persisted configuration, and visual presentation stay in sync when a theme is selected.
 
 ## Remarks
-Centralizes the end-to-end theme-switch workflow for the app: the same sequence is used whenever a theme changes, ensuring runtime state, persisted configuration, and the visible UI stay in sync. It coordinates ThemeManager, ConfigManager, and the main window (via InvokeUI) to apply color schemes and trigger a UI redraw in a thread-safe manner. Keeping this logic in one private method reduces duplication and makes future theme-related behavior easier to evolve.
-
-## Notes
-- No exception handling is shown in this snippet; exceptions from GetTheme, ApplyTheme, or Save may propagate unless handled by the caller.
-- Assumes _config and _mainWindow are initialized before invocation; otherwise a null reference may occur.
+This symbol acts as the end-to-end theme-change workflow, coordinating `ThemeManager.GetTheme(themeName)` and `ThemeManager.ApplyTheme(theme)`, persisting the choice to `_config.ActiveTheme` with `ConfigManager.Save(_config)`, and refreshing the UI through `InvokeUI` (calling `_mainWindow.ApplyColorSchemes()` and `_mainWindow.SetNeedsDraw()`). It centralizes theme semantics so UI controls can request a theme by name without implementing the propagation logic themselves, and it ensures the selection survives across sessions by persisting it.
 
 ---
 
@@ -1786,15 +1919,10 @@ private void HandleViewProfile(string? username)
 **Returns:** `void`
 
 
-HandleViewProfile orchestrates the retrieval and presentation of a user’s profile. It determines whether the requested username represents the current user, fetches the profile asynchronously when authenticated, and routes the UI flow to either editing the own profile or viewing another user’s profile.
+HandleViewProfile orchestrates the flow to display a profile by determining whether the requested username matches the current session's user (own profile) or not, and then, if authenticated, loading the target profile asynchronously before rendering the UI. For own profiles, it delegates to `ProfileViewDialog.ShowOwn` and handles actions such as `ProfileAction.EditProfile` and `ProfileAction.SetStatus`; for other users, it uses `ProfileViewDialog.Show` to present a read-only view.
 
 ## Remarks
-This method centralizes the profile-view UX flow, coordinating session state, authentication status, data access, and the dialog-driven UI. By dispatching work to a background task and marshaling UI updates back to the main thread, it keeps the caller responsive while ensuring consistent dialog behavior for own vs. other profiles. The outcome of ShowOwn drives subsequent actions (EditProfile or SetStatus) via the ProfileAction return value, keeping subsequent logic cohesive within this symbol.
-
-## Notes
-- The profile fetch only happens if authentication is present; target may be the current user or another user, and a non-empty target is required for the API call.
-- All exceptions during data retrieval are caught and surfaced via ShowError on the UI thread; the flow gracefully aborts the view if loading fails.
-- UI updates are performed on the UI thread using InvokeUI to avoid cross-thread issues.
+This method centralizes the profile viewing UX, minimizing duplication of own-vs-other logic across the codebase. By performing the profile fetch in the background and only switching to the UI thread when needed, it preserves UI responsiveness and error handling through a single, consistent path.
 
 ---
 
@@ -1815,16 +1943,16 @@ private void InvokeUI(Action action) => _app.Invoke(action)
 **Returns:** `void`
 
 
-InvokeUI is a private helper that forwards an Action to the application's UI thread by calling _app.Invoke(action). It centralizes UI-thread marshaling within AppOrchestrator so UI updates scheduled from background or orchestrator code go through a single path, ensuring consistent threading semantics.
+Invokes the supplied `Action` on the UI thread by delegating to the underlying `_app.Invoke(action)` call. This private wrapper centralizes UI-thread marshaling within the `AppOrchestrator` so that all UI work flows through a single, consistent path rather than sprinkling `_app` calls across the class.
 
 ## Remarks
 
-Centers the UI-thread marshaling logic in a single place, reducing boilerplate and the risk of inconsistent marshalling across callers. Because the method is private, its usage is limited to internal orchestration and can be changed without impacting public APIs. The actual dispatch timing depends on the implementation of _app.Invoke; if non-blocking behavior is required, prefer a non-blocking path (such as a BeginInvoke variant) when available.
+This private wrapper isolates UI-thread marshaling behind a small helper in `AppOrchestrator`. It makes the threading contract explicit and consistent: all code that must run on the UI thread goes through `_app.Invoke`, avoiding scattered direct `_app` usage. As a simple pass-through, it adds no additional synchronization or error handling beyond what `_app.Invoke` provides; callers should rely on that behavior.
 
 ## Notes
 
-- The underlying _app.Invoke dictates whether the call blocks; this method does not introduce a new asynchrony model by itself.
-- Avoid long-running work inside the Action passed to InvokeUI to prevent UI thread stalling; offload heavy work to background threads.
+- If `_app` is null or uninitialized, this method will throw.
+- Exceptions thrown by the provided `Action` propagate to the caller; this method does not swallow or transform them.
 
 ---
 
@@ -1846,15 +1974,15 @@ private async Task<List<MessageDto>?> JoinChannelWithPasswordPromptAsync(string 
 **Returns:** `Task<List<MessageDto>?>`
 
 
-Joins a channel, automatically handling password prompts when the server requires authentication. If the channel is end-to-end encrypted, the user’s passphrase never leaves the client; a PBKDF2-derived authentication key is used to unwrap the room key locally, and the method returns the channel history. If the user cancels the password prompt, it returns null.
+Joins a channel by name, prompting for a password when the server requires one and re-prompting on wrong password. For end-to-end encrypted channels the typed passphrase never leaves the client — a `PBKDF2`-derived auth key is sent to the server and the room content key is unwrapped locally. The method returns the channel history when the join succeeds, or null if the user cancels the prompt.
 
 ## Remarks
-This method centralizes the join-with-password flow, including encryption metadata handling, local key management, and UI coordination, so callers do not need to re-implement retry logic. It coordinates with the connection's room-key store to cache and unwrap encryption envelopes; when a fresh envelope is obtained, it unwraps it locally (using the derived key, if available) and fetches history so decryption uses the latest key. The password prompt is dispatched to the UI via InvokeUI and the result is awaited, ensuring a responsive user experience even on the UI thread.
+This method encapsulates the end-to-end join and key-management flow for encrypted channels. It first fetches optional crypto metadata and, if present, marks the channel encrypted. It then loops, deriving a key from the user's password when available and calling [`JoinChannelAsync`](../EchoHub.Server/Services/ChatService.cs.md) with the wire password. If a fresh `WrappedRoomKey` arrives, it attempts to persist it via `RoomKeys` and, on success, re-fetches history to decrypt content with the new key; if no local key is yet available, it triggers `UnlockRoomKeyAsync` to obtain one. The design keeps encryption material on the client and ensures history is decrypted with the current key state.
 
 ## Notes
-- Cancellation returns null; callers should treat this as a failed join.
-- Wrong passwords trigger a re-prompt loop via ChannelPasswordRequiredException handling.
-- If crypto metadata cannot be retrieved, the join proceeds with best-effort encryption state and logs the incident for diagnostics.
+- The join/prompt loop continues until a successful join yields a usable room key and history, or the user cancels by providing a null password.
+- Key derivation is performed only when `crypto.IsEncrypted` is true and `crypto.EncryptionSalt` is non-null; otherwise `kek` remains null and envelope unwrap is skipped.
+- UI interaction relies on `InvokeUI` and `ChannelPasswordDialog.Show`, so this path assumes a UI thread context.
 
 ---
 
@@ -1875,15 +2003,14 @@ private bool NeedsUnlockPrompt(string channelName)
 **Returns:** `bool`
 
 
-Determines whether the orchestrator should prompt the user to unlock the room key for a given end-to-end encrypted channel. It returns true only when the channel is encrypted, has no cached key, and the user has not declined the unlock prompt during this session. If the channel isn't encrypted or a key is already cached, no prompt is needed.
+Determines whether the UI should prompt for unlocking the room key for a given channel. NeedsUnlockPrompt returns true only when the channel is end-to-end encrypted, its room key is not cached, and the user has not already declined the unlock prompt in this session. If the channel is not encrypted or a key is already cached, the method returns false; if encryption is present but the user has declined, it also returns false. The decision is guarded by a lock around the per-session declined-state to ensure thread-safe reads.
 
 ## Remarks
-
-By centralizing this decision, the code avoids spuriously prompting for unlocks. It leverages the RoomKeys service to inspect encryption status and key caching, and it uses a per-session declined-set to remember user choices, preventing repeated prompts for the same channel within a session. This method acts as a guard that the UI can consult before triggering any unlock UI.
+This method centralizes the decision logic for showing an unlock prompt, coordinating between the encryption state available from `RoomKeys` and the per-session user preference tracked in `_declinedUnlocks`. By returning a simple boolean, it prevents repeated prompting for the same channel within a session and encapsulates the necessary synchronization around the decline-tracking collection.
 
 ## Notes
-
-- The check to read _declinedUnlocks is performed under a lock to ensure thread-safe access to the collection.
+- This function is a pure decision point: it does not perform any UI action itself, it merely indicates whether a prompt should be shown.
+- It relies on the per-session `_declinedUnlocks` collection to respect a user’s prior decline; the actual population of that set happens outside this snippet.
 
 ---
 
@@ -1904,14 +2031,79 @@ private static string? NormalizeAsciiSize(string? size) => size?.Trim().ToLowerI
 **Returns:** `string?`
 
 
-Normalizes common ASCII size descriptors into a canonical one-letter code used internally. It trims whitespace, lowercases the input, and maps 's'/'small' to 's', 'm'/'medium' to 'm', and 'l'/'large' to 'l'. Anything else (including null or unknown values) yields null, leaving it to the caller to decide how to proceed.
+NormalizeAsciiSize is a private static helper method that standardizes a user-supplied size descriptor (parameter `size`). It trims whitespace with `Trim()`, converts to lowercase with `ToLowerInvariant()`, and maps common tokens to a canonical short form: `s` or `small` → `s`, `m` or `medium` → `m`, and `l` or `large` → `l`. If the input is `null` or does not match any known token, it returns `null` to indicate an unrecognized size.
 
 ## Remarks
-Centralizes normalization logic for size inputs, ensuring consistent downstream handling wherever a compact size code is required. Since it returns null for unknown inputs, callers must guard against nulls or provide a fallback. The method is pure (no side effects) and deterministic given its input.
+By centralizing these token mappings in a single helper, the codebase avoids duplicating normalization logic at call sites and ensures consistent downstream handling. Since it returns `null` for unrecognized input, callers must handle this possibility explicitly rather than relying on exceptions.
 
 ## Notes
-- Returns null for any value that isn't a recognized descriptor, including null or whitespace.
-- Whitespace is trimmed and case-insensitive matching is applied, so variations like ' Small ' or 'S' are treated the same.
+- Returns `null` for unrecognized inputs; callers must handle this possibility.
+- Trims whitespace and ignores case via `Trim()` and `ToLowerInvariant()` to make matching resilient to user input.
+
+---
+
+### PersistLastReads
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private void PersistLastReads()
+```
+
+**Returns:** `void`
+
+
+Persists the in-memory last-read message ids to the current server's config entry so unread and mention state can be reconstructed on the next connect. It reads the mapping from `_messageManager.LastReadIds`, returns early if it is empty, and uses `UpdateServerConfig` to write each `(channel, id)` pair into `server.LastReadMessages[channel]` as `id.ToString()`.
+
+## Remarks
+This method encapsulates the persistence of per-channel read progress behind a single server-config mutation (`UpdateServerConfig`). It decouples in-memory tracking from durable storage, ensuring the last-read state survives restarts and reconnections. The mapping is stored as string values in `server.LastReadMessages`, derived from `id.ToString()`.
+
+---
+
+### PromptPassword
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+}
+
+    private string? PromptPassword(string prompt)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `prompt` | `string` | — |
+
+**Returns:** `}
+
+    private string?`
+
+
+Displays a modal password-prompt dialog and returns the entered password when the user confirms; it returns `null` if the user cancels or leaves the field empty. The UI is constructed with a `Dialog` titled "Confirm Password" containing a `Label` for the prompt, a secret `TextField` for password input, and two `Button`s: "Confirm" (default) and "Cancel". When the user accepts, the handler assigns the field's `Text` to `result` and stops the dialog loop; when cancelling, it assigns `null` to `result` and stops. The dialog is shown by `_app.Run(dialog)`, and the final return is either the password or `null` if no input was provided.
+
+---
+
+### RefreshStagingTray
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private void RefreshStagingTray()
+```
+
+**Returns:** `void`
+
+
+Refreshes the staging tray with the current staged files and ASCII size. It collects file names from `_stagedAttachments` via `Path.GetFileName` and updates the UI by calling `_mainWindow.SetStagedAttachments`, supplying the resulting `names` list and the ASCII size label produced by `AsciiSizeLabel(_config.DefaultAsciiSize)`.
+
+## Remarks
+Private helper that centralizes the UI refresh pattern for the staging area. It translates the raw attachments into the user-visible names and size indicator, ensuring a consistent presentation whenever the staged set changes.
+
+## Notes
+- The method uses `OfType<string>()` to ignore non-string entries in `_stagedAttachments` before extracting file names.
+- The ASCII size displayed derives from `_config.DefaultAsciiSize` via `AsciiSizeLabel`, so changing the config affects the label globally.
 
 ---
 
@@ -1934,14 +2126,32 @@ private void RunAsync(Func<Task> work, string errorPrefix, string? logContext = 
 **Returns:** `void`
 
 
-Consolidates the execution of an asynchronous operation within the application context by routing it through AsyncRunner.Run. It passes the current application context, the work to perform, and the UI-facing error handler, along with an error prefix and optional log context. Use RunAsync to ensure uniform error reporting and logging for asynchronous tasks without duplicating the wiring at every call site.
+A private helper that delegates the execution of an asynchronous unit of work to `AsyncRunner.Run`, binding it to the current application context and a centralized error presentation path. Callers supply a `Func<Task>` representing the work, an `errorPrefix` for user-facing errors, and an optional `logContext` for additional trace information; the method forwards these to `AsyncRunner.Run` along with `_app` and `_mainWindow.ShowError`.
 
 ## Remarks
-RunAsync is a tiny abstraction that centralizes cross-cutting concerns around asynchronous work: error handling, user feedback through the main window, and optional diagnostic logging. It decouples callers from the AsyncRunner wiring, so changes to error handling or the logging strategy can be made in one place without touching every invocation.
+Consolidates cross-cutting concerns: error handling and user feedback for async operations initiated by the orchestrator. By funneling all such work through this method, the codebase avoids duplicating boilerplate at every call site and ensures consistent error presentation via ` _mainWindow.ShowError` by passing it to `AsyncRunner.Run`.
 
-## Notes
-- Private accessibility means it can only be used within the containing class; callers should use higher-level methods that eventually invoke this helper.
-- logContext is optional; omit it if there is no additional logging context, but providing a descriptive value improves traceability in logs and diagnostics.
+
+---
+
+### SaveServerToConfig
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private void SaveServerToConfig(ConnectDialogResult result)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `result` | [`ConnectDialogResult`](UI/Dialogs/ConnectDialog.cs.md) | — |
+
+**Returns:** `void`
+
+
+On a successful connection to a server, this method updates the per-server entry in the client config in place (never replacing it) so that cached room keys, left channels, and last-read markers survive across connections. It looks up the server by URL (case-insensitive) within the `config.SavedServers` collection and, if no entry exists, creates a new [`SavedServer`](Config/ClientConfig.cs.md) named after the URL host and adds it to the collection; it then updates `Username`, `RefreshToken` (taken from `_conn.Api!.RefreshToken` when `RememberMe` is true, otherwise `null`), `RememberMe`, and `LastConnected`, persists the updated [`ClientConfig`](Config/ClientConfig.cs.md) via `ConfigManager.Save(config)`, and updates the in-memory `_config` while logging the successful connection with the URL.
 
 ---
 
@@ -1963,16 +2173,57 @@ private void SendStagedMessage(string channel, string content)
 **Returns:** `void`
 
 
-Sends one message with the given caption plus all staged files as attachments, then clears the staging tray. In encrypted channels each file is room-encrypted (blob + ASCII preview) client-side before upload; the caption is room-encrypted too.
+Sends one message with the given caption plus all staged files as attachments, then clears the staging tray. In encrypted channels each file is room-encrypted (blob + ASCII preview) client-side before upload; the caption is encrypted too when a room key is available and the content is non-empty.
 
-## Remarks
-This method serves as the orchestration point for sending staged content. It encapsulates the encryption decision (via RoomKeys and RoomCrypto), attachment construction (via OutgoingAttachment), and the lifecycle management of the staging tray and temporary pasted files. By coordinating several collaborators, it provides a single, reliable path to publish a caption and its attachments while preserving staging integrity and user experience even in edge cases (e.g., locked rooms or upload failures).
+The operation runs asynchronously inside a `RunAsync` wrapper, taking a snapshot of the current staged attachments, clearing `_stagedAttachments`, and refreshing the staging tray UI via `RefreshStagingTray`.
 
-## Notes
-- If the channel is locked, the send is blocked and the files remain staged for after the unlock. The operation exits early in this case.
-- The content and attachments are encrypted only if a room key is available; otherwise they are sent in plaintext.
-- Temporary pasted files are cleaned up in a finally block, and the staging tray is refreshed regardless of success or failure to prevent orphaned UI artifacts.
+The method builds a list of [`OutgoingAttachment`](Services/OutgoingAttachment.cs.md)s by calling `BuildOutgoingAttachmentAsync` for each staged path (using a room key if one is present). If a room key is available and `content` is not empty, the caption is encrypted with `RoomCrypto.EncryptText` before sending; otherwise the plain `content` is sent. The final send is performed through `_conn.Api!.SendMessageWithAttachmentsAsync(channel, wireContent, outgoing, size)` with `size` taken from `_config.DefaultAsciiSize`.
 
+A `finally` block ensures that temporary pasted files are cleaned up via `CleanupPastedTempFiles(tempFiles)` so there are no leftovers regardless of success or failure.
+
+
+---
+
+### SetDownloadPath
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private void SetDownloadPath(string path)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `path` | `string` | — |
+
+**Returns:** `void`
+
+
+Sets the application's download folder to the provided `path`. It first ensures the directory exists by calling `Directory.CreateDirectory(path)`; if that throws, it marshals a UI error through the main window and returns. On success, it updates `_config.DownloadPath`, saves the configuration with `ConfigManager.Save(_config)`, and posts a system message via `_messageManager.AddSystemMessage` to `_mainWindow.CurrentChannel` indicating the new download folder. All UI feedback is marshaled through `InvokeUI` to run on the UI thread.
+
+---
+
+### UnlockRoomKeyAsync
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private async Task<List<MessageDto>?> UnlockRoomKeyAsync(string channelName, JoinOutcome outcome)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `channelName` | `string` | — |
+| `outcome` | [`JoinOutcome`](Services/EchoHubConnection.cs.md) | — |
+
+**Returns:** `Task<List<MessageDto>?>`
+
+
+UnlockRoomKeyAsync is the encrypted-channel recovery workflow used when there is no cached room key for a channel (for example on a new device). It first checks the provided [`JoinOutcome`](Services/EchoHubConnection.cs.md) for `EncryptionSalt` and `WrappedRoomKey`; if either is missing, it returns the existing history. If both are present, it prompts the user with `ChannelPasswordDialog.Show` to enter a passphrase, derives a candidate key with `RoomCrypto.DeriveKeys(passphrase, salt)`, and attempts to store the derived key via `_conn.RoomKeys.TryStoreFromEnvelope(channelName, outcome.WrappedRoomKey, derived.KeyEncryptionKey)`. On success, it clears any decline flag for the channel and fetches the updated history using `_conn.GetHistoryAsync(channelName)`. If the passphrase is incorrect, it repeats the prompt; if the user cancels, it records the decline for that channel and returns the existing history.
 
 ---
 
@@ -1993,15 +2244,38 @@ private async Task<bool> UnlockTrackedChannelAsync(string channelName)
 **Returns:** `Task<bool>`
 
 
-UnlockTrackedChannelAsync unlocks an end-to-end encrypted channel that is already joined as part of the hub. It re-joins the channel to obtain the WrappedRoomKey envelope, unwraps the key, and, if a key exists in the local store, loads decrypted history into the UI before signaling that the channel is unlocked. The method returns true on a successful unlock and false if the envelope is missing, the key cannot be unwrapped, or an error occurs during the flow.
+UnlockTrackedChannelAsync orchestrates the unlock sequence for a channel that is already hub-joined. It reuses the join flow to fetch a wrapped room key envelope by calling `_conn.JoinChannelAsync(channelName, null)`. If the envelope is absent (the `WrappedRoomKey` is null), the channel is not an E2E channel and the method returns `false`. It then delegates to `UnlockRoomKeyAsync(channelName, outcome)` to unwrap the key (which prompts for the passphrase). If no key is retained in `_conn.RoomKeys` for the channel, the flow is considered cancelled or unwrapped, and the method returns `false`. If a `history` payload is produced, it is applied to the UI via `InvokeUI(() => _messageManager.LoadHistory(channelName, history))`. The method returns `true` when the unlock succeeds; any exception is caught, logged with a warning, and results in `false`.
 
 ## Remarks
-This method centralizes the unlock sequence for channels the client is tracking, hiding the details of rejoining, envelope handling, and UI synchronization behind a single, reusable path. It relies on the connection's RoomKeys store to verify that a key has been unwrapped and on the UI dispatcher (InvokeUI) to surface decrypted history when available, ensuring the unlock outcome is reflected in the user interface in a thread-safe manner.
+UnlockTrackedChannelAsync centralizes the unlock sequence for an E2E channel into a single, testable flow that spans network joining, key envelope handling, and UI history restoration. It defers to the hub-provided envelope to determine applicability, uses `UnlockRoomKeyAsync` for unwrapping (and passphrase prompting), and only then surfaces the decrypted history via [`LoadHistory`](UI/Chat/ChatMessageManager.cs.md). This encapsulation keeps concerns separated: the rest of the app can request an unlock without wiring together [`JoinChannelAsync`](../EchoHub.Server/Services/ChatService.cs.md), envelope checks, and UI updates.
 
 ## Notes
-- The function returns false if the channel does not present a WrappedRoomKey (i.e., not an E2E channel) or if the key cannot be established, providing a clear early-out behavior for non-E2E or cancelled unlocks.
-- All exceptions are caught and logged with a warning, preventing an unhandled exception from propagating to callers.
-- History is loaded into the UI only when a non-null history payload is produced; otherwise, unlocking still succeeds but there is nothing to display.
+- Exceptions are caught and cause the method to return `false`; debugging may require examining logs produced by `Log.Warning`.
+- The method returns `false` for multiple distinct failure modes (not an E2E envelope, cancellation/unwrapping failure, or an unexpected exception); callers should handle a generic failure outcome gracefully.
+
+---
+
+### UpdateServerConfig
+> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
+> **Kind:** method
+
+```csharp
+private void UpdateServerConfig(Action<SavedServer> mutate)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `mutate` | `Action<SavedServer>` | — |
+
+**Returns:** `void`
+
+
+UpdateServerConfig mutates the configuration entry for the server associated with the current API base URL and persists the result. It loads the existing configuration with `ConfigManager.Load()`, locates the matching [`SavedServer`](Config/ClientConfig.cs.md) in `config.SavedServers` by comparing the server’s `Url` to the API base URL using `StringComparison.OrdinalIgnoreCase`, applies the mutation via the `mutate` action, saves the updated configuration with `ConfigManager.Save`, and updates `_config` to reflect the in-memory state. If the URL cannot be determined or no matching server exists, the method returns without changes.
+
+## Remarks
+UpdateServerConfig acts as a small centralization point for modifying the active server's settings, ensuring that mutations are consistently applied and immediately persisted. It encapsulates the guard logic (null URL and missing server) behind a simple contract and keeps the in-memory `_config` synchronized with the persisted config.
 
 ---
 
@@ -2016,16 +2290,10 @@ private void WireCommandHandlerEvents()
 **Returns:** `void`
 
 
-WireCommandHandlerEvents subscribes the AppOrchestrator to a broad suite of events exposed by the command handler. This centralized wiring ensures that whenever the command handler raises events such as OnSetStatus, OnJoinChannel, or OnExportData, the corresponding local handlers (HandleCmdSetStatus, HandleCmdJoinChannel, HandleCmdExportData, etc.) are invoked. Use this method during initialization to establish the one-to-one event-to-handler mappings instead of scattering subscriptions throughout startup code.
+Subscribes the command handler's events to their corresponding handlers within the orchestrator. It wires each `OnX` event exposed by `_commandHandler` to a concrete `HandleCmdX` method (for example `OnSetStatus` → `HandleCmdSetStatus`, `OnJoinChannel` → `HandleCmdJoinChannel`). This central wiring typically runs during initialization to ensure that incoming commands trigger the appropriate response logic.
 
 ## Remarks
-
-This method encapsulates the event-binding choreography between the command layer and the orchestrator. It provides a single, discoverable place where command-related concerns are wired, which helps keep the AppOrchestrator focused on reacting to high-level user commands rather than wiring subsystems. Because the wiring is performed in one place, tests can swap a mock _commandHandler or verify that specific events are connected to their expected handlers. If the set of command events changes, updating this method is the one authoritative location.
-
-## Notes
-
-- If _commandHandler is not initialized before calling this method, a NullReferenceException will occur when subscribing to events. Ensure proper initialization order during construction/startup.
-- Renaming or removing events requires updating this wiring method to maintain coverage.
+By centralizing all event subscriptions in `WireCommandHandlerEvents`, the class gains a single, discoverable place to manage the command-event surface, reducing drift where a handler might be forgotten. The pattern keeps wiring concerns separate from the handlers themselves, which simplifies testing and future extension (adding new commands simply introduces a new `OnX`-`HandleCmdX` pair).
 
 ---
 
@@ -2040,38 +2308,15 @@ private void WireConnectionManagerEvents()
 **Returns:** `void`
 
 
-## Source Code
-Wires up the ConnectionManager's event handlers to drive the client UI for messages, joins/leaves, and presence updates. It subscribes to MessageReceived to display incoming messages and to notify the user when they are mentioned; it handles UserJoined and UserLeft to keep the per-channel online user list in sync and to refresh the UI when the current channel is active; and it reacts to UserStatusChanged to propagate presence updates across all channels and to update the cached channel user lists. The updates are marshaled onto the UI thread via InvokeUI, and thread-safety around the shared _channelUsers collection is maintained with a lock to avoid race conditions when users join, leave, or change status.
+Wires the connection manager's events to drive UI updates and internal state in response to real-time chat activity. It subscribes to `MessageReceived`, `UserJoined`, `UserLeft`, and `UserStatusChanged`, updating the message feed, per-channel presence caches, and online user lists, while triggering mention notifications when relevant. All UI updates are marshalled via `InvokeUI`, and the shared cache is protected with `_channelUsersLock` to ensure thread-safety during joins, leaves, and status changes.
 
 ## Remarks
-This method centralizes all event wiring for the connection manager, isolating networking concerns from UI/presentation logic. It coordinates message display, system messages for joins/leaves, and presence updates in a single place, which simplifies reasoning about real-time behavior and makes testing easier. The design favors immediate UI feedback for the active channel while ensuring the in-memory presence cache stays consistent across channels.
+By centralizing the wiring of `MessageReceived`, `UserJoined`, `UserLeft`, and `UserStatusChanged`, this method keeps the UI and the per-channel presence cache in sync with real-time activity, delegating display concerns to the UI while mutating a `List<UserPresenceDto>` under `_channelUsersLock`. This approach minimizes UI churn by refreshing the current channel's online list when needed and broadcasting presence changes across all channel views.
 
 ## Notes
-- The code uses a lock (_channelUsersLock) to guard updates to the _channelUsers dictionary; avoid performing long-running work inside the locked region to prevent UI thread blocking.
-- Notification sounds depend on a non-empty session username and on the message content mentioning that username; if either is missing, the sound is not played.
-- Presence updates are propagated to all channels for status visibility, and the code path optimizes updates for the current channel by taking a snapshot when applicable.
-
-## Dependencies
-- UserPresenceDto
-- Content
-- StringComparison
-- Username
-- Status
-- UserStatus
-
-## Dependency APIs (verified signatures)
-- record [`UserPresenceDto`](../EchoHub.Core/DTOs/ProfileDtos.cs.md) (`src/EchoHub.Core/DTOs/ProfileDtos.cs`)
-- property `Content` (`src/EchoHub.Core/Models/Message.cs`)
-- property `Username` (`src/EchoHub.Client/Config/ClientConfig.cs`)
-- property `Status` (`src/EchoHub.Client/Services/UserSession.cs`)
-- enum [`UserStatus`](../EchoHub.Core/Models/UserStatus.cs.md) (`src/EchoHub.Core/Models/UserStatus.cs`)
-
-## Symbol To Document
-- Name: WireConnectionManagerEvents
-- Kind: method
-- File: src/EchoHub.Client/AppOrchestrator.cs
-- Language: csharp
-- ID: 8c768c24-e19f-4c25-b611-7ab4a805aa68
+- All presence mutations occur inside a `lock (_channelUsersLock)` block to guard against concurrent updates from multiple events.
+- UI updates are dispatched via `InvokeUI` to ensure thread affinity for UI components like `_messageManager` and `_mainWindow`.
+- `UserStatusChanged` propagates a textual status to all channels via `_messageManager.AddStatusMessage` and synchronizes per-channel lists, with special handling for `UserStatus.Invisible`.
 
 ---
 
@@ -2086,154 +2331,44 @@ private void WireMainWindowEvents()
 **Returns:** `void`
 
 
-Wires the MainWindow's UI events to the orchestrator's handlers by subscribing to a broad set of On...Requested events exposed by _mainWindow. This centralized bootstrap method maps user interactions—such as connecting, disconnecting, logging out, submitting messages, staging files, pasting images, selecting channels, requesting profiles or status, changing themes, managing servers and channels, audio playback, file download/save, image operations, deleting messages, checking for updates, rolling back, viewing user profiles, joining channels from messages, searching, loading more results, and replying to messages—to their corresponding handler methods. Call this during initialization to ensure UI actions are routed into the application's business logic.
+Subscribes the `_mainWindow` events to their corresponding handlers (for example, `_mainWindow.OnConnectRequested` to `HandleConnect`, `_mainWindow.OnMessageSubmitted` to `HandleMessageSubmitted`, `_mainWindow.OnChannelSelected` to `HandleChannelSelected`, and so on). This centralizes the UI-to-logic wiring that drives the application's event-driven behavior. Call this during initialization to bootstrap the UI event flow in a single place rather than scattering subscriptions across the codebase.
 
 ## Remarks
-Centralizes event wiring and decouples the UI from concrete business logic by acting as the single source of truth for how UI actions map to handlers. It makes the orchestrator's responsibilities explicit and simplifies testing and future changes, since all UI-to-logic subscriptions are declared in one place.
+By collecting all event subscriptions here, the method provides a single locus for the startup wiring and makes it easier to see which UI actions trigger which handlers. It also decouples the `_mainWindow` from concrete behavior; the handlers can be replaced or mocked for testing without changing event hookup sites. If this method runs multiple times, handlers would be added repeatedly; ensure it's invoked once or guard against re-subscription.
 
 ## Notes
-- Invoking WireMainWindowEvents more than once will attach duplicate handlers, causing each event to invoke handlers multiple times; ensure this is called once or guard against re-subscription.
-- If _mainWindow is not initialized before calling this method, a NullReferenceException can be thrown during subscription; ensure proper initialization order.
-
+- Calling this method more than once will attach duplicate event handlers to `_mainWindow`, causing handlers to fire multiple times for a single UI action. Consider guarding with a flag or detach before re-wiring in diagnostic scenarios.
 
 ---
 
-## HandleCmdOpenProfile
+### ImageOpenExtensions
 > **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
-> **Kind:** method
+> **Kind:** field
 
 ```csharp
-private Task HandleCmdOpenProfile(string? username)
+private static readonly HashSet<string> ImageOpenExtensions = new(StringComparer.OrdinalIgnoreCase)
 ```
 
-**Parameters:**
 
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `username` | `string?` | — |
-
-**Returns:** `Task`
-
-
-This private command handler serves as the command-path bridge to open a user's profile: it dispatches a UI action to display the profile for the provided username and returns a completed Task. It doesn't navigate directly; InvokeUI marshals the call to the UI thread and delegates to HandleViewProfile for the actual rendering. The username parameter is nullable and is passed through to the underlying handler.
-
-## Remarks
-This separation of concerns keeps command execution lightweight while centralizing UI-thread marshaling. By delegating to HandleViewProfile, the actual profile rendering logic remains centralized, promoting consistent navigation behavior across commands that open profiles.
-
-## Notes
-- Returns immediately with Task.CompletedTask; the UI action runs asynchronously on the UI thread.
-- The nullable username means callers should ensure compatibility with HandleViewProfile's expectations, or provide a fallback when null.
+ImageOpenExtensions is a private static readonly `HashSet<string>` that lists the image file extensions the [open] action may hand to the OS image viewer in E2E rooms. It is constructed with `StringComparer.OrdinalIgnoreCase` to perform case-insensitive lookups, whitelisting extensions such as `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, and `.bmp`.
 
 ---
 
-## HandleSearchRequested
+### SafeOpenExtensions
 > **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
-> **Kind:** method
+> **Kind:** field
 
 ```csharp
-private void HandleSearchRequested()
+private static readonly HashSet<string> SafeOpenExtensions = new(StringComparer.OrdinalIgnoreCase)
 ```
 
-**Returns:** `void`
 
-
-Handles the search-driven user flow by presenting a dialog of channel names and dispatching the selected result to navigation or action handlers. If a channel is chosen, it switches to that channel and triggers additional channel-selection logic; if an action is chosen, it delegates to the corresponding handler (connect, disconnect, logout, profile, status, create-channel, delete-channel, saved-servers, toggle-users, updates, or quit). When the dialog is canceled, the method exits without side effects.
+SafeOpenExtensions is a private static readonly `HashSet<string>` listing the file extensions the app is allowed to open with the system's default application via the shell. For anything else, the code downloads rather than auto-opening, enforcing a safe-open policy; the set uses `StringComparer.OrdinalIgnoreCase` to treat extensions case-insensitively (e.g., `.MP4` and `.mp4` are equivalent).
 
 ## Remarks
-
-By acting as a centralized dispatcher, this method separates the UI interaction (SearchDialog.Show) from the concrete consequences of each choice. It delegates work to the AppOrchestrator's specialized handlers, ensuring consistent behavior for search-driven commands and simplifying future extension of supported actions. If new search result types or actions are introduced, this entry point will need parallel updates to the switch branches and handlers to maintain correctness.
-
-## Notes
-
-- The method only handles Channel and Action result types; additional types will be ignored unless handled here.
-- Action keys are plain strings; adding new actions requires updating both the inner switch and the corresponding handler methods.
-- Null results are treated as cancellation and result in an early return.
-
----
-
-## PromptPassword
-> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
-> **Kind:** method
-
-```csharp
-}
-
-    private string? PromptPassword(string prompt)
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `prompt` | `string` | — |
-
-**Returns:** `}
-
-    private string?`
-
-
-Prompts the user for a password via a modal dialog and returns the entered value, or null if the user cancels or submits an empty value. Use this helper when you need a blocking, masked password input in a Terminal.Gui-based UI, rather than duplicating dialog scaffolding in multiple places.
-
-## Remarks
-This method encapsulates a small, reusable UI flow using Terminal.Gui components: a dialog with a label that shows the provided prompt, a masked text field (Secret = true), and Confirm/Cancel buttons. It returns the raw password string entered by the user, or null when the user cancels or omits input. The prompt text is injected into the label, allowing reuse with different messages without changing layout. The interaction relies on _app.Run(dialog) to present the modal and _app.RequestStop() to close it once the user makes a choice.
+Centralizes the open-via-shell policy for file handling by enumerating extensions that may be opened with the system default application; any file with an extension not present in `SafeOpenExtensions` is downloaded instead and not opened automatically. The policy uses `StringComparer.OrdinalIgnoreCase` to ensure case-insensitive matching, so `.MP4` and `.mp4` are treated equally.
 
 ## Notes
-- The password value is kept in memory as a string until the method returns; avoid logging or persisting it in plaintext.
-- Whitespace-only input is not treated as empty by this implementation; if your validation requires trimming, perform it after receiving the result.
-- Because this is a private helper, callers should provide an appropriate prompt message to convey the expected credential.
-
-
----
-
-## RefreshStagingTray
-> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
-> **Kind:** method
-
-```csharp
-private void RefreshStagingTray()
-```
-
-**Returns:** `void`
-
-
-RefreshStagingTray updates the UI to reflect the current set of staged attachments by extracting their file names and passing them to the main window alongside a size label derived from the configuration. It is a UI helper invoked after modifications to the staging area to keep the display in sync with the underlying data.
-
-## Remarks
-Serves as a UI adapter between the staging model and the presenter, encapsulating how the staged attachments are presented to the user. By using Path.GetFileName, it shows only the file names, avoiding full paths in the interface, and delegates formatting of the size indicator to AsciiSizeLabel(_config.DefaultAsciiSize). This separation simplifies updating presentation details without altering the staging logic.
-
-## Notes
-- Null-reference risk if _mainWindow or _config is not initialized before this method runs.
-
----
-
-## UnlockRoomKeyAsync
-> **File:** `src/EchoHub.Client/AppOrchestrator.cs`  
-> **Kind:** method
-
-```csharp
-private async Task<List<MessageDto>?> UnlockRoomKeyAsync(string channelName, JoinOutcome outcome)
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `channelName` | `string` | — |
-| `outcome` | [`JoinOutcome`](Services/EchoHubConnection.cs.md) | — |
-
-**Returns:** `Task<List<MessageDto>?>`
-
-
-UnlockRoomKeyAsync drives the interactive unlock flow for an encrypted channel that lacks a cached room key (for example, on a new device). It prompts the user for a passphrase until the room key can be unwrapped and stored, at which point it loads and returns the channel history; if the user cancels, it records the decline and returns the existing history without unlocking.
-
-## Remarks
-
-This helper encapsulates the user interaction required to unlock messages for a specific channel, separating the UI-driven password prompt and key-derivation loop from the rest of the connection logic. It uses a per-channel decline cache to avoid nagging after a user declines to unlock, and it clears that cache on a successful unwrap to resume normal history loading.
-
-## Notes
-
-- Early exit: if outcome.EncryptionSalt or outcome.WrappedRoomKey are null, the method returns outcome.History immediately.
-- Asynchronous prompt: the passphrase prompt is dispatched to the UI and awaited without blocking the caller; the prompt is wired via a TaskCompletionSource and ChannelPasswordDialog.Show.
-- Unlock success vs cancel: on success, the derived key is stored and the method returns the channel history; on cancel, the channel is added to _declinedUnlocks and history is returned unchanged.
+- Underlying collection mutability: although the field is `static readonly`, the `HashSet<string>` contents can be changed at runtime; treat this as a fixed policy only if you guarantee no mutation after initialization.
 
 ---

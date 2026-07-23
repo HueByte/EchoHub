@@ -13,6 +13,8 @@
   - [ApplyColorSchemes](#applycolorschemes)
   - [BuildMenuBar](#buildmenubar)
   - [ClearAll](#clearall)
+  - [ClickChannelRegex](#clickchannelregex)
+  - [ClickMentionRegex](#clickmentionregex)
   - [ConfirmDeleteMessage](#confirmdeletemessage)
   - [CopyToClipboard](#copytoclipboard)
   - [EnsureChannelInList](#ensurechannelinlist)
@@ -60,12 +62,17 @@
   - [UpdateStatusBar](#updatestatusbar)
   - [UpdateTopicBar](#updatetopicbar)
   - [AltQKey](#altqkey)
+  - [AppVersion](#appversion)
   - [CtrlCKey](#ctrlckey)
+  - [CtrlKKey](#ctrlkkey)
   - [CtrlVKey](#ctrlvkey)
   - [CtrlXKey](#ctrlxkey)
   - [CtrlYKey](#ctrlykey)
+  - [DefaultInputTitle](#defaultinputtitle)
   - [EnterKey](#enterkey)
   - [F2Key](#f2key)
+  - [F6Key](#f6key)
+  - [NewlineKey](#newlinekey)
   - [SlashCommands](#slashcommands)
   - [SpinnerFrames](#spinnerframes)
   - [StatusActivityAttr](#statusactivityattr)
@@ -76,13 +83,6 @@
   - [StatusTransitionalAttr](#statustransitionalattr)
   - [TabKey](#tabkey)
   - [UsersPanelWidth](#userspanelwidth)
-- [ClickChannelRegex](#clickchannelregex)
-- [ClickMentionRegex](#clickmentionregex)
-- [AppVersion](#appversion)
-- [CtrlKKey](#ctrlkkey)
-- [DefaultInputTitle](#defaultinputtitle)
-- [F6Key](#f6key)
-- [NewlineKey](#newlinekey)
 
 ---
 
@@ -95,16 +95,17 @@ public sealed partial class MainWindow : Runnable
 ```
 
 
-Main Terminal.Gui window for the EchoHub chat client: composes channel list, message list, input field, status/topic labels, users panel and menu bar, and exposes events used by the application to react to user actions (channel selection, message submit, file/image paste, connect requests). Reach for this class when you need a ready-made, full-featured chat UI that integrates with an application orchestrator rather than building the UI pieces and event plumbing yourself.
+Main Terminal.Gui-backed chat window that composes and coordinates the channel list, message view, input field, users panel, and menus for the EchoHub client. Reach for `MainWindow` when you want a complete, ready-to-run terminal UI for chat (keyboard handling, paste/drag staging, autocomplete and connection UI) rather than composing low-level `Terminal.Gui` controls yourself.
 
 ## Remarks
-MainWindow encapsulates the Terminal.Gui controls and client-facing UI state for the chat client and acts as the bridge between user interactions and the application logic. It keeps local collections of channels, topics and metadata, hosts a ChatMessageManager for message lifecycle, and exposes a small set of events (OnChannelSelected, OnMessageSubmitted, OnFilesStaged, OnImagePasted, OnConnectRequested) so the rest of the app can respond to user actions without reaching into control internals. Key bindings are represented as KeyCode constants to allow straightforward switch/case handling of raw key codes.
+`MainWindow` is the single UI surface that translates user interactions into domain-level events and coordinates the internal UI state. It owns and wires together UI components such as `ListView` (for `*_channelList` and `*_messageList`), `TextView` (`_inputField`), `FrameView` (`_chatFrame`, `_inputFrame`, `_usersFrame`), `Label` (`_statusLabel`, `_topicLabel`), and a `MenuBar` (`_menuBar`). The class exposes application-facing events — `OnChannelSelected`, `OnMessageSubmitted`, `OnFilesStaged`, `OnImagePasted`, and `OnConnectRequested` — so the surrounding orchestration (for example the [`AppOrchestrator`](../AppOrchestrator.cs.md)/`Make`) can react without needing to know UI internals. `MainWindow` also holds UI-centric state such as `AppVersion`, the `SlashCommands` used for Tab completion, per-channel metadata (`_channelNames`, `_channelTopics`, `_channelPublic`, `_channelProtected`, `_systemChannels`), and message handling via `ChatMessageManager`.
+
+Keyboard handling is intentionally implemented using raw `KeyCode` constants (for example `EnterKey`, `NewlineKey`, `TabKey`, `CtrlKKey`, `F6Key`) so comparisons avoid `Key.Equals` semantics that include the `Handled` flag; this makes the key-switching logic deterministic and suitable for switch statements. The users panel visibility is controlled by `_usersPanelVisible` and sized using the `UsersPanelWidth` constant; toggling it affects layout and available chat width (`_lastChatWidth`).
 
 ## Notes
-- Key bindings are defined as raw KeyCode constants (e.g. EnterKey, CtrlKKey, F6Key). The code compares KeyCode values directly so handlers should compare against those constants rather than relying on Key.Equals semantics.
-- The users panel defaults to visible and has a fixed width (UsersPanelWidth = 22). Toggle/resize behavior is managed internally by the window layout.
-- SlashCommands contains the list of available client-side slash commands used for Tab autocomplete; update DefaultInputTitle if you change key bindings or common hints.
-- File and image events convey concrete payloads: OnFilesStaged provides the channel plus absolute paths of existing files; OnImagePasted provides the channel plus PNG-encoded image bytes. Consumers should validate and process those payloads appropriately.
+- UI thread: `MainWindow` is a `Terminal.Gui`-based UI — subscribers to `OnMessageSubmitted`, `OnFilesStaged`, `OnImagePasted`, and other events are invoked from the UI context. Handlers must avoid long/blocking work and should dispatch to background threads or task queues for I/O, network, or CPU-heavy operations.
+- Key comparison detail: key bindings are implemented as `KeyCode` constants and compared by raw value (e.g. `CtrlKKey = KeyCode.K | KeyCode.CtrlMask`). If you add custom key handling, compare against the same raw `KeyCode` values rather than relying on `Key.Equals` or higher-level key abstractions.
+- Staged attachments and file paths: `OnFilesStaged` provides absolute filesystem paths for files already accepted by the UI (the code expects existing files). Consumers should still validate and handle missing/removed files; the `_hasStagedAttachments` flag indicates staged state within the `MainWindow` and must be cleared by whatever logic performs the actual upload/send.
 
 ---
 
@@ -124,14 +125,13 @@ public MainWindow(IApplication app, ChatMessageManager messageManager)
 | `messageManager` | `ChatMessageManager` | — |
 
 
-Initializes the main application window and assembles EchoHub’s client UI: a four-panel layout with a top menu bar, a left channels pane, a center chat area, a bottom input region, and a right online-users pane. It wires data sources to their views, subscribes to message and history events, binds selection and input handlers so the UI stays in sync with channel changes, and includes a small UX safeguard by rebinding Ctrl+W to delete-word-left to avoid clipboard exceptions.
+`MainWindow` wires the core UI dependencies (`IApplication` and `ChatMessageManager`), subscribes to message events (`MessagesChanged` and `HistoryPrepended`), and builds the primary terminal UI for the EchoHub client. It lays out a top menu bar, a left channels panel, a center chat area with a messages list and input field, and a right online users panel, wiring up the corresponding list sources and event handlers to reflect data changes and user interactions.
 
 ## Remarks
-Serves as the UI composition root for the EchoHub client, carefully placing panels with fixed coordinates and dimensions to provide a stable, predictable layout across interactions. It connects ChannelListSource, ChatListSource, and UserListSource to their respective ListView controls, enabling efficient incremental rendering and per-item styling. Event wiring ensures the view updates reflect incoming messages, channel changes, and user activity without polluting business logic. The Ctrl+W rebound is a pragmatic, user-facing compatibility tweak that prevents clipboard-related crashes during text editing.
+`MainWindow` serves as the composition root for the client UI, coordinating three specialized list sources ([`ChannelListSource`](ListSources/ChannelListSource.cs.md), [`ChatListSource`](Chat/ChatListSource.cs.md), [`UserListSource`](ListSources/UserListSource.cs.md)) with their corresponding `ListView`s and centralizing interaction wiring (selection, input, rendering). It also incorporates a targeted keyboard-binding workaround to ensure a stable editing experience in the terminal UI by remapping `Key.W.WithCtrl` to `Command.KillWordLeft` to avoid clipboard-related crashes.
 
 ## Notes
-- Be mindful of unsubscribing event handlers if this window is ever disposed to avoid memory leaks.
-- Layout relies on fixed panel dimensions; changing UsersPanelWidth or Y offsets could disrupt alignment.
+- The input field rebinds Ctrl+W to delete-word-left to prevent clipboard exceptions when the OS clipboard is involved; if you customize input controls or port to a different UI framework, review keyboard bindings to avoid unintended clipboard interactions.
 
 ---
 
@@ -144,13 +144,10 @@ public string CurrentChannel => _messageManager.CurrentChannel
 ```
 
 
-Get the name of the currently active channel by delegating to the underlying message manager via _messageManager.CurrentChannel. This read-only property provides a convenient, UI-friendly way to display or react to the active channel without coupling callers to the message manager.
+The `CurrentChannel` property exposes the name of the actively used message channel by delegating to the internal `_messageManager`. It serves as a lightweight, UI-friendly accessor that decouples UI code from the underlying manager while providing a stable source of truth for the current channel.
 
 ## Remarks
-This property serves as a small abstraction that decouples the UI from the messaging subsystem. It simply forwards to the message manager, so changes in how the active channel is determined won't require changes at call sites. If the active channel can change over time, retrieve it as needed (e.g., for bindings or status displays) rather than caching the value.
-
-## Notes
-- Read-only property; to change the channel, use the message manager's API rather than assigning to this property. If the channel value can be null, callers should handle null values appropriately.
+The property acts as a forwarder to `_messageManager.CurrentChannel`, encapsulating the channel retrieval so callers don't need to reference the manager directly. It defines a read-only snapshot of the channel that the UI can display or react to, without incurring additional logic in this wrapper. This separation helps preserve a clean boundary between the UI layer and the message subsystem.
 
 ---
 
@@ -163,16 +160,10 @@ public bool HasPendingReplyIndicator => _replyTitleFragment is not null
 ```
 
 
-Indicates whether there is a pending reply by evaluating whether the private field `_replyTitleFragment` is non-null. Use this property when the UI or business logic needs to know if a reply is currently being prepared, without directly touching private fields.
+`HasPendingReplyIndicator` reports whether a pending-reply indicator should be shown in the `MainWindow` UI. It returns true when `_replyTitleFragment` is not null, indicating there is a pending reply ready to be presented.
 
 ## Remarks
-
-By exposing the condition as a public property, callers express intent clearly—whether a reply is pending—without relying on the internal field’s exact name or lifecycle. It also centralizes the decision, so changes to the internal representation (for example, signaling a pending state with a different fragment) require updates only to this property.
-
-## Notes
-
-- The value reflects the internal condition at the moment of access; it may not guarantee that a UI indicator has already been rendered if the underlying state changes without notification.
-- If `_replyTitleFragment` is updated from a background thread, ensure changes to the UI that depend on this property are observed on the appropriate UI thread to avoid threading issues.
+By wrapping the internal `_replyTitleFragment` state, this property exposes a stable UI contract for the `MainWindow` without leaking implementation details. It turns on the indicator whenever `_replyTitleFragment` is non-null, and off otherwise, making the visibility rule easy to reason about from the UI layer. This centralizes the visibility logic in one place, so changes to how a pending reply is represented don't ripple through callers.
 
 ---
 
@@ -185,14 +176,13 @@ private bool IsCurrentChannelReadOnly => _systemChannels.Contains(_messageManage
 ```
 
 
-IsCurrentChannelReadOnly is a read-only computed property that indicates whether the active channel is a system channel and should be treated as read-only in the UI.
-It returns true when _systemChannels.Contains(_messageManager.CurrentChannel), and false otherwise, enabling UI logic to gate actions like message composition accordingly.
+IsCurrentChannelReadOnly indicates whether the currently active channel is a system (read-only) channel. It returns true when the current channel is contained in the `_systemChannels` collection; otherwise false. This centralized property allows UI logic to decide, for example, whether message input should be enabled when the user is in a read-only channel, without scattering the `_systemChannels.Contains(_messageManager.CurrentChannel)` check throughout the code.
 
 ## Remarks
-IsCurrentChannelReadOnly centralizes the concept of a read-only channel, preventing scattered checks throughout the UI logic. It ties together the system-channel collection and the current channel reported by the message manager, ensuring consistent behavior whenever the active channel changes.
+By encapsulating the read-only rule in a single property, the codebase gains a single source of truth for what constitutes a system channel. If `_systemChannels` is updated or the current channel reference changes, this property automatically reflects the new state, keeping UI behavior consistent. It also improves readability and testability by naming the intent instead of embedding the containment check in multiple places.
 
 ## Notes
-- The property is evaluated on access; callers should react to state changes (e.g., by refreshing the UI) to avoid presenting stale read-only state.
+- The property is private; external consumers cannot rely on it directly. Tests should exercise the observable behavior (e.g., enabling/disabling input) rather than this accessor.
 
 ---
 
@@ -205,15 +195,14 @@ private bool IsTransitionalStatus => _connectionStatus is not ("Connected" or "D
 ```
 
 
-IsTransitionalStatus is a private boolean property that indicates whether the current internal connection status is not one of the stable terminal states 'Connected' or 'Disconnected'. It evaluates the underlying _connectionStatus and yields true for any other value, signaling a transitional or in-progress state (for example 'Connecting', 'Reconnecting', or similar custom statuses).
+Determines whether the current `_connectionStatus` represents a transitional, non-final state. Use this property when you need to react to an ongoing change in the connection (for example, showing a loading indicator or deferring user actions) rather than simply checking for `Connected` or `Disconnected`.
 
 ## Remarks
-By encapsulating this check, the class centralizes the notion of a transitional connection state and avoids repeating string comparisons across the UI logic. The predicate relies on the internal _connectionStatus field, so changes to how statuses are named or stored can be addressed in one place. This abstraction clarifies intent—code that reads IsTransitionalStatus expresses 'we are in flux' without caring about the exact status value.
+This property encodes the idea that a connection is in flux rather than settled into a terminal state. By centralizing the check, it prevents scattered string comparisons across the class and makes it easier to adapt if the exact terminal labels change. It works in concert with UI state management to drive indicators or input gating during transitions.
 
 ## Notes
-- Null or unexpected _connectionStatus yields true; ensure initialization or guard against null.
-- It uses exact string literals ('Connected' and 'Disconnected'); if localization or status naming changes, update accordingly.
-- It is private; external components cannot rely on it. If you need external access, consider exposing a public wrapper or moving the logic to a shared utility.
+- It hinges on the exact string literals `Connected` and `Disconnected`; changes to these labels or localization would require updating this property.
+- Being private, external code cannot rely on this property; expose a dedicated API if external components must react to transitional states.
 
 ---
 
@@ -228,15 +217,15 @@ public void ApplyColorSchemes()
 **Returns:** `void`
 
 
-Applies the currently registered color schemes to all views and updates the UI to reflect the active theme. Call this after changing themes to refresh colors across the interface, ensuring base, menu, and border colors are propagated to the appropriate controls.
+Applies the currently registered color schemes to all views and should be invoked after a theme change to refresh UI colors. It queries `SchemeManager` for `Base`, `Menu`, and `Border` schemes; the `Base` scheme is applied to the root view, then propagated to most subviews. If a `Border` scheme is available (falling back to `Base` when absent), it is applied to frame borders via `FrameView.Border` to allow borders to be tinted independently of text. After processing the base scheme, any available `Menu` scheme is applied to `_menuBar`, `_statusLabel`, and `_topicLabel` to ensure menu-related visuals reflect the active theme.
 
 ## Remarks
-Centralizes theming so color changes are applied consistently through a single call. It applies the base scheme to most subviews and intentionally excludes the menu bar and a few chrome labels that have their own styling. Border colors come from a separate border scheme if available, allowing borders to be tinted independently from text, while the menu-related chrome receives the menu scheme.
+By centralizing theming logic here, the UI consistently reflects theme changes without each subview duplicating scheme-updating code. It also accommodates borders that should be tinted differently by applying the `Border` scheme to `FrameView.Border` when present, allowing border tones to diverge from text colors. The propagation intentionally excludes `_menuBar`, `_statusLabel`, and `_topicLabel` from the base propagation so they can be driven by the `Menu` scheme for coherent menu visuals across the interface.
 
 ## Notes
-- Requires a non-null Base scheme to perform theming; otherwise the method performs no action.
-- Border color updates occur only if a FrameView is encountered and a non-null border scheme is available; otherwise borders are left unchanged.
-- Some subviews are excluded from the base scheme (the menu bar, status label, and topic label) and are updated via the menu scheme instead.
+- If `Base` is null, no base propagation occurs; base-based updates are guarded by a null check.
+- The `Border` scheme is optional; `borderScheme` is applied to borders only when it is not null.
+- During propagation, frames are updated via `FrameView.Border?.SetScheme(borderScheme)` only when a suitable `borderScheme` exists.
 
 ---
 
@@ -251,17 +240,7 @@ private MenuBar BuildMenuBar()
 **Returns:** `MenuBar`
 
 
-BuildMenuBar constructs the top-level MenuBar for EchoHub’s main window by assembling the File, Server, and User menus and a dynamic Theme submenu derived from ThemeManager. It wires user actions to corresponding events, conditionally includes a Rollback option when a backup exists, and always exposes update and quit actions; the returned bar is positioned at the origin and stretched to fill width, with a small mouse-handling workaround to ensure clicks target the menu items themselves.
-
-## Remarks
-
-It centralizes the composition of the app’s menu, guaranteeing a consistent structure and separator placement between groups. By drawing the theme options from ThemeManager.GetAvailableThemes and conditionally showing a backup rollback, the menu reflects runtime state without scattering logic across call sites. Each action is wired to an event or callback (OnThemeSelected, OnProfileRequested, OnCheckForUpdatesRequested, OnConnectRequested, etc.), making the symbol a single integration point for user interactions. The post-creation mouse-transparency hack fixes input handling in the CommandView so user clicks reliably hit the intended MenuBarItem.
-
-## Notes
-
-- The theme list is built from ThemeManager.GetAvailableThemes(); if it returns an empty collection, the Theme submenu will be effectively empty aside from any inserted separators.
-- Actions like OnThemeSelected are invoked via null-conditional operators; ensure callers subscribe to handle the events.
-- The mouse transparency workaround relies on internal subview types (MenuBarItem and CommandView) and may require adjustment if the UI framework changes.
+Builds the application's top-level `MenuBar` by composing three root menus — `File`, `Server`, and [`User`](../../EchoHub.Core/Models/User.cs.md) — and appending a dynamic theme submenu sourced from `Themes.ThemeManager.GetAvailableThemes()`. It also conditionally inserts a rollback entry when a backup exists via `UpdateBackupService.BackupExists()` and wires up all actions to their corresponding callbacks (e.g. `OnProfileRequested`, `OnThemeSelected`, `OnConnectRequested`, `OnDisconnectRequested`, `OnLogoutRequested`, `OnCreateChannelRequested`, `OnDeleteChannelRequested`, `OnSavedServersRequested`, `ToggleUsersPanel`, `OnCheckForUpdatesRequested`). Finally, it lays out the menu bar at `(0,0)`, stretches it to fill width, and applies a mouse-through workaround by setting `ViewportSettings` to `TransparentMouse` on each `MenuBarItem`'s `CommandView` to ensure clicks hit the intended item.
 
 ---
 
@@ -276,13 +255,79 @@ public void ClearAll()
 **Returns:** `void`
 
 
-Clears all chat state and UI elements when disconnecting. It resets channel and topic collections, clears the message data, clears and rebinds the channel and user lists to empty sources, restores default frame titles, hides the topic label, and refreshes the message view to reflect an empty chat.
+Resets the chat state and UI to a clean slate when disconnecting. It clears all channel-related data (`_channelNames`, `_channelTopics`, `_channelPublic`, `_channelProtected`, `_systemChannels`) and the messages via `_messageManager.ClearAll()`, resets the channel and user lists (`_channelListSource`, `_channelList`, `_usersListSource`, `_usersList`), and restores the UI to its initial layout (title set to `Chat`, topic label hidden, frame Y reset, and user frame titled `Users`). Finally, it calls `RefreshMessages()` to purge any displayed content.
 
 ## Remarks
-Centralizes disconnect cleanup into a single method to guarantee a clean, predictable UI state between sessions. It coordinates multiple UI components and data stores (channel names, topics, channel groups, and the chat/users panes) so no stale data remains. Because it mutates UI elements, callers should ensure it runs on the UI thread to avoid cross-thread exceptions.
+Centralizes cleanup logic for the chat UI, reducing the risk of inconsistent state when disconnecting. By coordinating both in-memory data and their visual bindings, it guarantees the UI starts from a known baseline on the next connection.
 
 ## Notes
-- This method mutates several UI elements and internal lists; call it only on disconnect to avoid partial state resets if used mid-session.
+- This method should only be invoked during disconnect; calling it during an active session will wipe the current UI state.
+- Assumes UI thread context since it manipulates UI elements like `_chatFrame`, `_topicLabel`, and `_usersFrame`.
+
+---
+
+### ClickChannelRegex
+> **File:** `src/EchoHub.Client/UI/MainWindow.cs`  
+> **Kind:** method
+
+```csharp
+[GeneratedRegex(@"(?<!\w)#((?=.*[a-zA-Z])[\w-]+)")]
+    private static partial Regex ClickChannelRegex()
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `@"(?<!\w)#((?=.*[a-zA-Z])[\w-]+)"` | — | — |
+
+
+ClickChannelRegex is a compile-time-generated factory that returns a `Regex` instance capable of matching channel mentions that begin with a '#' and are not part of a larger word. The `GeneratedRegex` attribute on this method enables the compiler's source generator to emit a precompiled regex for the given pattern, so callers get a ready-to-use `Regex` with minimal allocation and startup cost. Use this symbol when your text parsing layer needs to identify channel-like tokens, such as `#general`, while avoiding hex color codes like `#FFFFFF` or other purely numeric identifiers.
+
+## Remarks
+By encapsulating the logic in a private static partial method annotated with `GeneratedRegex`, the class centralizes the channel-detection pattern and benefits from compile-time optimization. The negative lookbehind `(?<!\w)` prevents matches that are part of a larger word, and the lookahead `(?=.*[a-zA-Z])` ensures at least one alphabetic character is present, avoiding numeric-only tokens. The generated `Regex` is intended for local use within the UI's text parsing flow to recognize and potentially hyperlink or trigger interactions for channel tokens.
+
+## Example
+```csharp
+var regex = ClickChannelRegex();
+var m = regex.Match("#general");
+if (m.Success)
+{
+    Console.WriteLine($"Found channel: {m.Value}");
+}
+```
+
+## Notes
+- The `GeneratedRegex` attribute requires source-generation support in the project (e.g., .NET 7+); ensure the build enables the generator for this symbol.
+- The `ClickChannelRegex` method is private; expose a public wrapper if external call sites must reuse it.
+- The pattern intentionally requires at least one letter after `#` to avoid matching hex colors (e.g., `#FFFFFF`) or purely numeric tokens.
+
+---
+
+### ClickMentionRegex
+> **File:** `src/EchoHub.Client/UI/MainWindow.cs`  
+> **Kind:** method
+
+```csharp
+[GeneratedRegex(@"(?<!\w)@([\w-]+)")]
+    private static partial Regex ClickMentionRegex()
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `@"(?<!\w)@([\w-]+)"` | — | — |
+
+
+ClickMentionRegex returns a pre-generated `Regex` configured to detect user mentions in text by matching an '@' followed by a username, but only when the '@' isn't preceded by a word character (to avoid matching emails such as `name@example.com`). The underlying pattern is `(?<!\w)@([\w-]+)`.
+
+## Remarks
+Because the method is annotated with `GeneratedRegex` and declared as `static partial`, the compiler generates a cached, strongly-typed `Regex` instance at build time, enabling fast matches at runtime without repeated allocations. This approach avoids constructing a new `Regex` on every call and keeps the parsing logic encapsulated within the containing class. The negative lookbehind `(?<!\w)` ensures emails like `name@example.com` aren't treated as mentions, preserving the intended behavior. If you need to reuse this regex outside the class, expose a public wrapper or move the logic to a shared helper.
+
+## Notes
+- The method is private; external code cannot call it directly. If reuse is needed outside the containing type, provide a public wrapper around the regex or relocate the logic to a shared utility.
+- The pattern is fixed at compile time via the `GeneratedRegex` attribute; changing it requires recompilation.
 
 ---
 
@@ -303,14 +348,15 @@ private void ConfirmDeleteMessage(Guid messageId)
 **Returns:** `void`
 
 
-This private helper displays a confirmation prompt when the user attempts to delete a message. It presents a dialog titled "Delete Message" with the prompt "Delete this message?" and two actions: a "Delete" button and a "Cancel" button. If the user confirms (the dialog returns 0), it raises the OnDeleteMessageRequested event, passing the provided messageId so the actual deletion logic can be executed by subscribers elsewhere.
+Prompts the user to confirm deletion of a message and, if confirmed, raises the `OnDeleteMessageRequested` event with the provided `messageId`. It uses `MessageBox.Query` to display a modal dialog titled `Delete Message` with the content `Delete this message?` and two actions, `Delete` and `Cancel`. If the user presses the first button (the `Delete` action, which yields a return value of `0`), it invokes `OnDeleteMessageRequested` with `messageId`.
 
 ## Remarks
-This method serves as the UI-facing contract for message deletion: it asks for user confirmation and, only upon explicit consent, notifies the rest of the system via OnDeleteMessageRequested. By delegating the actual deletion to subscribers, it remains agnostic of how messages are stored or removed, enabling different layers to handle the operation (e.g., in-memory vs. remote deletion) without duplicating the confirmation prompt. The method is private, indicating it is an internal implementation detail of the MainWindow and not part of the public API.
+This method centralizes the deletion-confirm UX for messages within the MainWindow UI, decoupling the prompt from the actual delete logic by publishing the `OnDeleteMessageRequested` event. The `OnDeleteMessageRequested` invocation is guarded with the null-conditional operator, so the UI remains safe even if there are no subscribers. The behavior assumes the first button corresponds to the delete action; if the button order or labels change, the conditional should be updated accordingly to preserve the intended UX.
 
 ## Notes
-- The deletion work runs on the UI thread; long-running handlers should dispatch work to the background to avoid UI freezes.
-- If there are no subscribers to OnDeleteMessageRequested, the delete operation will not run; ensure you subscribe to handle the deletion.
+- The conditional relies on the first button (value `0`) representing the `Delete` action; changes to the dialog wiring require updating this check. 
+- This method should run on the UI thread since it shows a modal dialog via `MessageBox.Query`.
+- Being `private`, this helper is intended strictly for internal UI orchestration; if reuse is needed elsewhere, consider extracting a shared confirmation helper or exposing a higher-level API.
 
 ---
 
@@ -331,16 +377,13 @@ private void CopyToClipboard(string text)
 **Returns:** `void`
 
 
-Copies the provided text to the application's clipboard by delegating to the clipboard interface when available. It calls TrySetClipboardData(text) on _app.Clipboard and swallows any exceptions, logging a warning instead of propagating errors to the caller. This makes clipboard operations a best-effort UI nicety that won't disrupt the user experience if the clipboard is unavailable or causes an exception.
+Copies the provided `string` text to the system clipboard through the application's clipboard service by calling `_app.Clipboard?.TrySetClipboardData(text)`. If the clipboard is unavailable or an exception occurs, the method swallows the error and logs a warning with the message `Copy to clipboard failed` using `Log.Warning`.
 
 ## Remarks
-
-This helper centralizes clipboard access and shields callers from clipboard-related failures. The use of the null-conditional operator on Clipboard prevents a hard failure when the clipboard is not present, and the surrounding try-catch ensures UI responsiveness by converting errors into lightweight warnings. In short, it provides a robust, non-blocking way to attempt copying text.
+This small helper centralizes clipboard access behind `_app.Clipboard` to keep clipboard interactions consistent and resilient to clipboard provider unavailability. It decouples clipboard operations from UI logic and ensures the application remains responsive by not surfacing clipboard errors to the user—only a warning is recorded for diagnostics.
 
 ## Notes
-
-- This method is best-effort: it never throws to callers; a failure is recorded in logs instead.
-- If the application clipboard is unavailable (null or unsupported), the call simply does nothing.
+- Clipboard operations may fail silently if the clipboard provider is unavailable or restricted; users won't see an immediate notification, only a logged warning.
 
 ---
 
@@ -365,17 +408,27 @@ public void EnsureChannelInList(string channelName, bool? isPublic = null, bool?
 **Returns:** `void`
 
 
-Ensures a channel is present in the left-hand channel list, coordinating several internal collections that track channel visibility and categorization. This helper is typically used after joining a private channel (e.g., via /join) to guarantee the UI reflects the channel’s existence and attributes. By accepting nullable flags for isPublic, isProtected, and isSystem, callers can apply or adjust metadata without touching unrelated state; provided values are written to the corresponding in-memory structures and the UI is refreshed as needed.
-
-If the channel already exists, changes to isProtected or isSystem trigger a refresh of the channel list; if the channel is new, it is added to the list and the UI is refreshed. Note that updates to isPublic alone may modify internal mappings without causing a refresh in the existing-channel path.
+EnsureChannelInList updates the left-panel channel list by creating or mutating a channel entry and applying optional metadata flags. When called, it updates internal collections such as `_channelPublic`, `_channelProtected`, and `_systemChannels`, and adds the channel name to `_channelNames` if it is new; it then refreshes the UI via `RefreshChannelList` to reflect the current state.
 
 ## Remarks
-Centralizes the logic that coordinates multiple internal data structures: _channelNames, _channelPublic, _channelProtected, and _systemChannels. This reduces the risk of inconsistencies between the stored channel attributes and their presentation in the UI, especially for channels surfaced by /join. It also provides a single point of truth for how the left panel should react when a channel’s category or visibility changes.
+By encapsulating the mutation logic, `EnsureChannelInList` reduces duplication and keeps the left-panel state consistent across different update paths. It coordinates between multiple internal collections and the UI refresh, ensuring that changes to a channel's visibility or role are reflected in the UI with a single call.
+
+## Example
+```csharp
+// Ensure a public channel exists
+this.EnsureChannelInList("general", isPublic: true);
+
+// Mark a channel as protected
+this.EnsureChannelInList("ops", isProtected: true);
+
+// Ensure a system channel flag
+this.EnsureChannelInList("system-notice", isSystem: true);
+```
 
 ## Notes
-- Only updates to isProtected or isSystem on an existing channel trigger a UI refresh; updates to isPublic alone may not refresh in that code path.
-- This method mutates internal state and calls RefreshChannelList; call on the UI thread to avoid threading issues.
-- Nullable flags allow partial updates; pass null to skip updating a given attribute.
+- Not thread-safe; should be invoked on the UI thread.
+- Nullable parameters mean "leave unchanged" when null; pass the appropriate booleans to modify behavior.
+- Adding a new channel triggers a UI refresh; calling it repeatedly for many channels may cause multiple refreshes.
 
 ---
 
@@ -397,22 +450,13 @@ private static ChatLine ExpandRule(ChatLine line, int width)
 **Returns:** [`ChatLine`](Chat/ChatLine.cs.md)
 
 
-Re-generates a separator rule (date change / unread marker) to span the current viewport width: "── label ────────…". It builds a new ChatLine containing a single ChatSegment whose text is composed from a fixed decorative prefix, the rule label, and a tail of dashes whose length adapts to the provided width, then applies the line's color attribute (falling back to the default date rule color) and preserves the IsUnreadMarker flag from the source.
+Regenerates a separator rule (date change / unread marker) to span the current viewport width by constructing a new [`ChatLine`](Chat/ChatLine.cs.md) with a single [`ChatSegment`](Chat/ChatSegment.cs.md) that renders the left border, the label, and a trailing run of `─` characters to fill the space. It uses the attribute from `line.RuleAttr` if present, otherwise `ChatColors.DateRuleAttr`; it takes the label from `line.RuleLabel` and computes the tail length as `Math.Max(width - 4 - label.GetColumns() - 1, 2)`, finally propagating the `IsUnreadMarker` flag from the original line.
 
 ## Remarks
-This function centralizes the layout logic for date/unread separators in the chat UI, ensuring consistent visuals as the viewport changes. By deriving the tail length from the width and the label’s width, it maintains a balanced appearance that scales with available space and avoids clipping. Because it derives its color from the source line (or a sensible default), it remains visually cohesive with surrounding UI rules and respects the line’s unread state.
-
-## Example
-```csharp
-// Example usage: adapt a rule line to the current viewport width
-// 'line' represents a ChatLine configured as a date/unread separator elsewhere in the codebase
-ChatLine expanded = ExpandRule(line, 120);
-```
+Expanding the rule centrally ensures a consistent visual separator as the viewport changes size and binds its appearance to the established color attributes, rather than scattering sizing logic across call sites. It abstracts the drawing of date-change and unread markers behind a single path, so collaborators render a correctly sized rule without reproducing the dash calculations.
 
 ## Notes
-- The method assumes line.RuleLabel is non-null (the code uses line.RuleLabel!); if RuleLabel is null, a exception may be thrown at runtime.
-- tailLen is clamped to a minimum of 2 to ensure a visible tail even on narrow widths.
-- The returned ChatLine is a new instance; the input line is not mutated, preserving functional purity for rendering.
+- The code uses the null-forgiving operator on `line.RuleLabel`, so a null value will throw a `NullReferenceException` at runtime.
 
 ---
 
@@ -427,10 +471,13 @@ public void FocusInput()
 **Returns:** `void`
 
 
-FocusInput moves keyboard focus to the primary input field by delegating to the underlying input control's SetFocus method. Use this when you want to programmatically place the typing cursor into the main input, such as after the window is shown or after an action that should prepare for typing.
+FocusInput focuses the input field for typing by delegating to the underlying `_inputField` control's focus mechanism. Call this when you want to place the caret in the input area so the user can start typing immediately, without manipulating the private UI element directly.
 
 ## Remarks
-This method centralizes focus behavior for the main window's input area, providing a single, discoverable point to direct user input. It abstracts away the details of how focus is delegated to the input control, making future UI changes easier to apply. Naming it FocusInput conveys intent clearly, improving readability wherever the UI needs to programmatically direct typing.
+Because this method simply forwards to `_inputField.SetFocus()`, it provides a small abstraction boundary that isolates callers from the control's implementation details. This helps keep focus-related logic in one place and makes it easier to adjust the focus policy (e.g., when to trigger focus after navigation or modal dialogs) without changing call sites. It also aids testability by providing a deterministic point to assert that focus is requested.
+
+## Notes
+- Requires UI-thread access; ensure invocation occurs on the UI thread or marshal accordingly.
 
 ---
 
@@ -445,14 +492,15 @@ private void FocusMessageList()
 **Returns:** `void`
 
 
-Moves focus to the message list so keyboard users can navigate with arrow keys and delete messages with Delete. If nothing is selected, or if the current selection is out of range, the most recent message is selected. If the channel has no messages, this method is a no-op. After adjusting the selection, it focuses the list and requests a redraw to reflect the change.
+Moves focus into the `messageList` to enable keyboard navigation (arrows) and deletion (Delete). If there is no valid selection, it selects the most recent message; if the channel has no messages, the operation is a no-op. Internally, the method guards against non-chat sources or empty lists and then focuses the list and requests a redraw after ensuring a valid `SelectedItem`.
 
 ## Remarks
-Centralizes the focus logic for the chat message list, ensuring predictable keyboard navigation and a consistent starting point for message management. It relies on the underlying ChatListSource's Count and the _messageList control to guard against invalid selections and to trigger a UI refresh.
+This helper centralizes the focus and selection logic for the message list to provide a consistent keyboard-driven UX. By selecting the last item when no valid selection exists, it aligns with the common expectation that the newest message is the natural target for keyboard actions. The explicit calls to `SetFocus()` and `SetNeedsDraw()` ensure the UI stays responsive and reflects changes promptly.
 
 ## Notes
-- Intended to run on the UI thread since it manipulates UI controls.
-- This is a private helper; external callers should not depend on its behavior beyond what the class exposes.
+- If the current selection is already valid, the method preserves it and only shifts focus to the list; it will still trigger a redraw.
+- The behavior is contingent on `_messageList.Source` being a [`ChatListSource`](Chat/ChatListSource.cs.md) with items; if not, the method exits early as a no-op.
+
 
 ---
 
@@ -467,13 +515,14 @@ public IReadOnlyList<string> GetChannelNames() => _channelNames.AsReadOnly()
 **Returns:** `IReadOnlyList<string>`
 
 
-Returns an `IReadOnlyList<string>` containing the names of all channels that have message buffers, which are used to broadcast status changes. This method is typically used when a caller needs to enumerate the channels to notify about status updates without taking ownership of or mutating the internal collection.
+This method returns the set of channel names that have message buffers for broadcasting status changes. It provides a read-only view of the internal `_channelNames` collection, so callers can enumerate available channels without mutating the underlying data.
 
 ## Remarks
-By wrapping the internal list with AsReadOnly, this method preserves encapsulation: callers can observe which channels exist without gaining permission to modify the collection. It also centralizes how channel names are exposed, so changes to the underlying storage need only be updated here. If the set of channels changes over time, the returned view will reflect those changes; if a stable, unchanging snapshot is required, consider copying the values to a new list.
+This method serves as a safe, read-only projection of the internal channel registry used for status broadcasts. By returning `IReadOnlyList<string>` via `_channelNames.AsReadOnly()`, it preserves encapsulation while letting callers enumerate available channels. Because it is a live view of the underlying collection, any subsequent changes to `_channelNames` will be reflected in the returned sequence; if a stable snapshot is required, callers should materialize a copy at the point of use.
 
 ## Notes
-- The returned view is not a deep freeze; it's a live wrapper over the internal list. For a stable snapshot, copy to a new list.
+- The returned `IReadOnlyList<string>` is a live view into `_channelNames`; it does not copy elements, so mutations to the underlying list will be visible to callers.
+
 
 ---
 
@@ -495,15 +544,15 @@ private static void GuardedClipboardAction(Action action, string operation)
 **Returns:** `void`
 
 
-GuardedClipboardAction executes the supplied edit action and swallows transient clipboard failures by catching all exceptions and logging a warning that the clipboard operation failed, including the operation name. Use it when performing clipboard-related edits to prevent OS clipboard contention from propagating to the input loop, keeping the application responsive even if the clipboard is momentarily unavailable.
+The `GuardedClipboardAction` method executes the provided `Action` to drive a clipboard-backed edit while swallowing transient clipboard failures that would otherwise bubble up from the input loop and crash the app. If the action throws an exception, it is caught and a warning is logged via `Log.Warning` with the operation name, after which execution continues.
 
 ## Remarks
-GuardedClipboardAction encapsulates the resilience policy for clipboard interactions, separating error handling from the business logic that mutates the clipboard. By treating clipboard failures as non-fatal, it reduces boilerplate at call sites and provides a consistent user experience when the clipboard is busy or locked by another process.
+
+This function acts as a resilience boundary around clipboard edits, ensuring that transient OS clipboard contention does not destabilize the UI input loop. By centralizing this behavior, all clipboard-backed actions share consistent error handling and telemetry through the `Log` dependency.
 
 ## Notes
-- It catches all exceptions, potentially hiding bugs if used in contexts where failures should propagate.
-- No retry logic is performed; if a retry is desired, implement it at the call site or extend this helper.
-- Logs a warning with the operation name to aid debugging without interrupting the user flow.
+
+- Broadly catching `Exception` may hide non-transient failures; if you rely on exceptions for debugging, consider narrowing the catch or rethrowing critical exceptions.
 
 ---
 
@@ -524,21 +573,18 @@ private void MentionUser(string username)
 **Returns:** `void`
 
 
-MentionUser inserts a user mention into the chat composer by placing "@{username} " at the current cursor position and then returning focus to the input field. Use it when the UI needs to prefill a mention (for example after the user selects a contact) so the user can continue typing immediately with a properly formatted mention.
+In the chat UI, `MentionUser` inserts a properly formatted user mention into the input field and then returns focus to the input control. It accomplishes this by inserting the text starting with an at-sign followed by the provided `username` and a trailing space via `_inputField.InsertText`, and then calling `_inputField.SetFocus` to restore typing context.
 
 ## Remarks
-By centralizing the mention formatting (leading '@' and trailing space) and focus restoration, this method ensures all mentions are inserted consistently across the chat UI. It depends on the _inputField control, so it should be invoked on the UI thread where that control exists.
+This method encapsulates a small piece of UI behavior: it formats a username into a chat mention and ensures the input remains focused after insertion. Centralizing this logic avoids duplication at call sites and makes it easy to adjust how mentions are presented or how focus is managed in the future.
 
 ## Example
 ```csharp
-// When a user is selected for a mention
-MentionUser("alice");
+MentionUser("Alice");
 ```
 
 ## Notes
-- No validation or escaping is performed; the value is inserted as-is after '@'.
-- Should be called on the UI thread when the input field is accessible; otherwise UI interactions may fail.
-- Assumes _inputField is non-null; if not, it may throw.
+- Assumes `_inputField` is non-null and that these calls occur on the UI thread; otherwise, this method may throw or fail to update focus.
 
 ---
 
@@ -560,15 +606,13 @@ private void OnChannelListSelectionChanged(object? sender, ValueChangedEventArgs
 **Returns:** `void`
 
 
-Handles the channel list selection change by reading the new index from the event args, validating that it points to a valid channel, and switching to that channel only if it's not already the current channel. It then raises OnChannelSelected with the chosen channel name to propagate the change.
+Handles changes to the channel list selection in the UI. When the user selects a different channel, this method validates the new index, resolves the corresponding channel name from `_channelNames`, and, if it differs from the current channel exposed by `_messageManager.CurrentChannel`, switches to that channel by calling `SwitchToChannel` and notifies subscribers via `OnChannelSelected`.
 
 ## Remarks
-Serves as the UI-to-state bridge for channel navigation. It centralizes the validation of the selection index and guards against unnecessary channel switches, ensuring the application only changes channels when asked by the user. It relies on the _channelNames collection as the authoritative mapping from list indices to channel identifiers, and on _messageManager.CurrentChannel to determine whether a switch is needed. By publishing the new channel through OnChannelSelected, other components can react (e.g., updating status, logging, or triggering related UI updates) without directly coupling to the list control.
+By centralizing the UI-to-channel-switch logic, this symbol serves as the single decision point for user-driven channel changes, keeping UI concerns separate from channel management. It avoids unnecessary work by only performing a switch when the new channel is different from the current one and by emitting `OnChannelSelected` to any interested listeners. This method relies on the integrity of `_channelNames` and `_messageManager.CurrentChannel` and assumes the UI selection reflects the latest channel list.
 
 ## Notes
-- Ensure _channelNames stays in sync with the channels presented in the UI; a mismatch can lead to incorrect mappings or no operation.
-- The method assumes _messageManager.CurrentChannel reflects the current channel state; if not, behavior may not switch as expected.
-- The OnChannelSelected event is invoked using the null-conditional operator, so there may be zero subscribers without causing a crash.
+- This method assumes `_channelNames` is non-null and synchronized with the UI list. If `_channelNames` can be null or updated concurrently, this handler may throw or behave inconsistently; ensure proper initialization and synchronization.
 
 ---
 
@@ -583,24 +627,14 @@ private void OnChatViewportChanged()
 **Returns:** `void`
 
 
-The method reacts to changes in the chat viewport width by reading the current width from the chat list’s viewport. If the width is positive and differs from the last recorded width, it updates the cached value, propagates the new width to the message manager, and refreshes the messages to align the display with the new size.
+When the chat viewport width changes, `OnChatViewportChanged` reads the current width from `_messageList.Viewport.Width`, and if the width is positive and differs from `_lastChatWidth`, it updates `_lastChatWidth`, applies the new width to `_messageManager` via [`SetChatWidth`](Chat/ChatMessageManager.cs.md), and refreshes the messages with `RefreshMessages()`.
 
 ## Remarks
-
-This is a focused resize handler that isolates width-change logic from general rendering. By guarding against no-ops (width <= 0 or unchanged width) it avoids unnecessary layout work and keeps the chat display in sync with the viewport through the message manager and a refresh cycle. It relies on the UI-related components (_messageList, _messageManager, and RefreshMessages) and should be invoked within the appropriate UI thread context.
-
-## Example
-
-```csharp
-// Common case: the chat viewport has been resized to a new positive width
-OnChatViewportChanged();
-```
+This method encapsulates the UI's width-responsive behavior for the chat area. By guarding on positive, changed widths, it avoids unnecessary reflows and redraws, delegating the actual rendering adjustments to `_messageManager` and `RefreshMessages()`.
 
 ## Notes
-
-- The method only acts when newWidth > 0 and newWidth != _lastChatWidth, preventing redundant work on unchanged sizes.
-- It updates internal state before triggering a layout refresh, ensuring subsequent calls see the updated width.
-- Since it touches UI-related components, ensure invocation occurs on the UI thread to avoid cross-thread access issues.
+- Guard against zero widths to prevent wasted work during startup or transient layout passes.
+- Ensure `_lastChatWidth` is initialized appropriately so the first meaningful width change triggers an update.
 
 ---
 
@@ -621,17 +655,16 @@ private void OnHistoryPrepended(string channelName)
 **Returns:** `void`
 
 
-Maintains the user's reading position when historical messages are prepended to the current channel's message list. If the incoming channel matches the currently displayed channel, it loads the channel's messages, records how many items were visible before the refresh, refreshes the list, computes how many items were prepended, and, if any, selects the item at that offset to keep the view from jumping to the top. This behavior helps the user remain oriented while older messages are loaded above the current view.
+OnHistoryPrepended is a UI helper invoked when older messages are prepended to the chat history for a channel. It only runs for the currently active channel, fetches that channel's messages, and if there are messages to process, it refreshes the message list and then reselects the item that now sits at the top due to the prepend. This preserves the user’s reading position, so they don’t scroll to the newest messages just because history was loaded.
 
 ## Remarks
-
-This method exists to decouple the UI from the underlying data refresh when history is added to the top of the chat. By capturing the pre-refresh count and re-selecting based on the number of newly prepended items, it preserves the visual position in the list and avoids a disruptive jump to the beginning. It relies on the current channel check, the ChatListSource.Count, and the SelectedItem property to compute and apply the offset during the refresh cycle.
+This method acts as a focused UX shim around the history-prepend workflow. By capturing the count of items before and after `RefreshMessages()` and then assigning `_messageList.SelectedItem` to the delta, the view stays anchored to the same top-most message despite the updated list. The logic is deliberately scoped to the current channel and the [`ChatListSource`](Chat/ChatListSource.cs.md) used by the UI list; if those assumptions fail, the method exits or does not adjust the selection, preventing misalignment.
 
 ## Notes
+- It only executes when `channelName` matches `_messageManager.CurrentChannel`; otherwise it returns immediately.
+- It relies on `_messageList.Source` being a [`ChatListSource`](Chat/ChatListSource.cs.md) to compute counts; if not, the old count defaults to 0, which can affect the delta calculation.
+- The selection repositioning uses the delta (`prependedCount`) as the new `SelectedItem`; changes to how the list interprets `SelectedItem` could alter the visual scroll behavior if the UI contract changes.
 
-- Guard clauses ensure the method is a no-op when the channelName is not the current channel or when there are no messages for the channel.
-- The offset calculation assumes RefreshMessages updates the list by prepending items above the existing ones; if the underlying data source changes differently, the preserved position may be off by one or more items.
-- This is an internal handler; external callers should not invoke it directly.
 
 ---
 
@@ -653,7 +686,10 @@ private void OnInputContentsChanged(object? sender, ContentsChangedEventArgs e)
 **Returns:** `void`
 
 
-OnInputContentsChanged handles content changes in the main window's input field. It respects a guard (_suppressEmojiReplace) to avoid re-entrant edits caused by programmatic text changes. If the current input text appears to be a dropped file path and DroppedFileParser can resolve one or more files, and there is a non-empty _messageManager.CurrentChannel, it clears the input and stages the discovered files for sending instead of leaving the raw path text to be dispatched. Otherwise, it runs EmojiHelper.ReplaceEmoji to substitute emoji sequences. If no replacement occurs, the method returns. If replacements occur, it computes the delta in length, repositions the cursor to the corresponding column after the edit, and updates the input field accordingly, wrapping the change in a guard to re-enable emoji processing afterwards.
+OnInputContentsChanged is a private event handler that runs when the main input field's contents change. It normalizes user input by (1) detecting a dropped file path that resolves to files and staging them via `StageFiles` instead of sending the raw path, and (2) performing emoji substitutions with `EmojiHelper.ReplaceEmoji`, updating the input and cursor position when needed; all updates are guarded by `_suppressEmojiReplace` to avoid recursive edits.
+
+## Remarks
+This method centralizes input normalization at the UI boundary: it both interprets dropped files and performs emoji normalization, so callers need not handle these concerns separately. It coordinates [`DroppedFileParser`](Helpers/DroppedFileParser.cs.md) and [`EmojiHelper`](Helpers/EmojiHelper.cs.md) to convert user input into the appropriate sent form while preserving the user's cursor position, and uses `_suppressEmojiReplace` to avoid re-entrant updates caused by programmatic text changes.
 
 ---
 
@@ -675,17 +711,7 @@ private void OnInputKeyDown(object? sender, Key e)
 **Returns:** `void`
 
 
-OnInputKeyDown is the keyboard shortcut handler for the chat message input area. It interprets specific keys to drive UI behaviors such as autocompletion, reply cancellation, message submission, and clipboard-based attachments, ensuring keyboard users can perform common actions without leaving the input context.
-
-Shortcuts supported include Tab for autocompletion; Esc to cancel a pending reply (when such a reply exists); Newline to insert a line break; Enter to submit the message when there is content or staged attachments and there is a valid channel; Alt+Q to quit; Ctrl+K to open the search dialog; F6 to focus the message list; Ctrl+V/Ctrl+Y to paste, with clipboard-aware behavior: paste files from the clipboard as attachments, paste PNG image data as an image, or fall back to a normal text paste; Ctrl+X to cut; Ctrl+C to copy. Unrecognized keys are ignored and the event is left unhandled.
-
-## Remarks
-OnInputKeyDown centralizes input-related keyboard interactions for the main window, so the user experience remains consistent between typing, editing, and navigation. It delegates the actual actions to collaborators (the input field, the message manager, and the event publishers like OnMessageSubmitted and OnImagePasted), keeping key handling isolated from business logic. It also respects channel permissions by bypassing text-entry actions when the current channel is read-only, preventing invalid edits.
-
-## Notes
-- Enter submission guard: the message is submitted only if there is text (after trimming) or there are staged attachments, and the current channel is non-empty.
-- Clipboard behavior: Ctrl+V/Ctrl+Y first try to stage clipboard files as attachments; if none are files, they attempt to paste PNG image data from the clipboard; if neither applies, they fall back to a standard text paste via the input field.
-- Read-only channels: text entry and attachment staging are skipped when the channel is read-only, ensuring the UI adheres to channel permissions.
+OnInputKeyDown processes key presses in the message-entry area and dispatches the appropriate actions for common chat shortcuts, such as autocompletion (`TabKey`), canceling a pending reply (`Esc` when `HasPendingReplyIndicator` is true), inserting a newline (`NewlineKey`), and submitting a message (`EnterKey`) when the channel is writable and there is text or staged attachments. It also handles app-level commands (`AltQKey`), opening the search dialog (`CtrlKKey`), and focus management (`F6Key`) to move focus to the message list. It additionally implements clipboard-based behavior for paste (`CtrlVKey`, `CtrlYKey`), cut (`CtrlXKey`), and copy (`CtrlCKey`), including attachment staging and image pasting via [`ClipboardFiles`](../Services/ClipboardFiles.cs.md) and [`ClipboardImage`](../Services/ClipboardImage.cs.md). Clear coordination with `_inputField`, `_messageManager`, and events like `OnMessageSubmitted` and `OnImagePasted` is essential to keep the chat input responsive and consistent across channels.
 
 
 ---
@@ -708,15 +734,7 @@ private void OnMessageListAccepting(object? sender, CommandEventArgs e)
 **Returns:** `void`
 
 
-Activates the selected chat line in the message list, validating the source and index, then dispatching a context-appropriate action based on what the line represents. It first resolves quote targets for replies, then handles attachments (audio, file, or image), detects @mentions and #channels within the line text, and finally falls back to opening the sender's profile. Each path marks the event as handled to stop further processing.
-
-## Remarks
-All user interactions for a list entry funnel through this method, providing a single, predictable entry point for keyboard or programmatic activation. It keeps UI concerns decoupled from the data model by routing actions through dedicated callbacks (OnAudioPlayRequested, OnFileDownloadRequested, OnImageOpenRequested, OnUserProfileRequested, OnChannelJoinRequested) and by inspecting ChatLine properties such as AttachmentKind, JumpToMessageId, and SenderUsername. This design minimizes scattered conditional logic across the UI layer and centralizes the decision-making about what happens when a line is activated.
-
-## Notes
-- Early returns guard invalid state (null source, invalid index) and keep no-op paths contained.
-- Attachment priority: if an attachment exists, media actions take precedence over textual interactions (mentions/channels).
-- Fallback behavior: if no attachment, mention, channel, or sender username applies, the method completes without invoking any callbacks.
+OnMessageListAccepting is a private event handler that runs when the user activates a selected item in the chat message list. It first validates that the list's `Source` is a [`ChatListSource`](Chat/ChatListSource.cs.md), then obtains the currently selected line via `GetLine` and guards against nulls or invalid indices. Depending on the line's state, it dispatches the appropriate action: if the line exposes a `JumpToMessageId`, it calls `ScrollToMessage(jumpTarget)` and marks the event as handled (`e.Handled = true`); if the line has an attachment (both `AttachmentUrl` and `AttachmentFileName` non-null), it prioritizes the attachment type by invoking `OnAudioPlayRequested` for audio, `OnFileDownloadRequested` for files, or `OnImageOpenRequested` for images, each time setting `e.Handled` to true. If no attachment applies, the method converts the line to text and checks for an `@mention` using `ClickMentionRegex()`; on success it requests the mentioned user’s profile via `OnUserProfileRequested`. It then checks for a channel reference with `ClickChannelRegex()` and, on success, requests joining that channel via `OnChannelJoinRequested`. If none of the above apply, it falls back to opening the sender’s profile if a `SenderUsername` is present, again setting `e.Handled` to true for the activation.
 
 ---
 
@@ -738,7 +756,15 @@ private void OnMessageListKeyDown(object? sender, Key e)
 **Returns:** `void`
 
 
-This event handler processes keyboard input for the chat message list. It provides two primary shortcuts: F6 moves focus back to the input box to enable quick replies, and Delete or Backspace initiates the deletion flow for the currently selected message. If F6 is pressed, focus is transferred to the input field and the event is marked as handled. If Delete or Backspace is pressed, the code first validates that the message list source is a ChatListSource, that a valid item is selected, and that the selected line exposes a MessageId. When these conditions are met, the handler invokes ConfirmDeleteMessage with the message's ID and marks the event as handled, delegating the actual permission check to the server. The server enforces real permissions (own message or Mod+ over a lower role); the client simply confirms intent and relies on the server to reject disallowed actions.
+OnMessageListKeyDown is a private key-down handler for the message list. It focuses the input when the user presses `F6Key` and, for `Key.Delete.KeyCode` or `Key.Backspace.KeyCode`, initiates a delete for the currently selected message by obtaining its `MessageId` from the line at the current index and calling `ConfirmDeleteMessage`, with the server enforcing permission and the client only signaling intent.
+
+## Remarks
+This symbol centralizes keyboard interactions for the message list so common shortcuts translate into UI and server actions rather than scattered ad-hoc logic. It guards against invalid states by ensuring the source is a [`ChatListSource`](Chat/ChatListSource.cs.md), that there is a valid selection within bounds, and that the retrieved line contains a `MessageId` before invoking `ConfirmDeleteMessage`. The actual permission check occurs on the server; the client simply signals intent when the user presses delete-related keys.
+
+## Notes
+- If the currently selected line cannot provide a `MessageId`, the delete flow is bypassed and nothing is sent to the server.
+- The handler marks the event as handled for both focus and deletion-related keys to prevent default behavior and potential duplicate processing.
+- This is a UI-level interception; changes to the underlying [`ChatListSource`](Chat/ChatListSource.cs.md) shape or the line retrieval API may require corresponding updates to maintain the delete flow.
 
 ---
 
@@ -760,15 +786,15 @@ private void OnMessageListMouseEvent(object? sender, Mouse e)
 **Returns:** `void`
 
 
-Handles mouse interactions for items in the chat message list. The method processes left- and right-clicks to either activate attachment actions on a line or present a context menu; if the click doesn't map to a known action, it returns without side effects. It determines the targeted line from the list's TopItem and the mouse position, validates bounds, and, for left-button clicks, dispatches OpenImage or SaveOriginal actions when the click occurs on a matching ActionSpan with a non-null AttachmentUrl and AttachmentFileName. It invokes OnImageOpenRequested(url, name) when the Action is OpenImage, otherwise OnImageSaveRequested(url, name). It then marks the event as handled and returns. For right-clicks, it selects the row, focuses the list, and shows the message context menu at the screen position. If none of these conditions apply, the method simply returns, leaving other listeners to handle the event as appropriate.
+This private event handler processes mouse input from the chat message list (`_messageList`). It distinguishes left-clicks from right-clicks and ignores other inputs. For a left-click performed on a line that contains an attachment action span and provides an `AttachmentUrl` and an `AttachmentFileName`, it dispatches the corresponding operation by invoking `OnImageOpenRequested` or `OnImageSaveRequested` with the `url` and `name`, and marks the event as handled. For a right-click, it selects the clicked row, focuses the list, and shows the message context menu via `ShowMessageContextMenu`.
 
 ## Remarks
-By centralizing this logic in OnMessageListMouseEvent, the UI separates interaction details from the concrete actions (open/save). The event-based callbacks (OnImageOpenRequested, OnImageSaveRequested) enable the host to implement corresponding behavior without the control needing to know how to present or fetch attachments. It coordinates among the message list, its source lines, and the context menu, ensuring left-clicks only trigger attachment-related actions and right-clicks prepare the selection and menu.
+Separation of concerns: UI input handling is isolated here, mapping raw mouse events to high-level actions (attachment operations or context-menu invocation). It coordinates with the chat line data (via `AttachmentUrl`, `AttachmentFileName`, and `ActionSpans`) and with the event callbacks (`OnImageOpenRequested`, `OnImageSaveRequested`) to perform the appropriate operation.
 
 ## Notes
-- Left-click triggers only when the target line has both an AttachmentUrl and an AttachmentFileName and the click lies within an ActionSpan; otherwise the method returns without performing the action.
-- When an action path is taken, OnImageOpenRequested or OnImageSaveRequested is invoked with the attachment's URL and file name, and e.Handled is set to true to suppress further processing.
-- Right-click path selects the row, focuses the list, and shows the context menu; the event is marked as handled in those cases.
+- Left-click path only triggers an action when the click lies within an `ActionSpan` for the line; otherwise, the code returns and preserves normal selection behavior.
+- Right-click path selects the row and shows the context menu, enabling per-row actions.
+- All action branches set `e.Handled = true` to prevent further processing and ensure predictable UI behavior.
 
 ---
 
@@ -790,16 +816,14 @@ private void OnMessageListVerticalScrollBarScrolled(object? sender, EventArgs<in
 **Returns:** `void`
 
 
-This private method serves as the Scroll event handler for the message list's vertical scrollbar. It detects when the scrollbar has been scrolled to the top (VerticalScrollBar.Value == 0) and, in that case, raises the OnLoadMoreRequested event to fetch older messages, if any subscriber is attached.
+This private method handles the vertical scrollbar's scroll event for the message list. When the scrollbar reaches the top (i.e., `_messageList.VerticalScrollBar.Value` is 0), it invokes `OnLoadMoreRequested` to request loading older messages.
 
 ## Remarks
-
-By centralizing the trigger for loading more messages behind a single, UI-focused event, this abstraction keeps the data-loading flow decoupled from the scrollbar mechanics. It relies on the scrollbar's Value to determine the top position, rather than on the event payload, making the behavior straightforward to test and reason about in isolation. This pattern enables incremental history loading without scattering load logic across the UI code.
+It acts as a lightweight bridge between the UI event and the data-loading workflow. By exposing the `OnLoadMoreRequested` signal, the function keeps scroll-triggered loading decoupled from the actual loading implementation, enabling subscribers to decide how to fetch and prepend older messages. The top-only condition aligns with common chat UX, ensuring a deliberate user action triggers a load.
 
 ## Notes
-
-- The OnLoadMoreRequested invocation is guarded by the null-conditional operator, so no action occurs if there are no subscribers.
-- Scrolling to the top may re-trigger loads if the user lingers at the top or repeatedly reaches it; consider adding a guard (e.g., a loading flag or debounce) in the handler or subscriber to prevent concurrent or duplicate fetches.
+- Repeatedly reaching the top while scrolling could trigger multiple load requests if the subscriber doesn't guard against reentrancy or throttling.
+- The invocation uses a null-conditional call (`OnLoadMoreRequested?.Invoke()`); if there are no subscribers, it is a no-op.
 
 ---
 
@@ -820,15 +844,10 @@ private void OnMessagesChanged(string channelName)
 **Returns:** `void`
 
 
-Handles the event when the message set changes for a channel. If the changed channel matches the currently displayed channel, it refreshes the visible messages; otherwise, it refreshes the channel list. Finally, it marks the status bar for redraw to reflect background activity.
+OnMessagesChanged handles a channel-name change by updating the UI context: if the provided `channelName` matches the current channel from `_messageManager.CurrentChannel`, it refreshes the message list via `RefreshMessages()`; otherwise it refreshes the channel list via `RefreshChannelList()`. It then triggers the status area to redraw by calling `_statusLabel.SetNeedsDraw()` to reflect background activity.
 
 ## Remarks
-This method acts as the UI glue between the message data and the main window. It centralizes the decision about what to refresh, reducing unnecessary work by only reloading the current channel’s messages when needed. The unconditional SetNeedsDraw ensures the status indicator is updated after any message activity.
-
-## Notes
-- Assumes _messageManager and _statusLabel are initialized before invocation; otherwise a NullReferenceException could occur.
-- The comparison channelName == _messageManager.CurrentChannel is a straightforward string equality check; if channel naming becomes more complex, consider normalization.
-- This method is private and intended to be invoked by the class itself in response to message-change events, not by external callers.
+Serves as a compact coordinator that keeps the messages view, channel list, and status indicator in sync with the active channel. It centralizes the decision between refreshing messages or the channel roster and ensures the status bar reflects updates arising from channel or message changes, all without exposing this logic beyond the UI layer.
 
 ---
 
@@ -850,15 +869,8 @@ private void OnStatusBarDrawContent(object? sender, DrawEventArgs e)
 **Returns:** `void`
 
 
-OnStatusBarDrawContent renders the EchoHub status bar by composing branding, version, connection state (with an animated spinner for transitional states), the current user, channel details, and unread activity into the status label. It respects the available width by measuring grapheme columns and cancels the default drawing to ensure full control over layout and color.
+OnStatusBarDrawContent is a private event handler that renders the EchoHub status bar during its draw cycle. It builds a single, grapheme-aware line by consulting the current color scheme via `SchemeManager.GetScheme("Menu")`, applying a fallback background where needed, and writing segments through a local `Write` helper until the `Viewport.Width` is exhausted. The method echoes branding (`" EchoHub"`), the app version (`AppVersion`), connection status (with an animated spinner for transitional states), the current user, the active channel with visibility modifiers, and an activity summary of channels with unread messages, finally padding the remaining space. It cancels the default drawing by setting `e.Cancel = true` to ensure full control over the rendered line.
 
-## Remarks
-This method centralizes the visual composition of the status bar, ensuring consistent theming and typography through the various status attributes and color selectors. It reads live state from the application's managers (such as the current user, current channel, and unread activity) and adapts visuals (including a spinner for transitional connection states and color-coded channel/user indicators) to reflect real-time context. By isolating this logic, the UI remains cohesive even as underlying state sources evolve, and it guarantees a stable, width-aware rendering surface for the status line.
-
-## Notes
-- The function early-exits if the status bar width is non-positive, so ensure the status bar has a meaningful width before rendering.
-- It uses a Resolve step to substitute a None background with the normal background, preserving a consistent look across segments.
-- The handler takes full control of drawing for the status bar (it may set e.Cancel = true and fill remaining space with spaces); callers should not rely on the default rendering path.
 
 ---
 
@@ -880,15 +892,15 @@ private void OnUsersListAccepting(object? sender, CommandEventArgs e)
 **Returns:** `void`
 
 
-This private event handler responds to the user activating a selection in the users list. It first validates that there is a selected item within bounds, resolves the corresponding username from the list source, and if a username exists, raises the OnUserProfileRequested event with that username and marks the command as handled to prevent further processing.
+Responds to the user acceptance action on the users list. It reads the currently selected item index from `_usersList`, validates that a value exists and is within the bounds of `_usersListSource`, and then gets the corresponding `username` via `_usersListSource.GetUsername(index.Value)`. If a non-null `username` is found, it raises the `OnUserProfileRequested` event with that `username` and marks the action as handled by setting `e.Handled = true` to prevent further command processing.
 
 ## Remarks
-This method acts as the bridge between the UI interaction (selecting a user and accepting the action) and the navigation to that user’s profile. It encapsulates the guard logic for a valid selection and a non-null username, ensuring the rest of the UI remains robust against invalid state. By emitting OnUserProfileRequested, it decouples the act of selecting a user from the actual navigation/presentation of the profile, allowing subscribers to decide how to present the profile (e.g., in a panel, a new window, or a details view). The null-conditional invocation protects against the absence of subscribers without forcing a null check at every call site.
+Encapsulates the UI behavior of opening a user profile in a small, focused handler. The handler decouples the act of selecting a user from the navigation logic by emitting `OnUserProfileRequested`, allowing the application to decide how to present the profile. The invocation uses a null-conditional operator, so subscribers may opt into profile navigation without forcing a handler here.
 
 ## Notes
-- The method returns early when there is no valid selection (null index, negative index, or index outside the source bounds).
-- A username must be non-null to trigger navigation; otherwise, no event is raised and no handling is marked.
-- e.Handled is set to true only when a username is successfully resolved and the profile request is emitted, indicating to the caller that the command was consumed.
+- The `OnUserProfileRequested` invocation uses the null-conditional operator, so the absence of subscribers results in a no-op rather than an exception.
+- The method guards against invalid selections (no selection, negative index, or index out of range) and against a missing username, ensuring it only attempts to navigate when a valid username is available.
+
 
 ---
 
@@ -910,16 +922,15 @@ private void OnWindowKeyDown(object? sender, Key e)
 **Returns:** `void`
 
 
-Handles the main window's KeyDown events and implements a small set of global keyboard shortcuts. When one of the predefined keys is pressed, it invokes the corresponding action (stop the application, toggle the users panel, or show the search dialog) and marks the event as handled to prevent further processing; for unrecognized keys, the method returns without taking action, allowing normal input behavior.
+OnWindowKeyDown is a private window event handler that maps a small set of keyboard shortcuts to actions on the main window. When the user presses `AltQKey`, `F2Key`, or `CtrlKKey`, it invokes `_app.RequestStop()` (quit the app), `ToggleUsersPanel()` (toggle the users panel), or `ShowSearchDialog()` (open the search UI) respectively; for any other key, it returns without handling. If a known shortcut is processed, it sets `e.Handled = true` to prevent further propagation of the event.
 
 ## Remarks
-By consolidating keyboard shortcuts in OnWindowKeyDown, the class centralizes input concerns for the window and makes it easier to adjust global hotkeys in one place. The handler relies on private members such as _app, ToggleUsersPanel, and ShowSearchDialog to perform the actions, which keeps the event handling decoupled from UI details. Marking the event as Handled ensures that no other key handlers react to these shortcuts, avoiding conflicting behavior.
+This private handler centralizes keyboard accessibility for the main window by funneling a few shortcuts through a single place. It decouples the raw key events from the UI actions (`_app.RequestStop()`, `ToggleUsersPanel()`, `ShowSearchDialog()`), ensuring consistent and predictable behavior for the defined shortcuts.
 
 ## Notes
-- Only triggers for the specific KeyCode values (AltQKey, F2Key, CtrlKKey); other keys are passed through.
-- Because it is a private method, wiring must happen in the same class (e.g., via the KeyDown event).
-- Setting e.Handled = true happens only after a known shortcut is processed; if the handler returns early for unrecognized keys, Handled remains false.
-
+- Only the configured shortcuts consume the event; other keys are ignored and may bubble to other handlers.
+- Changing bindings or the actions requires updating the corresponding `AltQKey`, `F2Key`, `CtrlKKey` definitions or the called methods.
+- The handler is synchronous and marks the event as handled (`e.Handled = true`) after processing a known shortcut.
 
 ---
 
@@ -934,16 +945,13 @@ private void RefreshChannelList()
 **Returns:** `void`
 
 
-RefreshChannelList refreshes the channel list in the UI, showing unread counts next to channel names. It pins system channels to the top, preserving the relative order of non-system channels, and then determines which channels are private (excluding system channels). The method updates the UI data source with the latest channel list, unread counts, current channel, privacy flags, and mentions, and finally restores the user's current channel selection.
+RefreshChannelList updates the channel list UI to display unread counts next to each channel, while pinning system channels to the top and preserving the relative order of the other channels. It computes private channels from the channel names and visibility, then updates the channel list source with the latest data (unread counts, current channel, protected and mention channels, private channels, and system channels) and applies the result to the UI by setting the channel list source and restoring the current selection via the current channel.
 
 ## Remarks
-Centralizes the channel-list choreography: ordering, privacy flags, unread counts, and selection state are prepared here before binding to the UI. It relies on _channelNames as the source of truth for selection, uses a stable sort to preserve alphabetical order within system and non-system groups, and computes privateChannels by consulting both _systemChannels and _channelPublic. By separating data preparation from UI binding (_channelListSource.Update and _channelList.Source), the code remains easier to reason about and yields deterministic refresh behavior.
+By centralizing this logic in `RefreshChannelList`, the UI presentation stays consistent with the underlying channel state and unread counts. It leverages `_channelNames` as the source of truth for selection, uses `_systemChannels` to identify system channels, and updates `_channelListSource` in one place to reflect unread counts, privacy, and channel lifecycle, reducing duplication and improving stability when channel data changes. This design keeps user context intact by re-selecting `_messageManager.CurrentChannel` after refresh.
 
 ## Notes
-- The ordering is stable: system channels are pinned to the top, and non-system channels retain their original alphabetical order within their group.
-- System channels are private by nature but do not receive the private glyph; they are explicitly excluded from the privateChannels set.
-- The method mutates _channelNames in place; ensure it is invoked on the UI thread to avoid race conditions during updates.
-
+- Must be invoked on the UI thread; touching `_channelList` or `_channelListSource` from a background thread can cause cross-thread exceptions.
 
 ---
 
@@ -958,14 +966,10 @@ public void RefreshMenuBar()
 **Returns:** `void`
 
 
-RefreshMenuBar rebuilds and replaces the menu bar to reflect changes such as updated themes. Call it when theme lists or related UI chrome have changed to ensure the bar is rebuilt and redrawn, instead of trying to mutate the existing bar in place.
+RefreshMenuBar rebuilds and replaces the menu bar after theme list changes. It removes the current `_menuBar`, rebuilds it via `BuildMenuBar()`, re-attaches it with `Add(_menuBar)`, applies color schemes with `ApplyColorSchemes()`, and finally requests a redraw via `SetNeedsDraw()`.
 
 ## Remarks
-This method centralizes the UI update required after theme changes, ensuring the menu bar is rebuilt from a fresh state and consistently themed. It delegates bar construction to BuildMenuBar() and handles the lifecycle: removing the old bar, inserting the new one, applying color schemes, and requesting a redraw. By encapsulating this sequence, the UI remains coherent even as themes and related styling evolve, reducing the risk of stale or inconsistent visuals.
-
-## Notes
-- Potential UI flicker: the bar is removed and rebuilt; rapid theme changes could cause a brief visual flash.
-- Must be called on the UI thread to safely manipulate UI controls; crossing threads can lead to exceptions.
+Centralizes the refresh of the main navigation UI after theme updates, ensuring the active theme is rendered consistently in the menu bar. It coordinates the menu lifecycle by removing the old `_menuBar`, rebuilding a fresh instance with `BuildMenuBar()`, re-attaching it with `Add(_menuBar)`, and then applying color schemes via `ApplyColorSchemes()` before signaling a redraw with `SetNeedsDraw()`.
 
 ---
 
@@ -980,14 +984,11 @@ private void RefreshMessages()
 **Returns:** `void`
 
 
-RefreshMessages updates the chat ListView by transforming the current channel’s messages into a renderable ChatListSource, wrapping lines to the available viewport width and expanding rules when needed; it then binds the source to the UI and places the selection on the latest item. It caches the last measured width (falling back to it when the viewport hasn’t been laid out yet) to avoid flicker on initial layout. If no channel is selected, it displays a welcome banner instead of messages.
+Refreshes the chat list for the current channel by rebuilding a [`ChatListSource`](Chat/ChatListSource.cs.md) from the messages returned by `_messageManager.GetMessages(_messageManager.CurrentChannel)` and wiring it to `_messageList`. When a valid viewport width is available, it wraps lines (or expands rule labels with `ExpandRule`) to that width and selects the most recent item; if the width is not yet known, it uses the last cached width in `_lastChatWidth` to preserve layout across resizes. If no channel is selected (the messages call returns null), it renders a MOTD-style welcome banner via `WelcomeBanner.Build(width, AppVersion)` and assigns that as the source.
 
 ## Remarks
-This method centralizes the layout-sensitive conversion from raw messages to UI presentation, isolating wrapping and rule-expansion logic from the ListView rendering code. It also guarantees the view shows the most recent content by selecting the last item after building the source, and it gracefully switches to a welcome banner when there is no active channel.
+This method centralizes UI refresh logic for the chat area, ensuring consistent behavior when changing channels or resizing the window. It delegates rendering details to [`ChatListSource`](Chat/ChatListSource.cs.md) (and the associated `Render` pathway) while relying on the viewport width to determine wrapping and layout, and it uses `_lastChatWidth` to maintain a stable presentation during initial layout passes.
 
-## Notes
-- If the viewport width is not yet reported (width <= 0) and there is no cached width, the method adds messages without wrapping, potentially producing non-wrapped lines until layout occurs.
-- Requires access to UI elements (_messageList, _messageManager, WelcomeBanner); should be invoked from the UI thread to avoid threading issues.
 
 ---
 
@@ -1008,14 +1009,10 @@ public void RemoveChannel(string channelName)
 **Returns:** `void`
 
 
-Removes a channel from all internal channel collections and then refreshes the left panel. Use this when deleting a channel to ensure the in-memory state and the UI stay in sync, rather than mutating each collection separately.
+Removes a channel from the left panel by clearing its references from several internal state collections and then refreshing the display. Given a `channelName`, it deletes that name from `_channelNames`, `_channelTopics`, `_channelPublic`, `_channelProtected`, and `_systemChannels`, before calling `RefreshChannelList()` to update the UI.
 
 ## Remarks
-This method serves as a single, centralized deletion boundary for channel metadata. By encapsulating removal across multiple collections (_channelNames_, _channelTopics_, _channelPublic_, _channelProtected_, _systemChannels_), it guarantees consistent state and avoids partial leftovers, and it ensures the UI is refreshed to reflect the current channel set.
-
-## Notes
-- Removal is best-effort; if a channel name isn't present in a given collection, that collection simply omits it without throwing.
-- If called from a non-UI thread, ensure thread affinity when RefreshChannelList needs to update the UI.
+Consolidating the removal into a single method ensures the UI and data-model stay in sync. By performing all removals before triggering `RefreshChannelList()`, it avoids partially updated state that could occur if the collections were modified independently. If the channel name is not present, the removals are no-ops and the method still triggers a refresh, making the operation idempotent at the call site.
 
 ---
 
@@ -1036,16 +1033,15 @@ private void ScrollToMessage(Guid messageId)
 **Returns:** `void`
 
 
-Scrolls the message list to the first line of the specified message, a helper used by the reply-quote workflow to align quotes with the original content. If the message is not present in the currently loaded buffer, the method is a no-op and makes no UI changes.
+ScrollToMessage scrolls the message list to the first line of a given message, a helper invoked by reply quote navigation to reveal the original message in the loaded buffer. It selects the matching line (where `line.MessageId == messageId` and `line.JumpToMessageId` is null), scrolls the list so the item is visible with up to three preceding lines, then focuses and redraws the list. If the message is not present in the current buffer, the method returns without modifying the UI.
 
 ## Remarks
-This method isolates a small but important piece of UI choreography: given a messageId, it locates the corresponding line in the ChatListSource, selects it, and adjusts the scroll so the line appears near the top of the view (with a three-line context). It avoids impacting other lines or quote lines by requiring JumpToMessageId to be null, ensuring we jump to the message's own line. Keeping this logic in one place simplifies the quote rendering flow and makes behavior consistent across different message states.
+ScrollToMessage encapsulates a small piece of navigation logic for the chat UI: it isolates the actions needed to reveal a concrete message while maintaining user context. By ignoring lines that are quotes (`line.JumpToMessageId` not null), it ensures the navigation lands on the original message rather than a quoted reference. The method coordinates with `_messageList` and the underlying [`ChatListSource`](Chat/ChatListSource.cs.md) to set the selection, adjust the scroll position via `TopItem`, and request a redraw, producing a predictable experience when replying to messages.
 
 ## Notes
-- Linear search through the current source; costs are proportional to the number of lines in view.
-- No action if Source is not a ChatListSource or if no matching line is found.
-- TopItem is set to Math.Max(0, i - 3) to preserve a little context above the target line.
-- Mutates UI state (SelectedItem, TopItem, focus, and redraw) and should be invoked on the UI thread.
+- No-op behavior: if the target message is not loaded in the current buffer, the method returns without changing the UI.
+- Target correctness: the navigation only lands on lines where `JumpToMessageId` is null, avoiding jump-to-quote lines that may reference the same message.
+
 
 ---
 
@@ -1067,24 +1063,10 @@ public void SetChannelTopic(string channelName, string? topic)
 **Returns:** `void`
 
 
-Updates the topic for a specific channel by assigning the provided topic to the channel's entry in the internal _channelTopics dictionary. If the channel being updated is the one currently displayed in the UI (as indicated by _messageManager.CurrentChannel), it also refreshes the topic display by calling UpdateTopicBar.
+Sets or updates the topic for a given channel. It assigns the provided `topic` to the `_channelTopics` store for the key `channelName`. If the updated channel is the one currently displayed in the UI (as indicated by `_messageManager.CurrentChannel`), it refreshes the topic display by calling `UpdateTopicBar()`.
 
 ## Remarks
-
-By centralizing topic mutations here, callers don’t need to manipulate UI state directly. The method ensures consistency between the channel topics data model and the user interface by triggering a UI update only when the changed channel is the active one.
-
-## Example
-
-```csharp
-// Update the topic for the "general" channel; the UI will refresh if that channel is currently active
-SetChannelTopic("general", "Welcome to the general discussion channel!");
-```
-
-## Notes
-
-- If topic is null, the topic for the specified channel is cleared in the _channelTopics dictionary. The entry is created or overwritten as needed.
-- Changes to topics for non-active channels do not immediately affect the UI; the topic bar updates only when the affected channel is the current/active channel.
-
+This method centralizes per-channel topic management by mutating the internal topic store and, only when relevant, triggering a UI refresh. It keeps data and presentation in sync for the active channel while avoiding unnecessary work for other channels, thus maintaining UI responsiveness and consistency between the data model and the topic bar.
 
 ---
 
@@ -1105,14 +1087,13 @@ public void SetChannels(List<ChannelDto> channels)
 **Returns:** `void`
 
 
-SetChannels takes a list of ChannelDto, clears the local channel state, fills in names, topics, and visibility, and marks protected and system channels, before refreshing the channel list UI. Use this when you receive a full snapshot of channels from the server and want the UI to reflect that snapshot in one operation rather than mutating individual channels.
+Rebuilds the internal channel state from the provided `List<ChannelDto>` and refreshes the channel list UI. It clears the internal collections `_channelNames`, `_channelTopics`, `_channelPublic`, `_channelProtected`, and `_systemChannels`, then populates them from each [`ChannelDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) in `channels` (adding `ch.Name` to `_channelNames`, setting `_channelTopics[ch.Name]` to `ch.Topic`, and `_channelPublic[ch.Name]` to `ch.IsPublic`). If a channel is protected or system, it additionally tracks those names in `_channelProtected` and `_systemChannels`, respectively, before finally calling `RefreshChannelList()`.
 
 ## Remarks
-By converting the ChannelDto data into the UI state, this method isolates the UI from the raw DTOs and centralizes the mapping logic. It ensures a consistent representation of channel topics and visibility, while grouping channels by protected or system roles to simplify downstream behavior.
+Bulk-replaces rather than incrementally updating; this is intended when the server-provided channel list changes in full. By consolidating all channel attributes (topic, visibility, and category flags) under the channel name key, it keeps the UI and internal views consistent with a single refresh.
 
 ## Notes
-- Null input will cause an exception; callers should pass an empty list or validate before calling.
-- Assumes channel names are unique identifiers; duplicate names will create duplicates in _channelNames and may overwrite entries in _channelTopics or misclassify in protected/system lists.
+- Assumes `channels` is non-null and that all channel names are unique; nulls or duplicates can cause runtime errors or inconsistent state because the method does not validate input.
 
 ---
 
@@ -1133,14 +1114,10 @@ public void SetCurrentUser(string username)
 **Returns:** `void`
 
 
-Sets the current user name and delegates to the message manager for @mention detection. Use this when the active user changes (for example, after login or user switch) so that subsequent messages and mentions are evaluated against the correct user.
+Updates the active user name by forwarding the provided `username` to the message manager's `SetCurrentUser` method, enabling proper @mention detection. This wrapper lets the UI layer update the current user without needing to know how the message manager stores or uses the username.
 
 ## Remarks
-This method is a thin wrapper around _messageManager.SetCurrentUser; it centralizes the UI's interaction with the messaging subsystem and keeps the rest of the UI agnostic about how mentions are detected. By routing the update through the message manager, changes to mention resolution are applied consistently across the system and encapsulated in a single component. In practice, the UI can continue to call SetCurrentUser without needing to know about the underlying messaging implementation.
-
-## Notes
-- No input validation is performed here; ensure the provided username meets the expectations of the message manager and is non-null.
-- As a pass-through, any validation or side effects originate from _messageManager; callers should be prepared to handle its behavior.
+Because this symbol is a forwarding wrapper, it preserves a clean separation of concerns: the UI layer remains decoupled from the internal mention-processing logic, with the `_messageManager` handling the actual behavior. It centralizes the current-user context in a single component, making future changes to mention handling easier to apply without touching UI code.
 
 ---
 
@@ -1161,23 +1138,7 @@ public void SetReplyingTo(string? label)
 **Returns:** `void`
 
 
-Shows/clears the tiny contextual indicator in the input frame's title that reflects the current reply target. When you pass a non-null label, the title displays a fragment like "↩ Replying to {label} │ Esc=cancel" to provide context for the reply; passing null clears the indicator. After computing the fragment, the method calls UpdateInputTitle() to refresh the UI immediately so the change is visible to the user.
-
-## Remarks
-
-By centralizing this UI state, SetReplyingTo encapsulates the presentation detail of the reply workflow. It separates the action of initiating a reply from the mechanics of rendering the updated title, and ensures a consistent reply-indicator string is used across the input area.
-
-## Example
-
-```csharp
-// Within the same class context
-SetReplyingTo("Alice");
-SetReplyingTo(null);
-```
-
-## Notes
-
-- This method mutates UI-related state and should be invoked on the UI thread to avoid cross-thread access issues when updating the window chrome.
+SetReplyingTo updates the input frame's title to reflect the message you're replying to. When a non-null `label` is supplied, it builds the title fragment ``↩ Replying to {label} │ Esc=cancel`` and stores it in the internal field ``_replyTitleFragment``; passing `null` clears the indicator. It then refreshes the UI by calling ``UpdateInputTitle()``.
 
 ---
 
@@ -1202,10 +1163,18 @@ public void SetStagedAttachments(IReadOnlyList<string> fileNames, string asciiSi
 Updates the attachment staging indicator shown on the input frame's title, including the current ASCII-art size for images. Passing an empty list restores the default hint.
 
 ## Remarks
-Centralizes attachment-state presentation in the input UI, so the title reflects what is staged without scattering formatting logic across callers. It updates a staged flag and builds a compact label that shows the count, a short preview of names, and the ASCII size label, then refreshes the title via UpdateInputTitle(). This makes it easy to adjust formatting (e.g., truncation length) in one place while keeping the input frame in sync.
+This method centralizes the UI logic for reflecting the current set of staged attachments in the input title, ensuring callers don't assemble the title text themselves. It constructs a compact label beginning with the 📎 emoji, followed by the count and a comma-separated list of filenames (truncated when too long), then the ASCII-size hint and quick actions. After updating `_stagedTitleFragment`, it calls `UpdateInputTitle()` to refresh the on-screen title.
+
+## Example
+```csharp
+// Example: attach two files and display their names with a 128x64 ASCII size hint
+SetStagedAttachments(new[] { "image1.png", "image2.png" }, "128x64");
+```
 
 ## Notes
-- The method assumes fileNames is non-null; passing null will throw a NullReferenceException when accessing Count.
+- If the joined filenames exceed 45 characters, they're truncated to preserve layout, appending '...'.
+- Passing an empty list resets the hint by clearing `_stagedTitleFragment` and updating the title.
+- This method updates UI state and should be invoked on the UI thread where the input frame lives to avoid cross-thread issues.
 
 ---
 
@@ -1226,20 +1195,13 @@ public void ShowError(string message)
 **Returns:** `void`
 
 
-Shows an error message to the user by presenting a modal dialog with the title 'Error' and the provided message. It delegates to MessageBox.ErrorQuery to render the dialog, using the current application context (_app) to display the UI. This lightweight wrapper ensures a consistent, centralized way to surface user-facing errors across the EchoHub client UI.
+ShowError is a small UI helper that presents an error dialog to the user by calling `MessageBox.ErrorQuery(_app, "Error", message, "OK")`. Use this method when you want to surface a user-facing error with consistent styling and boilerplate centralized in one place.
 
 ## Remarks
-By consolidating error presentation here, callers don't need to know about the underlying message box details; the wrapper encapsulates the UI intent. This helps ensure a consistent dialog structure (title 'Error', an 'OK' button) while leaving room to enhance behavior later (e.g., localization, logging) without touching every call site.
-
-## Example
-```csharp
-ShowError("Unable to load user data.");
-```
+This wrapper centralizes error presentation, enforcing a consistent user experience by always using the same dialog title and button label via `MessageBox.ErrorQuery(_app, "Error", message, "OK")`. It also isolates UI-dialog boilerplate so changes to the underlying dialog surface can be made in one place without changing call sites. It assumes `_app` is a valid UI context; if `_app` is null or the call is made on a non-UI thread, it can fail or cause exceptions.
 
 ## Notes
-- Ensure _app is non-null and this call runs on the UI thread.
-- This method is synchronous and blocks until the user dismisses the dialog; avoid calling from long-running background tasks.
-
+- Requires a valid UI thread context; ensure `_app` is initialized before calling.
 
 ---
 
@@ -1261,16 +1223,8 @@ private void ShowMessageContextMenu(ChatLine line, System.Drawing.Point screenPo
 **Returns:** `void`
 
 
-It builds and shows a per-message right-click context menu for a chat line at a given screen position, combining attachment actions, reply/mention/profile options, copy operations, and a delete action subject to server-side permissions. Use it to provide a consistent, feature-rich set of line-specific actions when a user invokes the context menu on a message line (e.g., via right-click).
+Shows a right-click context menu for a chat line, consolidating attachment actions, reply handling, mention/profile commands, text copying, and deletion with server-side permission checks. The method builds the menu by inspecting the [`ChatLine`](Chat/ChatLine.cs.md) for an attachment (its [`AttachmentKind`](../../EchoHub.Core/Models/AttachmentKind.cs.md), `AttachmentUrl`, and `AttachmentFileName`), the presence of a sender, and whether the line is a reply target (`MessageId`). It then populates a `PopoverMenu` with `MenuItem`s such as `Open image`, `Save original image`, `Play audio`, `Download file`, `Reply`, `Mention @sender`, `View {sender}'s profile`, `Copy text`, `Copy message ID`, and `Delete message` (the latter gated by the existence of `MessageId`). Actions are wired to events like `OnImageOpenRequested`, `OnImageSaveRequested`, `OnAudioPlayRequested`, `OnFileDownloadRequested`, `OnReplyRequested`, `OnUserProfileRequested`, and helper calls such as `CopyToClipboard` and `ConfirmDeleteMessage`. The UI is shown via `_app.Popovers` by registering the menu and displaying it at the given `screenPosition`.
 
-## Remarks
-This method centralizes the per-line action surface for chat messages, deriving available options directly from the message state. It conditionally adds actions based on the presence and type of attachments, existence of a sender, and whether the message can be replied to or deleted. By assembling a flat list of MenuItem actions and delegating to a PopoverMenu, it decouples the action presentation from the rest of the UI and ensures a uniform user experience across message kinds. The method also demonstrates how user interactions trigger higher-level callbacks (e.g., opening attachments, replying, mentioning, viewing profiles, copying text, or requesting deletion) while managing UI focus and popover lifecycle.
-
-## Notes
-- The context menu is short-circuited if there are no actionable items, avoiding an empty popover.
-- Reply content is derived by stripping the leading header from the line's textual representation; if the header pattern is absent, the full line is used.
-- Delete actions route through ConfirmDeleteMessage, reflecting server-side permission checks rather than performing client-side deletion.
-- Attachment-related actions are selected based on AttachmentKind, with sensible defaults for unknown kinds.
 
 
 ---
@@ -1286,14 +1240,15 @@ private void ShowSearchDialog()
 **Returns:** `void`
 
 
-Signals the UI to display the search dialog by invoking OnSearchRequested, but only if there are subscribers. This private helper is called when a search action is requested, decoupling the action from the actual dialog presentation and allowing the UI to respond without the ShowSearchDialog method needing to know how the dialog is shown.
+ShowSearchDialog is a private helper that triggers the search UI by raising the `OnSearchRequested` event. It encapsulates the mechanism of opening a search dialog so UI controls can simply invoke it without depending on a concrete dialog implementation.
 
 ## Remarks
-This method acts as a small abstraction layer between the user action and the dialog presentation. By centralizing the emission of the OnSearchRequested event, the MainWindow class remains focused on orchestration rather than UI rendering specifics. Subscribers can provide or adjust the search behavior without modifying callers, aiding testability and future UI changes.
+
+By funneling the open-search action through this private method, the class remains decoupled from how the search dialog is presented. The event-driven approach lets any subscriber decide how to respond to a search request, enabling easier testing and customization. The null-conditional invocation (`OnSearchRequested?.Invoke()`) ensures a safe no-op when no components are listening, avoiding the need for explicit subscriber checks in call sites.
 
 ## Notes
-- The invocation is synchronous on the calling thread; a long-running event handler will block the caller unless it offloads work.
-- The method does not itself create or show any UI; it merely signals interested parties via OnSearchRequested.
+
+- If no subscribers exist for `OnSearchRequested`, this method does nothing, which is a deliberate no-op. Calling code should subscribe to the event if it needs a visible search UI.
 
 ---
 
@@ -1314,15 +1269,14 @@ private void StageFiles(IReadOnlyList<string> files)
 **Returns:** `void`
 
 
-Stages the specified files as a single batch of attachments for the active channel. If there is no current channel, the method exits without staging. When a channel exists, it triggers the OnFilesStaged event to hand off the batch to the sending workflow; the next Enter press will transmit these attachments together with any caption the user has typed.
+Staging files (from a drop or a file-clipboard paste) as attachments in one batch; the next Enter sends them with any typed caption. The method retrieves the current channel from `_messageManager.CurrentChannel` and, if a channel is present, notifies listeners by invoking `OnFilesStaged` with the channel and the provided file paths; if there is no active channel, it returns without action.
 
 ## Remarks
-StageFiles acts as a tiny adapter between the user action (dropping or pasting files) and the message-sending pipeline. By emitting OnFilesStaged instead of performing the send itself, it keeps the UI concerns separate from transport mechanics and allows multiple components to react to the staging event. The method relies on the presence of a current channel to decide whether staging is meaningful, embodying a guard that prevents accidental attachment uploads when not in a channel.
+`StageFiles` serves as a small adapter between the UI action of dropping or pasting files and the sending workflow. By emitting `OnFilesStaged`, it decouples the staging concern from the actual send operation, allowing different parts of the UI or logic to respond to staged files without the method needing to know what happens next.
 
 ## Notes
-- If there is no active channel, this method is a no-op.
-- OnFilesStaged is invoked only when there is a channel; if there are no subscribers, nothing happens.
-- There is no in-method validation of file paths; validation is delegated to downstream handlers.
+- No action occurs if there is no active channel (`_messageManager.CurrentChannel` is null or empty).
+- The invocation uses `OnFilesStaged?.Invoke(channel, files)`; if there are no subscribers, nothing happens without throwing.
 
 ---
 
@@ -1343,7 +1297,7 @@ public void SwitchToChannel(string channelName)
 **Returns:** `void`
 
 
-SwitchToChannel switches the chat view to the specified channel. It updates the underlying message state to reflect the new current channel, updates the chat window title to show the channel (prefixed with a #), clears the unread count for that channel, and triggers a sequence of UI refreshes to keep the display in sync: the channel list, the displayed messages, the topic bar, and the input’s read-only state. It also marks the status area for redraw and, if the channel exists in the known list, selects it in the channel list to align the selection with the active channel.
+SwitchToChannel switches the chat view to the specified channel by name, resets its unread count, and refreshes related UI so the active channel is clearly reflected to the user. It updates the underlying current channel in the `_messageManager`, updates the chat window title to the channel header prefixed with a hash (`#` + channelName), clears unread markers for that channel via `_messageManager.ClearUnread(channelName)`, refreshes the channel list and messages, updates the topic bar and input state, redraws the status label, and aligns the channel list selection when the channel exists in `_channelNames` by setting `_channelList.SelectedItem` to the channel's index if found.
 
 ---
 
@@ -1358,13 +1312,7 @@ public void ToggleUsersPanel()
 **Returns:** `void`
 
 
-ToggleUsersPanel flips the panel visibility flag and then refreshes the layout to reflect the new state. This method is typically bound to the F2 keyboard shortcut, enabling users to quickly show or hide the online users panel without interacting with UI controls.
-
-## Remarks
-Encapsulating the state change and the layout refresh in a single method keeps the UI logic cohesive and discoverable. Callers can rely on this method to perform the complete show/hide action, rather than mutating internal fields directly, which helps prevent inconsistent presentation. If the binding for F2 changes, the toggle behavior remains centralized here.
-
-## Notes
-- Ensure calls occur on the UI thread; invoking from a background thread may require marshaling to the UI thread before touching UI state.
+`ToggleUsersPanel` flips the private field `_usersPanelVisible` to its opposite value and then calls `UpdateLayout()` to refresh the UI accordingly. It is typically invoked in response to the user pressing the `F2` key to show or hide the online users panel.
 
 ---
 
@@ -1379,15 +1327,7 @@ private void TryAutocompleteCommand()
 **Returns:** `void`
 
 
-Tab-complete slash commands in the input field. This method provides a lightweight command-entry UX by auto-completing a slash command when the user types a leading slash with no spaces, using the available SlashCommands list. If exactly one match exists, it completes to that command plus a trailing space; if multiple matches exist, it computes the longest common prefix among them and applies it when it extends beyond the current input. Finally, it moves the caret to the end of the input to prepare for continued typing.
-
-## Remarks
-Provides an in-place UX enhancement for command entry; it reads from the in-memory SlashCommands collection and does not trigger any external calls. It treats matches case-insensitively and updates the input field accordingly, leaving the user to continue typing after the completion.
-
-## Notes
-- Mutates only when the input begins with '/' and contains no spaces; otherwise it exits without changes.
-- When multiple matches exist, the prefix calculation starts from the first match in the list; the resulting auto-prefix can depend on the list ordering.
-- The caret is always moved to the end of the text, regardless of whether any text was changed.
+It tab-completes slash commands entered into the input field. When the user begins typing a command (text starting with `/` and containing no spaces yet), it matches against the known `SlashCommands` using a case-insensitive comparison (`StringComparison.OrdinalIgnoreCase`). If there is a single match, it replaces the input with that command plus a trailing space; if there are multiple matches, it computes the longest common prefix among the matches and updates the input to that prefix to guide refinement, and finally moves the cursor to the end via `_inputField.InsertionPoint`.
 
 ---
 
@@ -1402,14 +1342,10 @@ private void UpdateInputReadOnly()
 **Returns:** `void`
 
 
-Disables the input for read-only (system) channels so nothing can be typed there, and reflects the state in the input frame title. It does this by setting the input field's ReadOnly flag based on IsCurrentChannelReadOnly and then calling UpdateInputTitle to synchronize the title with the current state.
+Disables user input when the current channel is read-only by assigning `ReadOnly` on `_inputField` based on `IsCurrentChannelReadOnly`, and then refreshes the input frame title via `UpdateInputTitle` to reflect the new state.
 
 ## Remarks
-This small helper centralizes UI state synchronization: the input interactivity and the title reflect the channel's read-only status from a single source of truth (IsCurrentChannelReadOnly). By keeping UpdateInputReadOnly as the single place that applies this policy, changes to channel permissions automatically propagate to the input control and its label, ensuring consistent feedback to the user.
-
-## Notes
-- Ensure this runs on the UI thread to avoid cross-thread access issues when manipulating UI controls.
-- If IsCurrentChannelReadOnly changes, callers should ensure UpdateInputReadOnly is invoked so the input state and title stay in sync.
+By encapsulating this behavior in a single method, the UI consistently represents interactivity and state across channel changes. It prevents input in system/read-only channels and ensures the input frame title communicates the current mode, avoiding drift between interactivity and labeling. This approach also centralizes the read-only logic around the `IsCurrentChannelReadOnly` state source, simplifying future changes.
 
 ---
 
@@ -1424,16 +1360,10 @@ private void UpdateInputTitle()
 **Returns:** `void`
 
 
-Updates the input frame title to reflect the current editing state. When the current channel is read-only, the method forces the title to a fixed read-only message and requests a redraw; otherwise it derives the title from the reply and staged title fragments using a small switch expression: if both fragments are absent it uses the default title; if only one exists it uses that one; if both exist it concatenates them with a separator (" │ "). The method ends by signaling the input frame that it needs to redraw.
+UpdateInputTitle refreshes the `_inputFrame` title to reflect the current reply and staged hints; if the current channel is read-only (`IsCurrentChannelReadOnly`), it writes the fixed message `Read-only channel — you cannot type here` to `_inputFrame.Title` and immediately requests a redraw via `_inputFrame.SetNeedsDraw()`. Otherwise it computes the title from `_replyTitleFragment` and `_stagedTitleFragment` with a four-case switch: both null → `DefaultInputTitle`, only reply → `reply`, only staged → `staged`, or both present → `"{reply} │ {staged}"`, followed by a redraw. 
 
 ## Remarks
-
-Centralizes the logic for how the input title is computed from the live fragments, ensuring consistent UI behavior in both read-only and writable channels. It prevents scattering of title-construction logic across the window code and makes it easier to adjust the title policy in one place. By honoring the read-only constraint at this point, it guarantees users always see an accurate, explicit hint about their ability to type.
-
-## Notes
-
-- The read-only branch takes precedence over any fragment values.
-- SetNeedsDraw() is invoked after updating the title to refresh the UI; callers should not rely on drawing happening elsewhere.
+This method centralizes the UI title logic, ensuring read-only channels take precedence and that the title cleanly represents combined states when both a reply and a staged title exist. It couples state fragments with the input frame’s rendering, reducing duplication and keeping the UI consistent across edits.
 
 ---
 
@@ -1448,28 +1378,13 @@ private void UpdateLayout()
 **Returns:** `void`
 
 
-Reflows the main UI by resizing the chat, topic, and input frames based on whether the users panel is visible. It computes a right margin equal to the panel width when visible, applies Dim.Fill(rightMargin) to the relevant frames, toggles the users panel frame visibility, and then requests a redraw.
+Recomputes and applies the main window layout whenever the users panel visibility changes. It determines a right margin based on `_usersPanelVisible` (using `UsersPanelWidth` when the panel is visible, or 0 otherwise), updates `_chatFrame.Width`, `_topicLabel.Width`, and `_inputFrame.Width` using `Dim.Fill(rightMargin)`, toggles `_usersFrame.Visible` accordingly, and then calls `SetNeedsDraw()` to refresh the UI.
 
 ## Remarks
-
-Centralizes the layout reflow logic so callers toggle _usersPanelVisible without duplicating width calculations. It coordinates the main content frames and the users panel visibility, ensuring the UI stays visually aligned whenever the panel appears or disappears. Because it's private, it's meant to be invoked by internal state changes rather than external consumers.
-
-## Example
-
-```csharp
-// Example: toggle the Users panel and refresh layout
-_usersPanelVisible = true;
-UpdateLayout();
-
-_usersPanelVisible = false;
-UpdateLayout();
-```
+By centralizing width calculations in a single private helper, this method keeps the layout logic consistent and minimizes layout drift as the panel appears or disappears. It acts as the synchronization point between the panel visibility state and the content frames, ensuring the chat, topic label, and input areas always use the remaining horizontal space.
 
 ## Notes
-
-- Must be called on the UI thread after changing _usersPanelVisible.
-- Relies on UsersPanelWidth; ensure it is defined and non-negative when the panel is shown.
-- Invoking SetNeedsDraw() schedules a redraw; avoid rapid, consecutive calls from non-UI threads.
+- Ensure this runs on the UI thread; UI elements are updated here, and invoking from a background thread can lead to race conditions or exceptions.
 
 ---
 
@@ -1490,8 +1405,14 @@ public void UpdateOnlineUsers(List<UserPresenceDto> users)
 **Returns:** `void`
 
 
-UpdatesOnlineUsers updates the online users list display by transforming a `List<UserPresenceDto>` into the UI representation used by the user panel. For each user it computes a status icon from their UserStatus, selects a display name (DisplayName if present, otherwise Username), and applies a role tag derived from their ServerRole. If the user is connected through IRC, it appends a [irc] suffix to convey feature context. The name color is determined by first attempting to parse NicknameColor as a hex color; if that fails, it falls back to a deterministic per-nick color from NickColorHelper.GetAttribute, ensuring colors stay consistent with the user's chat messages. The resulting collection is written to the underlying _usersListSource and the frame title is updated to reflect the current number of online users.
+Updates the on-screen list of online users by converting each [`UserPresenceDto`](../../EchoHub.Core/DTOs/ProfileDtos.cs.md) into a display tuple that includes a status glyph, an optional role glyph, the user's display name (falling back to the username), and a color derived from either the nickname color or the username. It also marks IRC-connected users with an `[irc]` suffix and then updates `_usersListSource`, binds it to `_usersList`, and refreshes the frame title with the current user count. This method centralizes the formatting logic for the user list and ensures color and status presentation stay consistent with chat messages.
 
+## Remarks
+It centralizes the presentation of user entries for the online users panel, ensuring status, role, name, and color are consistently derived from the same sources ([`UserStatus`](../../EchoHub.Core/Models/UserStatus.cs.md), [`ServerRole`](../../EchoHub.Core/Models/ServerRole.cs.md), and nickname/username color palettes). By reusing the deterministic color logic and the inline role and status icons, the UI remains consistent with chat message coloring and user identity.
+
+## Notes
+- This method updates UI state and should be executed on the UI thread to avoid threading issues.
+- If `NicknameColor` is not parseable, the color falls back to `NickColorHelper.GetAttribute(u.Username)`.
 
 ---
 
@@ -1506,16 +1427,10 @@ private void UpdateSpinner()
 **Returns:** `void`
 
 
-Starts the spinner timer when entering a transitional connection state (Connecting, Reconnecting, …); the timer stops itself once the state settles.
+Starts the spinner timer when entering a transitional connection state (e.g., `Connecting`, `Reconnecting`); the timer stops itself once the state settles. It guards against starting multiple timers by returning early when `_spinnerToken` is not null, then schedules a 120ms callback via `_app.AddTimeout` that, if still transitional, rotates the spinner frame by incrementing `_spinnerFrame` modulo `SpinnerFrames.Length` and triggers a redraw of `_statusLabel`; the callback returns true to continue scheduling and false to stop when `IsTransitionalStatus` becomes false.
 
-The method immediately returns if there is no transitional status or if a spinner timer is already running, ensuring only a single spinner animation is active at a time. When invoked in the proper state, it schedules a recurring callback via _app.AddTimeout with a 120-millisecond interval. Each tick first checks whether the status remains transitional; if it does not, the method clears the timer token and stops frequency updates. If the status is still transitional, it advances the spinner frame by one, wraps around using the length of SpinnerFrames, and requests a redraw of the status label. This creates a smooth, looping spinner animation that runs only as long as the transitional state persists.
-
-Dependencies: TimeSpan, SpinnerFrames
-
-Dependency APIs (verified signatures)
-
-- field SpinnerFrames (src/EchoHub.Client/UI/MainWindow.cs)
-
+## Remarks
+Encapsulates the spinner animation logic so the UI keeps a single, self-terminating indicator while the connection state is in flux. It relies on `SpinnerFrames` for the frame sequence and uses `_statusLabel.SetNeedsDraw()` to refresh the display. The `_spinnerToken` field ensures only one active timer exists at a time, avoiding overlapping animation loops.
 
 ---
 
@@ -1536,20 +1451,12 @@ public void UpdateStatusBar(string status)
 **Returns:** `void`
 
 
-Updates the connection status displayed in the status bar by updating the internal state, refreshing the spinner, and invalidating the status label for redraw. Call this method whenever the connection state changes (for example, during connecting, when connected, or on disconnection) to keep the status bar in sync with the actual connection status without duplicating UI update logic elsewhere.
+Updates the connection status displayed in the status bar. This method assigns the new status to the internal `_connectionStatus`, triggers the spinner update via `UpdateSpinner()`, and requests a redraw of the label by calling `_statusLabel.SetNeedsDraw()`.
+
+Call this method whenever the connection state changes, to keep the status bar in sync without spreading UI update logic elsewhere.
 
 ## Remarks
-Centralizes the status bar update sequence in one place, ensuring the internal state and the visual feedback stay in sync. By encapsulating the setter of _connectionStatus, the spinner refresh, and the redraw trigger, callers avoid partially updated UI states and reduce the risk of stale visuals.
-
-## Example
-```csharp
-// Example: update the status bar to reflect a connected state
-UpdateStatusBar("Connected");
-```
-
-## Notes
-- Should be invoked on the UI thread to safely update UI elements.
-- Frequent updates will trigger spinner refreshes and redraws; consider batching rapid status changes.
+This method centralizes the UI update path for connection state changes in the main window. It ensures consistency between the underlying `_connectionStatus` and the visuals by coordinating state assignment, spinner visibility, and redraw scheduling through `_statusLabel.SetNeedsDraw()`.
 
 ---
 
@@ -1564,11 +1471,10 @@ private void UpdateTopicBar()
 **Returns:** `void`
 
 
-Show or hide the topic bar based on the current channel's topic.
+Updates the topic bar for the current channel by reading the topic from `_channelTopics` for the current channel via `_messageManager.CurrentChannel`. If a non-empty topic is found, `_topicLabel.Text` is set to `Topic: {topic}`, `_topicLabel` is made visible, and `_chatFrame.Y` is set to 2 to make room for the topic bar. If there is no topic, `_topicLabel` is hidden and `_chatFrame.Y` is set to 1.
 
-The UpdateTopicBar method reads the topic associated with the current channel from the _channelTopics collection and updates the topic label and chat layout accordingly. If a non-empty topic is found, it sets the label text to " Topic: {topic}", makes the label visible, and adjusts the chat frame position (Y = 2) to accommodate the topic bar. If there is no topic (or the topic is whitespace), it hides the topic label and resets the chat frame position (Y = 1).
-
-This method uses TryGetValue to avoid exceptions when a channel has no entry and relies on string.IsNullOrWhiteSpace to determine whether a topic should be shown. It encapsulates the small but important UI logic that bridges channel-topic data with the visual layout, ensuring a consistent presentation whenever the current channel or topic changes.
+## Remarks
+Keeping this logic in one place decouples topic data from layout decisions, ensuring a consistent UI state whenever channels switch or topics change. It coordinates `_channelTopics` with `_messageManager.CurrentChannel` to update `_topicLabel` and `_chatFrame` in lockstep, so the presence or absence of a topic immediately reflects in the UI.
 
 ---
 
@@ -1581,14 +1487,34 @@ private const KeyCode AltQKey = KeyCode.Q | KeyCode.AltMask
 ```
 
 
-AltQKey is a private constant KeyCode that encodes the keyboard shortcut Alt+Q by OR-ing KeyCode.Q with KeyCode.AltMask. It’s intended for input checks in the class, allowing a single, readable comparison (e.g., Input.GetKeyDown(AltQKey)) instead of reassembling the combination at every usage.
+Defines the keyboard shortcut Alt+Q as a single `KeyCode` value by bitwise OR-ing `KeyCode.Q` with `KeyCode.AltMask`. This private constant centralizes the Alt+Q pattern so input checks can reference `AltQKey` instead of composing the combination inline, improving readability and reducing the risk of inconsistencies in the UI input handling.
 
 ## Remarks
-This abstraction centralizes the Alt+Q shortcut so changes to the shortcut can be made in one place rather than scattered across the codebase. It also communicates intent more clearly than a scattered KeyCode.Q | KeyCode.AltMask in multiple checks. Because it’s a compile-time constant, it’s cheap to inline in input checks.
+Private to the enclosing class, `AltQKey` serves as a single source of truth for the Alt+Q shortcut within the main window's input handling. This encapsulation keeps the shortcut localized and ensures future changes (e.g., modifying the modifier or the base key) only need to modify this constant. By naming the combination, it communicates intent and reduces cognitive load when reviewing input checks.
+
+---
+
+### AppVersion
+> **File:** `src/EchoHub.Client/UI/MainWindow.cs`  
+> **Kind:** field
+
+```csharp
+internal static readonly string AppVersion =
+        typeof(MainWindow).Assembly.GetName().Version?.ToString(3) ?? "?"
+```
+
+
+AppVersion provides a concise, ready-to-display version string for the UI by taking the `Version` of the assembly containing `MainWindow`, formatting it with three components via `ToString(3)`, and falling back to `?` when the version cannot be determined. Developers typically reference `AppVersion` when showing the application version in the UI or logs to avoid duplicating assembly-lookup logic.
+
+## Remarks
+
+By deriving from `typeof(MainWindow).Assembly`, the value is tied to the UI assembly's metadata, ensuring the string reflects exactly the UI binary the user interacts with. It is evaluated once during type initialization and remains constant for the lifetime of the process; the null-coalescing ensures a non-null string even if the UI assembly lacks a `Version`.
 
 ## Notes
-- The Alt+Q shortcut relies on the legacy input system’s KeyCode and AltMask semantics; if migrating to a different input system, this approach may need adjustment.
-- Since AltQKey is private, it cannot be referenced from outside this class; expose a public/internal alias or a helper if cross-class usage is required.
+
+- Computed once per process lifecycle; subsequent reads are a cheap field access.
+- This value is internal to the containing assembly, so external components cannot rely on it being visible; use a public API if you need to surface the version externally.
+
 
 ---
 
@@ -1601,10 +1527,34 @@ private const KeyCode CtrlCKey = KeyCode.C | KeyCode.CtrlMask
 ```
 
 
-CtrlCKey defines the keyboard shortcut Ctrl+C as a single KeyCode value by bitwise OR-ing the C key with the Ctrl modifier. Use this constant when your input handling needs to react to the Ctrl+C shortcut, instead of composing KeyCode.C and KeyCode.CtrlMask in every check.
+Encodes the Ctrl+C keyboard shortcut as a single `KeyCode` value by combining `KeyCode.C` with `KeyCode.CtrlMask`. This private constant is used by the UI to detect when the user presses the `Ctrl+C` shortcut, consolidating the detection logic in one location to avoid duplicating the combo throughout `MainWindow`.
 
 ## Remarks
-Centralizes the copy shortcut into a single, reusable symbol. It prevents duplicated magic-number logic across input checks and makes future changes to the shortcut trivial. Because the field is private const, it stays encapsulated within its containing class and provides a stable value for all internal listeners that rely on the same representation. This relies on KeyCode supporting modifier flags, enabling concise expression of keyboard shortcuts.
+
+Centralizes input handling for a common shortcut, so the detection is consistent across the class. If the shortcut changes, update this single constant rather than scattered inline checks. The private scope marks it as an internal wiring detail of the UI, not part of the public API. It encodes a Ctrl-based shortcut; consider platform-specific Cmd+C handling for macOS if cross-platform parity is needed.
+
+## Notes
+
+- This member is private to `src/EchoHub.Client/UI/MainWindow.cs`; it cannot be accessed from outside. If external components need to reference the shortcut, consider exposing it via an internal or public API or by providing a helper method.
+
+---
+
+### CtrlKKey
+> **File:** `src/EchoHub.Client/UI/MainWindow.cs`  
+> **Kind:** field
+
+```csharp
+private const KeyCode CtrlKKey = KeyCode.K | KeyCode.CtrlMask
+```
+
+
+This private constant named `CtrlKKey` encodes the Ctrl+K keyboard shortcut as a `KeyCode` value by combining `KeyCode.K` with `KeyCode.CtrlMask`. It is used in the `src/EchoHub.Client/UI/MainWindow.cs` keyboard input handling to detect when the user presses `Ctrl+K`, centralizing the shortcut representation rather than duplicating the bitwise expression across the code.
+
+## Remarks
+By keeping the shortcut in a single `CtrlKKey` field, the codebase gains a single source of truth for this shortcut. This reduces duplication and makes future changes to the `CtrlKKey` binding easier to maintain within `MainWindow.cs`.
+
+## Notes
+- On some platforms or Unity configurations, modifier bits may vary; if you need to support Cmd on macOS or other modifiers, you may need a broader input check rather than relying solely on `KeyCode.CtrlMask`.
 
 ---
 
@@ -1617,14 +1567,7 @@ private const KeyCode CtrlVKey = KeyCode.V | KeyCode.CtrlMask
 ```
 
 
-Represents the Ctrl+V keyboard shortcut used to trigger paste-like actions within the UI. Implemented as a private const KeyCode that combines KeyCode.V with KeyCode.CtrlMask into a single composite value. Use CtrlVKey in input handling within MainWindow to detect paste attempts instead of duplicating the key-check logic in multiple handlers.
-
-## Remarks
-Centralizing the shortcut reduces duplication and keeps the paste-trigger logic consistent across the UI layer. The private visibility confines the behavior to the MainWindow class, supporting cohesive input handling without leaking implementation details. If cross-platform consistency is required, consider exposing a platform-aware abstraction (for example, mapping Cmd on macOS to Ctrl on Windows) to avoid surprising users.
-
-## Notes
-- This is a compile-time constant; it cannot be reconfigured at runtime, so any need to support dynamic key bindings would require a different approach (e.g., a settings-backed binding).
-- Relying on KeyCode.CtrlMask ties the value to the framework's modifier encoding; ensure it aligns with input handling elsewhere in the app to prevent mismatches.
+The `CtrlVKey` field encodes the Ctrl+V shortcut as a composite `KeyCode` value by combining `KeyCode.V` with `KeyCode.CtrlMask` (`KeyCode.V | KeyCode.CtrlMask`). As a private constant in `src/EchoHub.Client/UI/MainWindow.cs`, it provides a single canonical value for detecting paste commands in input handling, avoiding repeated bitwise construction scattered through the code. Use this symbol whenever you need to detect paste-like input from the user, rather than comparing against `KeyCode.V` or the control modifier separately.
 
 ---
 
@@ -1637,14 +1580,15 @@ private const KeyCode CtrlXKey = KeyCode.X | KeyCode.CtrlMask
 ```
 
 
-CtrlXKey encodes the Ctrl+X keyboard shortcut as a single KeyCode value by performing a bitwise OR between KeyCode.X and KeyCode.CtrlMask. This provides a readable, centralized way for the main window's input handling to detect the Ctrl+X combination, avoiding scattered modifier checks throughout the code.
+Represents the keyboard shortcut Ctrl+X as a `KeyCode` value by combining `KeyCode.X` with `KeyCode.CtrlMask` and is intended for use in the UI input handling within `MainWindow` to detect the Ctrl+X shortcut. By centralizing the combination in this `private const`, code that reacts to Ctrl+X can simply compare against `CtrlXKey` instead of duplicating the bitwise OR expression in multiple places.
 
 ## Remarks
-Centralizes the shortcut definition to reduce duplication and make future changes easier. Keeping the constant private confines the shortcut to the UI input logic, preventing misuse from unrelated parts of the codebase. If the underlying input system evolves to treat modifiers separately from keys, this constant may need to be revisited to ensure Ctrl+X is still detected correctly.
+This constant serves as a single source of truth for the Ctrl+X shortcut within the `MainWindow` input pipeline. It improves readability by exposing the intent of the key combination (X with the Ctrl modifier) and makes future changes to the shortcut straightforward—update the constant in one place rather than hunting through the codebase. Being `private`, its usage is intentionally confined to the class boundary, reinforcing encapsulation around the UI's keyboard handling.
 
 ## Notes
-- The approach relies on KeyCode being a flags-like enum so that combining X with the Ctrl modifier via a bitwise OR yields a meaningful single value. If the input API changes, CtrlXKey may no longer reflect the intended shortcut.
-- Because CtrlXKey is private, always reference this constant within the class that handles keyboard input to avoid diverging shortcuts; duplicating the literal elsewhere risks inconsistency.
+- `CtrlXKey` is a `private const`, so the value is inlined by the compiler and not accessible from outside.
+- If you need to reuse the same shortcut elsewhere, consider extracting it to a shared location or exposing a public/internal member to avoid duplication.
+- Ensure all input checks compare against `CtrlXKey` with the same modifier semantics (i.e., modifiers represented by `KeyCode.CtrlMask`).
 
 ---
 
@@ -1657,14 +1601,29 @@ private const KeyCode CtrlYKey = KeyCode.Y | KeyCode.CtrlMask
 ```
 
 
-Represents the Ctrl+Y keyboard shortcut as a single KeyCode value. Use this constant in the MainWindow's input handling to detect the Ctrl+Y combination without duplicating the modifier logic at each call site.
+Represents the Ctrl+Y keyboard shortcut as a single `KeyCode` value by combining `KeyCode.Y` with `KeyCode.CtrlMask`. Use this constant in input handling to recognize Ctrl+Y presses without duplicating the bitwise expression, keeping the code readable and maintainable when checking for shortcuts in the UI.
 
 ## Remarks
-Centralizes the hotkey for the main window, ensuring consistent behavior and making future changes easy to propagate. Keeping it private encapsulates the shortcut within the MainWindow class, reducing the risk of misuse and enabling compiler-level inlining for performance.
+Because it is declared as a private constant inside `src/EchoHub.Client/UI/MainWindow.cs`, the shortcut is kept private to the UI layer and serves as a single source of truth for this particular binding. This encapsulation makes it easy to update the shortcut in one place and ensures all input checks against `CtrlYKey` stay consistent across the related methods.
+
+---
+
+### DefaultInputTitle
+> **File:** `src/EchoHub.Client/UI/MainWindow.cs`  
+> **Kind:** field
+
+```csharp
+private const string DefaultInputTitle = "Message │ Enter=send │ Tab=complete │ Ctrl+K=search │ F6=pick message"
+```
+
+
+`DefaultInputTitle` is a private compile-time constant string that defines the default title shown for the message input area in the main window. It is initialized with the user-facing hint text `Message │ Enter=send │ Tab=complete │ Ctrl+K=search │ F6=pick message`, which communicates the available keyboard shortcuts to users during initial UI presentation. This value is sourced from `src/EchoHub.Client/UI/MainWindow.cs` and is used to initialize the UI to provide consistent guidance at startup.
+
+## Remarks
+Because this constant is private to the UI class, it is solely used during initialization to ensure a consistent hint is presented across the session. If you need localization or runtime configurability, this hard-coded value should be moved to a resources file or exposed through a non-const property.
 
 ## Notes
-- Platform and input-system differences can affect how modifiers are interpreted; verify behavior on all target platforms.
-- If other components need the same shortcut, avoid duplication by exposing a controlled API instead of re-declaring the same KeyCode combination.
+- As a `private const string`, the value is compiled into the assembly and cannot be changed at runtime; consider localization if the application targets multiple languages.
 
 ---
 
@@ -1677,15 +1636,13 @@ private const KeyCode EnterKey = KeyCode.Enter
 ```
 
 
-EnterKey is a private constant field of type KeyCode that represents the Enter key. It exposes KeyCode.Enter as a named value so input-handling code can compare against EnterKey directly, for example in switch statements, without relying on the raw KeyCode.Enter literal or invoking Key.Equals (which also accounts for a Handled state). This small alias keeps the Enter binding centralized and makes the code's intent clearer.
+EnterKey is a private constant of type `KeyCode` set to `KeyCode.Enter`. It provides a single, reusable value for comparing input against the Enter key using raw `KeyCode` values, avoiding the extra semantics of `Key.Equals` (which also checks `Handled`). This approach keeps Enter-key handling in switch or conditional checks straightforward within the class.
 
 ## Remarks
-Using EnterKey communicates intent and reduces the use of magic constants in input logic. Since it's private, only members within the containing type can reference it, keeping the binding decision encapsulated. If you later need to reuse the same binding from other types, consider exposing a non-private alias or extracting this pattern to a shared helper.
+By encapsulating the Enter key mapping in this private field, the class avoids duplicating the `KeyCode.Enter` literal and ensures consistent semantics across all internal input checks. It also decouples the input comparison logic from the `Key` class's equality semantics, making intent clearer and future changes to the binding easier to manage. Because the field is private, reuse across other classes would require a shared abstraction.
 
 ## Notes
-- Because it is const, its value is inlined at compile time; changing it requires recompilation of all assemblies that reference it.
-- Encapsulation matters: private scope confines use to this type; expose it with a public/internal alias if cross-type reuse is required.
-- The alias assumes the Enter key maps to KeyCode.Enter; if the underlying enum changes, update this constant accordingly.
+- Private visibility means this constant isn't accessible outside its containing type; if cross-class usage is needed, expose a public constant or centralize key bindings in a shared utility.
 
 ---
 
@@ -1698,13 +1655,52 @@ private const KeyCode F2Key = KeyCode.F2
 ```
 
 
-Defines a private, compile-time alias for the F2 keyboard key as a KeyCode value. Within the MainWindow class, this F2Key field is used instead of sprinkling KeyCode.F2 directly in input handling, improving readability and making future key-rebinding easier to manage in one place.
+Defines the F2 keyboard binding as a private constant `F2Key` set to `KeyCode.F2` for use in the `MainWindow` input handling. This avoids repeating the raw `KeyCode.F2` value scattered through the class and makes future changes to the F2 shortcut straightforward by updating a single symbol.
 
 ## Remarks
-This symbol centralizes the F2-key representation, reducing duplication and making the code intent clear when handling keyboard input. As a private const, it is inlined at all call sites and cannot be reassigned at runtime, preserving a stable mapping inside the class. It helps decouple the key's meaning from its concrete enum value, so refactoring the underlying KeyCode reference requires changing only this single declaration.
+Replaces magic key literals with a named binding inside the class, improving readability and reducing the risk of inconsistent shortcuts. Being private ensures this mapping is encapsulated within the UI logic and not exposed to external components; if sharing the binding is needed, consider exposing it via a property or moving it to a shared constants location.
 
 ## Notes
-- Const fields are implicitly static and are inlined at compile time. If you need to support runtime reconfiguration of the key binding, convert this to a visible, non-const field or a configurable option.
+- Private visibility means it cannot be referenced from outside the class; reuse across components would require a public or internal accessor or moving the binding to a shared constants file.
+- Because it is a `const`, its value is baked at compile time; if runtime configurability is required, switch to a non-const static field.
+
+---
+
+### F6Key
+> **File:** `src/EchoHub.Client/UI/MainWindow.cs`  
+> **Kind:** field
+
+```csharp
+private const KeyCode F6Key = KeyCode.F6
+```
+
+
+Provides a single, immutable reference to the F6 key as a private constant `KeyCode` named `F6Key` in `src/EchoHub.Client/UI/MainWindow.cs`; this removes magic literals from input handling and makes it easy to adjust the binding in one place if needed. The value is fixed at compile time as `KeyCode.F6`.
+
+## Remarks
+By centralizing the binding in a private constant, the surrounding input logic can rely on a single source of truth for the F6 key, reducing drift and typos. Keeping it private confines the binding to `MainWindow`, signaling that this is an internal convention rather than a public API. If future needs require rebinding at runtime, replace this constant with a configurable alternative.
+
+## Notes
+- Because `F6Key` is a `const`, its value is baked in at compile time and cannot be changed at runtime. If you anticipate needing to rebind the key, switch to a mutable configuration-based approach.
+
+---
+
+### NewlineKey
+> **File:** `src/EchoHub.Client/UI/MainWindow.cs`  
+> **Kind:** field
+
+```csharp
+private const KeyCode NewlineKey = KeyCode.N | KeyCode.CtrlMask
+```
+
+
+Represents the private, compile-time constant `NewlineKey` of type `KeyCode` that encodes the `Ctrl+N` keyboard shortcut by combining `KeyCode.N` with `KeyCode.CtrlMask`. It is used in input handling to detect the `Ctrl+N` sequence without duplicating the bitwise expression across the class, enabling a single source of truth for this shortcut and a consistent trigger (such as initiating a new item or inserting a newline) wherever the UI logic responds to that keystroke.
+
+## Remarks
+This abstraction localizes the keyboard shortcut within the `MainWindow` class, reducing duplication and clarifying intent when handling input. Because the field is `private const`, its value is fixed at compile time and inaccessible from outside the class; if the shortcut needs to change, a code change and recompilation are required for the update to propagate.
+
+## Notes
+- Because `NewlineKey` is a `const`, its value is inlined at call sites by the compiler, so changes require recompiling all dependents that reference it.
 
 ---
 
@@ -1724,13 +1720,14 @@ private static readonly string[] SlashCommands =
 ```
 
 
-SlashCommands is a private static readonly array of strings that enumerates the available slash commands used by the tab-autocomplete in the main window. The UI consults this list to offer command suggestions as the user types a leading slash.
+This private static readonly field `SlashCommands` defines the set of slash commands available for tab-autocomplete in the chat input of the main window. It lists commands like `/status`, `/nick`, `/color`, `/theme`, `/send`, `/me`, `/banner`, `/avatar`, `/profile`, `/servers`, `/join`, `/passwd`, `/leave`, `/clear`, `/size`, `/downloadpath`, `/topic`, `/users`, `/kick`, `/ban`, `/unban`, `/mute`, `/unmute`, `/role`, `/invite`, `/export`, `/deleteaccount`, `/nuke`, `/test-sound`, `/quit`, and `/help`.
 
 ## Remarks
-This centralized catalog ensures consistency across the autocomplete experience and acts as the single source of truth for which commands are supported. Its private scope keeps coupling tight to the UI implementation, and the readonly modifier prevents reassigning the array reference at runtime, preserving the integrity of the command set. The list includes commands like /status, /nick, /color, /theme, /send, /me, /banner, /avatar, /profile, /servers, /join, /passwd, /leave, /clear, /size, /downloadpath, /topic, /users, /kick, /ban, /unban, /mute, /unmute, /role, /invite, /export, /deleteaccount, /nuke, /test-sound, /quit, and /help.
+This field serves as the single source of truth for the UI's autocomplete behavior in `MainWindow.cs`. By making it `private static readonly`, the list is a shared, effectively constant source of suggestions that the tab-autocomplete logic can rely on at runtime, ensuring consistent user experience. If new slash commands are introduced elsewhere in the application, they must be added here to keep the autocomplete in sync with the available commands.
 
 ## Notes
-- The initializer syntax shown in the snippet uses square brackets [], which is not valid in C# for an array initializer; the actual source should use a braces-based initializer such as: private static readonly string[] SlashCommands = new[] { "/status", "/nick", ... } or private static readonly string[] SlashCommands = { "/status", "/nick", ... }.
+- Because the list is hard-coded in source, changes require recompilation and redeployment for the UI to pick up new commands.
+- The field is private; if cross-component reuse is needed, consider exposing a public accessor or moving the list to a shared configuration.
 
 ---
 
@@ -1743,14 +1740,14 @@ private static readonly string[] SpinnerFrames = ["⠋", "⠙", "⠹", "⠸", "�
 ```
 
 
-SpinnerFrames defines the frames of the Braille spinner shown while the connection is in a transitional state. Use this sequence as the source of frames for a timer-driven animation in the UI when signaling a transitional connection state; external code should not rely on this private field directly.
+SpinnerFrames is a private static readonly array of strings containing the braille spinner glyphs used to animate a spinner while the connection is in a transitional state. The UI cycles through these frames to convey progress during connectivity changes. 
 
 ## Remarks
-SpinnerFrames centralizes the frame sequence for the connection-status animation, enabling a single place to tweak the visual rhythm without touching animation logic in multiple places. Its private, static readonly nature encapsulates the detail of the glyphs from consumers and ensures consistency across any UI updates that rely on this spinner. The glyphs are Unicode braille patterns, chosen to render as a compact and legible motion, but their appearance depends on font support in the host UI.
+By making the field static and readonly, the frame sequence is created once and cannot be mutated at runtime, ensuring a consistent animation across all usages within the class. Centralizing the frame sequence here avoids repeating literal frame values throughout the UI code and makes it straightforward to adjust the spinner's appearance in a single place.
 
 ## Notes
-- Because the field is readonly, you cannot reassign SpinnerFrames to a new array, but its contents can still be mutated if code within the class changes elements; to enforce true immutability consider exposing as `IReadOnlyList<string>` or copying to an immutable collection.
-- Braille glyph rendering depends on font support; ensure the UI uses a font that includes these characters, otherwise fallback glyphs will appear.
+- Do not attempt to modify the frames at runtime; `SpinnerFrames` is `readonly`, so reassignment isn’t possible.
+- Ensure the source file encoding supports the braille glyphs used in the frames; using an incompatible encoding may lead to garbled or lost characters.
 
 ---
 
@@ -1763,15 +1760,10 @@ private static readonly Attribute StatusActivityAttr = new(new Color(80, 200, 22
 ```
 
 
-StatusActivityAttr is a private static readonly field that holds a preconfigured Attribute instance used to style status-activity indicators in the UI. It is initialized with a Color(80, 200, 220) and a secondary color of Color.None, providing a consistent visual token that other UI components can apply without duplicating construction logic.
+StatusActivityAttr is a private, static, readonly field of type `Attribute` used to style status-activity visuals within the `MainWindow` UI. It is initialized with a single `Attribute` instance created as `new(new Color(80, 200, 220), Color.None)`, pairing a cyan primary color with no secondary color. Because the field is `static readonly`, the same configured attribute is reused across the class, ensuring a consistent look for status indicators throughout the UI.
 
 ## Remarks
-It centralizes the styling token for status activity, ensuring a uniform look across the MainWindow's status displays. Because the field is static and readonly, the same Attribute instance is reused by all usages within its declaring type, reducing allocations and keeping styling decisions centralized. If the Attribute type is mutable, modifications to the instance would propagate to every consumer; prefer treating StatusActivityAttr as effectively immutable or clone it when variations are required.
-
-## Notes
-- This field is private; it is intended for internal use within its containing type.
-- Mutating the underlying Attribute would affect all referents of StatusActivityAttr if allowed.
-- If you need a different color or variant, instantiate a new Attribute rather than adjusting this shared field.
+Centralizes the color styling for status-activity visuals within the `MainWindow` UI, providing a single source of truth and reducing color-value duplication. Its `private` scope signals that this is an internal implementation detail, while the `static readonly` nature guarantees a single, immutable instance used consistently across all code paths that render status indicators.
 
 ---
 
@@ -1784,15 +1776,13 @@ private static readonly Attribute StatusBrandAttr = new(new Color(218, 165, 32),
 ```
 
 
-This private static readonly field holds a pre-constructed Attribute instance used to apply the application's status branding color in the UI. It centralizes the gold brand color (RGB 218,165,32) and uses Color.None for the secondary color, enabling consistent styling of status indicators across MainWindow without repeatedly allocating new Attribute objects.
+StatusBrandAttr is a private static readonly instance of `Attribute` used by the UI to apply a consistent branding style to status indicators. It is initialized with a gold-toned primary color (`new Color(218, 165, 32)`) and a secondary color of `Color.None`. This centralized attribute lets internal logic reuse a single branding specification for status visuals, reducing duplication and drift across the UI.
 
 ## Remarks
-StatusBrandAttr serves as a small branding primitive: it encapsulates the branding color data in a single, shared value so UI rendering code can consistently decorate status indicators. As a private member, its usage is confined to the class, reducing risk of styling drift and making updates to the brand color straightforward. The static readonly pattern also avoids per-instance allocations, which helps keep the UI responsive during frequent status refreshes.
+Centralizing branding ensures that all status indicators share the same visual cue, making the UI feel cohesive. Because the field is private and static, it cannot be modified by external code, and changes to the branding can be made in one place. If future requirements call for exposing branding or sharing it across components, consider adding a public accessor or moving the attribute to a shared constants module.
 
 ## Notes
-- This field is private; external code cannot access StatusBrandAttr. If you need external reuse, add an accessor or an API that exposes the color or attribute.
-- Color.None is used as the secondary color; callers should not rely on a non-null accent color being provided through this attribute.
-- Because it's static and initialized inline, the field is created once per AppDomain; changes to the initializer are global to the class consumers.
+- The field is private; external types cannot reference `StatusBrandAttr`. If you need to reuse the branding in other components, expose a public accessor or move the constant to a shared resource.
 
 ---
 
@@ -1805,10 +1795,10 @@ private static readonly Attribute StatusConnectedAttr = new(new Color(0, 200, 0)
 ```
 
 
-StatusConnectedAttr is a private static readonly field that provides a prebuilt Attribute instance representing the UI styling for a connected status. It is constructed with a green primary color (0, 200, 0) and Color.None as the secondary color, and it is intended to be reused wherever a connected indicator is needed in the MainWindow UI.
+Defines a private static readonly field `StatusConnectedAttr` of type `Attribute` that encodes the UI styling for a 'connected' status. It is initialized with a green primary color `new Color(0, 200, 0)` and a secondary color of `Color.None`, enabling a consistent connected-state cue across the main window UI.
 
 ## Remarks
-Centralizes the appearance of the connected-state styling to avoid duplicating color values across the UI. Being static readonly, it is allocated once and reused, which reduces allocations during frequent UI updates. As a private member, it keeps concerns localized to MainWindow, making it easy to swap or adjust the connected appearance in one place if the theme changes.
+By centralizing the color-based representation of the connected state in a single shared `Attribute`, this member prevents duplication and drift of UI styling. The `static readonly` modifier guarantees the value is created once per app domain and reused wherever the attribute is applied, promoting visual consistency in the `MainWindow` UI.
 
 ---
 
@@ -1821,13 +1811,13 @@ private static readonly Attribute StatusDisconnectedAttr = new(new Color(220, 50
 ```
 
 
-StatusDisconnectedAttr is a private static readonly Attribute that encapsulates the UI styling used to communicate a disconnected state in MainWindow. It specifies a reddish foreground color (RGB 220, 50, 50) and no background, enabling a clear, consistent visual cue when the application loses its connection.
+Defines a prebuilt `Attribute` for `StatusDisconnectedAttr` that represents the UI treatment for the 'Disconnected' state. It is initialized with a red color (`new Color(220, 50, 50)`) and no secondary color (`Color.None`), ensuring a consistent visual cue when signaling disconnection.
 
 ## Remarks
-This member centralizes the visual representation of the 'disconnected' state, ensuring all indicators share the same look. Its static readonly nature guarantees the attribute is created once and reused, promoting performance and consistency across the UI. Because the field is private, it is not directly reusable by other components; if cross-component reuse is needed, consider extracting the styling into a shared resource or exposing a controlled accessor.
+Centralizes the visual cue for disconnection as a single immutable token, guaranteeing that all disconnected indicators use the same color semantics. It is private to the containing class, so reuse is internal; if cross-class reuse is needed, expose a public or internal accessor or move the token to a shared theming resource.
 
 ## Notes
-- Not accessible outside the declaring type; if you need to reuse this styling elsewhere, factor it into a shared resource or provide a public accessor.
+- Private accessibility limits reuse outside the declaring type; to share styling, expose an accessor or place the token in a shared theme.
 
 ---
 
@@ -1840,14 +1830,13 @@ private static readonly Attribute StatusMentionAttr = new(new Color(230, 140, 60
 ```
 
 
-StatusMentionAttr defines a shared, immutable Attribute instance used to render status mentions with a warm orange color in the UI. A developer would reference this field when they need a consistent highlight for status mentions instead of constructing a new Attribute each time.
+Defines a shared, preconfigured instance of `Attribute` named `StatusMentionAttr` that provides the standard color styling for status mentions in the UI. Created as a private static readonly field, it initializes with a primary color of `new Color(230, 140, 60)` and a secondary color of `Color.None`, ensuring a consistent orange highlight without a background tint. Use this field whenever the UI needs the canonical status-mention appearance instead of constructing a new `Attribute` on each use.
 
 ## Remarks
-Centralizes the visual treatment for status mentions, ensuring consistent appearance across the UI and simplifying future theming. Because the field is static readonly, the color choice is determined at type initialization and cannot be changed at runtime, which prevents accidental mutation. Keeping the field private confines its usage to the containing type, making the intended styling an internal concern that can be adjusted without leaking implementation details.
+By centralizing this styling in a single static field, the UI maintains a consistent look for status mentions across controls and avoids duplicating color configuration. It also makes the intent explicit: the orange highlight is reserved for status mentions and should be reused.
 
 ## Notes
-- The field is private, so external consumers cannot reference it directly; reuse must occur within the declaring class or through a controlled API.
-- The color is baked into the initialization; updates require recompilation, so plan color theming accordingly.
+- If the `Attribute` type exposes mutable state, avoid mutating `StatusMentionAttr` after initialization, as doing so would propagate changes across all uses within the class.
 
 ---
 
@@ -1860,14 +1849,13 @@ private static readonly Attribute StatusTransitionalAttr = new(new Color(220, 18
 ```
 
 
-StatusTransitionalAttr is a private static readonly Attribute that encapsulates the visual styling for elements representing a transitional state in the EchoHub client’s main window. It is initialized with an amber color (RGB 220, 180, 0) and a secondary color of Color.None, providing a single, reusable styling token to ensure consistent amber emphasis for in-progress or transitioning UI elements rather than sprinkling color literals throughout the code.
+The `StatusTransitionalAttr` is a private static readonly field of type `Attribute` that provides a preconfigured styling primitive for UI elements in a transitional state. It is initialized with a primary `Color` of `new Color(220, 180, 0)` and a secondary color of `Color.None`, enabling consistent usage across the UI without constructing new attributes repeatedly.
 
 ## Remarks
-By centralizing the transitional-state styling in a single field, the codebase gains a clear semantic signal for 'in-progress' statuses and can adapt to theme changes in one place. Because StatusTransitionalAttr is static and readonly, it acts as a stable styling token that can be applied wherever a transitional state needs highlighting without risking inconsistencies. The amber color choice communicates a cautionary or temporary state to users, and the absence of a secondary color keeps the emphasis on the primary transition cue.
+This field centralizes the visual cue for transitional statuses, ensuring a uniform appearance wherever it’s used within this class. Because it is private, reuse is limited to the defining type; if external components need the same look, expose a controlled accessor or move the attribute to a shared styling utility. It effectively acts as a single source of truth for the transitional color, so updates to the tone can be made in one place.
 
 ## Notes
-- The field is private to MainWindow.cs; external code cannot reuse StatusTransitionalAttr directly.
-- The second constructor argument is Color.None; its exact meaning depends on the Attribute API—consult its documentation if you need to extend this with a secondary color or outline.
+- Being private, external code cannot reference `StatusTransitionalAttr`. If broader reuse is required, consider exposing an internal/public accessor or relocating the attribute to a shared styling layer.
 
 ---
 
@@ -1880,16 +1868,10 @@ private const KeyCode TabKey = KeyCode.Tab
 ```
 
 
-TabKey is a private constant alias for KeyCode.Tab used within the class to refer to the Tab key in a more readable and centralized way. It maps directly to the Tab key code and is typically used wherever the code needs to detect or respond to tab-navigation input without scattering KeyCode.Tab throughout the logic.
+This private constant, `TabKey`, provides a single, named reference to the `KeyCode.Tab` value used in the UI input handling within `src/EchoHub.Client/UI/MainWindow.cs`. It avoids scattering the literal `KeyCode.Tab` across the codebase, making tab-key checks more readable and easier to update if the navigation key changes.
 
 ## Remarks
-
-By providing a private const alias, this symbol communicates intent (tab-navigation handling) while keeping the public surface area uncluttered. It also ensures the tab key value is inlined at call sites for performance, without exposing the alias to consumers.
-
-## Notes
-
-- Const inlining: TabKey's value is baked into call sites; changing KeyCode.Tab in the framework requires recompilation to reflect the new value.
-- Scope: TabKey is private; it's not accessible outside this class. If cross-class usage is needed, consider exposing it or using KeyCode.Tab directly.
+By centralizing the tab key choice in a private constant, this symbol communicates intent clearly within the class and reduces duplication in tab-navigation checks. If you ever need to switch the navigation key, update `TabKey` in one place rather than modifying multiple conditional branches.
 
 ---
 
@@ -1902,179 +1884,9 @@ private const int UsersPanelWidth = 22
 ```
 
 
-Defines the fixed width of the Users panel in the main window UI. Use this constant when sizing or laying out the Users panel to ensure a consistent width without sprinkling magic numbers in the UI code; it is a private const within MainWindow.cs, so its value is inlined at compile time and encapsulated from external code.
+Defines the fixed width of the users panel in the main window as a private constant `UsersPanelWidth`, centralizing the panel’s sizing decisions. When adjusting the layout, developers should reference this constant rather than sprinkling literal values, ensuring consistent alignment across the UI and a single point for future tweaks.
 
 ## Remarks
-Centralizing this width as a private constant prevents magic numbers from scattering through layout logic and clarifies the intent behind the panel's sizing. It keeps the responsibility for the UI's sizing localized to MainWindow.cs, reducing cross-cutting dependencies. When design changes are needed, updating this single constant updates all layout paths that reference it, lowering the risk of inconsistent widths. It also communicates that this width is a design-time decision rather than a user-configurable setting.
-
-## Notes
-- Because it's const, the value is baked into compiled code at each usage, so changing it requires recompilation of all assemblies that reference it.
-- Being private, external classes cannot rely on this constant; if sharing is needed, consider making it internal or exposing it via a property.
-
----
-
-## ClickChannelRegex
-> **File:** `src/EchoHub.Client/UI/MainWindow.cs`  
-> **Kind:** method
-
-```csharp
-[GeneratedRegex(@"(?<!\w)#((?=.*[a-zA-Z])[\w-]+)")]
-    private static partial Regex ClickChannelRegex()
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `@"(?<!\w)#((?=.*[a-zA-Z])[\w-]+)"` | — | — |
-
-
-ClickChannelRegex is a source-generated helper that returns a pre-compiled Regex instance configured to detect channel-style hashtags in text. It matches tokens that start with a '#' and are not immediately preceded by a word character, limits the token to word characters or hyphens, and requires at least one letter to be present. This private static partial method is typically invoked to obtain a compiled Regex at runtime for parsing UI text (for example, to identify clickable channel mentions) without incurring the cost of compiling the Regex on every use.
-
-## Remarks
-Centralizing the channel-hashtag detection logic in a single place provides a consistent rule for identifying channel mentions. Using the GeneratedRegex attribute ensures the pattern is compiled at build time, offering fast, repeated matching without runtime compilation overhead. The negative lookbehind (?<!\w) prevents matching a hashtag that is part of a larger word, and the [\w-]+ token constrains channel names to word characters and hyphens, aligning with common channel naming conventions. Keeping this method private preserves its role as an internal parsing helper and avoids leaking implementation details.
-
-## Notes
-- The method is private; external code cannot call it directly. Use it through internal logic or expose a public API that consumes its matches. 
-- The pattern requires at least one alphabetic character in the channel name; purely numeric channel tokens (e.g. "#123") will not be matched.
-
----
-
-## ClickMentionRegex
-> **File:** `src/EchoHub.Client/UI/MainWindow.cs`  
-> **Kind:** method
-
-```csharp
-[GeneratedRegex(@"(?<!\w)@([\w-]+)")]
-    private static partial Regex ClickMentionRegex()
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `@"(?<!\w)@([\w-]+)"` | — | — |
-
-
-Detects and returns a precompiled Regex for recognizing user mentions in text that start with '@'. The GeneratedRegex attribute ensures the implementation is produced at compile time and the resulting Regex is cached for fast reuse, so consuming code can simply invoke ClickMentionRegex() without paying allocation or compilation costs on every use. The pattern is (?<!\w)@([\w-]+), which requires that the '@' is not immediately preceded by a word character (to avoid matching emails) and captures the username portion consisting of word characters or hyphens.
-
-## Remarks
-By centralizing the detector in a source-generated member, the codebase gains a single source of truth for mention parsing and avoids duplicating Regex construction across callers. The private static partial nature means the actual regex is generated and consumed only within the class, providing performance benefits while keeping the API surface small. This pattern is particularly valuable in UI parsing where mentions trigger linkification or notification actions.
-
-## Notes
-- The pattern uses a negative lookbehind to avoid matching the '@' inside email addresses.
-- The username portion uses [\w-]+, allowing Unicode word characters, digits, underscore, and hyphens; adjust if your allowed username set differs.
-- The method is private; to reuse externally, expose a public wrapper or move the logic to a shared helper.
-
----
-
-## AppVersion
-> **File:** `src/EchoHub.Client/UI/MainWindow.cs`  
-> **Kind:** field
-
-```csharp
-internal static readonly string AppVersion =
-        typeof(MainWindow).Assembly.GetName().Version?.ToString(3) ?? "?"
-```
-
-
-AppVersion is a read-only string that captures the application's version by reading the MainWindow assembly version and formatting it as major.minor.build. If the version isn’t available, it falls back to a single question mark. Because it is internal, static, and readonly, the value is computed once and can be consumed by UI code or logging without repeating assembly lookups. A developer would reach for it when displaying the application version (for example in an About dialog) or when including the version in diagnostic output.
-
-## Remarks
-It serves as a centralized, read-only source of the app’s version for the UI layer, ensuring a single, consistent string is used across dialogs and logs rather than duplicating assembly-version lookups.
-
----
-
-## CtrlKKey
-> **File:** `src/EchoHub.Client/UI/MainWindow.cs`  
-> **Kind:** field
-
-```csharp
-private const KeyCode CtrlKKey = KeyCode.K | KeyCode.CtrlMask
-```
-
-
-Represents the keyboard shortcut Ctrl+K as a KeyCode value by combining the K key with the Ctrl modifier. This private constant centralizes the hotkey used within MainWindow, enabling the code to detect or respond to Ctrl+K without scattering the modifier logic across methods.
-
-## Remarks
-
-By centralizing the shortcut into CtrlKKey, the codebase avoids duplicating the same key-combination logic and makes future changes straightforward (e.g., changing the shortcut would only require updating this single declaration). The naming makes intent clear: it is a Control-K hotkey, distinct from plain K or other modifiers.
-
-## Notes
-
-- Private scope means external code cannot rely on this constant; if external access is needed, expose a public API or event.
-- The value depends on the KeyCode and CtrlMask semantics of the project's input system; confirm that CtrlMask is the intended modifier representation to avoid misdetections on other platforms.
-
----
-
-## DefaultInputTitle
-> **File:** `src/EchoHub.Client/UI/MainWindow.cs`  
-> **Kind:** field
-
-```csharp
-private const string DefaultInputTitle = "Message │ Enter=send │ Tab=complete │ Ctrl+K=search │ F6=pick message"
-```
-
-
-This private constant defines the default text shown for the message input title in the main window. It provides an on-screen cue about how to interact with the input, listing shortcuts such as Enter to send, Tab to complete, Ctrl+K to search, and F6 to pick a message, which helps users discover available actions without opening a help screen.
-
-## Remarks
-Centralizing this label ensures consistent user guidance and avoids duplicating the hint in multiple places. Because the field is private and declared as a const, its value is baked into the assembly and cannot be changed at runtime or localized without refactoring to resources. If localization or runtime configurability is required, this should be moved to a resource string or a configuration mechanism and wired into the UI initialization.
-
-## Notes
-- Hard-coded strings hinder localization; consider turning this into a resource string if multi-language support is needed.
-- As a private const, the value is fixed at compile time; changing the default requires recompilation and re-deployment.
-
----
-
-## F6Key
-> **File:** `src/EchoHub.Client/UI/MainWindow.cs`  
-> **Kind:** field
-
-```csharp
-private const KeyCode F6Key = KeyCode.F6
-```
-
-
-F6Key is a private compile-time constant that represents the F6 keyboard key. Use F6Key in input-handling logic within MainWindow to detect the F6 press instead of sprinkling the literal KeyCode.F6 throughout the code.
-
-## Remarks
-Centralizes the key mapping to avoid duplicating KeyCode.F6 and to express intent clearly within the class. Since it is private and const, its value is inlined at compile time and not exposed publicly, keeping the wiring internal to MainWindow. If the F6 binding ever needs to be shared or changed, you would introduce a more general configuration mechanism or expose a public abstraction rather than duplicating the literal in multiple places.
-
-## Example
-```csharp
-// Example: demonstrate using the F6Key constant in a simple comparison
-KeyCode current = KeyCode.F6;
-if (current == F6Key)
-{
-    // handle F6 action
-}
-```
-
-## Notes
-- As a const, the value is baked into the assembly; changing it requires recompilation.
-- Because it's private, external code cannot rely on this constant; testing and usage should interact with the class's public surface that uses F6Key.
-
-
----
-
-## NewlineKey
-> **File:** `src/EchoHub.Client/UI/MainWindow.cs`  
-> **Kind:** field
-
-```csharp
-private const KeyCode NewlineKey = KeyCode.N | KeyCode.CtrlMask
-```
-
-
-NewlineKey is a private compile-time constant that represents the keyboard shortcut used to insert a newline in the UI. It encodes the N key combined with the Ctrl modifier by performing a bitwise OR between KeyCode.N and KeyCode.CtrlMask, allowing input handling to recognize the Ctrl+N shortcut as a single KeyCode value rather than separate checks for a key and a modifier.
-
-## Remarks
-Centralizes the shortcut in a single symbol, reducing duplication and avoiding magic numbers in input logic. Being private, it remains an implementation detail of the MainWindow UI, so external code should not rely on it. The input-handling code likely compares the current KeyCode to NewlineKey to trigger newline insertion; using a named constant makes the intent explicit and easier to modify if the shortcut changes.
-
-## Notes
-- The value is a compile-time constant; changing the shortcut requires modifying the code and recompiling.
-- The combo uses KeyCode.CtrlMask; ensure consistency with other Ctrl-modified shortcuts in the same area.
-- On platforms where modifier handling differs, verify that Ctrl+N is recognized as intended.
+This constant encapsulates a UI sizing decision that would otherwise be repeated across multiple layout expressions. Keeping it private to the `MainWindow` class communicates that the width is an implementation detail of the window’s layout, while still enabling reuse and straightforward changes if the design evolves.
 
 ---

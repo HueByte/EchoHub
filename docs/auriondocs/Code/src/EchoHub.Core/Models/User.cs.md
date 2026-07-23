@@ -8,14 +8,25 @@ public class User
 ```
 
 
-The User class is a domain model that represents a person using EchoHub, encapsulating identity (Id, Username, PasswordHash), profile details (DisplayName, Bio, NicknameColor, AvatarAscii), presence (Status, StatusMessage), role-based access (Role), moderation flags (IsMuted, MutedUntil, IsBanned), and auditing timestamps (CreatedAt, LastSeenAt). Username and PasswordHash are required to create a usable user, while other fields are optional to support rich profiles; defaults establish an online, member-facing user with current timestamps when a new instance is created.
+Represents a user entity in the EchoHub domain, aggregating identity, profile, presence, and lifecycle data. It is the primary model used when creating, retrieving, and persisting user information, with required credentials enforced at construction via the `required` modifiers on `Username` and `PasswordHash`.
 
 ## Remarks
+Designed to be a single source of truth for user state, it coordinates authentication, authorization via `Role`, and moderation flags such as `IsMuted` and `IsBanned`. The default values — `Status` set to `UserStatus.Online`, `Role` set to `ServerRole.Member`, and timestamps on creation — provide sensible startup behavior while keeping optional fields available for richer profiles. It serves as the canonical user payload across core services and data stores, reducing duplication and drift between layers.
 
-This class serves as a central data container used across authentication, user management, presence rendering, and authorization checks. It’s designed to be lightweight and serializable for persistence, while keeping domain concerns cohesive with a single user entity. The defaults for Status and Role, along with the auditing timestamps, provide a sensible initial state for newly created users.
+## Example
+```csharp
+var user = new User
+{
+    Id = Guid.NewGuid(),
+    Username = "jdoe",
+    PasswordHash = "pbkdf2$...",
+    DisplayName = "Jane Doe",
+    Status = UserStatus.Online,
+    Role = ServerRole.Member
+};
+```
 
 ## Notes
-
-- The required fields (Username and PasswordHash) enforce that essential credentials are provided when constructing a user instance.
-- PasswordHash should be treated as sensitive data; avoid exposing it in logs or API responses and ensure the persistence layer handles security appropriately.
-- If hydrating from storage, ensure CreatedAt and LastSeenAt reflect the persisted values rather than new defaults.
+- The `required` modifier on `Username` and `PasswordHash` enforces initialization when constructing a `User` via object initializers (compile-time check).
+- `CreatedAt` and `LastSeenAt` default to the moment of object creation but may be replaced by deserialized data from storage.
+- `MutedUntil` is meaningful only when `IsMuted` is true; it can be null if not muted.

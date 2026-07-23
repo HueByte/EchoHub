@@ -8,21 +8,21 @@ public class ImageToAsciiService
 ```
 
 
-ImageToAsciiService is a lightweight utility that converts an input image stream into color-aware ASCII art by packing two vertical pixels into a single character cell using half-block characters and per-cell color tags. Use GetDimensions to pick a target resolution and ConvertToAscii when you need a textual, ASCII-only representation of an image for logs, chat, or environments without graphical support.
+ImageToAsciiService converts an image stream into ASCII art using two vertical pixels per character and half-block characters. The static `GetDimensions` translates a size code (`'s'`, `'m'`, `'l'`) into ASCII art dimensions (40x40, 80x80, 120x120 respectively) and returns the default dimensions from `HubConstants.AsciiArtWidth` and `HubConstants.AsciiArtHeightHalfBlock` for other codes. The instance method `ConvertToAscii` accepts a `Stream` containing an image and returns a string composed of color tokens and block characters. Each character cell encodes two vertical pixels; a foreground color token `{F:RRGGBB}` and a background color token `{B:RRGGBB}` are emitted when colors change, followed by a block character (either `█` or `▀`), with `{X}` used to reset coloring. The output uses only printable ASCII and avoids terminal escape sequences. 
 
 ## Remarks
-The class embodies a small, focused translation between raster images and ASCII art. It emits inline color tokens only when the color changes, preserving color fidelity while keeping the output readable in plain-text environments. The two-pixel vertical mapping (top pixel as the foreground color, bottom pixel as the background) enables higher-density representation than single-character ASCII, while remaining printable and parseable by consumers that understand the {F:...}{B:...}{X} tags. An even-height safeguard ensures the processing loop always handles complete pixel pairs, resizing the image as needed to maintain consistent output.
+`ImageToAsciiService` encapsulates the image-to-ASCII rendering logic, separating it from image loading and presentation concerns. It centralizes the color-token encoding and block-character strategy so callers can produce text-based previews in environments that cannot render images. By relying on [`HubConstants`](../Constants/HubConstants.cs.md) for defaults, global rendering preferences propagate naturally to this converter. 
 
 ## Example
 ```csharp
 using System.IO;
 
-var stream = File.OpenRead("path/to/image.png");
+using var fs = File.OpenRead("path/to/image.png");
 var service = new ImageToAsciiService();
-string ascii = service.ConvertToAscii(stream, 80, 40);
-Console.WriteLine(ascii);
+string ascii = service.ConvertToAscii(fs);
 ```
 
 ## Notes
-- The ASCII output relies on the presence of the {F:RRGGBB}{B:RRGGBB}{X} tags and the block characters; ensure your rendering environment understands these tokens, otherwise you will see literal tags.
-- If a height is provided as an odd number, the implementation advances to an even height, which may slightly alter the aspect ratio of the produced art.
+- The converter emits color-change tokens only when the foreground or background color differs from the previous pixel pair, which keeps the output compact for large areas of uniform color.
+- Each ASCII cell represents two vertical pixels; the image is resized to the requested `width` and `height` (defaulting to `HubConstants.AsciiArtWidth` and `HubConstants.AsciiArtHeightHalfBlock` if not specified). This can alter aspect ratio, so choose dimensions with that in mind.
+- The format relies on the tokenized color syntax (e.g. `{F:RRGGBB}` and `{B:RRGGBB}`) being understood by the consumer; renderers that ignore these tokens will display plain block characters without color.</

@@ -32,14 +32,21 @@ public record ApiResponse(bool Success, string? Message = null, List<string>? Er
 | `Errors` | `List<string>?` | `null` |
 
 
-ApiResponse is a lightweight data transfer object used to convey the outcome of an operation. It carries a required Success flag and optional Message and Errors to provide feedback and diagnostics to callers.
+Represents a standard API outcome as a `record` with a `bool` `Success`, an optional `string?` [`Message`](../Models/Message.cs.md), and an optional `List<string>?` `Errors`. Use `ApiResponse` to package the result of API operations or service methods into a single, strongly-typed object for consistent client consumption instead of scattering boolean flags and messages across code.
 
 ## Remarks
-Used as a common response shape across service boundaries to avoid ad-hoc return types. The primary purpose is to separate control flow (success/failure) from payload, facilitating simple success messaging and error propagation. Be mindful that Errors is a `List<string>`, which remains mutable if the same instance is shared; convert to a read-only collection or copy before returning to external consumers.
+By centralizing outcome data in `ApiResponse`, callers can handle success/failure logic in a uniform way and avoid ad-hoc boolean checks scattered through the code. The `Errors` collection is intended for granular, field-level validation messages that the client can display; the [`Message`](../Models/Message.cs.md) offers a concise summary, while `Success` drives flow control.
+
+## Example
+
+```csharp
+var success = new ApiResponse(true);
+var failure = new ApiResponse(false, "Validation failed", new List<string> { "Name is required", "Email is invalid" });
+```
 
 ## Notes
-- The Errors property is a mutable `List<string>`—wrap or copy it if you intend to preserve a fixed snapshot when returning to consumers.
-- Message may be null; supply a default user-friendly message or handle nulls in UI/logging.
+- The `Errors` property is a mutable `List<string>`; external mutation is possible. If you need true immutability, consider using `IReadOnlyList<string>` or an immutable collection.
+- When `Success` is true, you may omit [`Message`](../Models/Message.cs.md) and `Errors` or set them as appropriate; when `Success` is false, provide a meaningful [`Message`](../Models/Message.cs.md) and optionally populate `Errors` to detail issues.
 
 ---
 
@@ -61,26 +68,21 @@ public record ApiResponse<T>(bool Success, string? Message = null, List<string>?
 | `Data` | `T?` | `default` |
 
 
-`ApiResponse<T>` is a generic wrapper you return from API methods to convey a successful outcome, an optional human-friendly message, and a payload of type T, along with any per-call errors. Use this pattern when you want a consistent contract for success, messaging, and data across endpoints rather than returning raw data alone.
+A generic wrapper for operation results that standardizes API responses. It indicates success with `Success` and carries an optional [`Message`](../Models/Message.cs.md), a `List<string>` named `Errors` for validation or processing issues, and an optional `Data` payload of type `T`.
 
 ## Remarks
-`ApiResponse<T>` is an immutable value type (a record with a primary constructor) that standardizes how results are communicated. It separates the data payload from status information, allowing clients to inspect Success, Message, and Errors independently from Data. Because Message and Errors are optional, responses can remain concise for successful operations while still providing rich error detail when needed.
+
+This abstraction decouples the shape of a successful response from the actual data, enabling consistent error handling and client-side parsing across services. By returning `ApiResponse<T>` from operations, you centralize how success, messages, and validation details are conveyed, which simplifies cross-cutting concerns like localization and error translation.
 
 ## Example
+
 ```csharp
-using System.Collections.Generic;
+// Successful response with data
+var success = new ApiResponse<string>(true, "Operation completed", null, "payload-data");
 
-// success with data
-var result = new ApiResponse<string>(true, "Operation completed", null, "payload");
-
-// error with details
-var failure = new ApiResponse<string>(false, "Validation failed", new List<string> { "Email is invalid" }, null);
+// Failed response with errors
+var failure = new ApiResponse<string>(false, "Validation failed", new List<string> { "Name is required", "Email is invalid" }, null);
 ```
-
-## Notes
-- Message and Errors are nullable; always check Success before relying on these fields, and provide defaults if you need non-null output. 
-- `ApiResponse<T>` is immutable; to modify it, use a with-expression to create a copy (e.g., var updated = result with { Data = newData };).
-
 
 ---
 
@@ -107,14 +109,13 @@ public record ChannelOperationResult(ChannelDto? Channel, ChannelError? Error, s
 | `ErrorMessage` | `string?` | — |
 
 
-ChannelOperationResult is a lightweight result wrapper used by channel-creation/lookup operations to return either a ChannelDto on success or an error descriptor on failure. Callers typically inspect IsSuccess and then access Channel or Error/ErrorMessage, using the static factories to produce a well-formed result rather than constructing it directly.
+ChannelOperationResult is an immutable wrapper that conveys the outcome of a channel-related operation. It either carries a [`ChannelDto`](ChatDtos.cs.md) when the operation succeeds or a `ChannelError` with an `ErrorMessage` when it fails; the static helpers `Success` and `Fail` make the intent explicit when constructing results.
 
 ## Remarks
-It captures the outcome of channel-oriented operations in a single, immutable value, reducing the need for exception-based control flow. By pairing either a Channel with no error or an Error with a message, it forces consumers to handle both success and failure paths in a uniform way. It complements the ChannelDto and ChannelError types by providing a minimal, self-describing container that can be passed through layers without leaking implementation details.
+ChannelOperationResult uses a C# `record` to express a simple, value-like outcome. It centralizes success/failure information for channel-oriented operations, enabling uniform error handling and reducing scattered null-checks. Consumers should inspect `IsSuccess` before accessing [`Channel`](../Models/Channel.cs.md); when `IsSuccess` is true, [`Channel`](../Models/Channel.cs.md) is non-null, and when false, `Error` and `ErrorMessage` describe the failure.
 
 ## Notes
-- Prefer the static factories to create instances to preserve the intended invariant that a result carries either a Channel or an error. The public constructor can produce degenerate states if misused.
-- The ErrorMessage is optional; provide a descriptive message to aid debugging when using Fail.
+- Prefer constructing via `ChannelOperationResult.Success(...)` or `ChannelOperationResult.Fail(...)` rather than the primary constructor to preserve the invariant that a successful result has a non-null [`Channel`](../Models/Channel.cs.md) and a failed result has non-null `Error`.
 
 ---
 
@@ -134,15 +135,10 @@ public record ErrorResponse(string Error, string? Detail = null)
 | `Detail` | `string?` | `null` |
 
 
-ErrorResponse is a small, immutable data transfer object used to convey error information from the server to API clients. Implemented as a C# record with two positional properties, Error and Detail, it carries a concise error identifier or message and optional supplemental details. Use it when standardizing error payloads across API endpoints or error-handling middleware that wants to provide a consistent error shape.
+Encapsulates a standardized error payload with a mandatory `Error` code and an optional `Detail` string for extra context. As a `record`, it is immutable by design and supports value-based equality and deconstruction, which makes it ideal for returning a single, comparable error object from APIs or services. Use this type to produce consistent, serializable error information across the system.
 
 ## Remarks
-Using a record provides value-based equality and immutability, making ErrorResponse a stable payload that is easy to compare in tests and to clone with modifications via with-expressions. The Error field represents a short error code or message, while Detail offers optional, human-friendly context. This type is intended to be reused across API boundaries, ensuring clients receive a uniform error shape.
-
-## Notes
-- Avoid leaking sensitive internals in Error; prefer stable, client-friendly codes or messages.
-- Detail is nullable; when null, serialization may omit the property depending on serializer settings.
-- As a DTO, this record should be produced by a dedicated error-handling path rather than constructed manually in business logic.
+Centralizes the error payload shape to ensure all error responses share a single contract. The optional `Detail` field provides human-friendly context without breaking clients that only inspect the `Error` code. Because it is a `record`, it naturally supports comparisons and pattern matching when handling error responses.
 
 ---
 
@@ -164,24 +160,13 @@ public record PaginatedResponse<T>(List<T> Items, int Total, int Offset, int Lim
 | `Limit` | `int` | — |
 
 
-Represents a paginated result set for a collection of items of type T. It bundles the items for the current page together with paging metadata (Total, Offset, and Limit), enabling consumers to render pages and request subsequent pages without fetching the entire dataset. Use `PaginatedResponse<T>` when an API or service returns a slice of a larger collection and you need to convey both the page content and the overall size.
+Represents a paged result set for a collection of items of type `T`. It bundles the current page of data (`Items`) with paging metadata: the total item count (`Total`), the starting offset (`Offset`), and the page size limit (`Limit`). This shape is used by APIs that support paging to convey both the data and how to fetch additional pages; the use of a `record` provides value-based equality and immutability for API responses.
 
 ## Remarks
-This generic DTO unifies paging across different endpoints by pairing a page of items with metadata describing the total size of the set and the paging window (Offset and Limit). Consumers can derive the total number of pages and navigate accordingly, without duplicating paging logic.
-
-## Example
-```csharp
-var page = new PaginatedResponse<int>(
-    Items: new List<int> { 1, 2, 3 },
-    Total: 10,
-    Offset: 0,
-    Limit: 3
-);
-```
+Using a `record` for `PaginatedResponse<T>` gives value-based equality and an immutable data shape, which makes it natural for transporting paging results across boundaries. It centralizes both the data (`Items`) and its paging metadata (`Total`, `Offset`, `Limit`) in a single coherent DTO, reducing the risk of mismatch between data and paging state when consumed by clients or other services.
 
 ## Notes
-- The Items property is a `List<T>`, which is mutable. Mutating the list after construction will affect the PaginatedResponse instance. If you require immutability of the collection, consider exposing `ReadOnlyCollection<T>` or `IReadOnlyList<T>` instead of `List<T>`, or wrap the list before returning.
-- Because `PaginatedResponse<T>` is a record, the wrapper itself uses value-based equality, but the `List<T>` contained in Items is compared by reference. Two instances with equal contents but different `List<T>` instances will not compare equal.
+- The `Items` collection is a `List<T>`, which is mutable. If you require immutability guarantees, wrap it in a read-only collection or clone the list before exposure.
 
 ---
 
@@ -208,14 +193,13 @@ public record UserOperationResult(UserProfileDto? User, UserError? Error, string
 | `ErrorMessage` | `string?` | — |
 
 
-Represents the outcome of a user-related operation: it either carries a UserProfileDto for success or a UserError and an ErrorMessage for failure. Use IsSuccess to branch on the result and create instances via Success(user) for success or Fail(error, message) for failure.
+An immutable result wrapper for user-related operations. It encapsulates either a [`UserProfileDto`](ProfileDtos.cs.md) payload via [`User`](../Models/User.cs.md) on success, or a `UserError` and a diagnostic `ErrorMessage` on failure. Use the static factories `Success` and `Fail` to construct consistent results, and check `IsSuccess` to decide how to proceed.
 
 ## Remarks
-This abstraction uses a record with nullable payload fields to model a simple Result pattern without introducing a separate discriminated union. It provides a single return type across methods that can either yield a user profile or fail with details, enabling concise consumer code that checks IsSuccess first. Because User is nullable when the result is a failure, and because Error and ErrorMessage are null on success, callers should guard access to User unless IsSuccess is true. The helper methods ensure the invariant that a successful result always carries a user while a failure carries an error and message.
+By encapsulating both success payload and failure details into a single value, this symbol standardizes how user-operation results are communicated. Callers check `IsSuccess` and then access either the [`User`](../Models/User.cs.md) payload or the `Error`/`ErrorMessage` to react. Because it is a `record`, equality is based on its contents, which helps tests and caching rely on value semantics.
 
 ## Notes
-- Read result.User only after confirming IsSuccess; otherwise the value may be null.
-- On failure, User will be null; consult Error and ErrorMessage for details.
+- Directly constructing with a mismatched state (for example, a non-null `Error` but a null or missing `ErrorMessage`) can create inconsistent results; prefer the provided factories to enforce the invariant that success results include a [`User`](../Models/User.cs.md) and no error, while failures include an `Error` and an `ErrorMessage`.
 
 ---
 
@@ -235,14 +219,11 @@ public enum ChannelError
 ```
 
 
-ChannelError enumerates the discrete failure cases that can arise when managing channels in EchoHub. It provides a finite set of error codes so callers can distinguish invalid input, duplicates, missing resources, permission issues, and protected resources without resorting to free-form strings.
+ChannelError is an enum that enumerates the standard error conditions that may arise when working with channels in the `EchoHub` domain. It provides a typed set of failure reasons—`ValidationFailed`, `AlreadyExists`, `NotFound`, `Forbidden`, and `Protected`—to be returned by channel-related operations, enabling callers to branch on the specific cause and handle it uniformly rather than parsing strings.
 
 ## Remarks
-This enum lives in the DTO layer to convey precise failure reasons from service or repository operations to API clients. By centralizing channel-related errors, it enables consistent error handling, mapping to user-friendly responses, and easier client-side interpretation across create, update, and lookup workflows. The member names align with common REST/DTO conventions, reducing ambiguity when serializing and documenting API contracts.
 
-## Notes
-- Changing the enum's members or their order can impact clients that serialize/deserialize error codes; treat it as a public contract.
-- If you enable numeric JSON serialization for enums, ensure the API contract documents the expected codes to avoid confusion.
+`ChannelError` centralizes the failure kinds that can occur during channel-related operations and is intended to be carried by DTOs that report operation results. It enables type-safe error handling, allowing callers to pattern-match on the exact failure (`ValidationFailed`, `AlreadyExists`, `NotFound`, `Forbidden`, `Protected`) and map them to appropriate responses without parsing human-generated messages. This separation of error kind from presentation keeps the API consistent as channel semantics evolve.
 
 ---
 
@@ -262,21 +243,12 @@ public enum UserError
 ```
 
 
-Represents the set of user-related errors that can occur during authentication, registration, lookup, or other user-identity operations in the EchoHub DTO layer. This enum provides a typed, contract-friendly way to communicate failure modes from server to client, enabling centralized handling and consistent feedback without scattering string literals across the codebase.
-
-Values include:
-- ValidationFailed: input data failed validation.
-- AlreadyExists: a resource with the given identifier already exists.
-- NotFound: the requested user or resource could not be found.
-- InvalidCredentials: credentials were invalid during authentication.
-- Banned: the user is banned from the system.
+The `UserError` enum defines the canonical set of failure conditions related to user accounts that may be surfaced by operations in the core DTO layer. Members include `ValidationFailed`, `AlreadyExists`, `NotFound`, `InvalidCredentials`, and `Banned`, each representing a distinct error scenario that downstream code can pattern-match to drive error responses and user messaging.
 
 ## Remarks
-By consolidating these common errors into a single enum, this abstraction decouples transport contracts from domain logic and supports uniform error mapping on the client. It simplifies UI messaging, and it allows the server to evolve its error vocabulary without changing method signatures.
+This enum centralizes common user-domain errors so that authentication, registration, and profile-management flows can share a consistent error-handling strategy. By codifying these cases in a single type, callers can translate domain failures into uniform API responses and UI messages without depending on implementation details.
 
 ## Notes
-- Be mindful of how the enum is serialized in API responses (numeric vs string); consider standardizing on string representations to avoid client breakage when new values are added.
-- Adding new values is a contract change; document and version the API accordingly, and ensure clients handle unknown values gracefully.
-- This enum is a DTO-level error vocabulary; do not encode domain exceptions here.
+- When mapping these errors to user-facing messages, avoid exposing sensitive internal details and rely on generic messaging driven by the enum value.
 
 ---

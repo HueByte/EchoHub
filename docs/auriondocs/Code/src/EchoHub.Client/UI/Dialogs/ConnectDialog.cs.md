@@ -18,7 +18,15 @@ public sealed class ConnectDialog
 ```
 
 
-ConnectDialog is a Terminal.Gui-based dialog that collects server connection details and authentication information for the application. When shown, it can display a list of SavedServer entries at the top if any saved servers are provided; in that case a Saved Servers section is rendered with a ListView of display names that indicate whether a session exists (the code appends a [session] marker when a RefreshToken is present). Below (or in place of it, when there are no saved servers), the dialog presents manual entry fields for Server URL (default http://localhost:5000), Username, and Password, along with UI hints such as a hidden password placeholder and a Remember me option. Additional fields include Display Name and, when relevant, an Invite Code for invite-gated registrations. The static Show method returns a ConnectDialogResult when the user completes the dialog, or null if the dialog is cancelled; the dialog height is adjusted depending on whether saved servers are shown.
+ConnectDialog is a Terminal.Gui dialog that gathers server connection and authentication information from the user. It optionally presents a Saved Servers list when available, and returns a `ConnectDialogResult?` when the user completes the form or null if cancelled.
+
+## Remarks
+By encapsulating the authentication flow in a single dialog, `ConnectDialog` centralizes the user experience for establishing a server connection. It dynamically adapts its layout depending on whether [`SavedServer`](../../Config/ClientConfig.cs.md) entries are provided, showing a `ListView` of saved servers when present and keeping a compact form otherwise. It also treats credentials with care by redacting the password in the UI and indicating a saved session when a `RefreshToken` exists.
+
+## Notes
+- If saved servers exist, the dialog height increases to accommodate the list (24 vs 20).
+- The Saved Servers display shows items built from saved server properties; a session indicator is appended when `RefreshToken` is non-empty.
+- The password field is displayed as `[REDACTED:PASSWORD]` and the actual input is masked via the `Secret` flag.
 
 ---
 
@@ -47,34 +55,13 @@ public record ConnectDialogResult(
 | [`InviteCode`](../../../EchoHub.Core/Models/InviteCode.cs.md) | `string?` | `null` |
 
 
-ConnectDialogResult encapsulates all user input gathered from the connect dialog as a single, immutable value. It is produced when the dialog completes and is consumed by the rest of the application to initiate a connection flow, passing the server URL, credentials, and onboarding flags as a single, strongly-typed package.
+ConnectDialogResult is an immutable data container produced by the connect dialog, encapsulating the user's input as a single value object for the subsequent connection/authentication workflow. It carries the server URL (`ServerUrl`), the user's credentials (`Username`, `Password`), and UI preferences (`IsRegister`, `RememberMe`), along with an optional `SavedRefreshToken` and possibly `DisplayName` or [`InviteCode`](../../../EchoHub.Core/Models/InviteCode.cs.md).
 
 ## Remarks
-
-By collecting all related fields into a single record, this abstraction reduces coupling between the UI layer and the connection logic. It clearly expresses the intent of the user's action (login vs register) and whether credentials should be remembered, while allowing optional data (DisplayName, InviteCode) to participate in specialized flows without forcing callers to thread every field separately.
-
-## Example
-
-```csharp
-// Common usage: construct a result from values collected in UI
-var result = new ConnectDialogResult(
-    ServerUrl: "https://example.server/api",
-    Username: "alice",
-    Password: "P@ssw0rd",
-    IsRegister: false,
-    RememberMe: true,
-    SavedRefreshToken: null,
-    DisplayName: "Alice",
-    InviteCode: "INVITE-2024-ABCD"
-);
-```
+Using a `record` here provides value-based equality and convenient deconstruction, making it easy to compare results and pass them through layers without mutating state. It serves as a boundary-crossing DTO that formats UI input into a coherent package for the authentication/service layer, while supporting optional flows via `DisplayName` and [`InviteCode`](../../../EchoHub.Core/Models/InviteCode.cs.md). Because `Password` and `SavedRefreshToken` can contain sensitive data, avoid logging them and handle this object as transient UI data rather than a durable model.
 
 ## Notes
-
-- DisplayName and InviteCode are nullable; omit them or pass null if not applicable.
-- Password should be treated as sensitive data: avoid logging it or persisting it longer than necessary, and ensure proper disposal or clearing after use.
-- SavedRefreshToken may be null; handle accordingly in login/refresh flows.
-- This record is intended for in-memory transfer between UI and authentication/connection logic; when persisting or transmitting, apply appropriate security measures and avoid leaking confidential fields.
-
+- Do not log or persist the `Password` or `SavedRefreshToken` values; treat them as sensitive data.
+- This object is intended to be transient UI input; avoid storing it longer than necessary or serializing it insecurely.
 
 ---

@@ -6,8 +6,8 @@
 
 - [ServerDirectoryService](#serverdirectoryservice)
   - [InfiniteRetryPolicy](#infiniteretrypolicy)
+  - [ServerDirectoryService (constructor)](#serverdirectoryservice-constructor)
   - [BuildConnection](#buildconnection)
-  - [ConnectWithRetryAsync](#connectwithretryasync)
   - [DisposeConnectionAsync](#disposeconnectionasync)
   - [ExecuteAsync](#executeasync)
   - [ExtractConflictingHosts](#extractconflictinghosts)
@@ -21,16 +21,16 @@
   - [RunConnectionLoopAsync](#runconnectionloopasync)
   - [StopAsync](#stopasync)
   - [DirectoryHubUrl](#directoryhuburl)
-  - [ReconnectBaseDelay](#reconnectbasedelay)
   - [ReconnectMaxDelay](#reconnectmaxdelay)
+  - [UserCountMinInterval](#usercountmininterval)
 - [DirectoryProtocol](#directoryprotocol)
 - [DirectoryRegistrationErrors](#directoryregistrationerrors)
 - [ErrorDetail](#errordetail)
 - [RegisterServerDto](#registerserverdto)
 - [RegisterServerResult](#registerserverresult)
 - [Response](#response)
-- [ServerDirectoryService (constructor)](#serverdirectoryservice-constructor)
-- [UserCountMinInterval](#usercountmininterval)
+- [ConnectWithRetryAsync](#connectwithretryasync)
+- [ReconnectBaseDelay](#reconnectbasedelay)
 
 ---
 
@@ -43,16 +43,18 @@ public sealed class ServerDirectoryService : BackgroundService
 ```
 
 
-Maintains a durable, resilient registration of this process in the central server directory and continuously reports presence (user counts) to that directory. Run as a hosted BackgroundService, it opens and manages a SignalR HubConnection to the directory, performs server registration/claiming, publishes metadata (name, description, hosts, version, tags) and incremental presence updates, and automatically reconnects with backoff when the connection drops.
+Maintains a long-lived SignalR connection to the central server directory and keeps this process advertised and up-to-date. `ServerDirectoryService` runs as a hosted background worker that connects to the directory hub at `DirectoryHubUrl`, attempts to register/claim the server identity (persisting a claim token via [`DirectoryClaimStore`](DirectoryClaimStore.cs.md)), and pushes aggregated presence (user count) updates derived from [`PresenceTracker`](PresenceTracker.cs.md) to the directory. Use this service when the application should automatically announce itself and maintain presence information in the shared directory rather than performing manual/one-off registration calls.
 
 ## Remarks
-This service sits between the local PresenceTracker, a persistent DirectoryClaimStore (which holds claim tokens and server IDs), and the remote directory hub. It coalesces frequent presence changes into a single "latest wins" update using a single-slot bounded channel to avoid flooding the directory, and applies an exponential backoff on reconnect attempts to avoid tight retry loops. Certain registration failures (for example: host already claimed, invalid token, or host conflict) are treated as permanent for the lifetime of the process — once that permanent-failure state is observed the service stops attempting to register on that connection and any subsequent reconnects, leaving operator intervention required to correct configuration and restart.
+`ServerDirectoryService` is the glue between local presence tracking and the remote directory. It encapsulates the connection lifecycle (built by `BuildConnection` and managed by `ConnectWithRetryAsync` and `RunConnectionLoopAsync`), registration/claim semantics (`RegisterAsync` and `HandleRegistrationResponseAsync`), and presence propagation (`OnUserCountChanged` and `ProcessUserCountUpdatesAsync`). To avoid noisy updates the service coalesces bursts of presence changes using a single-slot [`Channel<int>`](../../EchoHub.Core/Models/Channel.cs.md) (`_userCountUpdates`) so that the most recent count wins, and it enforces a minimum send interval controlled by `UserCountMinInterval`. The service also implements an increasing reconnect backoff bounded by `ReconnectBaseDelay` and `ReconnectMaxDelay` via `GetBackoffDelay`. If the registration receives a fatal error (examples noted in comments: `HostAlreadyClaimed`, `InvalidToken`, `HostConflict`) the service sets `_registrationPermanentlyFailed` and stops attempting further register attempts for this connection — the operator must fix configuration and restart the process.
 
 ## Notes
-- Permanent registration failures stop further register attempts even across reconnections; the operator must fix configuration and restart the service to recover.
-- Presence updates are coalesced and throttled: the single-slot channel drops intermediate values (latest wins) and sends no more often than the configured UserCountMinInterval, so short-lived fluctuations may be suppressed.
-- Reconnect attempts use a backoff between ReconnectBaseDelay and ReconnectMaxDelay; expect progressively longer wait times on repeated failures.
-- The service relies on configuration and on DirectoryClaimStore to persist claim tokens; ensure those dependencies are available and correctly configured or registration will fail.
+- `OnUserCountChanged` feeds a single-slot channel so intermediate counts can be dropped; the directory will see only the latest value sent after throttling, not every intermediate change. This is by design to reduce churn.
+- Presence updates are throttled by `UserCountMinInterval`; rapid updates will be coalesced and delayed to respect that interval.
+- If `_registrationPermanentlyFailed` becomes true (due to registration error codes like `HostAlreadyClaimed`/`InvalidToken`/`HostConflict`), the service stops retrying registration on the current connection and on subsequent reconnects — fixing the configuration and restarting the service is required to recover.
+- The implementation persists a freshly-issued claim token via [`DirectoryClaimStore`](DirectoryClaimStore.cs.md) early in the registration flow to provide a durability guarantee for first-time claims; this ordering is intentional to avoid losing a claim token on process crash.
+- The startup logic yields briefly before attempting its initial connect so the host can finish starting; this affects the timing of the first registration attempt.
+
 
 ---
 
@@ -65,18 +67,46 @@ private sealed class InfiniteRetryPolicy : IRetryPolicy
 ```
 
 
-Retrieves indefinitely with exponential backoff capped at a maximum delay for reconnect attempts. This private sealed class implements IRetryPolicy and provides a retry strategy that increases the wait time between attempts rather than failing fast, enabling resilient reconnection to the server directory service.
-
-NextRetryDelay yields delays based on an exponential progression: the first retry occurs after 1 second, followed by 2 seconds, 4 seconds, 8 seconds, and 16 seconds. After that, the delay is capped by ReconnectMaxDelay (30 seconds), so all subsequent retries use that maximum delay. This approach balances persistence in the face of transient failures with a bound on retry timing to avoid excessive load.
+`InfiniteRetryPolicy` is a private sealed class that implements `IRetryPolicy` to provide a retry strategy. Its `NextRetryDelay` computes the next wait as 2^min(`retryContext.PreviousRetryCount`, 10) seconds and returns it, capped by `ReconnectMaxDelay`, enabling indefinite retries while bounding the maximum wait.
 
 ## Remarks
-This policy encapsulates a specific retry strategy behind the IRetryPolicy interface, isolating timing logic from the rest of the reconnection code. Marked private and sealed, it signals an internal, non-extendable implementation used solely by the server directory service's retry mechanism. The cap on delay helps prevent runaway retry intervals while still ensuring the system makes progress toward recovery.
+This abstraction centralizes the exponential backoff so the rest of the server's reconnection logic shares a consistent, testable delay policy. By being private and sealed, it remains an internal implementation detail, reducing surface area for change and misuse outside its containing class.
 
 ## Notes
-- The first retry delay is 1 second, not immediate.
-- Delays progress as 1s, 2s, 4s, 8s, 16s, and then 30s for all subsequent retries due to the cap.
-- If many clients share the same cap, consider introducing jitter at the call site to avoid synchronized retries (this policy does not include jitter by default).
+- The backoff growth saturates after the 10th retry; `NextRetryDelay` uses `Math.Min(retryContext.PreviousRetryCount, 10)` to compute the exponent, so delays cannot grow beyond `ReconnectMaxDelay`.
 
+---
+
+### ServerDirectoryService (constructor)
+> **File:** `src/EchoHub.Server/Services/ServerDirectoryService.cs`  
+> **Kind:** constructor
+
+```csharp
+public ServerDirectoryService(
+        IConfiguration configuration,
+        PresenceTracker presenceTracker,
+        DirectoryClaimStore claimStore,
+        ILogger<ServerDirectoryService> logger)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `configuration` | `IConfiguration` | — |
+| `presenceTracker` | [`PresenceTracker`](PresenceTracker.cs.md) | — |
+| `claimStore` | [`DirectoryClaimStore`](DirectoryClaimStore.cs.md) | — |
+| `logger` | `ILogger<ServerDirectoryService>` | — |
+
+
+Constructs a `ServerDirectoryService` by binding its essential collaborators: `IConfiguration`, [`PresenceTracker`](PresenceTracker.cs.md), [`DirectoryClaimStore`](DirectoryClaimStore.cs.md), and `ILogger<ServerDirectoryService>`. Typically invoked by the dependency injection container, it assigns these dependencies to the private fields `_configuration`, `_presenceTracker`, `_claimStore`, and `_logger` so the service can access configuration, track presence, manage directory claims, and emit logs.
+
+## Remarks
+By design, this constructor is a straightforward DI-only initializer with no business logic. It simply wires the four collaborators into private fields so the rest of the service can coordinate configuration data, presence state, claim storage, and logging.
+
+## Notes
+- This constructor does not perform argument null checks; rely on the DI container to provide valid instances. If you instantiate `ServerDirectoryService` manually, consider adding guards.
+- Ensure the DI container is configured to register [`PresenceTracker`](PresenceTracker.cs.md), [`DirectoryClaimStore`](DirectoryClaimStore.cs.md), and `ILogger<ServerDirectoryService>` so resolution succeeds at startup.
 
 ---
 
@@ -91,43 +121,14 @@ private HubConnection BuildConnection()
 **Returns:** `HubConnection`
 
 
-BuildConnection constructs and returns a HubConnection configured to connect to the directory hub. It encapsulates the boilerplate of wiring the hub URL and an infinite automatic-reconnect policy, so callers can obtain a ready-to-configure connection without duplicating setup code.
+BuildConnection creates and returns a new `HubConnection` configured to communicate with the directory hub. It wires the hub URL from `DirectoryHubUrl`, enables automatic reconnection using an `InfiniteRetryPolicy`, and returns the built instance for the caller to start and use.
 
 ## Remarks
-BuildConnection centralizes the creation of the SignalR client used by the directory service, ensuring a consistent URL and reconnect policy across all call sites. By wrapping the builder steps, it reduces boilerplate and makes it easy to adjust the underlying connection strategy in one place. Note that the returned HubConnection is configured but not started; callers should invoke StartAsync (and manage its lifecycle) when ready. The attached InfiniteRetryPolicy governs how the client attempts to reconnect after a disconnect, providing resilience against transient network issues.
+Encapsulating this setup here ensures consistent behavior across call sites that need a connection to the directory hub. The `InfiniteRetryPolicy` drives unbounded reconnect attempts, with the delay determined by `NextRetryDelay` on the `RetryContext`; callers should consider lifecycle management and potential long-running retries.
 
 ## Notes
-- The connection is not started by BuildConnection; you must call StartAsync and later dispose of the connection to avoid leaks. Ensure DirectoryHubUrl is properly configured before using this method.
-
----
-
-### ConnectWithRetryAsync
-> **File:** `src/EchoHub.Server/Services/ServerDirectoryService.cs`  
-> **Kind:** method
-
-```csharp
-private async Task<bool> ConnectWithRetryAsync(HubConnection connection, CancellationToken ct)
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `connection` | `HubConnection` | — |
-| `ct` | `CancellationToken` | — |
-
-**Returns:** `Task<bool>`
-
-
-ConnectWithRetryAsync establishes a SignalR hub connection by repeatedly invoking StartAsync on the supplied HubConnection until the operation succeeds or the provided CancellationToken is triggered. When StartAsync completes successfully, the method returns true. If an exception occurs, the method increments its retry counter, computes a backoff delay via GetBackoffDelay(attempt), logs a warning including the delay, and awaits Task.Delay(delay, ct) before retrying. If the CancellationToken is canceled before a successful connection, the loop exits and the method returns false. This encapsulates transient-connection retry logic so callers do not have to implement their own retry loop.
-
-## Remarks
-Centralizes retry/backoff semantics for establishing the directory connection, so callers don't implement their own loop. It respects the cancellation token to avoid hanging and uses logging to surface transient failures for operators.
-
-## Notes
-- All exceptions from StartAsync are treated as retryable; there is no distinction between transient and permanent errors.
-- CancellationToken is observed during both StartAsync and the subsequent Task.Delay, so cancellation is respected promptly.
-- The backoff duration is determined by GetBackoffDelay(attempt); ensure this aligns with the desired backoff strategy to avoid excessively long waits or too-aggressive retries.
+- The returned `HubConnection` is not started automatically; you must call `StartAsync()` before use.
+- Each invocation yields a new `HubConnection`; reuse the instance if a single long-lived connection is required.
 
 ---
 
@@ -148,20 +149,15 @@ private static async Task DisposeConnectionAsync(HubConnection connection)
 **Returns:** `Task`
 
 
-Disposes the given HubConnection asynchronously with a hard 3-second timeout and suppresses any errors, ensuring shutdown proceeds without being blocked by a slow disposal. Use this during teardown when you want to promptly release the connection without surfacing disposal failures.
+Disposes a `HubConnection` asynchronously with a bounded timeout by awaiting `DisposeAsync()` converted to a `Task` via `AsTask()` for up to 3 seconds. If the operation exceeds the timeout or throws, the exception is caught and ignored to prevent shutdown from blocking. This private helper ensures resources are released promptly during server shutdown without risking a hang.
 
 ## Remarks
-This pattern encapsulates a best-effort disposal strategy: it waits up to three seconds for disposal to complete, then continues regardless of the outcome. By catching all exceptions, callers cannot rely on successful disposal being reported; if you need visibility into disposal failures, handle the disposal outside this helper. It is intended for shutdown scenarios where the connection must be released promptly and further operations on the connection are no longer needed.
-
-## Example
-```csharp
-// Example usage within the same class
-await DisposeConnectionAsync(connection);
-```
+This method isolates the disposal of a `HubConnection` from the rest of shutdown logic, providing a deterministic, non-blocking path when terminating the server. By swallowing disposal failures, it avoids a slow or faulty dispose from delaying process termination, though it hides potential cleanup issues that may warrant later diagnostics. As a private static helper, it signals that disposing a given `HubConnection` is a concern tied to the server's lifecycle rather than a general-purpose cleanup utility.
 
 ## Notes
-- Empty catch hides disposal failures; only use this when shutdown must not be delayed by disposal issues.
-- The 3-second timeout is hard-coded; adjust if your application's shutdown window requires a different bound.
+- This method swallows all exceptions from `DisposeAsync` and the timeout; consider adding logging if you need visibility into disposal problems.
+- The 3-second timeout is hard-coded and may not suit every environment; make it configurable if needed.
+- Caller must ensure the `connection` parameter is non-null; passing null will throw before entering the try block.
 
 ---
 
@@ -182,7 +178,13 @@ protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 **Returns:** `async Task`
 
 
-Executes the host’s startup lifecycle for registering the server with the EchoHubSpace directory when configured to be public. It yields to the host to finish starting, validates the configuration, collects hosts and metadata from configuration, resolves the server version, and then delegates to the connection loop that maintains the directory registration. It also subscribes to user-count changes so presence updates can be propagated while the registration is active, and guarantees cleanup of the event subscription when the operation completes or fails.
+Coordinates the public-directory registration lifecycle for the server. It first yields to the host to finish initialization, then decides whether to register by reading `Server:PublicServer` from configuration; when enabled, it gathers metadata from `Server:PublicHosts`, `Server:Name`, `Server:Description`, `Server:Tags`, and the computed `version`, logs its intent, subscribes to user-count changes via `_presenceTracker.UserCountChanged`, and starts the connection loop with `RunConnectionLoopAsync` using `stoppingToken`. If registration is disabled or required config is missing, it logs and exits gracefully.
+
+## Remarks
+This symbol serves to encapsulate the startup flow for a publicly visible server: it centralizes the decision, metadata collection, and lifecycle management needed to register with the directory. The initial `await Task.Yield()` gives the host a chance to continue its startup sequence before any logging or network activity. The subscription to `_presenceTracker.UserCountChanged` is paired with a `finally` to guarantee cleanup and avoid leaks, even if the connection loop fails or is cancelled.
+
+## Notes
+- The code unsubscribes from `_presenceTracker.UserCountChanged` in `finally` to avoid memory leaks and stray callbacks after the connection loop ends.
 
 ---
 
@@ -203,17 +205,23 @@ private static string[]? ExtractConflictingHosts(ErrorDetail? error)
 **Returns:** `string[]?`
 
 
-ExtractConflictingHosts reads a JSON payload from an ErrorDetail's Data field and returns the list of host names described under the ConflictingHosts property. It tolerates both PascalCase (ConflictingHosts) and camelCase (conflictingHosts) keys because SignalR's wire casing depends on the hub's serializer configuration, and the field is typed object?.
-
-It returns null when the payload is missing or not a JSON object, when neither property is present, when the property isn't an array, or when the array contains no string entries. Otherwise, it returns a string[] of the host names extracted from the array.
+ExtractConflictingHosts pulls the `ConflictingHosts` from an error's loosely-typed `Data` payload and returns it as a `string[]` when present. It tolerates both PascalCase and camelCase keys to accommodate different serializer configurations. If the payload is missing, not a JSON object, not an array, or contains no string values, the method returns null.
 
 ## Remarks
-The helper centralizes resilient parsing of optional error metadata, shielding callers from variations in payload shape and casing. By returning null for absent or empty data, it lets higher-level error handling distinguish between "no information" and an explicit list of conflicting hosts.
+
+By centralizing the JSON-payload parsing in a small helper, callers do not need to know the wiring quirks of the error data or the particular casing produced by the hub's serializer. It provides a stable, strongly-typed extraction point for host names when conflicts are reported.
+
+## Example
+
+```csharp
+string[]? hosts = ExtractConflictingHosts(error);
+```
 
 ## Notes
-- Returns null rather than an empty array when no hosts are present or the data is malformed.
-- Non-string elements inside the host list are ignored.
-- The method is private and static, indicating it is an internal helper for extracting just this piece of information from a larger error payload.
+
+- Returns null if the input error is null, the `Data` payload is not a JSON object, the relevant property is missing, or the array contains no string values.
+- Non-string items within the `ConflictingHosts` array are ignored; only string values are collected.
+- The source snippet in the method contains a likely compile-time issue: `List<string> hosts = []` is invalid C#. It should be initialized as `new List<string>()` (or `var hosts = new List<string>();`). This is a potential trap to address during review.
 
 ---
 
@@ -234,14 +242,13 @@ private static TimeSpan GetBackoffDelay(int attempt)
 **Returns:** `TimeSpan`
 
 
-Calculates the exponential backoff delay for a reconnect attempt. Given the retry attempt index, it computes 2^min(attempt, 10) seconds, then clamps the result to ReconnectMaxDelay. The returned TimeSpan is used by the reconnect logic to wait before the next attempt, ensuring that retries are spaced out but never exceed a configured maximum delay.
+`GetBackoffDelay` computes the wait duration before the next reconnect attempt. Given an `attempt`, it derives the delay as `TimeSpan.FromSeconds(Math.Pow(2, Math.Min(attempt, 10)))` and returns the value capped at `ReconnectMaxDelay` as a `TimeSpan`.
 
 ## Remarks
-Isolates the backoff policy in a small helper, keeping the retry loop simple and readable. The exponential ramp-up helps avoid overwhelming the remote endpoint while still providing progressively longer waits as failures persist; the cap guarantees a bound on wait times. This method is private to the class and intended for internal use by the directory service's reconnect flow.
+This symbol encapsulates the reconnect retry policy within the server directory service to ensure consistent timing across retries. It employs exponential growth with a hard cap to prevent unbounded delays while avoiding overly-aggressive backoff in early attempts.
 
 ## Notes
-- Ensure 'attempt' is non-negative; negative values yield sub-second delays due to 2^negative, which may be surprising.
-- The delay is clamped to ReconnectMaxDelay; even very large attempts cannot produce longer waits.
+- The exponent is capped by `Math.Min(attempt, 10)`, so delays stop growing exponentially after the 10th attempt; beyond that, the final delay is determined by `ReconnectMaxDelay`.
 
 ---
 
@@ -262,17 +269,10 @@ private Task HandleRegistrationErrorAsync(ErrorDetail[]? errors)
 **Returns:** `Task`
 
 
-HandleRegistrationErrorAsync interprets the errors returned by the directory registration attempt, logs a code-specific message, and marks the registration as permanently failed to stop automatic retries until a restart.
+HandleRegistrationErrorAsync centralizes the processing of errors reported by directory registration. It marks the registration as permanently failed, derives an error code (falling back to `UnknownError`) and the set of conflicting hosts from the first error, and then logs a targeted, code-specific message before recording the failure in `_claimStore`.
 
 ## Remarks
-
-This method centralizes the directory registration failure handling, consolidating how various error codes are surfaced to operators and how the failure state is recorded. It relies on ExtractConflictingHosts to surface any conflicting hosts and on the claim store to persist the failure details so that diagnostics and recovery decisions can reason about what happened.
-
-## Notes
-
-- It forces the server into a permanently failed state for registration, with log messages indicating that the server will not retry until restarted. This ensures long-running processes do not silently retry under inconsistent directory state.
-- It returns a completed Task and performs its side effects synchronously (logging and state mutation) without throwing, so callers can await the result safely without handling exceptions.
-
+By encapsulating this logic in one place, the method decouples error interpretation from the main registration flow. It coordinates with `_claimStore` to persist a failure snapshot and with `_logger` to surface actionable diagnostics for operators, aiding remediation. The design relies on the first error and the extracted conflicts to provide a deterministic failure narrative while supporting specific guidance for each known error code from `DirectoryRegistrationErrors` (e.g. `HostAlreadyClaimed`, `InvalidToken`, `HostConflict`, `InvalidInput`).
 
 ---
 
@@ -296,7 +296,14 @@ private async Task HandleRegistrationResponseAsync(Response<RegisterServerResult
 **Returns:** `Task`
 
 
-Handles the directory registration response by validating the envelope, enforcing protocol compatibility, and performing the appropriate follow-up depending on success or failure. It ensures a durability guarantee by saving a fresh claim token before acknowledging success, otherwise updating the ServerId to keep internal state in sync, and it logs the outcome for observability.
+Handles the asynchronous response from the directory registration workflow. It validates the envelope is non-null, asserts the protocol version against `DirectoryProtocol.Version`, and then branches on success or failure, performing durability-oriented state updates via internal stores and logging the outcome.
+
+## Remarks
+This method centralizes response handling for directory registration: it immediately treats null envelopes, protocol mismatches, or malformed success payloads as permanent failures to avoid operating against an incompatible or corrupted directory. On success, it ensures a fresh `ClaimToken` is persisted before acknowledging the new `ServerId`, guaranteeing durability for the initial credential and consistent recovery behavior after restarts. The approach also accommodates re-registration by syncing the persisted `ServerId` when no new token is provided, keeping local state aligned with the directory.
+
+## Notes
+- If a new `ClaimToken` is supplied, it is saved prior to completing the success path; if not, the method only updates the persisted `ServerId` to reflect the directory.
+
 
 ---
 
@@ -317,14 +324,13 @@ private void OnUserCountChanged(int newCount)
 **Returns:** `void`
 
 
-OnUserCountChanged is an internal callback invoked whenever the server detects a change in the user count. It publishes the new value by writing to a single-slot channel via _userCountUpdates.Writer.TryWrite(newCount). The single-slot channel semantics coalesce bursts of updates so that only the most recent count is propagated downstream, reducing churn and avoiding repeated handling for rapid presence changes.
+Internal event handler that forwards the new user count into the single-slot update channel. It uses `_userCountUpdates.Writer.TryWrite(newCount)` to coalesce bursts of presence changes, ensuring only the latest value is observed downstream.
 
 ## Remarks
-By delegating to a dedicated Writer, this method decouples the act of detecting changes from the consumers that react to them. The single-slot channel pattern ensures downstream work is debounced; observers observe the latest value after a change cycle, which is ideal for presence-aware UI updates or telemetry.
+This internal abstraction decouples the producer of presence changes from the consumer by routing updates through the `_userCountUpdates.Writer` channel on a single-slot channel. The non-blocking `TryWrite` call ensures bursts of updates don't overwhelm downstream processing, preserving only the most recent value.
 
 ## Notes
-- The call does not inspect the result of TryWrite; if the channel is full or readers slow, an update may be dropped, so downstream consumers should be able to tolerate occasional missed updates.
-- This method is private to its containing type; external code should not rely on direct invocation.
+- The non-blocking nature of the `TryWrite` call means bursts can be coalesced and intermediate counts may be dropped; only the latest value is observed.
 
 ---
 
@@ -347,15 +353,8 @@ private async Task ProcessUserCountUpdatesAsync(HubConnection connection, Task c
 **Returns:** `Task`
 
 
-ProcessUserCountUpdatesAsync continuously consumes user-count updates from a buffered channel and, when appropriate, reports the latest count to the directory via a HubConnection. It throttles emissions to respect a minimum interval, draining newer values during the wait so the hub receives the most up-to-date count rather than a stale snapshot, and it exits gracefully on cancellation or connection closure; updates are only sent when the hub is connected and the local registration is valid.
+Runs an asynchronous background loop that propagates the latest observed user count to the directory service over a `HubConnection`. It listens for updates from `_userCountUpdates.Reader` and terminates when the `connectionClosed` task completes or cancellation is requested via the `ct` token. On each update, it reads the current `count`, then throttles sends to respect `UserCountMinInterval` (draining newer values during the wait so the eventual call carries the latest count). If the count hasn’t changed since the last report, or the hub is not connected, or registration has permanently failed or is not currently registered, it skips sending. When sending is appropriate, it invokes the hub method `UpdateUserCount` with the latest `count`, updates `_lastReportedUserCount` and `lastSentAt`, and logs the outcome. This pattern ensures updates are delivered efficiently, tolerate bursts, and never crash due to transient failures.
 
-## Remarks
-This method decouples producers of user-count data from the actual update path by reading from a channel and emitting to the directory hub only when ownership conditions are met. The drain-on-wait policy ensures the directory reflects the latest state under bursty updates without flooding the hub, and the preconditions (connected hub and valid registration) guard presence reporting within the lifecycle of the system.
-
-## Notes
-- Updates may be dropped under bursty traffic due to throttling and the drain loop; callers should not rely on every intermediate update being observed by the hub.
-- If the hub is temporarily unavailable or registration is not established, updates are skipped until conditions are met; there is no automatic backoff beyond the local catch logging.
-- Cancellation via the provided CancellationToken causes an immediate exit from the loop; ensure callers signal cancellation during shutdown to avoid lingering tasks.
 
 ---
 
@@ -380,15 +379,7 @@ private async Task RegisterAsync(string name, string? description, string[] host
 **Returns:** `Task`
 
 
-Registers the current server with the directory service over a live hub connection. If connected and not permanently failed, it collects the online user count, builds a RegisterServerDto containing the server's name, description, hosts, user count, version, tags, and the current claim token, and sends it to the directory via the hub's RegisterServer method. The response is processed by HandleRegistrationResponseAsync to apply the result locally. Any exceptions are caught and logged as warnings with no propagation to the caller.
-
-## Remarks
-Encapsulates the server-registration handshake behind a private method, so callers don't have to manage DTO construction or hub invocation directly. It coordinates with _presenceTracker for live user counts and with _claimStore to carry the persisted claim token across registrations. The guard checks against the hub's connection state and a permanent-failure flag reflect the intended lifecycle: registration only runs when viable, preventing noisy or duplicate attempts.
-
-## Notes
-- Exceptions are swallowed; the method logs a warning and does not rethrow, so callers cannot rely on exceptions for control flow and may need separate retry logic.
-- On the first-ever registration, ClaimToken is null; after the first successful claim it is persisted and reused on subsequent registrations.
-- If not connected or if a permanent failure has been recorded, the method returns immediately without attempting registration.
+RegisterAsync asynchronously registers the current server with the directory service when the hub connection is active. It exits early if the hub is not connected or if a permanent registration failure has been recorded, avoiding unnecessary work. When proceeding, it reads the current online user count from `_presenceTracker.GetOnlineUserCount()`, builds a `RegisterServerDto` with the server's `name`, `description`, `hosts`, `userCount`, `version`, `tags`, and the persisted claim token `_claimStore.ClaimToken`, and then calls the directory via `_connection.InvokeAsync<Response<RegisterServerResult>>("RegisterServer", dto)`. The envelope is then passed to `HandleRegistrationResponseAsync` to finalize the registration flow.
 
 ---
 
@@ -403,15 +394,14 @@ private static string ResolveVersion()
 **Returns:** `string`
 
 
-Resolves the version string used to identify the running ServerDirectoryService assembly. It prefers AssemblyInformationalVersionAttribute.InformationalVersion, but strips any SourceLink git SHA suffix (for example '0.2.10+abc123') before returning; if that attribute isn't present, it falls back to the assembly version, and finally to '0.0.0' if neither is available.
+Returns a human-friendly version string for the server assembly. It is a private static helper that reads the `AssemblyInformationalVersionAttribute.InformationalVersion` from the containing assembly (via `typeof(ServerDirectoryService).Assembly`) and, if present, strips any `+` suffix (git SHA) added by SourceLink before returning the value; if not present, it falls back to the assembly's `Version` as a string, and finally to the literal `0.0.0` if neither is available.
 
 ## Remarks
-This centralizes version resolution for the ServerDirectoryService, ensuring a consistent, human-friendly version string for diagnostics, logging, and server identity without leaking VCS details. It prefers source-controlled metadata when possible, but gracefully degrades to a stable default when it's not.
+This tiny helper centralizes version resolution for the server, ensuring consistent display and logging of version regardless of build configuration. By extracting the informational version when available and normalizing away VCS metadata, it prevents leaking internal identifiers while still reflecting the actual package version. The implementation relies on reflection to read the version data from the containing assembly, so the produced value depends on the built assembly's metadata at runtime.
 
 ## Notes
-- Strips the SourceLink git SHA suffix by locating the '+' and returning the prefix portion only.
-- If neither informational version nor assembly version is available, the method returns '0.0.0'.
-- Uses a private static helper scope; ensure tests align with the private context and the assembly hosting the symbol remains ServerDirectoryService's assembly.
+- If the `InformationalVersion` contains a `+` (the SourceLink suffix), only the portion before `+` is returned, keeping the string human-friendly.
+- If neither the informational version nor the standard assembly version is available, the method returns the literal `0.0.0` as a safe fallback.
 
 ---
 
@@ -443,37 +433,10 @@ private async Task RunConnectionLoopAsync(
 **Returns:** `Task`
 
 
-## Source Code
-Runs a resilient, long-running loop that manages the lifecycle of a connection to a directory service. It repeatedly builds a connection, wires in heartbeat and re-registration logic, and, when the connection is permanently closed or cancellation is requested, cleanly tears down and rebuilds the connection to maintain availability.
+Runs a resilient, long-running loop that maintains a connection to the directory service by repeatedly building a connection via `BuildConnection()`, wiring up `Ping`/`Heartbeat`, `Reconnected`, and `Closed` handlers, and connecting with retry through `ConnectWithRetryAsync`. On a successful connect, it registers the server with `RegisterAsync` and streams user-count updates by calling `ProcessUserCountUpdatesAsync` until cancellation or a permanent disconnection is signaled via a `TaskCompletionSource`. When a permanent close occurs or cancellation is requested, the method disposes the connection and rebuilds after a short delay.
 
 ## Remarks
-This method centralizes the connection lifecycle management, coordinating connection establishment, heartbeat handling, re-registration on reconnect, and clean disposal. It relies on a cancellation token and a TaskCompletionSource to synchronize asynchronous events across the loop, enabling robust recovery paths while preserving a consistent registration state.
-
-## Notes
-- If ConnectWithRetryAsync(connection, stoppingToken) returns false, the method exits, causing the outer loop to terminate and the service to stop attempting a reconnect.
-- The On("Ping") handler sends a heartbeat back to the directory and safely logs any heartbeat failures without crashing the loop.
-- When the connection is permanently closed, the Closed event signals completion via the TaskCompletionSource and the outer loop proceeds to rebuild after a short delay, unless cancellation has been requested.
-
-## Dependencies
-- TaskCompletionSource
-- TaskCreationOptions
-- Task
-
-## Dependency APIs
-- TaskCompletionSource (non-generic)
-  - Constructor: TaskCompletionSource(TaskCreationOptions options)
-  - Property: Task Task { get; }
-- TaskCreationOptions (enum)
-  - Member used: RunContinuationsAsynchronously
-- Task (System.Threading.Tasks.Task)
-  - Represents an asynchronous operation; used for awaiting and coordinating async work
-
-## Symbol To Document
-- Name: RunConnectionLoopAsync
-- Kind: method
-- File: src/EchoHub.Server/Services/ServerDirectoryService.cs
-- Language: csharp
-- ID: a28a6f2b-23c7-4de0-bb5e-3da24401feb3
+The method centralizes all aspects of directory connectivity—heartbeat, re-registration, and back-to-back disconnections—into a single loop, minimizing risk of desynchronization between the server and directory state. It uses a `TaskCompletionSource` to coordinate the 'permanent close' signal so the outer loop can rebuild cleanly after a failure, and respects `_registrationPermanentlyFailed` to avoid blind re-registration after a known permanent fault.
 
 ---
 
@@ -494,13 +457,15 @@ public override async Task StopAsync(CancellationToken cancellationToken)
 **Returns:** `async Task`
 
 
-Override of StopAsync performs the base shutdown logic and then clears the internal _connection to release the resource and reflect that the service is disconnected.
+This `StopAsync` override extends the base stop behavior by clearing the service's internal `_connection` after the base stop completes, ensuring resources are released and the connection cannot be reused. It first awaits `base.StopAsync(cancellationToken)` to perform the standard shutdown, then sets `_connection` to `null`.
 
 ## Remarks
-Ensures the derived service participates in the lifecycle by letting the base stop routine complete before releasing its own resources. Clearing _connection after the base stop prevents reuse of an active connection during shutdown and marks the service as disconnected for the rest of the system.
+
+Clearing `_connection` after the base stop ensures there are no lingering references to an active connection once shutdown has begun. It communicates a clear lifecycle boundary for the service's connection state to its collaborators and helps GC reclaim resources.
 
 ## Notes
-- If base.StopAsync throws, _connection will not be cleared; consider wrapping the cleanup in a finally block to guarantee cleanup.
+
+- Be aware that `_connection` becomes `null` after `StopAsync` completes; code that accesses `_connection` during shutdown should guard against null references or only run after shutdown is finished.
 
 ---
 
@@ -513,33 +478,7 @@ private const string DirectoryHubUrl = "https://echohub.voidcube.cloud/hubs/serv
 ```
 
 
-This private constant string DirectoryHubUrl holds the base URL for the servers directory hub used by ServerDirectoryService. It is initialized to https://echohub.voidcube.cloud/hubs/servers and should be referenced wherever the directory hub endpoint is needed, ensuring a single source of truth and avoiding string duplication.
-
-## Remarks
-By centralizing the hub URL in a single private constant, the class avoids scattering the endpoint string across multiple methods. This reduces the risk of inconsistent paths and simplifies maintenance if the hub address changes; it also makes the code more testable by isolating the configuration-like value in one place.
-
-## Notes
-- The value is baked into the assembly as a private const; it cannot be overridden at runtime. For environment-specific endpoints, consider configuration-driven access and testing hooks to swap or mock the value.
-
----
-
-### ReconnectBaseDelay
-> **File:** `src/EchoHub.Server/Services/ServerDirectoryService.cs`  
-> **Kind:** field
-
-```csharp
-private static readonly TimeSpan ReconnectBaseDelay = TimeSpan.FromSeconds(2)
-```
-
-
-ReconnectBaseDelay is a private static readonly TimeSpan that defines the base wait time used by ServerDirectoryService when retrying a failed connection. By centralizing this 2-second base delay, the code avoids magic numbers and provides a single point to tune the retry cadence across all reconnection attempts.
-
-## Remarks
-Centralizing the base delay enforces a uniform retry cadence and simplifies tuning during incidents or tests. Being static and readonly ensures the value is shared across all instances and cannot be changed at runtime, which preserves predictable timing in concurrent reconnection scenarios. If you later introduce a more sophisticated backoff strategy (for example, exponential backoff with jitter), this base delay would typically feed that mechanism rather than replace it.
-
-## Notes
-- Changing this value affects all reconnection retries across the service; it's a global constant for the directory service.
-- Because it is private, external code or tests cannot override it directly; consider configuration or making it injectable if runtime tunability is required.
+Defines the immutable base URL for the directory hub used by the `ServerDirectoryService` to reach server endpoints: `https://echohub.voidcube.cloud/hubs/servers`. As a private `const`, the value is baked into the assembly, ensuring a single source of truth for hub interactions within this service.
 
 ---
 
@@ -552,14 +491,29 @@ private static readonly TimeSpan ReconnectMaxDelay = TimeSpan.FromSeconds(30)
 ```
 
 
-Defines the upper bound for the delay between reconnection attempts. The field is private, static, and readonly, initialized as TimeSpan.FromSeconds(30). It is used by the server’s internal reconnection logic to cap backoff durations, ensuring retry intervals remain bounded even under transient network issues.
+ReconnectMaxDelay defines the upper bound for the delay between reconnection attempts performed by the service. Declared as a private static readonly `TimeSpan` and initialized with `TimeSpan.FromSeconds(30)`, it provides a single, immutable cap that applies to all reconnect logic within the `ServerDirectoryService`.
 
 ## Remarks
-Centralizes reconnection policy within ServerDirectoryService to ensure consistent retry timing across all attempts. Being private and readonly, this value is not exposed to external components and cannot be modified at runtime, promoting predictable behavior and easier maintenance. The 30-second cap prevents excessively long delays during outages while avoiding overly aggressive retry loops.
+Static readonly guarantees a shared, immutable cap across all instances, ensuring the reconnect cadence remains consistent even under concurrent reconnect operations. Because the field is private, the policy cannot be adjusted from outside the class; tuning requires a code change rather than a runtime configuration.
+
+---
+
+### UserCountMinInterval
+> **File:** `src/EchoHub.Server/Services/ServerDirectoryService.cs`  
+> **Kind:** field
+
+```csharp
+private static readonly TimeSpan UserCountMinInterval = TimeSpan.FromSeconds(1)
+```
+
+
+This private static readonly `TimeSpan` defines the minimum interval between user-count operations inside the class, enforcing throttling to avoid rapid updates. It is initialized as `TimeSpan.FromSeconds(1)` and should be used wherever the class would otherwise perform frequent user-count recomputations to maintain consistent timing.
+
+## Remarks
+This field centralizes the throttling policy for user-count computations within the class, ensuring consistent timing across internal update paths. Making it `static` and `readonly` prevents accidental drift at runtime and communicates that the value is a fixed policy rather than dynamic state. It also makes tuning straightforward: adjust this single value to influence all user-count throttling behavior without changing multiple call sites.
 
 ## Notes
-- The maximum delay is fixed after class initialization; changing it requires code edits and a recompilation.
-- Private scope ensures external code cannot depend on or bypass this policy.
+- The value is baked into the assembly; changing it requires recompilation unless the code is refactored to read from a configuration source.
 
 ---
 
@@ -572,14 +526,14 @@ internal static class DirectoryProtocol
 ```
 
 
-DirectoryProtocol is a small, internal helper that exposes the current envelope protocol version used by the server's directory communications. The Version constant holds the protocol version as a string ("1.0"), and serves as a single source of truth for compatibility checks. Bumps to this version are coordinated across both repositories to keep envelope formats aligned during client/server exchanges.
+Pinned envelope protocol version is centralized in a single constant. The value is exposed as `DirectoryProtocol.Version`, so code references a single source of truth rather than duplicating version strings, ensuring coordinated upgrades across both repositories when the envelope protocol evolves.
 
 ## Remarks
-By centralizing the protocol version, this type makes explicit when envelope formats may evolve and prevents drift between the two sides. It also clarifies where to pull the version for any envelope construction or validation, reducing the risk of duplicating literals across the codebase.
+It acts as a minimal contract boundary by providing a stable, centralized version that downstream code can validate against. By routing all version bumps through `DirectoryProtocol.Version`, the codebase gains a predictable upgrade path and reduces drift between repositories.
 
 ## Notes
-- Do not hard-code '1.0' in multiple places; reference DirectoryProtocol.Version instead.
-- This class is internal; its Version member is only accessible to code within the same assembly, so cross-repo coordination relies on the shared build/packaging process.
+- Because `Version` is a `const`, its value is baked into compiled assemblies; updating it requires recompiling all dependents and coordinating updates across both repositories.
+- Changes to the version must be performed in sync across both repositories to prevent a mismatch in protocol expectations.
 
 ---
 
@@ -592,13 +546,15 @@ internal static class DirectoryRegistrationErrors
 ```
 
 
-This internal static class DirectoryRegistrationErrors serves as a centralized collection of string constants that represent the standard error codes used during the EchoHub server's directory registration workflow. It helps avoid hard-coded literals spread across the codebase and provides a single source of truth for the messages the hub uses to classify and surface registration failures. The constants cover common causes like invalid input, invalid token, host state conflicts, as well as client-side synthetic codes used for status reporting (ProtocolVersionMismatch, MalformedResponse) which are not emitted by the hub.
+DirectoryRegistrationErrors is an internal static class that defines a concise set of error-code constants used during directory registration in the EchoHub server. It provides named codes such as `InvalidInput`, `InvalidToken`, `HostAlreadyClaimed`, and `HostConflict` to represent specific failure reasons returned by the server, eliminating scattered string literals and reducing typos. It also includes client-side synthetic codes `ProtocolVersionMismatch` and `MalformedResponse`, which are generated locally for status reporting and are not emitted by the hub.
 
 ## Remarks
-The class is internal to the server assembly and centralizes canonical error codes for the directory registration subsystem to promote consistent error handling across components. Keeping these strings in one place reduces typos and mismatches in error reporting and mapping. Note that ProtocolVersionMismatch and MalformedResponse are client-side synthetic codes documented here for parity; they are never emitted by the hub.
+By centralizing these values, the codebase gains a single source of truth for directory-registration errors, simplifying error handling, testing, and mapping to user-visible messages. It distinguishes between server-disclosed error codes (the first four) and client-side diagnostics (the two synthetic codes) that help with local status reporting without being emitted by the hub.
 
 ## Notes
-- Not accessible from outside the server assembly; if you need client-visible error codes, expose a separate contract instead.
+- Changing any constant's value is a breaking change; external or internal code that relies on the exact string value may fail after the change.
+- The constants are compile-time constants; ensure all referencing code is recompiled together to avoid mismatches.
+- The two client-side codes (`ProtocolVersionMismatch`, `MalformedResponse`) are for client-only diagnostics and are not emitted by the hub; avoid handling them as server-facing error payloads.
 
 ---
 
@@ -619,28 +575,14 @@ internal record ErrorDetail(string Code, string? Message, JsonElement? Data)
 | `Data` | `JsonElement?` | — |
 
 
-ErrorDetail represents a single error entry that can appear inside a `Response<T>` as part of an API error payload. It carries an error code (Code), an optional human-readable message (Message), and an optional Data payload for error-specific details. The Data field is typed as JsonElement to keep the payload shape flexible, accommodating different errors with varying detail structures (for example, a host-related error might include a ConflictingHosts array). As a record, ErrorDetail benefits from value-based equality and immutability, which makes it a stable, serializable unit for error reporting across API boundaries.
+An internal record that represents a single error entry inside a `Response<T>`. The `Code` identifies the error kind, [`Message`](../../EchoHub.Core/Models/Message.cs.md) provides an optional human-readable description, and `Data` carries an optional, loosely-typed payload as a `JsonElement` to accommodate varying error shapes (e.g. host-related errors might carry a list of conflicting hosts).
 
 ## Remarks
-ErrorDetail's design separates the error signaling (via Code) from the optional payload (Message and Data), enabling clients to react to known codes while optionally surfacing human-readable context or structured details. It works alongside the surrounding `Response<T>` wrapper to assemble a consistent error surface while preserving flexibility in the Data payload. The JsonElement Data keeps the detail shape decoupled from the type system, at the cost of requiring clients to inspect Code before interpreting Data.
-
-## Example
-```csharp
-using System.Text.Json;
-
-var json = "{\"ConflictingHosts\":[\"host1\",\"host2\"]}";
-JsonElement data = JsonSerializer.Deserialize<JsonElement>(json);
-
-var error = new ErrorDetail(
-    Code: "ConflictingHosts",
-    Message: "One or more hosts conflict with existing entries.",
-    Data: data
-);
-```
+This abstraction decouples error signaling from concrete payload schemas by wrapping code, message, and data within a single value. It fits the `Response<T>` pattern by enabling diverse error details to accompany a common envelope, while allowing clients to switch on `Code` to interpret the `Data` payload.
 
 ## Notes
-- Data is loosely-typed by design; clients should first inspect Code to determine how to interpret Data.  
-- If Data is null, the consumer should rely on Code and optional Message for context.
+- JsonElement is a view into the underlying JsonDocument; if the document is disposed, the Data value becomes invalid. Ensure the originating `JsonDocument` remains alive as long as `ErrorDetail.Data` is accessed.
+- If you need a durable payload, consider storing `Data.GetRawText()` or a deserialized DTO instead of keeping the `JsonElement` itself.
 
 ---
 
@@ -672,26 +614,29 @@ internal record RegisterServerDto(
 | `ClaimToken` | `string?` | — |
 
 
-RegisterServerDto is a compact, immutable data transfer object (record) that carries all the information required to register a server in the EchoHub server directory. It groups identity data (Name, Version), optional metadata (Description), network endpoints (Hosts), current user load (UserCount), and classification tags (Tags) into a single value object so callers supply a single payload to the directory service rather than wiring multiple fields through separate calls. The optional ClaimToken supports claim-based authorization when needed.
+RegisterServerDto is an internal C# positional record that serves as the single, strongly-typed payload for registering a server with the directory service. It captures the server's identity (``Name``), optional description (``Description``), the collection of host endpoints (``Hosts``), the current user count (``UserCount``), the software version (``Version``), a set of metadata tags (``Tags``), and an optional authentication token (``ClaimToken``). Because it is immutable and passed as a single object, it keeps registration logic clean and reduces parameter clutter across layers.
 
 ## Remarks
-RegisterServerDto exists to encapsulate the registration data in a single cohesive unit, decoupling the producer from the directory service and enabling consistent validation and persistence. As a record, it provides value-based equality, which helps determine duplicates or idempotent operations across registration attempts.
+RegisterServerDto is internal and immutable, which helps ensure a consistent snapshot of registration data as it moves through the directory service. By bundling related fields together, it reduces coupling between components and makes validation, logging, and auditing easier. The nullable fields ``Description`` and ``ClaimToken`` reflect optional aspects of registration; consumers should handle possible nulls and token absence accordingly.
 
 ## Example
 ```csharp
+// Example of constructing the payload for registration
 var dto = new RegisterServerDto(
-    Name: "EchoServer-01",
-    Description: "Primary gateway for region A",
-    Hosts: new[] { "https://host1.example.com", "https://host2.example.com" },
-    UserCount: 128,
-    Version: "2.3.1",
-    Tags: new[] { "production", "gateway" },
-    ClaimToken: null
+    "EchoServer-01",
+    "Primary gateway",
+    new string[] { "tcp://host1:1234", "tcp://host2:1234" },
+    42,
+    "2.3.1",
+    new string[] { "gateway", "primary" },
+    null
 );
 ```
 
 ## Notes
-- The Hosts and Tags properties are string[] arrays; their contents can be mutated after construction since arrays are mutable. If you need true immutability, consider defensive copies or using a read-only collection type in a different design.
+- The DTO does not enforce invariants (e.g., you should ensure `Hosts` is non-empty and `UserCount` is non-negative before registration).
+- The type is marked `internal`; outside of its containing assembly, code cannot construct or consume it unless test-friendly tooling like `InternalsVisibleTo` is configured.
+
 
 ---
 
@@ -711,23 +656,15 @@ internal record RegisterServerResult(Guid ServerId, string? ClaimToken)
 | `ClaimToken` | `string?` | — |
 
 
-An internal, immutable data carrier that represents the outcome of registering a server in EchoHub's directory service. It holds the assigned ServerId and an optional ClaimToken returned alongside the registration result. Callers construct this type at the end of a registration flow to pass both pieces of information together, rather than returning them separately.
+RegisterServerResult is an immutable value object that represents the outcome of registering a server. It contains the server's identity (`ServerId`), a `Guid`, and an optional `ClaimToken` (`string?`) that callers may use for subsequent authenticated operations.
 
 ## Remarks
-Designed to decouple the registration outcome from the service logic and to expose a stable, immutable snapshot of the operation. By using a record, it gains value-based equality and built-in deconstruction, which makes testing and wiring across layers straightforward. The optional ClaimToken acknowledges scenarios where a token is not issued; consumers should handle its absence gracefully.
-
-## Example
-```csharp
-var serverId = Guid.NewGuid();
-var result = new RegisterServerResult(serverId, "token-abc");
-// result.ServerId == serverId
-// result.ClaimToken == "token-abc"
-```
+This symbol acts as a focused data carrier between the registration flow and its consumers. By leveraging the `record` construct, it gains value-based equality and built-in immutability, ensuring the result is stable once created. Its `internal` visibility confines the contract to the assembly, underscoring that server registration details are an internal concern of the `ServerDirectoryService`.
 
 ## Notes
-- ClaimToken is nullable; callers should guard against null before use.
-- The type is internal, so it is not part of the public API surface outside its assembly.
-- Being a record, it supports deconstruction (e.g., `var (id, token) = result;`) and value-based equality, which aids comparisons and pattern-based usage.
+- The `ClaimToken` property can be `null` if no token is issued during registration.
+- Treat the `ClaimToken` as sensitive data; avoid logging or persisting it in plain text and only keep it in memory for as long as needed.
+- `RegisterServerResult` is immutable; do not mutate its properties after construction. Rely on the record's value semantics when comparing results.
 
 ---
 
@@ -749,72 +686,63 @@ internal record Response<T>(bool IsSuccess, T? Data, ErrorDetail[]? Errors, stri
 | `Version` | `string?` | — |
 
 
-Generic envelope wrapper for directory hub responses. It mirrors the EchoHubSpace contract by wrapping a success indicator, an optional payload, optional errors, and an optional version string into a single, transport-safe object.
+Generic, immutable envelope that wraps every directory hub response. It exposes a boolean `IsSuccess`, an optional data payload `Data`, an optional array of `ErrorDetail` in `Errors`, and an optional `Version`. Use `Response<T>` whenever you need a consistent, hub-wide response shape instead of ad-hoc return types: place the operation’s payload in `Data`, set `IsSuccess`, attach any `Errors` if something went wrong, and optionally include `Version` for compatibility.
 
 ## Remarks
-This envelope isolates transport concerns from business logic by providing a uniform surface for responses. Callers should always check IsSuccess before using Data, and rely on Errors for details when it is false. Data and Version are nullable, so consumers must guard for nulls and treat Version as optional metadata rather than a payload. The generic T makes this wrapper reusable for any payload.
-
-## Example
-```csharp
-var response = new Response<string>(true, "directory listing", null, "1.2");
-```
+By mirroring the `EchoHubSpace` contract, this envelope centralizes response structure and simplifies client and server handling of hub results. The generic parameter `T` lets you wrap any payload while preserving a single, predictable transport form. It also separates business data from transport metadata: callers typically check `IsSuccess` first, then read `Data` or `Errors` accordingly.
 
 ## Notes
-- When IsSuccess is false, Data may be null; always inspect the Errors collection for failure details.
-- The symbol is internal to its assembly; to share the envelope across boundaries, you may need a public abstraction or converter on your side.
+- `Data` is nullable; always guard against null when consuming `Data`.
+- If `IsSuccess` is false, prefer inspecting `Errors` for failure details rather than using `Data`.
+- `Version` is optional and may be omitted; treat it as informational metadata rather than a contract guarantee.
 
 ---
 
-## ServerDirectoryService (constructor)
+## ConnectWithRetryAsync
 > **File:** `src/EchoHub.Server/Services/ServerDirectoryService.cs`  
-> **Kind:** constructor
+> **Kind:** method
 
 ```csharp
-public ServerDirectoryService(
-        IConfiguration configuration,
-        PresenceTracker presenceTracker,
-        DirectoryClaimStore claimStore,
-        ILogger<ServerDirectoryService> logger)
+private async Task<bool> ConnectWithRetryAsync(HubConnection connection, CancellationToken ct)
 ```
 
 **Parameters:**
 
 | Parameter | Type | Default |
 |-----------|------|---------|
-| `configuration` | `IConfiguration` | — |
-| `presenceTracker` | [`PresenceTracker`](PresenceTracker.cs.md) | — |
-| `claimStore` | [`DirectoryClaimStore`](DirectoryClaimStore.cs.md) | — |
-| `logger` | `ILogger<ServerDirectoryService>` | — |
+| `connection` | `HubConnection` | — |
+| `ct` | `CancellationToken` | — |
+
+**Returns:** `Task<bool>`
 
 
-This constructor wires ServerDirectoryService by receiving four dependencies through dependency injection and storing them in private fields. It prepares the service for directory-related operations by providing access to configuration, presence tracking, claim storage, and logging.
+Tries to start the provided `HubConnection` and, on failure, retries with a backoff until the `CancellationToken` is cancelled. It returns `true` if `StartAsync` completes successfully; if the operation is cancelled before a successful start, it returns `false`.
 
 ## Remarks
-The constructor enforces that ServerDirectoryService cannot operate without configuration, presence tracking, claim storage, and a logger, making its dependencies explicit and testable. It sits at the boundary between configuration and domain logic, coordinating the infrastructure pieces that support directory management.
+By isolating this retry logic in `ConnectWithRetryAsync`, the surrounding code can rely on a single, consistent startup strategy for the directory hub. It coordinates the backoff via `GetBackoffDelay`, logs each failure with the upcoming delay, and respects cancellation through the provided `CancellationToken`.
 
 ## Notes
-- Ensure all dependencies are registered in the application's DI container; missing registrations will cause the service resolution to fail at runtime.
-- If any dependency requires specific lifetimes (e.g., scoped vs singleton), align them with the composition root to avoid disposal issues or lifetime mismatches.
+- The delay cancellation caveat: if the `CancellationToken` is signaled while `Task.Delay` is awaiting, an `OperationCanceledException` propagates, which means the method would surface cancellation rather than returning `false`.
+- Logging: on every failed attempt, a warning is logged with the exception and the upcoming delay.
+- Dependency: the retry timing depends on `GetBackoffDelay(attempt)`; callers should ensure this method yields a sensible backoff to avoid long startup times.
 
 ---
 
-## UserCountMinInterval
+## ReconnectBaseDelay
 > **File:** `src/EchoHub.Server/Services/ServerDirectoryService.cs`  
 > **Kind:** field
 
 ```csharp
-private static readonly TimeSpan UserCountMinInterval = TimeSpan.FromSeconds(1)
+private static readonly TimeSpan ReconnectBaseDelay = TimeSpan.FromSeconds(2)
 ```
 
 
-Defines a shared, immutable throttling interval used by ServerDirectoryService to regulate how often user-count related work runs. The field is private, static, and readonly, initialized to TimeSpan.FromSeconds(1). This ensures a consistent cadence and avoids magic numbers scattered through the class; it's consulted wherever the service needs to debounce or rate-limit user-count updates.
+The `ReconnectBaseDelay` field defines the starting interval used by the service's reconnection logic. As a private static readonly `TimeSpan` initialized with `TimeSpan.FromSeconds(2)`, it provides a single, immutable baseline for calculating backoff delays during reconnect attempts, without exposing the value publicly. Developers thinking about the backoff strategy should consider this constant as the canonical baseline rather than sprinkling literals throughout the codebase.
 
 ## Remarks
-By centralizing the timing policy in this single member, the class achieves consistent behavior across all usages and simplifies future adjustments. The static readonly combination guarantees that the interval is computed once at type initialization and remains the same for the lifetime of the application, minimizing race-condition risk when read from multiple threads. Because it is private, external callers cannot bypass or alter the cadence; any changes must go through the class logic and a rebuild.
+Public exposure is avoided by keeping this value private, but the field still has architectural significance: it centralizes the base delay for the reconnect workflow within `ServerDirectoryService`, ensuring consistent timing across all retry scenarios and simplifying future tuning.
 
 ## Notes
-- This is not a compile-time constant; it is evaluated at type initialization and cannot be reassigned afterwards.
-- External configuration at runtime is not possible unless the class provides a mechanism to override it.
-- If cadence needs to vary by environment or load, consider externalizing to configuration or making the interval configurable instead of editing code.
+- Changing the private static readonly `TimeSpan` will change the base backoff used by all reconnection attempts in `ServerDirectoryService`; there is no per-call override for this baseline. If configurability is required, expose a parameter or configuration option rather than modifying this field.
 
 ---

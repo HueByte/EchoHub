@@ -21,26 +21,10 @@ public sealed record OutgoingAttachment(
 | `EncryptedPreview` | `string?` | `null` |
 
 
-OutgoingAttachment is a transport object that represents a single file to upload as part of a message. It bundles the data Stream and FileName, and optionally carries DeclaredKind and EncryptedPreview for encrypted channels, while non-encrypted channels typically set only Stream and FileName.
+OutgoingAttachment is a compact, immutable data carrier that bundles the pieces needed to upload a file as part of a message: the content as a `Stream` and the original `FileName`. When using end-to-end encrypted channels, `DeclaredKind` signals the attachment type (image, audio, or file) and `EncryptedPreview` holds the room-encrypted ASCII preview for images; on normal channels, only `Stream` and `FileName` are populated.
 
 ## Remarks
-OutgoingAttachment serves as a compact, immutable data carrier that travels through the sending pipeline. As a record, it uses value-based equality which helps comparisons and deduplication when attachments are tracked across requests. It also clarifies ownership: the record does not manage the lifetime of the underlying Stream; callers are responsible for opening and disposing streams as appropriate.
-
-## Example
-```csharp
-using System.IO;
-
-// Normal channel usage: only Stream and FileName are provided
-var data = new byte[] { 0x01, 0x02, 0x03 };
-var stream = new MemoryStream(data);
-var attachment = new OutgoingAttachment(stream, "data.bin");
-
-// End-to-end encrypted channel usage: DeclaredKind and EncryptedPreview are set
-var ciphertext = new MemoryStream(new byte[] { 0xAA, 0xBB, 0xCC });
-var asciiPreview = @"ASCII_ART_PREVIEW";
-var encryptedAttachment = new OutgoingAttachment(ciphertext, "image.png", "image", asciiPreview);
-```
+As a `record`, `OutgoingAttachment` provides value-based equality, making attachments easy to compare, cache, or deduplicate as they traverse the messaging pipeline. The optional `DeclaredKind` and `EncryptedPreview` fields separate transport payload from encryption/presentation concerns, keeping encoding logic out of the transport object.
 
 ## Notes
-- The lifetime of the underlying Stream is not managed by OutgoingAttachment; the caller must ensure the stream is disposed when appropriate.
-- DeclaredKind and EncryptedPreview are intended for encrypted channels; in normal channels these values are typically null.
+- If `DeclaredKind` is provided for an encrypted attachment, ensure `EncryptedPreview` is also supplied to avoid inconsistent previews.

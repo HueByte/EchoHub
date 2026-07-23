@@ -8,28 +8,12 @@ public interface IChatBroadcaster
 ```
 
 
-An abstraction for broadcasting chat-related events and notifications to connected clients. Implementations deliver channel messages, presence updates, moderation events and connection-specific errors or disconnects to the appropriate recipients; use this interface when you want hub/transport-agnostic broadcasting logic (for example to decouple business logic from SignalR or another realtime transport).
+A transport-agnostic abstraction for broadcasting chat events and presence changes to connected clients. Use `IChatBroadcaster` whenever server-side code (for example a hub, worker, or command handler) needs to notify one or more clients about messages, presence updates, channel lifecycle events, moderation actions, or errors without depending on a specific delivery mechanism.
 
 ## Remarks
-This interface centralizes all outbound chat notifications the server emits: channel messages, user join/leave/presence events, channel lifecycle events (updated, deleted, nuked), moderation notifications (kicked, banned), message deletions, error messages to a particular connection, and forced disconnects. It exists to keep broadcasting responsibilities in one place so higher-level code can invoke intent ("send this message to the channel" or "force-disconnect these connections") without knowing how connections are routed or how the underlying transport addresses individual connections or groups.
-
-Implementations must honor the documented routing hints (for example, do not echo a message back to an excluded connection when excludeConnectionId is supplied). Use the channelName and connectionId parameters to determine recipients; SendErrorAsync targets a single connection, while ForceDisconnectUserAsync targets a set of connection ids.
-
-## Example
-```csharp
-// typical usage from server-side chat logic
-// (messageDto and presenceDto are prepared elsewhere)
-await broadcaster.SendMessageToChannelAsync("#general", messageDto, excludeConnectionId: currentConnectionId);
-await broadcaster.SendUserJoinedAsync("#general", "alice", presenceDto, excludeConnectionId: currentConnectionId);
-
-// send an error to a single connection
-await broadcaster.SendErrorAsync(connectionId, "You are not authorized to perform that action.");
-
-// force-disconnect multiple connections for a user session cleanup
-await broadcaster.ForceDisconnectUserAsync(new List<string> { connA, connB }, "Session revoked");
-```
+`IChatBroadcaster` centralizes all outgoing chat-related notifications so callers do not need to know or implement the delivery/fan-out semantics. Each method maps to a well-defined event type: `SendMessageToChannelAsync` for chat messages, `SendUserJoinedAsync` / `SendUserLeftAsync` for presence changes, `SendChannelUpdatedAsync` / `SendChannelDeletedAsync` / `SendChannelNukedAsync` for channel lifecycle, moderation actions via `SendUserKickedAsync` / `SendUserBannedAsync`, and utility operations such as `SendMessageDeletedAsync`, `SendUserStatusChangedAsync`, `SendErrorAsync`, and `ForceDisconnectUserAsync` for forced disconnects. The interface is asynchronous (`Task`-based) so implementations can perform non-blocking I/O, retries, batching, or use different transports (for example SignalR, WebSockets, or a message bus) without changing callers. The `excludeConnectionId` parameter on message/presence methods encodes the common IRC convention of not echoing a message back to the originating connection while still delivering it to other connections belonging to the same user.
 
 ## Notes
-- excludeConnectionId is documented for SendMessageToChannelAsync to avoid echoing the origin connection; other methods that lack an exclude parameter (for example SendUserLeftAsync) will be delivered to all intended recipients unless an implementation-specific filter is applied.
-- SendUserStatusChangedAsync accepts a list of channel names so presence updates can be routed only to relevant channels; callers should pass the minimal set of channels that need the update to reduce unnecessary traffic.
-- Implementations should be asynchronous and non-blocking; broadcasting to many recipients may be best-effort and not transactional across multiple method calls.
+- `excludeConnectionId` prevents delivery only to the specified connection; other connections for the same user still receive the event. Callers should pass the sending connection id to avoid echoing to that connection but should not rely on it to suppress notifications to other sessions of the same user.
+- `SendChannelUpdatedAsync` includes an optional `channelName` parameter in addition to the [`ChannelDto`](../DTOs/ChatDtos.cs.md). The intent of the optional `channelName` (for example: target channel selection vs. previous name) is not obvious from the signature and should be clarified by the implementation or caller to avoid mismatched behavior.
+- All methods return `Task` and must be awaited or otherwise observed by callers to ensure errors in the broadcasting layer are surfaced; implementations may perform I/O and should handle transient failures internally or propagate meaningful exceptions to callers.

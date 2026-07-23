@@ -11,23 +11,23 @@
   - [GetTheme](#gettheme)
   - [ParseColor](#parsecolor)
   - [SaveTheme](#savetheme)
+  - [BuiltInThemes](#builtinthemes)
   - [ClassicTheme](#classictheme)
   - [DefaultTheme](#defaulttheme)
   - [DraculaTheme](#draculatheme)
+  - [GruvboxTheme](#gruvboxtheme)
   - [HackerTheme](#hackertheme)
   - [HighContrastTheme](#highcontrasttheme)
   - [JsonOptions](#jsonoptions)
   - [LightTheme](#lighttheme)
   - [MonokaiTheme](#monokaitheme)
+  - [NordTheme](#nordtheme)
   - [OceanTheme](#oceantheme)
+  - [RosePineTheme](#rosepinetheme)
   - [SolarizedTheme](#solarizedtheme)
   - [ThemeDir](#themedir)
   - [TransparentLightTheme](#transparentlighttheme)
   - [TransparentTheme](#transparenttheme)
-- [BuiltInThemes](#builtinthemes)
-- [GruvboxTheme](#gruvboxtheme)
-- [NordTheme](#nordtheme)
-- [RosePineTheme](#rosepinetheme)
 
 ---
 
@@ -40,22 +40,18 @@ public static class ThemeManager
 ```
 
 
-ThemeManager_overview provides a centralized, static API for discovering, loading, applying, and persisting themes used by the EchoHub client UI. Call GetAvailableThemes to enumerate built-in and user-defined themes, GetTheme to fetch a theme by name, and ApplyTheme to switch the UI to a chosen theme.
+ThemeManager is a static helper that centralizes theming for the client UI. It defines built-in themes, reads user-defined themes from the user's theme directory, and exposes methods to enumerate available themes, fetch a theme by name, apply a theme at runtime, and persist theme definitions to disk. Developers reach for it when they need to present theme choices to users, switch the active look, or save a customized theme for future sessions.
 
 ## Remarks
-Conceptually, ThemeManager acts as the bridge between Theme data (the Theme class) and the runtime UI. It maintains a curated list of built-in themes and exposes logic to load additional themes from a user directory, surfacing them for selection without requiring changes to the runtime code. In addition, BuildColorScheme ensures color assignments for text areas align with the active theme, pinning Editable/ReadOnly roles so that transparent themes render correctly and inputs stay legible. This centralizes theming concerns and keeps theme-related behavior in one place, simplifying maintenance and experimentation with new themes.
 
-## Example
-```csharp
-var available = ThemeManager.GetAvailableThemes();
-var theme = ThemeManager.GetTheme("Default");
-ThemeManager.ApplyTheme(theme);
-```
+Theme definitions live as [`Theme`](Theme.cs.md) instances inside the manager, with a fixed set of built-ins (e.g. `DefaultTheme`, `TransparentTheme`, `TransparentLightTheme`, `ClassicTheme`, `LightTheme`, `HackerTheme`, `SolarizedTheme`, `DraculaTheme`, `MonokaiTheme`, `NordTheme`, `GruvboxTheme`, `OceanTheme`, `HighContrastTheme`, `RosePineTheme`) and a mechanism to discover additional user themes from the directory located at `ThemeDir`. `GetAvailableThemes()` merges these sources while skipping duplicates by name and ignoring malformed theme files; if the theme directory cannot be read, it gracefully falls back to the built-ins. The color wiring happens in `BuildColorScheme(ThemeColors colors)` to ensure the editor surfaces—such as `TextView` and `TextField`—are pinned to the theme’s colors so transparency is preserved (e.g. transparent themes do not render an opaque input background). `ApplyTheme(Theme theme)` applies the chosen look to UI chrome like frame borders and titles, while `SaveTheme(Theme theme)` persists changes to disk as a best-effort operation.
 
 ## Notes
-- SaveTheme is best-effort and silently swallows failures; verify persistence if you rely on saved themes.
-- GetAvailableThemes falls back to built-in themes when the theme directory cannot be read.
-- ParseColor expects valid color identifiers defined by the theming system; supply colors that exist in the library or your Theme colors.
+
+- Reading themes from disk is guarded with a fallback to built-ins; IO failures result in a safe degradation rather than a crash.
+- Saving themes is a best-effort operation and may fail silently to avoid impacting startup or runtime stability.
+- Color parsing relies on `ParseColor(string colorName)`; ensure color names in themes map to known colors to avoid rendering surprises.
+
 
 ---
 
@@ -76,17 +72,15 @@ public static void ApplyTheme(Theme theme)
 **Returns:** `void`
 
 
-Applies a Theme by registering color schemes for the core UI areas with SchemeManager. This single call maps the Theme's Base, Menu, Dialog, and optional Border sections to named schemes so the rest of the UI can render consistently according to the active theme.
+ApplyTheme translates a [`Theme`](Theme.cs.md) into runtime color schemes and registers them with the central scheme registry (`SchemeManager`). For each area (`Base`, `Menu`, `Dialog`) it calls `BuildColorScheme` and registers the result via `SchemeManager.AddScheme`. The `Border` area is populated as well, using `theme.Border` when provided or falling back to `theme.Base` when it is not, ensuring frame decorations always have a defined appearance.
 
 ## Remarks
-This method acts as a bridge between the Theme model and SchemeManager's scheme registry. It delegates color construction to BuildColorScheme for each region, ensuring Base, Menu, and Dialog colors stay in sync. The Border scheme uses theme.Border when provided, otherwise it falls back to the Base palette to preserve a coherent frame. By applying all four schemes in one place, ApplyTheme reduces the risk of components diverging toward inconsistent styling.
+
+By encapsulating the mapping from a [`Theme`](Theme.cs.md) to per-area color schemes, `ApplyTheme` centralizes theming logic and reduces boilerplate across the UI. It also encodes the intended fallback for borders: if a `Border` scheme isn't specified, the `Base` scheme is reused so borders and title bars stay consistent with the rest of the theme.
 
 ## Notes
-- Repeatedly calling ApplyTheme overwrites the previously registered schemes, so batch theme updates if you want to avoid intermediate flashes.
-- The Border palette falls back to Base when Border is not provided; ensure the Base colors reflect the desired frame in that case.
 
-## Dependencies
-- SchemeManager
+- If `theme.Base` is null and no explicit `theme.Border` is provided, `BuildColorScheme` will receive null, which could lead to an exception at runtime. Ensure `theme.Base` is non-null when a border theme isn't supplied.
 
 ---
 
@@ -107,15 +101,14 @@ private static Scheme BuildColorScheme(ThemeColors colors)
 **Returns:** `Scheme`
 
 
-BuildColorScheme converts ThemeColors into a Terminal.Gui Scheme by deriving two Attributes—Normal from Foreground and Background and Focus from FocusForeground and FocusBackground—then applying them to the Scheme's state properties (Normal, Focus, HotNormal, HotFocus, Disabled). It also pins Editable and ReadOnly to Normal to ensure input controls render against the theme background, avoiding opaque boxes in transparent themes.
+BuildColorScheme is an internal helper that converts a [`ThemeColors`](Theme.cs.md) instance into a complete `Scheme` by translating the theme's foreground/background for normal and focused states into two `Attribute`s and applying them across the scheme's state properties (`Normal`, `Focus`, `HotNormal`, `HotFocus`, `Disabled`, `Editable`, `ReadOnly`). It ensures the editable areas reflect the same colors as the surrounding background, which matters for transparent themes.
 
 ## Remarks
-This method centralizes the theme-to-scheme translation, decoupling ThemeColors from the Scheme used by the UI. By deriving Normal and Focus once and reusing them for all relevant roles, and by tying Editable/ReadOnly to Normal, it guarantees consistent visual behavior for standard controls and editable regions across themes. The method being private static signals that it's an internal detail of the theming pipeline used by ThemeManager to assemble the active color scheme.
+Conceptually, this centralizes the translation from [`ThemeColors`](Theme.cs.md) to a `Scheme`, guaranteeing consistent color usage across `Normal`/`Focus` and their hot variants. By reusing the same color attributes for `Normal`, `Disabled`, and the editable states, it reduces drift when themes change and keeps UI elements visually cohesive. The inline comment explains the rationale: binding `Editable` and `ReadOnly` to the theme's `Normal` colors ensures the input areas don't render an opaque box behind transparent themes.
 
 ## Notes
-- If ThemeColors contain invalid color strings, ParseColor may throw; ensure colors are validated before calling BuildColorScheme.
-- The returned Scheme is a new object each time; repeated calls may impact allocations.
-- Editable and ReadOnly are deliberately mapped to Normal; if you need distinct input backgrounds, adjust the mapping accordingly.
+- Disabled uses the same color as `Normal`; if you need a distinct disabled appearance, this method would need to be extended.
+- Editable and ReadOnly are pinned to `Normal` to preserve background transparency; changing this could cause mismatches with the theme's background in transparent themes.
 
 ---
 
@@ -130,14 +123,24 @@ public static List<Theme> GetAvailableThemes()
 **Returns:** `List<Theme>`
 
 
-The GetAvailableThemes method returns a list of Theme objects by starting with the built-in themes and augmenting that set with user-defined themes discovered in the ThemeDir directory. It iterates over all *.json files, deserializes each one into a Theme using JsonSerializer with the configured JsonOptions, and, if the resulting theme has a non-empty Name and does not duplicate an existing theme (case-insensitive comparison on Name), appends it to the collection. If ThemeDir does not exist or any IO or JSON parsing error occurs, the method gracefully falls back to returning only the built-in themes.
+GetAvailableThemes collects the available themes by starting with the built-in set (`BuiltInThemes`), then augmenting it with user-provided themes discovered as JSON files in `ThemeDir`. It reads each `*.json` file, deserializes the content into a [`Theme`](Theme.cs.md) using `JsonSerializer` with `JsonOptions`, and, if the resulting theme has a non-empty `Name` and isn't already present (checked by name using `StringComparison.OrdinalIgnoreCase`), adds it to the list. If the theme directory can't be read or a file is malformed, those items are skipped and the method returns the built-in themes as a fallback. The result is a `List<Theme>` that callers can present to the user.
 
 ## Remarks
-This function encapsulates the theme-loading strategy: built-in themes establish the default baseline, while external JSON themes extend the collection without mutating the originals. It operates defensively, skipping malformed files and continuing execution in the face of read errors, which yields a predictable return value even under partial failure. De-duplication is driven by Theme.Name using a case-insensitive comparison to prevent accidental duplicates when names differ only by case.
+The `GetAvailableThemes` abstraction centralizes theme discovery, ensuring that built-in themes serve as a baseline while allowing runtime customization through JSON files in `ThemeDir`. It performs simple de-duplication by `Theme.Name` in a case-insensitive manner, so user-provided themes do not create duplicates of built-ins. The design favors resilience: IO or deserialization failures are swallowed so startup remains stable, and valid themes are still returned. This function depends on the shape of the [`Theme`](Theme.cs.md) model (e.g., `Name`, `Base`/`Menu`/`Dialog` color sets) to render themes in the UI.
+
+## Example
+```csharp
+var themes = ThemeManager.GetAvailableThemes();
+foreach (var t in themes)
+{
+    Console.WriteLine(t.Name);
+}
+```
 
 ## Notes
-- It swallows IO and JSON parsing exceptions, so failures to read or parse individual files do not propagate to the caller.
-- Built-in themes take precedence: a user-defined theme with a Name that matches an existing built-in theme is ignored, ensuring stable baseline behavior.
+- IO or JSON parsing errors for individual files are ignored; only valid themes are included in the result.
+- If `ThemeDir` does not exist or cannot be read, the method falls back to returning only the built-in themes.
+- A runtime-provided theme with a name equal (ignoring case) to an existing built-in theme will be skipped to avoid duplicates.
 
 ---
 
@@ -158,15 +161,7 @@ public static Theme GetTheme(string name)
 **Returns:** [`Theme`](Theme.cs.md)
 
 
-Resolves a Theme by name by searching the collection returned by GetAvailableThemes and returning the first match found when the theme name equals the provided name, ignoring case. It is the right choice when you need to map a user-provided theme name (from UI, config, or input) to a Theme object, with a fallback to DefaultTheme if no match exists.
-
-## Remarks
-By centralizing theme resolution in this single method, callers can map a string (for example, user input) to a Theme object without duplicating comparison logic or null checks. The use of ordinal string comparison ensures consistent, culture-invariant matching across locales. The method relies on GetAvailableThemes providing a valid collection and on DefaultTheme representing a concrete theme.
-
-## Notes
-- If GetAvailableThemes returns null, the call to Find will throw a NullReferenceException.
-- The search is linear in the size of the themes collection; for large catalogs consider caching or indexing to improve lookup performance.
-- Name comparison uses OrdinalIgnoreCase; if you need culture-aware matching, replace with a culture-aware comparison or normalize names elsewhere.
+Returns the [`Theme`](Theme.cs.md) whose `Name` matches the provided `name` using a case-insensitive comparison (`StringComparison.OrdinalIgnoreCase`), sourcing candidates from `GetAvailableThemes()`. If no match is found, it returns `DefaultTheme` as a safe fallback. This encapsulates the pattern of resolving a theme by name and protects callers from handling nulls or missing themes themselves.
 
 ---
 
@@ -187,16 +182,14 @@ private static Color ParseColor(string colorName)
 **Returns:** `Color`
 
 
-Parses a color name into a Color using Color.TryParse. If parsing succeeds, it returns the resulting Color (or White if the parsed color is null). If parsing fails, it returns Color.White. Use this helper when theme code needs to translate a color name string into a Color value, ensuring a valid color is always returned instead of propagating nulls.
+Parses a color name into a `Color` value by delegating to `Color.TryParse`. If the parse succeeds, it returns the resulting color (or `Color.White` if the parsed value is null). If parsing fails, it falls back to `Color.White`. This provides a safe, centralized way to convert string-based color specifications (for example, theme or config values) into a concrete `Color` without forcing callers to handle parsing errors themselves.
 
 ## Remarks
-
-Centralizes color-name parsing, reducing duplication and guarding ThemeManager's rendering paths against invalid color inputs. The fallback to White makes the UI predictable but at the risk of hiding misconfigurations; consider logging when a fallback occurs to aid debugging.
+This method encapsulates the color-name resolution logic so the rest of the theming code does not need to repeat `TryParse` calls or null checks. It guarantees a non-null `Color` return value by defaulting to `Color.White`, thereby defining a system-wide fallback policy for theme colors. Being a private helper, it represents an internal implementation detail of the theme system rather than a public API, which keeps the surface area clean for consumers.
 
 ## Notes
-
-- Invalid or unknown color names yield Color.White without throwing.
-- No exception is thrown; a deterministic Color is always returned.
+- Invalid or unrecognized color names map to `Color.White`, which can mask configuration errors; consider validating color names if distinguishing between an explicit white and a default fallback is important.
+- If `colorName` is null or empty, the method still returns `Color.White` via the parse/fallback path, ensuring callers always receive a concrete `Color` without exceptions.
 
 ---
 
@@ -217,290 +210,18 @@ public static void SaveTheme(Theme theme)
 **Returns:** `void`
 
 
-Persists a Theme by serializing it to JSON and writing it to a file named after the theme under ThemeDir. Use SaveTheme to persist a user-selected theme so it can be reloaded on startup; it's a best-effort operation that silently swallows failures, so callers shouldn't rely on it for critical persistence.
+Saves a [`Theme`](Theme.cs.md) to disk as a JSON file under `ThemeDir`. It ensures `ThemeDir` exists, constructs the file path using the theme's name (the value of `theme.Name`) with a `.json` extension, serializes the [`Theme`](Theme.cs.md) with `JsonSerializer` using `JsonOptions`, and writes the resulting JSON to disk. Any exceptions are swallowed, making this a best-effort persistence rather than a guaranteed save.
 
 ## Remarks
-This abstraction encapsulates the simple idea of theme persistence: ensure the target directory exists, determine a file path from the Theme.Name, serialize to JSON using JsonOptions, and write the content. It uses Theme.Name as the file name, so two themes with the same name will overwrite each other; an enhanced naming strategy or unique IDs could help. Failures are swallowed, so any persistence failure is invisible to the caller; consider adding logging or a higher-level retry if persistence must be durable. The method depends on JsonOptions for serialization behavior and relies on the standard IO primitives (Directory, Path, JsonSerializer, File).
+SaveTheme encapsulates the simple, best-effort persistence strategy for user-defined themes and deliberately avoids propagating IO errors to callers. It is safe to call during normal operation without risking user-facing crashes, but callers should not rely on this method to succeed every time. Because the file name is derived from `theme.Name`, unmapped or invalid characters in names can cause a write to fail silently.
 
 ## Notes
-- The catch-all block hides errors; callers cannot detect save failures.
-- Using Theme.Name directly as a file name may introduce invalid characters or path traversal risks if Name isn't sanitized.
-- Existing theme JSON will be overwritten without backup or versioning.
+- The empty catch means failures won't surface to the caller; consider validating `theme.Name` to ensure a valid file name before invoking this method.
+- Writes are synchronous and will overwrite an existing file named after the theme.
 
 ---
 
-### ClassicTheme
-> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
-> **Kind:** field
-
-```csharp
-private static readonly Theme ClassicTheme = new()
-```
-
-
-ClassicTheme is a private static readonly Theme that encapsulates the classic visual styling used by the UI. It defines the 'Classic' theme name and assigns color palettes for four UI zones — Base, Menu, Dialog, and Status — so the theming system can render consistent foregrounds, backgrounds, and focus states across the application.
-
-## Remarks
-Why this abstraction exists: centralizes the classic color palette in one place, avoiding repetitive literals across components. It also stabilizes the look by exposing a single instance that the ThemeManager can switch to internally to apply the classic aesthetic. In short, ClassicTheme acts as the canonical, versioned styling bundle for the traditional UI appearance.
-
-## Notes
-- Potential mutability: If Theme or ThemeColors expose public setters, the colors may be mutated after initialization. Consumers should rely on a stable palette or the code should enforce immutability.
-- Accessibility considerations: The palette uses high-contrast combinations (e.g., White foreground on DarkGray/Blue). If your accessibility requirements change, adjust this Theme instance or provide alternative themes.
-
----
-
-### DefaultTheme
-> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
-> **Kind:** field
-
-```csharp
-private static readonly Theme DefaultTheme = new()
-```
-
-
-Defines the canonical default theme used by the UI components within the ThemeManager. This private static readonly field initializes a single Theme instance named 'Default' with color settings for each UI region (Base, Menu, Dialog, Status). The nested ThemeColors specify the foreground, background, and focus colors, establishing a consistent look-and-feel across the application unless overridden by other theme configurations. Because it is static and readonly, the instance is created once at type initialization and cannot be reassigned, ensuring all consumers relying on the default palette see the same values.
-
-## Remarks
-Centralizes the default visual styling to ensure a single, shared baseline across the UI. It prevents scattering color choices across components and makes it easier to reason about the default appearance of the application. If a different baseline is needed for testing or special scenarios, a separate Theme can be created and applied through the ThemeManager, rather than modifying this field.
-
-## Notes
-- The field is private; external code cannot access or mutate DefaultTheme directly.
-- Even though the reference is readonly, the nested ThemeColors objects may be mutable if their properties are settable; treat the default palette as effectively immutable at runtime unless you deliberately mutate its contents within ThemeManager.
-- The color values are provided as names (e.g., 'Gray', 'White'); ensure the rendering layer recognizes these tokens to avoid unexpected visuals.
-
----
-
-### DraculaTheme
-> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
-> **Kind:** field
-
-```csharp
-private static readonly Theme DraculaTheme = new()
-```
-
-
-DraculaTheme is a private static readonly Theme field that represents the Dracula-inspired color palette used by the theme system. It defines distinct color specifications for four UI surfaces—Base, Menu, Dialog, and Status—each with a foreground color, a background color, and explicit focus colors to ensure consistent, high-contrast visuals across the application. This field is intended for internal use by ThemeManager to apply a cohesive dark theme; external code should not rely on it directly.
-
-## Remarks
-Having a single DraculaTheme instance centralizes the Dracula look, preventing drift in color choices across components. By keeping it private and readonly, ThemeManager can switch to Dracula without duplicating palettes, while still allowing other themes to be composed similarly. The explicit focus colors help maintain clear keyboard-navigation states even on dark surfaces.
-
-## Notes
-- Private visibility prevents external code from referencing DraculaTheme directly.
-- It is static readonly and assigned once; runtime mutation is not expected.
-- Token names like BrightMagenta and Magenta map to concrete colors in the rendering layer; ensure the color system supports these tokens for accurate rendering.
-
----
-
-### HackerTheme
-> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
-> **Kind:** field
-
-```csharp
-private static readonly Theme HackerTheme = new()
-```
-
-
-HackerTheme is a private, static, readonly Theme instance that encodes the color palette used by the Hacker appearance within the UI. It defines the colors for the Base, Menu, Dialog, and Status areas, providing a single source of truth that ThemeManager can apply to render a consistent dark-themed interface.
-
-## Remarks
-This field centralizes the Hacker color scheme, ensuring consistent foreground/background pairs across all UI regions and their focus states. Because HackerTheme is private to ThemeManager, external code cannot reference or mutate it directly; changes to the palette must go through ThemeManager's public API or future extensions. The nested ThemeColors per region make it easy to tweak the palette in one place when refining the visual language.
-
-## Notes
-- The static readonly modifier means HackerTheme is initialized once and its reference cannot be reassigned, but the contained ThemeColors objects may still be mutable depending on their type.
-- External code should not rely on HackerTheme having a public accessor; to reuse the palette publicly, ThemeManager should expose a proper API rather than exposing internal details.
-
----
-
-### HighContrastTheme
-> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
-> **Kind:** field
-
-```csharp
-private static readonly Theme HighContrastTheme = new()
-```
-
-
-Defines a private static readonly Theme instance named HighContrastTheme that captures a high-contrast color scheme used by the theming subsystem. It specifies color configurations for the Base, Menu, Dialog, and Status surfaces to maximize legibility and clearly indicate focus against a dark background.
-
-## Remarks
-HighContrastTheme centralizes the high-contrast styling to avoid scattering color values throughout the codebase. The ThemeManager can switch to this theme to satisfy accessibility requirements without exposing public API changes.
-
-## Notes
-- The nested ThemeColors objects may be mutable; mutating them would undermine the high-contrast guarantee. Treat HighContrastTheme as an internal constant and avoid altering its color properties at runtime.
-
----
-
-### JsonOptions
-> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
-> **Kind:** field
-
-```csharp
-private static readonly JsonSerializerOptions JsonOptions = new()
-```
-
-
-JsonOptions is a privately scoped, preconfigured JsonSerializerOptions instance used by ThemeManager to serialize JSON with the project’s conventions. It enables indented output and camelCase property naming, ensuring that any JSON emitted while theming is both human-readable and aligned with the API surface.
-
-## Remarks
-By using a private static readonly field, ThemeManager avoids repeated allocations and guarantees a single shared configuration for its JSON serialization within the class. Note that JsonSerializerOptions is mutable; while the field reference cannot be reassigned, changing its properties at runtime can lead to subtle, cross-call side effects. Treat this instance as effectively immutable after initialization.
-
-## Example
-```csharp
-// Within ThemeManager
-var data = new { Theme = "Dark", Version = 1 };
-string json = JsonSerializer.Serialize(data, JsonOptions);
-```
-
-## Notes
-- Mutating JsonOptions at runtime can cause inconsistent formatting across serialized outputs; prefer making changes only during initialization.
-- This field is internal to ThemeManager; if different parts of the application require alternative formatting, construct and pass their own JsonSerializerOptions instead of reusing JsonOptions.
-
----
-
-### LightTheme
-> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
-> **Kind:** field
-
-```csharp
-private static readonly Theme LightTheme = new()
-```
-
-
-LightTheme is a predefined Theme instance that encodes the light-mode color configuration used by the UI. It centralizes the color values for the base surface and for Menu, Dialog, and Status regions so the theming system can apply a consistent light appearance without constructing a new Theme object each time.
-
-## Remarks
-
-By consolidating the light palette in a single static object, LightTheme ensures visual consistency across components that render base surfaces, menus, dialogs, and status bars. It serves as a canonical reference for the light aesthetic within the theming subsystem, enabling ThemeManager to switch to a known, shared configuration. Because the field is private static readonly, it should be treated as a shared, effectively immutable source at runtime; mutating its nested color objects could lead to inconsistent visuals.
-
-## Notes
-
-- It is a static shared instance; mutating its nested ThemeColors at runtime would have global effects; treat as read-only after initialization.
-
----
-
-### MonokaiTheme
-> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
-> **Kind:** field
-
-```csharp
-private static readonly Theme MonokaiTheme = new()
-```
-
-
-MonokaiTheme is a private static readonly field that defines the Monokai color palette used by the theme system. It holds a Theme named "Monokai" composed of four color blocks (Base, Menu, Dialog, Status), each described by ThemeColors with specific foreground, background, and focus colors. This single, shared instance provides a consistent color vocabulary for the UI, allowing ThemeManager and related rendering code to apply the Monokai look uniformly without scattering literals across the codebase. Because the field is private, its usage is internal to the class that declares it.
-
-## Remarks
-MonokaiTheme serves as a centralized, reusable color configuration for the Monokai look. By grouping color sets into Base, Menu, Dialog, and Status, it expresses distinct chrome regions while keeping a single source of truth for the palette. This abstraction makes it straightforward for ThemeManager and UI components to consistently apply the Monokai styling.
-
-## Notes
-- The Theme and ThemeColors instances are mutable; altering their properties would mutate the shared theme at runtime and affect all consumers within the process.
-- External code cannot replace MonokaiTheme, but internal code could adjust its nested properties unless immutability is enforced; consider making Theme/ThemeColors immutable if a fixed theme is intended.
-
----
-
-### OceanTheme
-> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
-> **Kind:** field
-
-```csharp
-private static readonly Theme OceanTheme = new()
-```
-
-
-OceanTheme is a predefined ocean-inspired color palette represented as a Theme instance. It groups color configurations for four UI regions—Base, Menu, Dialog, and Status—each with foreground, background, and focus colors, enabling a cohesive look across the application. The field is private static readonly, so the same Theme object is created once and reused, preventing accidental reassignment while keeping internal mutability restricted to the defining class.
-
-## Remarks
-Centralizes theming decisions and reduces duplication by providing a single, cohesive palette that UI components can rely on. OceanTheme expresses a clear design intent (an ocean-like aesthetic) and is intended to be selected by theming logic to apply a consistent appearance across Base, Menu, Dialog, and Status surfaces. The per-area ThemeColors allow distinct focus and interaction states while preserving a unified visual language.
-
-## Notes
-- Access is private to the ThemeManager class, preventing external code from directly reusing or mutating OceanTheme.
-- The reference is readonly, so the field cannot be reassigned; internal mutability would require explicit code within the defining class.
-- The color tokens (e.g., BrightCyan, DarkBlue, White, DarkCyan) must be valid tokens within the project’s visual system for the palette to render correctly.
-
----
-
-### SolarizedTheme
-> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
-> **Kind:** field
-
-```csharp
-private static readonly Theme SolarizedTheme = new()
-```
-
-
-SolarizedTheme is a private static readonly Theme instance that encapsulates the Solarized color palette used by the UI. It defines color roles for four UI surfaces—Base, Menu, Dialog, and Status—specifying both normal foreground/background and focused-state foreground/background colors. The field is initialized once at type-load time and is then reused wherever a Solarized look is required, providing a single source of truth for this color scheme and preventing runtime mutations.
-
-## Remarks
-This symbol acts as a centralized, immutable specification of the Solarized look. By housing the color tokens in a single Theme, ThemeManager can consistently apply the same palette across menus, dialogs, and status lines without scattering literals throughout the code. The private static readonly pattern communicates intent: SolarizedTheme is a predefined, non-changing theme available to internal consumers of ThemeManager, not something that should be modified at runtime.
-
-## Notes
-- The theme uses string color tokens (e.g., "Cyan", "BrightYellow"), which are resolved by the theming subsystem to actual display colors.
-- Because the field is readonly, any changes require rebuilding the Theme instance; runtime mutation is prevented.
-- The four ThemeColors sections (Base, Menu, Dialog, Status) each specify both normal and focused color states to support focus indication.
-
----
-
-### ThemeDir
-> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
-> **Kind:** field
-
-```csharp
-private static readonly string ThemeDir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".echohub", "themes")
-```
-
-
-ThemeDir is a private, static readonly string that resolves to the user-specific themes directory by combining the current user’s profile folder with .echohub/themes. It provides a single, OS-agnostic path for ThemeManager to load and save theme files, avoiding scattered string literals.
-
-## Remarks
-Centralizing the location of theme assets decouples theme storage from OS conventions and hard-coded paths, making future relocations or tests simpler. The static readonly nature guarantees a consistent path across all ThemeManager operations, computed at type initialization. If the target directory doesn't exist at runtime, higher-level startup or initialization code should ensure it is created before any read/write of themes.
-
-## Notes
-- Directory existence: ensure creation to avoid IO errors when reading or writing themes.
-- Hidden folder nuance: .echohub will be hidden on Unix-like systems; consider how this affects user visibility or directory listings in certain UI scenarios.
-
----
-
-### TransparentLightTheme
-> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
-> **Kind:** field
-
-```csharp
-private static readonly Theme TransparentLightTheme = new()
-```
-
-
-Represents a canonical light-theme configuration used by the UI to render surfaces on light backgrounds. TransparentLightTheme is a private static readonly Theme instance that bundles a complete color palette for Base, Menu, Dialog, Status, and Border, enabling a consistent light appearance across the UI when a light or transparent background is in use. The defined colors map foregrounds, backgrounds, and focus states to maintain readability and clear focus cues (Blue for focused elements).
-
-## Remarks
-By centralizing the light-theme palette in a single internal Theme instance, this symbol reduces drift between UI surfaces and makes it straightforward to derive alternate light variants from a single baseline. Its private visibility signals it's an internal default rather than a public customization point; external code should define and consume their own Theme instances instead of mutating this one.
-
-## Notes
-- Border foreground uses #8F8F8F for softer borders on light terminals.
-- Background values set to 'None' indicate transparency or reliance on the parent/background, aligning with a transparent-light aesthetic.
-
----
-
-### TransparentTheme
-> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
-> **Kind:** field
-
-```csharp
-private static readonly Theme TransparentTheme = new()
-```
-
-
-Defines a single, shared Theme instance named TransparentTheme that implements a glassy, semi-transparent UI aesthetic. Declared private static readonly, it is initialized once and reused by the ThemeManager to apply a cohesive translucent look across Base, Menu, Dialog, Status, and Border color groups (most backgrounds are None to preserve translucency, with White foreground and BrightCyan focus colors; Dialog uses DarkGray to retain legibility; borders use muted grays to complete the glassy look).
-
-## Remarks
-This symbol centralizes the glassy appearance so all UI surfaces adopting transparency share a single color model. Being private ensures the theme is an internal implementation detail of ThemeManager and not part of the public theming surface. If a project needs a similar variant publicly, it should be created as a separate, publicly accessible theme instance rather than exposing this private field. The pattern reduces drift between components and simplifies maintenance of the transparent aesthetic.
-
-## Notes
-- The field is readonly, but its nested color objects are not guaranteed immutable; mutating their properties at runtime would alter the shared theme for all users. Treat the instance as immutable after initialization to preserve consistency.
-
----
-
-## BuiltInThemes
+### BuiltInThemes
 > **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
 > **Kind:** field
 
@@ -525,19 +246,73 @@ private static readonly List<Theme> BuiltInThemes =
 ```
 
 
-BuiltInThemes is a private static readonly collection that enumerates the Theme instances shipped as built-in themes. It provides a stable, canonical set of themes (including DefaultTheme, TransparentTheme, TransparentLightTheme, ClassicTheme, LightTheme, HackerTheme, SolarizedTheme, DraculaTheme, MonokaiTheme, NordTheme, GruvboxTheme, OceanTheme, HighContrastTheme, and RosePineTheme) that ThemeManager can iterate over to present theme options and initialize theming state. Because the field is private and readonly, external code cannot modify this collection at runtime; it is intended as an internal baseline that ensures consistent theming behavior across the application.
+BuiltInThemes is a private static readonly collection of [`Theme`](Theme.cs.md) instances that enumerates the built-in themes shipped with the client. It is initialized with a predefined sequence of themes: `DefaultTheme`, `TransparentTheme`, `TransparentLightTheme`, `ClassicTheme`, `LightTheme`, `HackerTheme`, `SolarizedTheme`, `DraculaTheme`, `MonokaiTheme`, `NordTheme`, `GruvboxTheme`, `OceanTheme`, `HighContrastTheme`, and `RosePineTheme`, and is used internally by the theming subsystem to provide a centralized source of available themes without constructing them at runtime.
 
 ## Remarks
-Centralizes the shipped themes into a single place, guaranteeing a consistent ordering and a single source of truth for what counts as built-in. This reduces duplication and makes it easier to adjust defaults or add new themes by updating the initializer, rather than sprinkling Theme references throughout the code. Because it's private, consumers must rely on public Theme-related APIs or ThemeManager flows to query or apply themes.
+This private, static collection centralizes the built-in theme catalog used by the theming system. The `readonly` modifier prevents reassigning the field, but the underlying `List<Theme>` can still be mutated by internal code, which means changes to the set of built-ins could affect any UI that relies on them. If true immutability is required, consider exposing a read-only wrapper or a dedicated API surface.
 
 ## Notes
-- The list is constructed from static Theme instances defined elsewhere (the DefaultTheme, TransparentTheme, etc.).
-- As a private, readonly field, it cannot be replaced or mutated at runtime; new themes must be added via source changes.
-- If you need to expose or customize the built-in set, provide a public API rather than accessing this field directly.
+- The `List<Theme>` is mutable even though the field is `readonly`; external code cannot access it, but internal code can modify its contents. If you need to guarantee immutability, replace with a read-only wrapper such as `ReadOnlyCollection<Theme>` and expose a safe accessor.
 
 ---
 
-## GruvboxTheme
+### ClassicTheme
+> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
+> **Kind:** field
+
+```csharp
+private static readonly Theme ClassicTheme = new()
+```
+
+
+ClassicTheme is a privately scoped, statically initialized [`Theme`](Theme.cs.md) instance that serves as the built-in look-and-feel blueprint used by the UI. It defines color mappings for the `Base`, `Menu`, `Dialog`, and `Status` surfaces, establishing a cohesive appearance across the application. Because it is declared as `private static readonly`, the instance is created once during type initialization and is shared for the lifetime of the process, acting as a default theme reference for the `ThemeManager`.
+
+## Remarks
+By centralizing the palette in a single, private field, the `ThemeManager` can apply a consistent Classic style across all major surfaces without requiring external configuration. The private visibility keeps the default theme encapsulated within the theming code, making it straightforward to introduce additional themes or swap them by adding alternative static fields or exposing a configuration mechanism in the future.
+
+---
+
+### DefaultTheme
+> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
+> **Kind:** field
+
+```csharp
+private static readonly Theme DefaultTheme = new()
+```
+
+
+Represents the canonical default color theme used by the theming subsystem. As a private static readonly [`Theme`](Theme.cs.md) named `Default`, it seeds the color configuration for core surfaces (`Base`, `Menu`, `Dialog`, `Status`) so the UI maintains a consistent palette when no user-provided theme is supplied.
+
+## Remarks
+This value acts as the internal seed for all theming operations within the `ThemeManager`. Centralizing the default colors in a single `DefaultTheme` instance ensures consistent visuals across surfaces and avoids duplicating color choices. Note that while the field is `readonly`, its nested [`ThemeColors`](Theme.cs.md) objects may still be mutable at runtime, depending on their mutability; consuming code should not rely on deep immutability unless enforced by the type definitions. The arrangement guarantees uniform behavior for the `Base`, `Menu`, `Dialog`, and `Status` color states (foreground, background, and focus states).
+
+## Notes
+- Although the field is `readonly` at the top level, the nested [`ThemeColors`](Theme.cs.md) instances may be mutated; treat this as a potential mutation point.
+
+
+---
+
+### DraculaTheme
+> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
+> **Kind:** field
+
+```csharp
+private static readonly Theme DraculaTheme = new()
+```
+
+
+DraculaTheme is a preconfigured [`Theme`](Theme.cs.md) instance that encodes the Dracula color palette for the UI. Declared as a private static readonly field named `DraculaTheme`, it defines a single, shared palette used by the application to color the core surfaces — `Base`, `Menu`, `Dialog`, and `Status` — with per-surface mappings such as foregrounds, backgrounds, and focus colors that collectively establish a cohesive, dark interface with magenta accents on focus. With `Name` set to Dracula, this theme provides a consistent Dracula aesthetic across the application.
+
+## Remarks
+Centralizes the Dracula color choices in one place to ensure visual consistency across surfaces and to simplify theme swapping by the `ThemeManager` without recalculating colors at render time. The per-surface [`ThemeColors`](Theme.cs.md) definitions govern how content appears on the main areas (`Base`), the navigation (`Menu`), popups (`Dialog`), and status indicators (`Status`).
+
+## Notes
+- The nested [`ThemeColors`](Theme.cs.md) objects may be mutable; treat DraculaTheme as effectively immutable only if those types are immutable, or clone before modification if variations are needed.
+- Because the field is private, external code cannot reference it directly; expose an accessor or copy if you need to reuse this theme outside its containing class.
+
+---
+
+### GruvboxTheme
 > **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
 > **Kind:** field
 
@@ -546,20 +321,111 @@ private static readonly Theme GruvboxTheme = new()
 ```
 
 
-GruvboxTheme is a private, static, readonly Theme instance that encodes the Gruvbox color palette for the EchoHub client UI. It defines colors for core regions—Base, Menu, Dialog, and Status—each with a Foreground, Background, FocusForeground, and FocusBackground value. This single object acts as the canonical Gruvbox styling source consumed by the theming subsystem to render a consistent look across the application. Because the field is private and readonly, external callers should rely on ThemeManager's public mechanisms to obtain themed resources rather than mutate or reference this field directly.
+GruvboxTheme is a private static readonly [`Theme`](Theme.cs.md) that defines the Gruvbox color palette used by the UI. It initializes `Name` to "Gruvbox" and provides color configurations for the core UI regions via `Base`, `Menu`, `Dialog`, and `Status`, each specifying `Foreground`, `Background`, `FocusForeground`, and `FocusBackground` values.
 
 ## Remarks
-
-By centralizing the palette in one immutable object, GruvboxTheme reduces drift between UI regions and simplifies theming changes. The per-region color groups reflect a clean separation of concerns: Base handles the main chrome, Menu for navigation, Dialog for modal surfaces, and Status for status indicators; the consistent focus colors ensure accessible emphasis when keyboard navigation occurs. This pattern makes it straightforward to swap themes by replacing the underlying Theme instance without scattering color literals throughout the code.
+GruvboxTheme serves as a single source of truth for the Gruvbox palette, making it easy to apply the same colors across `Base`, `Menu`, `Dialog`, and `Status` without duplicating literals elsewhere. Because the field is `static` and `readonly`, the palette is established once during type initialization and cannot be mutated at runtime, ensuring a consistent theme until a deliberate change is made in code. External code relies on the public theming surface to apply the Gruvbox palette; GruvboxTheme itself remains a private, immutable foundation for that surface.
 
 ## Notes
-
-- The readonly reference prevents re-assignment, but if Theme or ThemeColors are mutable, their values can still be mutated at runtime.
-- This field is private; there is no direct public API here—consumers should obtain theme data via ThemeManager's public surface rather than accessing GruvboxTheme directly.
+- Private field scope means external code cannot reference `GruvboxTheme` directly; use the public theming API (e.g., `ThemeManager`) to switch or retrieve themes.
 
 ---
 
-## NordTheme
+### HackerTheme
+> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
+> **Kind:** field
+
+```csharp
+private static readonly Theme HackerTheme = new()
+```
+
+
+HackerTheme is a private static readonly instance of [`Theme`](Theme.cs.md) that defines the 'Hacker' color scheme used by the UI. It centralizes the color configuration for the core regions—`Base`, `Menu`, `Dialog`, and `Status`—by specifying `Foreground`, `Background`, `FocusForeground`, and `FocusBackground` to deliver a cohesive hacker aesthetic across the interface, and is reused internally rather than rebuilt for each component.
+
+## Remarks
+By housing the entire color palette in a single static field, the code ensures visual consistency across all UI surfaces that adopt this theme. The `HackerTheme` instance is created once at class initialization and referenced wherever a [`Theme`](Theme.cs.md) is needed within the theme system, promoting reuse and reducing the risk of divergent color values. Keeping this configuration private reinforces encapsulation: external code cannot mutate the theme inadvertently, preserving the intended appearance.
+
+---
+
+### HighContrastTheme
+> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
+> **Kind:** field
+
+```csharp
+private static readonly Theme HighContrastTheme = new()
+```
+
+
+Defines a preconfigured [`Theme`](Theme.cs.md) instance named `HighContrast` that drives a high-contrast UI palette. It is exposed internally as a private static readonly field `HighContrastTheme` and initializes the `Base`, `Menu`, `Dialog`, and `Status` surfaces with a dark background (`Black`) and bright foreground (`BrightYellow`), while tuning region-specific focus colors to preserve legibility. Because it is static and readonly, the theme is constructed once and reused by the UI theming system rather than rebuilt at runtime.
+
+## Remarks
+This field acts as a canonical, immutable high-contrast palette for the theming subsystem. By centralizing the color choices for `Base`, `Menu`, `Dialog`, and `Status`, it ensures consistent accessibility-friendly visuals across the application and prevents drift between components. Its private visibility indicates it is an internal implementation detail of the theme infrastructure, intended to be consumed by the theme-management logic rather than by consumer code directly.
+
+## Notes
+- The `HighContrastTheme` is immutable after initialization due to `readonly`; runtime theme switching would require a separate mechanism to swap themes. 
+
+
+---
+
+### JsonOptions
+> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
+> **Kind:** field
+
+```csharp
+private static readonly JsonSerializerOptions JsonOptions = new()
+```
+
+
+Defines a shared `JsonSerializerOptions` instance named `JsonOptions` used by the `ThemeManager` to serialize theme data with consistent formatting. It configures pretty-printed JSON by setting `WriteIndented` to true and enforces camelCase property names by using `PropertyNamingPolicy` via `JsonNamingPolicy.CamelCase`.
+
+## Remarks
+By making the field `static` and `readonly`, the class ensures a single, immutable source of serialization configuration for all calls within the ThemeManager, reducing duplication and the risk of inconsistent formatting. This centralization also minimizes drift if multiple serialization sites exist in the class.
+
+## Notes
+- Do not mutate `JsonOptions` after initialization; although `JsonSerializerOptions` properties are mutable, the field is intended to be consumed as a fixed configuration.
+- If a one-off operation requires a different formatting (e.g., a different naming policy or indentation), create and use a separate `JsonSerializerOptions` instance instead of modifying this field.
+
+---
+
+### LightTheme
+> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
+> **Kind:** field
+
+```csharp
+private static readonly Theme LightTheme = new()
+```
+
+
+The `LightTheme` field provides a concrete, immutable light color scheme used by the theming system. It centralizes color definitions for the main UI surfaces: `Base`, the `Menu`, `Dialog`, and `Status` areas, ensuring consistent foreground/background combinations across the application and predictable focus states.
+
+With `Name` set to `Light` and color pairs like `Foreground`/`Background` and `FocusForeground`/`FocusBackground` defined per surface, it enables the ThemeManager to apply the light theme quickly without reconstructing the palette each time.
+
+## Remarks
+
+By keeping the field `private static readonly`, the code guarantees a single, shared instance of the light theme that cannot be modified at runtime, avoiding drift between components. This centralization also clarifies the intended visual identity for the light mode and reduces duplication whenever a light theme is needed.
+
+---
+
+### MonokaiTheme
+> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
+> **Kind:** field
+
+```csharp
+private static readonly Theme MonokaiTheme = new()
+```
+
+
+MonokaiTheme is a private static readonly field that encapsulates the internal Monokai color palette used by the UI. It defines a single [`Theme`](Theme.cs.md) named `Monokai` with dedicated [`ThemeColors`](Theme.cs.md) for `Base`, `Menu`, `Dialog`, and `Status`, specifying `Foreground`, `Background`, `FocusForeground`, and `FocusBackground` to ensure the interface presents a cohesive look.
+
+## Remarks
+MonokaiTheme centralizes the Monokai palette for the UI, providing a single source of truth for the [`Theme`](Theme.cs.md) the `ThemeManager` applies across components. Its private static readonly scope ensures a stable, class-wide instance isn't exposed or replaced by external code, preserving the intended appearance. If internal code mutates the nested [`ThemeColors`](Theme.cs.md) objects, the look could drift, so treat the instance as effectively immutable after initialization.
+
+## Notes
+- `readonly` prevents reassigning the field, but nested color objects may still be mutated; ensure internal code avoids mutating the theme after initialization or consider making the color data immutable.
+
+---
+
+### NordTheme
 > **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
 > **Kind:** field
 
@@ -568,18 +434,36 @@ private static readonly Theme NordTheme = new()
 ```
 
 
-NordTheme defines the internal, immutable Nord color palette used by ThemeManager to style the UI. It is a single Theme instance configured with per-surface color mappings (Base, Menu, Dialog, Status) so the Nord look is applied consistently without duplicating color definitions throughout the code.
+A private static readonly [`Theme`](Theme.cs.md) named `NordTheme` encodes the Nord color palette for the UI. It initializes `Base`, `Menu`, `Dialog`, and `Status` color schemes with explicit foreground and background values, serving as an immutable, centralized Nord appearance that the theme system can apply when Nord is active.
 
 ## Remarks
-This symbol centralizes the Nord appearance, providing a single source of truth for foreground/background and focus colors across different UI surfaces. It is private to ThemeManager, which means external code should interact with the public theming API rather than reference or mutate this instance. The approach reduces drift between surfaces and makes it easy to switch themes by swapping higher-level theme providers rather than tweaking individual components.
+
+NordTheme acts as a self-contained Nord theme preset, isolating color mappings for core UI regions. Because it is `static` and `readonly`, the palette is stabilized at startup, ensuring consistent visuals across the app when Nord is selected. Each region (`Base`, `Menu`, `Dialog`, `Status`) groups foreground/background pairs, making future tweaks localized to this single field.
 
 ## Notes
-- Be aware that the readonly modifier applies to the field reference; nested ThemeColors instances may still be mutable if their properties expose setters. If true immutability is required, consider making Theme and ThemeColors immutable or returning defensive copies.
 
+- Since `NordTheme` is `private`, external code cannot reference it directly; if runtime theme switching is needed, introduce a public API or factory to expose a Nord palette.
 
 ---
 
-## RosePineTheme
+### OceanTheme
+> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
+> **Kind:** field
+
+```csharp
+private static readonly Theme OceanTheme = new()
+```
+
+
+The private static readonly field `OceanTheme` is a [`Theme`](Theme.cs.md) instance configured with a named palette Ocean and dedicated [`ThemeColors`](Theme.cs.md) for its `Base`, `Menu`, `Dialog`, and `Status` sections. It is initialized inline with specific color tokens such as `BrightCyan`, `DarkBlue`, and `DarkCyan` to ensure a cohesive, visually distinct look across the UI. Being `static readonly` means this instance is created once at type initialization and cannot be reassigned, serving as an internal, consistent theme blueprint for the `ThemeManager`.
+
+## Remarks
+
+This field encapsulates a concrete theme configuration that `ThemeManager` uses internally, without exposing mutable defaults to consumers. Centralizing color mappings for `Base`, `Menu`, `Dialog`, and `Status` in a single private field reduces duplication and promotes visual consistency across the UI. Because the field is private, external code cannot reference or alter it directly; changes must go through the public theming API, preserving encapsulation.
+
+---
+
+### RosePineTheme
 > **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
 > **Kind:** field
 
@@ -588,14 +472,88 @@ private static readonly Theme RosePineTheme = new()
 ```
 
 
-RosePineTheme is a private static readonly Theme instance that encapsulates the RosePine color palette used by the UI. It defines per-area color configurations for Base, Menu, Dialog, and Status, pairing foreground and background colors with their focused variants. This centralized definition provides a single source of truth for the RosePine look and is consumed by the theming subsystem rather than by external code, helping maintain a cohesive visual style across the application.
+RosePineTheme is a private static readonly [`Theme`](Theme.cs.md) instance named `RosePine` that encodes a RosePine color palette for the UI. It defines color roles for `Base`, `Menu`, `Dialog`, and `Status` via nested [`ThemeColors`](Theme.cs.md) objects, specifying `Foreground`, `Background`, `FocusForeground`, and `FocusBackground` values. This single, prebuilt object lets the rest of the UI apply a cohesive RosePine appearance without reconstructing a [`Theme`](Theme.cs.md) from scratch.
 
 ## Remarks
-Centralizes theme-related color data to ensure visual consistency and to simplify theme swapping or adjustment. Keeping the field private hides implementation details from consumers and enforces usage through the theming infrastructure, reducing the risk of accidental divergence in color usage.
+Centralizes the RosePine aesthetic in one place, ensuring consistent color usage across the core chrome (`Base`, `Menu`, `Dialog`, `Status`). As a private static field, it is intended for internal composition by the theme system, reducing boilerplate when constructing themes at runtime. If you need to expose it externally, you would typically wrap or copy it behind a public API.
 
 ## Notes
-- The field is private; external code cannot reference RosePineTheme directly.
-- The field is readonly in reference, but its internal properties may be mutable depending on ThemeColors' mutability; if ThemeColors exposes setters, the palette could be modified after initialization.
-- Static initialization order and potential side effects: If ThemeManager relies on RosePineTheme during application startup, ensure initialization order is correct.
+- Although the field is `readonly`, the nested [`ThemeColors`](Theme.cs.md) instances may still be mutable if their properties have setters. Treat the object as immutable; avoid mutating to preserve a consistent RosePine theme.
+- The field is private, so external consumers cannot reference `RosePineTheme` directly; changes to the theme would require a public accessor or method in `ThemeManager`.
+
+---
+
+### SolarizedTheme
+> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
+> **Kind:** field
+
+```csharp
+private static readonly Theme SolarizedTheme = new()
+```
+
+
+This field defines the pre-defined Solarized color theme as a private, static, readonly [`Theme`](Theme.cs.md) instance named `SolarizedTheme`. It bundles color roles for the base chrome, menus, dialogs, and status areas, providing a centralized Solarized palette that the theming subsystem can apply to the UI. The `private static readonly` designation ensures a single, immutable instance is created at startup, guaranteeing consistent visuals across the application.
+
+## Remarks
+Having a single [`Theme`](Theme.cs.md) instance for Solarized encapsulates the palette in one place, reducing duplication of color literals across UI surfaces. By separating the colors into `Base`, `Menu`, `Dialog`, and `Status` groups, the theme clearly communicates how each UI surface should appear and simplifies future tweaks. This private field serves as an internal canonical source for the Solarized look within the codebase and is consumed by the theming pipeline without exposing implementation details publicly.
+
+---
+
+### ThemeDir
+> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
+> **Kind:** field
+
+```csharp
+private static readonly string ThemeDir = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".echohub", "themes")
+```
+
+
+ThemeDir stores the path to the per-user themes directory for the EchoHub client. It is initialized once at type initialization by combining the user's home directory (obtained via `Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)`) with the relative path `".echohub/themes"`, yielding a stable, user-scoped base for reading or enumerating theme assets.
+
+## Remarks
+- By centralizing the path construction, this private static readonly field reduces duplication and ensures all theme IO uses the same base directory.
+- It encodes the assumption that themes are stored under the user's profile, which keeps user-specific customization isolated from system-wide resources.
+- The static readonly nature means the value is fixed after initialization, simplifying reasoning about its value and caching theme metadata.
+
+## Notes
+- If the environment lacks a user profile directory, `Environment.GetFolderPath` may return an empty string, which would yield an invalid `ThemeDir`. Calling code should validate the path before attempting IO.
+- It is a private field; external code cannot rely on this path and must use public APIs provided by the class for theme access.
+
+---
+
+### TransparentLightTheme
+> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
+> **Kind:** field
+
+```csharp
+private static readonly Theme TransparentLightTheme = new()
+```
+
+
+Defines a concrete [`Theme`](Theme.cs.md) named `TransparentLight` with per-surface color rules for `Base`, `Menu`, `Dialog`, `Status`, and `Border` via [`ThemeColors`](Theme.cs.md). Each surface is configured with `Foreground`, `Background`, and `FocusForeground`/`FocusBackground` values to yield a light, nearly transparent appearance on the host UI: most surfaces use `Background = "None"`, while `Dialog` uses a light gray background and blue focus accents. This field is `private static readonly`, initialized once and used internally by the theming system to provide the `TransparentLight` theme.
+
+## Remarks
+By centralizing the color definitions for a light, semi-transparent appearance, this field enables consistent theming across the UI without scattering color literals throughout the code. Because it is `private`, external code cannot directly reference it; the surrounding theme infrastructure can expose higher-level theme switching that pulls from this internal variant. The immutable reference helps ensure the theme is not accidentally replaced at runtime, though the nested [`ThemeColors`](Theme.cs.md) instances may still be mutated if their properties are writable.
+
+## Notes
+- The `readonly` modifier prevents reassignment of the field, but the nested [`ThemeColors`](Theme.cs.md) objects could still be mutated if their properties have setters; avoid mutating them at runtime to preserve theme consistency.
+
+
+---
+
+### TransparentTheme
+> **File:** `src/EchoHub.Client/Themes/ThemeManager.cs`  
+> **Kind:** field
+
+```csharp
+private static readonly Theme TransparentTheme = new()
+```
+
+
+TransparentTheme is a private, static readonly instance of [`Theme`](Theme.cs.md) that encodes the glassy, transparent UI aesthetic named 'Transparent' and is intended for internal use by the theming system rather than as a public theme. It defines color settings for `Base`, `Menu`, `Dialog`, `Status`, and `Border` to deliver a cohesive appearance, with muted `Border` colors to preserve the translucent look.
+
+## Remarks
+TransparentTheme centralizes the palette for the glassy style in a single immutable object, reducing duplication across components. As a private field, it serves as an internal predefined palette that the theming system can apply without exposing a public API. This encapsulation makes it easy to tweak the look in one place while keeping the public surface stable.
 
 ---

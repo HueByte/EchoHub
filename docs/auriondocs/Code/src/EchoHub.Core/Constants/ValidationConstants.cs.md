@@ -8,13 +8,11 @@ public static partial class ValidationConstants
 ```
 
 
-ValidationConstants is a centralized, static container for validation constraints used throughout the EchoHub.Core domain. It defines reusable patterns for usernames, channel names, and hex color codes, as well as a set of length limits governing passwords, display names, bios, statuses, channel topics, and chat history. The included GeneratedRegex methods expose precompiled Regex instances derived from those patterns, enabling fast, consistent validation without incurring per-call regex compilation.
+ValidationConstants is a centralized repository of validation rules used across the codebase. It defines the canonical pattern strings for usernames, channel names, and hex colors, together with numeric bounds for various user-facing fields. Specifically, it exposes the strings `UsernamePattern`, `ChannelNamePattern`, `HexColorPattern`, and several limit constants such as `MaxPasswordLength`, `MinChannelPasswordLength`, `MaxDisplayNameLength`, `MaxBioLength`, `MaxStatusMessageLength`, `MaxChannelTopicLength`, and `MaxHistoryCount`. In addition, it provides precompiled Regex accessors via the `GeneratedRegex`-decorated methods `UsernameRegex()`, `ChannelNameRegex()`, and `HexColorRegex()`, enabling fast, centralized validation without scattering literal patterns across call sites.
 
 ## Remarks
-ValidationConstants provides a single source of truth for input validation. By offloading regex compilation to source generation, it avoids runtime overhead while keeping the validation rules easily discoverable and consistent across the codebase.
-
-The class is static and partial, so callers simply reference ValidationConstants.UsernameRegex(), ValidationConstants.ChannelNameRegex(), and ValidationConstants.HexColorRegex() to obtain ready-to-use Regex instances.
+By centralizing these constraints, `ValidationConstants` minimizes drift in validation rules across features (sign-up, profile updates, channel creation, etc.) and makes it easy to update rules in one place. The `UsernameRegex()`, `ChannelNameRegex()`, and `HexColorRegex()` methods are generated at compile time by the `GeneratedRegex` attribute, which yields ready-to-use, presumably cached `Regex` instances, reducing runtime regex compilation overhead at validation points.
 
 ## Notes
-- GeneratedRegex provides compile-time-compiled Regex instances, which improves performance by avoiding repeated regex compilation at runtime.
-- Updating any constraint here propagates the change to all validation sites, ensuring consistency; do not duplicate rules elsewhere.
+- GeneratedRegex-based accessors rely on C# source generation; ensure your project enables source generators and targets a compatible framework, otherwise these methods may not be produced.
+- The constants define the canonical validation boundaries pharmacologically used by the system; changing them updates all consumers that reference these values.

@@ -18,15 +18,21 @@ public class Theme
 ```
 
 
-Theme is the central container for theming the EchoHub client UI. It holds a Name and four color palettes (Base, Menu, Dialog, Status) used across the main window and its chrome; plus an optional Border palette that can override only the frame borders while the rest remains tied to Base. If Border is null, the border colors fall back to the Base palette, letting themes tone borders down independently from text to achieve effects like glassy translucency. The palettes default to new ThemeColors instances, so a Theme is immediately usable and developers only configure what they need. Border supports hex literals like "#6E6E6E" and named colors, enabling quick tweaks without changing the rest of the palette.
+The `Theme` class encapsulates the color palette used by the UI. It groups per-surface color sets for the main surfaces (`Base`, `Menu`, `Dialog`, `Status`) and exposes an optional `Border` color that can override the window frame independently of text. By providing a name and a complete set of colors, a developer can switch or define visual styles at runtime and apply them to the UI. If you do not need a separate border color, leave `Border` as null to fall back to `Base`.
 
 ## Remarks
-Theme isolates brand identity and UI chrome from layout logic, enabling themes to be swapped at runtime or per user preference. The per-area color groups—Base, Menu, Dialog, and Status—provide visual consistency while allowing targeted overrides; Border offers a focused knob for edge treatment without touching text colors. This composition reduces duplication: a single Theme can render across the chrome, with optional Border overrides to achieve distinctive looks without rewriting color logic.
+The `Theme` object acts as a central theme descriptor that isolates surface-specific colors from the core palette, making it easy to create variants (e.g., light, dark, or glassy appearances) without scattering color values through the code. The optional `Border` enables stylistic nuances for window chrome without altering text or control coloring, helping to achieve subtler, themed aesthetics while preserving readability.
 
-## Notes
-- Name is marked as required; always provide a non-empty value during initialization.
-- Border is nullable. If you don't set it, the UI uses Base colors for borders; set Border when you want to tint borders independently.
-- Hex codes and named colors: ensure strings you assign are valid color tokens understood by the theming system to avoid fallback or misrendering.
+## Example
+```csharp
+var theme = new Theme
+{
+    Name = "Glass",
+    Base = new ThemeColors(), // default color family for surfaces
+    Border = null // explicit fallback to Base colors for borders
+};
+```
+
 
 ---
 
@@ -39,14 +45,13 @@ public class ThemeColors
 ```
 
 
-ThemeColors is a small data container that holds the color choices used by the UI theme. It exposes four properties—Foreground, Background, FocusForeground, and FocusBackground—each with a sensible default (White on Black for normal state, and White on Blue for focused state). This class centralizes theming values so UI components can render consistently and themes can be swapped by supplying a ThemeColors instance rather than scattering color literals throughout rendering code.
+ThemeColors is a small data container that groups the color tokens used by the UI: `Foreground`, `Background`, `FocusForeground`, and `FocusBackground`. Create and pass a single `ThemeColors` instance to ensure consistent theming across components rather than scattering color literals throughout the code.
 
 ## Remarks
-- It acts as a cohesive value object for theming, separating concerns between color data and rendering logic.
-- It enables swapping themes by replacing one ThemeColors instance rather than modifying rendering code.
-- It is mutable, allowing runtime theme adjustments; if a ThemeColors instance is shared across threads, consider synchronization to avoid race conditions.
+By centralizing color choices in `ThemeColors`, the UI can swap themes or provide variations without touching individual controls. The default initializers encode a high-contrast dark theme (white text on black, focus highlight in blue), but you can override any property to tailor a theme for a particular context.
 
 ## Notes
-- If you mutate and share ThemeColors across threads, you may encounter race conditions; prefer per-thread copies or proper synchronization when updating values.
+- Mutability: the properties have public setters, so the color values can be changed after construction; if a `ThemeColors` instance is shared, mutations will affect all dependents.
+- Defaults are defined via property initializers; override them on construction if you want a different baseline.
 
 ---

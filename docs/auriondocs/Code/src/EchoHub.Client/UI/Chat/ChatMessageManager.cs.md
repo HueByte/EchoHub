@@ -43,8 +43,8 @@
   - [SystemHeaderSegments](#systemheadersegments)
   - [UnreadMarkerRule](#unreadmarkerrule)
   - [WordWrap](#wordwrap)
+  - [ContentIndentCols](#contentindentcols)
   - [NickColWidth](#nickcolwidth)
-- [ContentIndentCols](#contentindentcols)
 
 ---
 
@@ -57,15 +57,15 @@ public sealed class ChatMessageManager
 ```
 
 
-Manages in-memory chat message storage, formatting and mutation for per-channel chat views. Use this when you need a single place to append formatted ChatLine objects, track per-channel unread counts and mention state, and notify the UI layer of any message-list changes via the MessagesChanged event.
+Manages in-memory storage, formatting and mutation of chat messages for the UI. Use `ChatMessageManager` when the UI needs a single authoritative source of formatted [`ChatLine`](ChatLine.cs.md) objects per channel (instead of rendering raw [`MessageDto`](../../../EchoHub.Core/DTOs/ChatDtos.cs.md)), together with built-in tracking for unread counts, @mentions, and the "new messages" anchor; the manager raises the `MessagesChanged` event to notify views after any change.
 
 ## Remarks
-ChatMessageManager is the authoritative owner of channel message lists and the policies around unread/mention tracking and visual markers. It centralizes: formatting incoming MessageDto values into ChatLine instances (including insertion of day-boundary/date rules and continuation indentation), per-channel unread counters and "new messages" anchors, mention detection for the configured CurrentUser, and a persisted LastReadIds map that an external orchestrator can seed or store. The MessagesChanged event is fired with the channel name after any mutation so the UI can refresh only the affected view.
+`ChatMessageManager` is the UI-layer message store and formatter: it converts incoming [`MessageDto`](../../../EchoHub.Core/DTOs/ChatDtos.cs.md) instances into [`ChatLine`](ChatLine.cs.md) entries (including attachments, continuation lines and mention detection), keeps per-channel lists (`_channelMessages`), and maintains per-channel state such as `_channelUnread`, `_channelLastDate`, `_markedChannels`, `_markerAnchor`, `_mentionChannels`, `_lastRead` and `_channelNewestId`. It exposes read-only views like `LastReadIds` and `MentionChannels`, publishes `MessagesChanged` (the event handler receives the channel name) after mutations, and defines layout constants `NickColWidth` and `ContentIndentCols` used when preparing [`ChatLine`](ChatLine.cs.md) content. Leaving the active channel consumes the current "new messages" marker and treats visible messages as read (see `CurrentChannel` behavior). System and status messages are added via `AddSystemMessage`/`AddStatusMessage` with colored styling (the implementation uses color attributes to build [`ChatLine`](ChatLine.cs.md) segments).
 
 ## Notes
-- Changing CurrentChannel has side effects: leaving a channel consumes its "new messages" marker and marks messages visible up to that point as read (this mirrors irssi-like behavior). Subscribe to MessagesChanged to react to those updates.
-- SetCurrentUser and SetChatWidth should be populated by the host before relying on mention highlighting or line wrapping/continuation; the manager uses the current user and the configured width when formatting lines.
-- LastReadIds is exposed as a read-only dictionary but is expected to be persisted/seeded externally (the manager exposes per-channel last-read message IDs so the orchestrator can restore unread/mention state across restarts).
+- `ChatMessageManager` has no internal synchronization in the implementation; treat it as single-thread/UI-thread affinity or ensure callers serialize access to avoid race conditions.
+- The internal `GetUnreadCounts()` returns the live `_channelUnread` dictionary (not a defensive copy); callers outside the defining assembly should not mutate it and consumers inside the assembly should treat it as the authoritative store.
+- `LastReadIds` is exposed as an `IReadOnlyDictionary<string, Guid>` and is intended to be persisted/seeded by the orchestrator so unread/mention state can be restored across reconnects.
 
 ---
 
@@ -78,16 +78,10 @@ public string CurrentChannel
 ```
 
 
-CurrentChannel exposes the actively selected chat channel and drives the UI-facing unread and mention-detection logic. When you switch channels, the setter clears the unread marker and marks the previous channel as read before updating the active channel reference, ensuring the old channel is considered read and the new channel becomes the current focus.
+The `CurrentChannel` property tracks the actively viewed chat channel for unread tracking and `@mention` detection. When set to a different channel, it calls `RemoveUnreadMarker` and `MarkRead` on the old channel and then updates `_currentChannel`. This irssi-like behavior causes leaving a channel to consume its unread marker so the next burst starts fresh, while messages seen so far are considered read.
 
 ## Remarks
-This property centralizes the channel-switch lifecycle, ensuring consistent unread-state handling and mention detection as users move between channels. By containing the transition effects (clearing unread markers and marking read) within the setter, it reduces the risk of scattered state mutations elsewhere in the codebase and clarifies the responsibilities of channel state management.
-
-## Notes
-- Switching channels clears unread markers for the old channel and marks it as read; the new channel's unread state remains unchanged until you leave it, which can be surprising if you expect an immediate clear on entry.
-- Setting CurrentChannel to the same value is a no-op; no side effects run in that case.
-- If _currentChannel is null (e.g., before any channel is selected), RemoveUnreadMarker(null) and MarkRead(null) will be invoked; depending on the implementations of those methods, this may be a no-op or require null handling.
-
+This property centralizes per-channel unread-state transitions, preventing scattered logic across the UI. It encapsulates the behavior that leaving a channel marks it as read and clears its unread marker, aligning channel navigation with message visibility and mention detection.
 
 ---
 
@@ -100,15 +94,7 @@ public string CurrentUser => _currentUser
 ```
 
 
-Exposes the name of the user currently associated with the chat message manager as a read-only string. It simply returns the value of the private backing field _currentUser, providing a lightweight way to display or log the current user's identity without altering state. Use this property when you need to show who is sending a message, tag messages in the UI, or include the user in diagnostics; since it is backed by a field, there is no additional computation beyond a simple getter.
-
-## Remarks
-CurrentUser acts as a thin surface over the internal state representing the active user. By exposing it as a property, the class avoids leaking the backing field while still providing an ergonomic, strongly-typed access point for consumer code. This is useful for displaying the current user in the chat header or tagging messages; changes to _currentUser will be immediately visible through CurrentUser because the getter reads the field value at access time. Keep in mind that if _currentUser is null, CurrentUser will be null as well, so downstream code should handle nulls accordingly.
-
-## Notes
-- No public setter is provided; updates must occur by updating the backing field _currentUser within the class.
-- The value can be null if _currentUser hasn't been assigned yet.
-- There is no explicit thread-safety guarantee for this getter; if _currentUser may be updated from other threads, callers should ensure visibility.
+CurrentUser is a read-only property that returns the value of the private `_currentUser` field. It offers a simple accessor to retrieve the identifier of the user associated with the current chat message context, without allowing mutation. Use it when you need to display, log, or branch logic based on the active user.
 
 ---
 
@@ -121,23 +107,23 @@ public IReadOnlyDictionary<string, Guid> LastReadIds => _lastRead
 ```
 
 
-LastReadIds exposes, for each channel, the ID of the last message the user has read, as maintained by the orchestrator and persisted across connections. Use it to determine which messages are new and to seed unread/mention state when the client reconnects.
+LastReadIds is a read-only dictionary that maps each channel identifier to the GUID of the last message the user has read in that channel. It is persisted by the orchestrator so unread/mention state can be seeded from history on the next connect via the underlying `_lastRead` store.
 
 ## Remarks
-Conceptually, this property decouples read-tracking from the UI, centralizing per-channel state in a durable dictionary that survives restarts. It relies on the orchestrator to persist history so unread markers and mentions align with the user's activity after reconnecting.
+Because this property type is `IReadOnlyDictionary<string, Guid>`, callers can read per-channel last-read IDs but cannot mutate them directly. Updates to this state are performed by the orchestrator that owns `_lastRead`, ensuring a single source of truth for read progress. The dictionary's keys are channel IDs and the values are the corresponding message GUIDs used to determine which messages are considered unread or mentioned on reconnection.
 
 ## Example
 ```csharp
-if (chat.LastReadIds.TryGetValue(channelId, out var lastReadId))
+// Safe access: check if a channel has a recorded last read
+if (LastReadIds.TryGetValue("general", out Guid lastReadGeneral))
 {
-    // lastReadId is the ID of the last message the user has read in this channel
-    // Use lastReadId to identify messages that are newer and should be highlighted as unread.
+    // use lastReadGeneral
 }
 ```
 
 ## Notes
-- The dictionary is exposed as a read-only view; internal logic updates the underlying data. Do not attempt to mutate the collection from consumer code.
-- If a channel isn't present in the dictionary, TryGetValue will return false; treat that as 'no stored last read' and consider all messages as potentially unread.
+- Accessing a channel that has no entry via the indexer can throw `KeyNotFoundException`; prefer `TryGetValue` or check `ContainsKey` before indexing.
+- This property is read-only; to update the last-read information, update the underlying store through the orchestrator that manages `_lastRead`.
 
 ---
 
@@ -150,15 +136,14 @@ public IReadOnlySet<string> MentionChannels => _mentionChannels
 ```
 
 
-Exposes the set of chat channels that currently have unread mentions of the current user. The value is returned as an `IReadOnlySet<string>` and is backed by the internal _mentionChannels field. Callers typically rely on MentionChannels to drive UI indicators (such as per-channel badges or highlights) showing which channels require the user's attention. The unread-mention state is cleared when ClearUnread is invoked.
+MentionChannels is a read-only view of the channels that currently have an unread @mention for the current user. It exposes the internal `_mentionChannels` as an `IReadOnlySet<string>` so UI code can display mention indicators without mutating internal state; the underlying collection is cleared by `ClearUnread` when the user acknowledges those mentions.
 
 ## Remarks
-
-Represents a read-only view into the manager's internal tracking of unread mentions. By returning an IReadOnlySet, it prevents accidental mutation from consumer code while still letting the UI reflect up-to-date state. Updates to the set occur through internal logic; ClearUnread resets the collection to an empty state, removing all current unread mentions.
+This property serves as a stable projection of unread-mention state to the UI, decoupling presentation from private state. It keeps mutation confined to internal logic while exposing a safe, read-only view of the channels requiring attention.
 
 ## Notes
+- The collection is exposed as an `IReadOnlySet<string>`; callers should not attempt to mutate it. Any updates must go through internal logic that updates `_mentionChannels` and raises the appropriate UI refresh.
 
-- This property is a live view of internal state; external code cannot mutate it directly. If the internal collection is updated, the new contents will be visible on subsequent enumeration.
 
 ---
 
@@ -184,15 +169,11 @@ private static List<ChatSegment> ActionHeaderSegments(string time) =>
 **Returns:** `List<ChatSegment>`
 
 
-ActionHeaderSegments builds the header used when rendering /me action messages in the chat UI. It returns a `List<ChatSegment>` consisting of three parts: a timestamp segment created from the provided time string, a star-prefixed nickname segment produced by PadNick("*"), and a small rail separator. This header is meant to precede the actual action content, producing a visual like a timestamp, a leading "*" in the nick column, and a divider before the action text. The method relies on ChatColors.TimestampAttr for the time and star segments, and RailAttr for the separator, ensuring the header follows the established chat theming.
+Builds the header for /me action messages by composing three chat segments: the provided time string styled as a timestamp, a starred nickname via `PadNick("*")` styled with the same timestamp color, and a rail divider styled with `ChatColors.RailAttr`. It returns a new `List<ChatSegment>` that callers pass to the chat renderer to produce a consistent header for /me actions.
 
 ## Remarks
-ActionHeaderSegments encapsulates the specific visuals for /me action headers, ensuring all such headers are rendered consistently across the UI. By composing the header from three standardized ChatSegment pieces and delegating nickname rendering to PadNick, it centralizes styling concerns and reduces duplication in the rendering path. The dependency on ChatColors and PadNick ties this header closely to the existing color theming and nickname formatting used elsewhere in the chat system.
+This helper encapsulates the exact header layout for action messages, so changes to styling or ordering are centralized. By consistently using `ChatColors.TimestampAttr` for the time and `ChatColors.RailAttr` for the divider, it ensures a uniform appearance with other header variants. Returning a fresh list preserves the header construction as an explicit, side-effect-free operation for callers.
 
-## Notes
-- This method is private and static, serving as an internal helper for header construction during message rendering. External code cannot call it directly.
-- The time parameter must be a pre-formatted display string; the method does not perform formatting or validation of the time value.
-- If the visual design for action headers changes (e.g., a different marker or separator), this single method should be updated to preserve consistency across all /me action headers.
 
 ---
 
@@ -213,17 +194,13 @@ public void AddMessage(MessageDto message)
 **Returns:** `void`
 
 
-Formats and stores a received message by first formatting it into display lines and then persisting those lines under the message’s ChannelName. It enforces a day-boundary rule by inserting a DateRule when the local date of the new message differs from the previous one, and it updates the latest message ID and, if applicable, the current-read pointer for the active channel. For inactive channels, it adds a one-time New Messages marker anchored to this message so a history reload can re-place it, and it increments the per-channel unread count while noting any mentions for later highlighting. Finally, it raises the MessagesChanged event to notify observers that the channel’s messages have updated.
+Formats and stores a received [`MessageDto`](../../../EchoHub.Core/DTOs/ChatDtos.cs.md) into per-channel history, applying day-boundary separators, updating read/unread state, and notifying listeners. It formats the message with `FormatMessage(message)`, ensures a per-channel list exists in `_channelMessages`, and inserts a date rule via `DateRule` whenever the message's local date differs from the last recorded date for that channel (derived from `message.SentAt`). It marks the message as read when it belongs to the active channel (`_currentChannel`), updates `_lastRead` and the channel's newest id, and, for inactive channels, adds an initial unread marker anchored to this message. The method then appends all formatted lines, increments the per-channel unread count, tracks mentions by checking `IsMention` on any line, and finally raises the `MessagesChanged` event for the affected channel.
 
 ## Remarks
-
-This method centralizes all per-message mutations for the chat UI, ensuring consistent channel-state updates when new data arrives. It relies on the message.SentAt timestamp (converted to local time) to decide day boundaries and uses internal dictionaries (e.g., _channelMessages, _channelUnread, _markedChannels) to keep unread counts, markers, and last-read state in sync across channels. By anchoring an unread marker to the first unread message in inactive channels, it enables reliable re-placement on history reloads, while emitting MessagesChanged keeps the UI responsive to changes.
+Centralizes the ingestion of incoming messages, coupling formatting, date segmentation, unread bookkeeping, and event propagation into a single place. This reduces scattered updates across the UI and ensures consistent behavior when messages arrive for either the active or inactive channels. It relies on internal per-channel dictionaries and sets (e.g. `_channelMessages`, `_channelLastDate`, `_currentChannel`, `_lastRead`, `_markedChannels`, `_markerAnchor`, `_channelUnread`, `_mentionChannels`, and the `MessagesChanged` event) to maintain state and emit notifications.
 
 ## Notes
-
-- The method assumes message.ChannelName is non-null; otherwise an exception could be thrown when using dictionary keys.
-- It uses ToLocalTime; time zone implications depend on the runtime environment and MessageDto's SentAt value.
-- The internal state mutations are not protected by synchronization; callers should ensure serial access or add locking if called from multiple threads.
+- Be mindful of concurrency: `_channelMessages`, `_channelUnread`, and related state are mutated here without explicit synchronization; callers streaming messages for the same channel concurrently should serialize updates to avoid races.
 
 ---
 
@@ -246,17 +223,7 @@ public void AddStatusMessage(string channelName, string username, string status)
 **Returns:** `void`
 
 
-Adds a status change message to a channel with colored styling. It captures a timestamp via FormatTime(DateTimeOffset.Now), constructs header segments with SystemHeaderSegments, appends a segment describing the status change in the username’s color via ChatColors.SystemAttr, ensures the channel entry exists in the internal _channelMessages store, appends a new ChatLine built from the assembled segments (including a ContinuationPrefixSegments from RailPrefix), and, if the updated channel is the currently viewed one, fires the MessagesChanged event to refresh the UI.
-
-## Remarks
-
-This method centralizes the presentation of user status updates as timestamped, system-colored messages within a per-channel chat history. By encapsulating the formatting (time header, system-colored status text) and the mutation of the channel’s message list, it promotes consistent visual styling across channels and keeps UI updates synchronized with data changes.
-
-## Notes
-
-- Be mindful of thread-safety: _channelMessages is mutated without explicit synchronization, so concurrent calls could race in a multi-threaded context.
-- Time formatting depends on the system clock; for deterministic tests, consider controlling FormatTime/DateTimeOffset.Now or abstracting time retrieval.
-
+Adds a status change message to a chat channel by composing a time-stamped system message that declares a user’s new status. It builds a header via `FormatTime(DateTimeOffset.Now)` and `SystemHeaderSegments`, appends a system-colored segment with the content "{username} is now {status}" using `ChatColors.SystemAttr`, ensures the target channel exists in `_channelMessages`, and stores a new [`ChatLine`](ChatLine.cs.md) (with its `ContinuationPrefixSegments` set by `RailPrefix()`) in that channel. If the affected channel is currently active (`_currentChannel`), it raises `MessagesChanged` to prompt the UI to refresh. This method centralizes status updates as consistently styled system messages within the chat history, shielding callers from the details of message construction and channel management.
 
 ---
 
@@ -278,15 +245,15 @@ public void AddSystemMessage(string channelName, string text)
 **Returns:** `void`
 
 
-Adds a system/informational message to a channel with colored styling. When invoked, it ensures the channel's message list exists, formats the current time, splits multi-line text so the first line appears in the header and subsequent lines are added as separate lines with a rail-style continuation prefix; if the target channel is the currently visible one, it triggers a UI refresh via MessagesChanged.
+Adds a system/informational message to a named chat channel, styling the header and body with the system color attribute. It ensures the channel's message list exists, builds a timestamp with `FormatTime`, and renders multi-line text by placing the first line in a header and each subsequent non-empty line as a continuation line prefixed with `RailPrefix` and colored via `ChatColors.SystemAttr`. If the targeted channel is currently active (`_currentChannel`), it raises the `MessagesChanged` event to refresh the UI.
 
 ## Remarks
-System messages are rendered with a header line that includes a timestamp, followed by body segments styled with SystemAttr. This method centralizes the formatting of such messages, so callers don't need to assemble headers or manage continuation prefixes themselves. It relies on ChatLine, ChatColors, and RailPrefix to produce a consistent visual treatment across channels.
+This method centralizes the rendering policy for system messages, ensuring consistent visual treatment across channels. By composing [`ChatLine`](ChatLine.cs.md) instances from a header built with `SystemHeaderSegments(time)` and per-line continuation segments via `RailPrefix()`, it enforces a cohesive, rail-prefixed block that clearly marks informational notices. It also isolates the UI update trigger to the active channel through `MessagesChanged`.
 
 ## Notes
-- Potential lack of thread-safety if called from multiple threads; the internal _channelMessages dictionary is mutated without locking.
-- Only the UI refresh is raised when posting to the currently active channel (otherwise the message is updated silently).
-- Lines after the first are treated as separate ChatLine entries with their own continuation prefix; blank lines are ignored.
+- It uses a direct `DateTimeOffset.Now` for the timestamp, which can affect testability and determinism.
+- Blank lines in the input text after the header are ignored; only non-empty lines after the first are rendered.
+- The code assumes `_channelMessages` can be mutated by adding lists; thread-safety is not shown.
 
 ---
 
@@ -309,14 +276,14 @@ private static ChatLine AttachmentActionLine(string text, Attribute color, Attac
 **Returns:** [`ChatLine`](ChatLine.cs.md)
 
 
-The AttachmentActionLine method constructs a ChatLine that renders as a clickable attachment action within the chat list. It prefixes the display text with a standardized rail segment, colors the text using the provided color attribute, and attaches the underlying attachment metadata (URL, file name, and kind) so the UI can route activation to the correct behavior (play audio, download, or save the original image).
+Builds a clickable attachment line carrying the metadata the message list uses to route activation (play audio, download file, save original image). It constructs a [`ChatLine`](ChatLine.cs.md) by starting with `RailPrefix()` for its segments, adds a colored `text` segment, and returns a [`ChatLine`](ChatLine.cs.md) initialized with those segments. The returned object populates `AttachmentUrl`, `AttachmentFileName`, and [`AttachmentKind`](../../../EchoHub.Core/Models/AttachmentKind.cs.md) from the provided `attachment`, and sets `ContinuationPrefixSegments` to a fresh `RailPrefix()` so continuation rails render consistently.
 
 ## Remarks
-AttachmentActionLine centralizes how attachment-based actions are presented in the chat. By bundling the styling prefix, action text, and attachment metadata in a single factory, it keeps rendering and activation logic cohesive and easier to maintain. The method relies on RailPrefix to ensure consistent visual grouping and populates ChatLine's attachment properties so downstream UI and activation code can locate the URL, file name, and kind without reassembling them.
+This helper centralizes how attachment actions are rendered in the chat UI. By wrapping the segment construction and attachment-metadata binding in one place, it guarantees consistent appearance and reliable routing for actions like playing, downloading, or saving attachments across the message list.
 
 ## Notes
-- The method is private and static, so it is only callable within its containing type and from a known, fixed entry point.
-- It sets ContinuationPrefixSegments to RailPrefix(), ensuring continuation lines align with the same action prefix; altering RailPrefix behavior might affect line wrapping or click target consistency.
+- Assumes a non-null [`AttachmentDto`](../../../EchoHub.Core/DTOs/ChatDtos.cs.md) for `attachment`; passing null will throw a `NullReferenceException` when accessing `attachment.Url`, `attachment.FileName`, or `attachment.Kind`.
+
 
 ---
 
@@ -331,15 +298,13 @@ public void ClearAll()
 **Returns:** `void`
 
 
-Clears all internal message state maintained by the chat message manager. This method empties all per-channel data stores and resets the current context, providing a clean slate when disconnecting or reinitializing the chat UI. It is used during disconnect sequences to prevent stale data from persisting across sessions.
+Resets all message state by clearing internal caches and resetting the current context. This method is intended to be called on disconnect to guarantee a clean slate for the next session, by clearing per-channel stores such as `_channelMessages`, `_channelUnread`, `_channelLastDate`, `_markedChannels`, `_markerAnchor`, `_mentionChannels`, `_lastRead`, and `_channelNewestId`, and by resetting `_currentChannel` and `_currentUser` to `string.Empty`.
 
 ## Remarks
-By encapsulating reset logic here, the class guarantees a consistent baseline state after disconnection. It reduces the risk of partially cleared state being left behind when disconnects occur in various code paths, and it centralizes lifecycle management for chat state.
+By centralizing the teardown logic in `ClearAll`, the class avoids scattered cleanup code across multiple paths. It encapsulates what it means to reset message state, so after a disconnect the object is in a well-defined, initial state ready for a new connection. This helps prevent subtle bugs caused by leftover state persisting between sessions and simplifies future maintenance.
 
 ## Notes
-- Not inherently thread-safe: callers should ensure synchronization if the ChatMessageManager is accessed concurrently during disconnect.
-- After invocation, there is no active channel or user until reinitialization occurs; _currentChannel and _currentUser are set to empty strings.
-- This method only clears in-memory state; any external resources or persisted data are unaffected.
+- Calling `ClearAll` while message processing is ongoing may cause transient inconsistencies if concurrent access occurs; coordinate with any ongoing operations or ensure proper synchronization before disconnect.
 
 ---
 
@@ -360,16 +325,10 @@ public void ClearChannelMessages(string channelName)
 **Returns:** `void`
 
 
-Clears all messages for a specific channel from the client-side chat state. If the channel exists in the internal message map, it empties that channel's message list and removes the per-channel metadata: the last date, marked channels, and marker anchor for that channel. If the channel being cleared is currently active, it raises the MessagesChanged event to notify the UI to refresh for that channel. If the channel does not exist in the map, this method is a no-op. The operation affects only in-memory state and does not touch persistent storage or other channels.
+Clears all messages associated with the specified channel (`channelName`) and resets the per-channel state by clearing the collection in `_channelMessages` and removing related metadata from `_channelLastDate`, `_markedChannels`, and `_markerAnchor`. If the cleared channel matches `_currentChannel`, it triggers the `MessagesChanged` event to notify listeners to refresh the UI.
 
 ## Remarks
-This method centralizes the cleanup of per-channel UI state, ensuring that clearing a channel leaves the rest of the UI in a consistent state. By clearing the per-channel dictionaries and lists alongside the messages, it prevents stale metadata from lingering after a channel's history is purged. The MessagesChanged event invocation for the current channel decouples UI refresh logic from the data update, allowing subscribers to re-render the channel view as needed.
-
-## Notes
-- No persistence: only in-memory state is cleared.
-- Safe-to-call-no-op: if the channel is missing from _channelMessages, the method returns without side effects.
-- Assumes non-null per-channel message list: a null collection would cause a NullReferenceException on Clear, so callers should ensure the data is initialized.
-- If multiple components listen for MessagesChanged, the event will fire only when the cleared channel is the current channel; other channels won't trigger an automatic refresh from this call.
+Centralizes per-channel cleanup so callers don’t manually touch `_channelMessages`, `_channelLastDate`, `_markedChannels`, or `_markerAnchor`, reducing duplication and the risk of inconsistent state. By only raising the `MessagesChanged` event when the cleared channel is the active one (`_currentChannel`), it keeps UI updates efficient and scoped to the currently viewed channel.
 
 ---
 
@@ -390,23 +349,10 @@ public void ClearUnread(string channelName)
 **Returns:** `void`
 
 
-Clears the unread state for the specified channel by resetting its unread count, removing mention highlights, and marking the channel as read. This is typically invoked when the user opens or explicitly reads a channel, ensuring the UI and internal state reflect that there are no remaining unread messages for that channel.
+Resets the unread state for a given channel by setting its unread counter to zero, removing any pending mention for that channel, and applying the read-state via `MarkRead`.
 
 ## Remarks
-
-Clears three facets of unread state in a single operation: it updates the internal unread counter for the channel, removes the channel from the active mention-tracking collection, and delegates to MarkRead to apply the persisted read-state. This centralizes the read-clearing behavior so the rest of the UI can rely on a single, consistent method rather than duplicating logic at multiple call sites. The exact effects depend on the implementations of _channelUnread, _mentionChannels, and MarkRead; for example, if the channel is not yet present, the first assignment will create an entry with 0 unread, and Remove will be a no-op if the channel is not in _mentionChannels.
-
-## Example
-
-```csharp
-// Assuming 'manager' is an instance of ChatMessageManager
-manager.ClearUnread("general");
-```
-
-## Notes
-- If ClearUnread is invoked for a channel that did not previously exist in the internal structures, the first line will create or overwrite an entry with a value of 0.
-- The behavior of MarkRead is relied upon to finalize the read-state side effects; if MarkRead triggers additional side effects (e.g., persistence or events), those will occur as part of this call.
-
+This is the centralized operation used when a user acknowledges messages in a channel. It ensures unread indicators and mention flags stay in sync by updating `_channelUnread`, removing the channel from `_mentionChannels`, and delegating to `MarkRead` for any additional read-state side effects.
 
 ---
 
@@ -427,14 +373,19 @@ private static ChatLine DateRule(DateTime date)
 **Returns:** [`ChatLine`](ChatLine.cs.md)
 
 
-DateRule constructs a stylized date separator line for a given date within the chat UI. It derives a label from DateRuleLabel(date) and returns a ChatLine containing a single segment that renders as "── {label} ──" using ChatColors.DateRuleAttr. The returned ChatLine also has its RuleLabel set to the label and its RuleAttr set to the same color attribute. Use this helper whenever you need a consistent, date-bounded visual divider between messages rather than composing lines manually.
+DateRule takes a `DateTime` and returns a [`ChatLine`](ChatLine.cs.md) that renders a date-based separator in the chat UI. It computes a label with `DateRuleLabel(date)` and uses a single segment containing the decorative string `── {label} ──` colored by `ChatColors.DateRuleAttr`. The returned [`ChatLine`](ChatLine.cs.md) is tagged with `RuleLabel = label` and `RuleAttr = ChatColors.DateRuleAttr` for downstream styling and identification. This internal helper is used to insert consistent date separators into the chat stream.
 
 ## Remarks
-By encapsulating the creation of the date rule, DateRule provides a single point of change for how date separators look and behave. It coordinates the label generation with the chat coloring to ensure separators match other UI rule lines and follow the project's styling conventions for date-related cues. This abstraction sits alongside ChatLine and ChatColors, reinforcing a uniform approach to rendering non-message chrome in the chat.
+By funneling date-separator creation through this helper, the UI ensures all date rules share the same label-generation point (`DateRuleLabel`) and styling (`ChatColors.DateRuleAttr`). It constructs a new [`ChatLine`](ChatLine.cs.md) without mutating existing state, acting purely as a formatter/renderer within the chat assembly process.
+
+## Example
+```csharp
+var line = DateRule(DateTime.Today);
+```
 
 ## Notes
-- Changes to DateRuleLabel or the decorative glyphs will affect every date separator; tests that assert exact separator text should be updated if the label generation changes.
-- DateRule is private static, so its reuse is limited to the containing class; if external customization is needed, consider elevating the helper to a more accessible API or adjusting the color attribute usage in ChatColors.DateRuleAttr.
+- It relies on `DateRuleLabel(date)` for the label; any change to that method changes all date separators generated by `DateRule`.
+- As a private helper, it's only callable from within its containing type; external code cannot call it directly, which is intentional to keep the formatting internal.
 
 ---
 
@@ -455,13 +406,16 @@ internal static string DateRuleLabel(DateTime date) => date.ToString("ddd, MMM d
 **Returns:** `string`
 
 
-Converts a DateTime to a short, human-friendly label using the pattern 'ddd, MMM d yyyy'. This helper returns a string such as 'Tue, Jul 23 2024' and is used by the chat UI to display date labels consistently instead of formatting dates ad-hoc at each call site.
+Formats the provided `DateTime` as a compact label using the pattern `ddd, MMM d yyyy` and returns the resulting string. This internal helper centralizes date-label formatting for the UI (for example, chat message headers) to ensure consistency and avoid duplicating formatting logic across call sites.
 
 ## Remarks
-This method centralizes the exact format used across the chat components, ensuring consistent date labels. It is declared internal and static, indicating it's intended for internal use within the ChatMessageManager's UI rendering flow rather than as part of the public API.
+This small helper centralizes the specific date-label format in one place, ensuring consistent UI labeling across chat-related components. Because it relies on `DateTime.ToString` with a culture-aware format specifier, the output respects the current culture's short day and month names; changing the style in one place will propagate wherever `DateRuleLabel` is used. It is an internal static method, so it's not part of the public API.
 
-## Notes
-- This formatting respects the current culture; for stable, culture-independent output, supply a culture-invariant format (e.g., date.ToString("ddd, MMM d yyyy", CultureInfo.InvariantCulture)) and add a using System.Globalization.
+## Example
+```csharp
+string label = DateRuleLabel(new DateTime(2024, 5, 1)); // "Wed, May 1 2024"
+```
+
 
 ---
 
@@ -483,15 +437,7 @@ private static List<ChatLine> FormatEmbed(EmbedDto embed, int chatWidth)
 **Returns:** `List<ChatLine>`
 
 
-Formats an embed into a vertical sequence of chat lines with a left rail and colored text, suitable for rendering inside the chat UI. It accepts an EmbedDto and the current chat width, computes the available text area, and assembles lines that begin with a fixed border segment colored by the embed border color, followed by the actual text colored per section (title or description). If present, SiteName is emitted first using the border color; Title is wrapped to the computed text width and emitted with EmbedTitleAttr; Description is wrapped similarly with EmbedDescAttr. The method returns a `List<ChatLine>` that can be rendered as part of a larger message.
-
-## Remarks
-FormatEmbed centralizes the formatting decisions for embeds in the chat UI, ensuring a consistent look by deriving the border color from the embed ThemeColor or falling back to a default border color, and by applying distinct styling to the title and description. It relies on shared utilities (WordWrap and RailPrefix) to wrap text to the computed width and to align lines with a left rail, respectively. Because this is a private helper, its usage is confined to the containing class, which helps encapsulate embed rendering and prevents drift from the surrounding chat presentation.
-
-## Notes
-- If embed.ThemeColor is an invalid hex string, the border color falls back to ChatColors.EmbedBorderAttr.
-- The text width is computed from the provided chatWidth and is clamped to a minimum of 20 columns; very small chat widths may lead to tighter wrapping and more lines.
-
+Formats an embed payload into a vertical sequence of chat lines suitable for rendering in the UI. Given an [`EmbedDto`](../../../EchoHub.Core/DTOs/ChatDtos.cs.md) with `SiteName`, `Title`, `Description`, and `ThemeColor`, it returns a `List<ChatLine>` that visually represents the embed by prefixing each line with a left border and applying color attributes. The method computes the available text width as `chatWidth - ContentIndentCols - borderCols`, ensuring a minimum of 20 characters, then selects the border color by calling `HexColorHelper.ParseHexColor(embed.ThemeColor)` and falling back to `ChatColors.EmbedBorderAttr` if parsing fails. A local helper `AddTextLine` prefixes lines with a rail and the border attr, then appends the actual text as a [`ChatSegment`](ChatSegment.cs.md) with the appropriate color (title, description, etc.). It emits optional sections for `SiteName` (with the border color), `Title` (wrapped via `WordWrap` to the computed width and styled with `ChatColors.EmbedTitleAttr`), and `Description` (wrapped similarly and styled with `ChatColors.EmbedDescAttr`). The result is a cohesive, themed embed block ready to be rendered alongside other chat content.
 
 ---
 
@@ -512,16 +458,14 @@ internal static string FormatFileSize(long? bytes)
 **Returns:** `string`
 
 
-Formats a nullable file size into a concise, human-readable string. If the input is null or zero, it returns a single question mark to indicate an unknown or unavailable size. For any non-null value, it chooses the most appropriate unit among bytes (B), kilobytes (KB), megabytes (MB), and gigabytes (GB) and formats the result with a single decimal place for all units except bytes. The thresholds use binary units (1024 multipliers), producing strings like '512 B', '1.5 KB', '3.2 MB', or '1.2 GB'.
+Formats a file size given in bytes into a human-friendly string using `B`, `KB`, `MB`, and `GB`. If the input is `null` or `0`, it returns `?` to indicate an unknown size. This helper is used when rendering attachment sizes in the chat UI to ensure consistent units and formatting.
 
 ## Remarks
-Consolidates the formatting logic so callers don’t duplicate range checks or string formatting, ensuring consistent display across the UI. The function intentionally treats null or zero as unknown ("?") rather than returning a numeric zero, which is useful when the size may not be known at the point of rendering.
+By centralizing the formatting logic, `FormatFileSize` ensures consistent thresholds and decimal precision across the UI, reducing duplication and easing future changes to unit boundaries or precision. It assumes non-negative input and surfaces unknown sizes as `?` for clarity in the display layer. This symbol acts as a small, focused utility within the chat message management area, decoupling size formatting from presentation concerns.
 
 ## Notes
-- Null or zero input yields "?" per the early guard.
-- Uses binary thresholds: 1024 B for KB, 1024^2 B for MB, and 1024^3 B for GB.
-- Non-byte units are shown with one decimal place (e.g., 1.5 KB, 3.2 MB, 1.2 GB); boundary values exactly at 1024, 1024^2, etc., switch units accordingly (e.g., 1024 B becomes 1.0 KB).
-
+- Negative values are not guarded and will format as negative sizes; callers should validate input or adapt the function before display.
+- The `?` sentinel indicates unknown or unavailable size; ensure the consuming UI handles this gracefully to avoid confusing output.
 
 ---
 
@@ -542,7 +486,7 @@ private List<ChatLine> FormatMessage(MessageDto message)
 **Returns:** `List<ChatLine>`
 
 
-Formats a MessageDto into a list of ChatLine entries suitable for rendering in the chat UI. It resolves the timestamp via FormatTime, chooses a representative display name (SenderDisplayName when available, otherwise SenderUsername), and derives a nickname color using HexColorHelper or NickColorHelper. The method then builds a header line or a summarized header for attachments, handles reply quotes by inserting a preceding quote line, and supports CTCP-style /me actions by rendering a header that shows the action followed by additional lines. When content exists, the content is emoji-normalized and split into lines with mention highlighting; when there is no text, a compact header summarizes attachments. Each line receives a RailPrefix so subsequent content lines and per-attachment blocks align with the nick rail, and attachments produce their own blocks hanging off that rail (e.g., image previews).
+FormatMessage formats a [`MessageDto`](../../../EchoHub.Core/DTOs/ChatDtos.cs.md) into a structured list of [`ChatLine`](ChatLine.cs.md)s that render a single chat message in the UI. It computes the display time with `FormatTime`, derives a display name from `SenderDisplayName` or `SenderUsername`, and selects a `senderColor` via `HexColorHelper.ParseHexColor` or `NickColorHelper.GetAttribute`. It prepends a `ReplyQuoteLine` if the message is a reply, and handles action messages by using `MessageConventions.TryParseAction` and rendering an action header via `ActionHeaderSegments`, followed by action content lines. For regular content, it processes emojis with `EmojiHelper.ReplaceEmoji`, builds a header via `HeaderSegments`, and appends content and any subsequent lines as continuation blocks using `RailPrefix`. If the message has no text but attachments exist, it renders a compact header with a summary like `[image]` or `[n attachments]`. Each attachment produces its own block; image attachments render ASCII previews when available, and colorized segments when appropriate. The method is a private helper used by the chat rendering flow to translate a [`MessageDto`](../../../EchoHub.Core/DTOs/ChatDtos.cs.md) into the visual [`ChatLine`](ChatLine.cs.md)s shown in the chat.
 
 ---
 
@@ -564,15 +508,10 @@ private static string FormatTime(DateTimeOffset timestamp) =>
 **Returns:** `string`
 
 
-Formats a DateTimeOffset timestamp into the user's local time and renders it as a compact 24-hour time string (HH:mm). By converting to local time before formatting, the method ensures that times align with the local calendar day rules, so messages near midnight are associated with the correct day in the UI. This helper is used wherever a concise, time-only indicator is needed for chat messages (for example, timestamps next to messages).
+Formats a given `DateTimeOffset` into a compact local-time string by first converting to local time, then formatting with the `HH:mm` format specifier to produce hours and minutes in 24-hour form. This private helper is used wherever the UI needs a concise time-of-day display for timestamps (e.g., chat messages) and guarantees times near midnight land under the correct calendar day by applying local-time rules before formatting.
 
 ## Remarks
-By centralizing locale-aware time formatting in a private helper, the code avoids duplicating ToLocalTime calls across the UI and guarantees a consistent display of chat timestamps. It is designed for presentation concerns rather than time arithmetic.
-
-## Notes
-- Relies on the system's local time zone via ToLocalTime; DST and locale settings affect the result.
-- Only the time portion is produced (HH:mm); date and potential day-boundaries are resolved at a higher level in the UI.
-- As a private method, its usage is confined to the containing class; if cross-cutting formatting is needed, consider extracting to a shared utility.
+This abstraction centralizes locale-aware time formatting for timestamps, ensuring all UI paths render the same local time portion. It converts the `DateTimeOffset` to local time via `ToLocalTime()` before applying the `HH:mm` format, so near-midnight messages are assigned to the correct date bucket according to local rules. This reduces duplication and guards against inconsistent formatting or time-zone drift across the chat UI.
 
 ---
 
@@ -594,21 +533,15 @@ private List<ChatLine> FormatWithDateRules(List<MessageDto> messages, out DateTi
 **Returns:** `List<ChatLine>`
 
 
-Formats a chronological batch of messages into a list of ChatLine objects, inserting a date rule before the first message and whenever the day changes. The method converts each message's SentAt to local time to determine day boundaries, delegates per-message formatting to FormatMessage, and returns the assembled lines while outputting the last processed local date via lastDate.
+Formats a chronological batch of messages into chat lines, inserting a date rule before the first message and at every day boundary, and returns the batch’s last local date. Use this private helper when rendering a chat thread to ensure date separators are consistently inserted; it encapsulates the day-boundary logic and per-message formatting, instead of duplicating this control flow across callers.
 
 ## Remarks
-Day separators help users scan conversations by calendar date, providing clear visual breaks between days. By isolating the boundary logic in this function and delegating rendering to DateRule and FormatMessage, the code remains reusable and consistent across different chat views.
 
-## Example
-```csharp
-// Example: format a batch of messages into chat lines with day separators
-DateTime? lastDate;
-List<ChatLine> lines = FormatWithDateRules(batchMessages, out lastDate);
-```
+By centralizing date-boundary handling in `FormatWithDateRules`, the UI rendering path doesn't need to know how separators are produced. It exposes a simple contract: transform a list of [`MessageDto`](../../../EchoHub.Core/DTOs/ChatDtos.cs.md) into [`ChatLine`](ChatLine.cs.md)s while emitting `DateRule`s whenever the day changes and tracking the most recent local date. The method delegates the actual per-message line construction to `FormatMessage`, keeping concerns separated between date logic and message formatting.
 
 ## Notes
-- No null-check on the input list; passing null for messages will throw.
-- lastDate is null if there are no messages; callers should account for a possible null value.
+
+- Date boundaries are computed using `ToLocalTime()`, so the local time zone of the runtime determines when a new `DateRule` is inserted; messages in different time zones can shift separators accordingly.
 
 ---
 
@@ -629,23 +562,7 @@ public List<ChatLine>? GetMessages(string channelName)
 **Returns:** `List<ChatLine>?`
 
 
-Retrieves the current list of ChatLine entries for a specific channel by name from the internal message store. It returns the existing `List<ChatLine>` for the channel, or null if the channel has no messages. This is a lightweight accessor around the underlying storage and does not create a new list or clone data.
-
-## Remarks
-This method exposes the internal `List<ChatLine>` instance associated with the given channel. Callers should be aware that mutations to the returned list (adding/removing items) will affect the stored messages for that channel. If an immutable snapshot is required, consider copying the list before enumeration or modification. The method hides the details of how messages are stored, providing a single entry point that can be swapped out without changing call sites.
-
-## Example
-```csharp
-var messages = chatMessageManager.GetMessages("general");
-if (messages != null)
-{
-    Console.WriteLine($"General channel has {messages.Count} messages.");
-}
-```
-
-## Notes
-- Returning null indicates the channel has no messages or does not exist in the store; always null-check before accessing properties like Count.
-- The returned `List<ChatLine>` is not cloned; modifications to it affect the internal store unless an external copy is created.
+Retrieves the `List<ChatLine>` for a given channel from the internal `_channelMessages` store using `TryGetValue`; if found, it returns the list, otherwise it returns `null`. Use this method when you need to access the messages for a specific `channelName` without risking an exception if the channel is missing.
 
 ---
 
@@ -666,15 +583,7 @@ public int GetUnreadCount(string channelName)
 **Returns:** `int`
 
 
-Returns the unread message count for the specified channel by querying the internal _channelUnread mapping. If the channel has no recorded count, it returns 0. This read-only helper encapsulates access to the underlying data and is typically used by the UI to display per-channel unread badges without exposing the dictionary directly.
-
-## Remarks
-
-Acts as a minimal abstraction over the unread-tracking store, hiding direct dictionary access and ensuring a zero default when a channel has no entry. The caller should understand that the value comes from the shared _channelUnread structure, so updates to unread counts elsewhere will be visible on subsequent calls; if the underlying storage is not thread-safe, callers must ensure proper synchronization.
-
-## Notes
-
-- Passing null as channelName will throw an ArgumentNullException from TryGetValue.
+`GetUnreadCount` returns the unread message count for the specified channel by querying the internal dictionary `_channelUnread`. If the channel has no entry, it yields 0. This method encapsulates the missing-key default handling so callers can rely on a non-null int even when the channel hasn't tracked unread messages yet.
 
 ---
 
@@ -689,15 +598,16 @@ internal Dictionary<string, int> GetUnreadCounts() => _channelUnread
 **Returns:** `Dictionary<string, int>`
 
 
-Returns the internal per-channel unread counts as a mutable dictionary backed by the _channelUnread field. Use this accessor when you need to read or react to per-channel unread tallies without recomputing them, noting that the returned dictionary is the live internal collection.
+Returns the internal mapping of unread message counts per channel by directly exposing the private field `_channelUnread`. This method is a minimal accessor with no additional logic, simply forwarding the reference to the underlying dictionary. Call it when you need to inspect (and potentially mutate) the live counts for all channels from within the same assembly, rather than creating a new dictionary.
 
 ## Remarks
-This accessor is intended as a lightweight bridge between the internal unread-count store and UI or coordination code that needs to display or react to those counts. It avoids copying data for performance and maintains synchronization with internal updates. However, because it returns the actual dictionary, external callers can mutate the collection, potentially breaking invariants or introducing subtle bugs. If you require a read-only view, consider returning `IReadOnlyDictionary<string,int>` or a defensive copy, and adjust the signature accordingly.
+
+By design, this is a direct forwarder to `_channelUnread`. It avoids copying for performance but couples callers to the concrete `Dictionary<string, int>` implementation and to the internal state. If you only need to observe values, prefer returning a read-only view such as an `IReadOnlyDictionary<string, int>` or provide a separate accessor that returns a defensive copy to preserve encapsulation.
 
 ## Notes
-- Mutability risk: Changes to the returned dictionary affect internal state.
-- Thread-safety: Concurrent updates to _channelUnread may race with external mutations; consider synchronization.
-- Initialization: Ensure _channelUnread is initialized before first access to avoid NullReferenceException.
+
+- Mutations to the returned `Dictionary<string, int>` modify the class's internal state immediately; callers should avoid assuming immutability.
+- Be mindful of thread-safety: concurrent reads/writes to `_channelUnread` without synchronization can lead to race conditions or exceptions.
 
 ---
 
@@ -725,20 +635,7 @@ private static List<ChatSegment> HeaderSegments(string time, string nick, Attrib
 **Returns:** `List<ChatSegment>`
 
 
-HeaderSegments constructs the three leading pieces of a message header line: a dim timestamp, the (optionally) colored, padded nickname, and a fixed rail separator. It returns these as a `List<ChatSegment>` so the caller can render the header independently from the message body. The first segment renders the provided time string with the Timestamp attribute, the second applies a padded nickname using the supplied nickColor, and the third renders a static rail string with the Rail attribute. This centralized assembly ensures consistent header formatting across messages and keeps layout/color decisions isolated from the rest of the rendering logic. The header segments precede the actual message text, which begins after ContentIndentCols.
-
-## Remarks
-By encapsulating header composition, this method enforces consistent alignment and styling for all message headers. It isolates colorization and spacing concerns from the message content, making it easier to adjust the header's appearance in one place without touching rendering logic elsewhere.
-
-## Example
-```csharp
-// Example usage within the same class context
-var segments = HeaderSegments("12:34", "Alice", ChatColors.SystemAttr);
-```
-
-## Notes
-- The method is private, so it cannot be called from outside its declaring type. If header construction is needed elsewhere, provide a public wrapper or move the logic to a shared utility.
-- The nick color parameter is nullable, allowing callers to omit explicit coloring when desired; the rendering path should handle a null color accordingly.
+HeaderSegments is a private static helper that constructs the leading portion of a chat message header. It takes a time string, a nickname, and an optional color attribute for the nickname, and returns a `List<ChatSegment>` with three segments: a timestamp segment created from `"{time} "` using `ChatColors.TimestampAttr`, a nickname segment produced by `PadNick(nick)` colored by `nickColor`, and a rail segment containing `" │ "` colored with `ChatColors.RailAttr`. The returned header prefix precedes the message body, whose content begins at `ContentIndentCols`.
 
 ---
 
@@ -759,14 +656,10 @@ private static ChatLine ImageActionLine(AttachmentDto attachment)
 **Returns:** [`ChatLine`](ChatLine.cs.md)
 
 
-Builds the action line displayed under an image preview, showing [open] and [↓ save original] as clickable actions and appending the file name with its size. Each bracketed label becomes an AttachmentActionSpan so the UI can map clicks to the corresponding action, while Enter triggers the default (open).
+Builds the action line displayed under an image preview: a compact sequence like "[open] [↓ save original] name [size]" where each bracketed element is an [`AttachmentActionSpan`](ChatLine.cs.md) so it can be targeted by mouse clicks; keyboard activation (Enter) uses the default action, open. The method constructs this line by starting with a base rail prefix, incrementally adding actions with their width in columns, and finally returns a [`ChatLine`](ChatLine.cs.md) enriched with the attachment metadata and a list of action spans for interaction.
 
 ## Remarks
-This symbol centralizes the rendering of image-related actions in chat messages, ensuring consistent spacing and interactivity across messages. It constructs the action regions by measuring segment widths from RailPrefix() and updating a running column index; the resulting ChatLine carries ActionSpans and attachment metadata for downstream rendering.
-
-## Notes
-- The clickable targets cover only the bracketed portions; the trailing file name and size text is not interactive.
-- If you change the action labels or formatting, adjust the width calculation logic accordingly, since spans are derived from the label text width.
+This helper encapsulates the visual semantics of an image-attachment action bar. By recording [`AttachmentActionSpan`](ChatLine.cs.md)s with exact column extents and pairing them with the base rail prefix, it guarantees that every image attachment presents clickable actions in a predictable layout, while the [`ChatLine`](ChatLine.cs.md) carries all metadata (URL, file name, size, kind) for downstream rendering or interaction.
 
 ---
 
@@ -789,19 +682,15 @@ public void LoadHistory(string channelName, List<MessageDto> messages, Guid? las
 **Returns:** `void`
 
 
-Loads historical messages into a channel, replacing any existing messages. When lastReadId is supplied (persisted from a previous session), the messages after that identifier are seeded into the unread count, @mention highlighting, and the `new messages` marker, ensuring activity from when the user was offline is surfaced when history is loaded.
+Loads historical messages into a channel, replacing any existing messages. The messages are formatted with date-aware rules via `FormatWithDateRules`, and when a `lastReadId` is provided (persisted from a previous session), messages after it seed the unread count, `@mention` highlight, and the "new messages" marker — so activity that happened while offline still lights up.
 
 ## Remarks
-
-This method is the central entry point for bringing a channel's history into the UI. It formats incoming messages, updates per-channel caches (such as the latest message id, the list of messages, and the last date), and raises the MessagesChanged event to refresh the view. A key concern it addresses is surfacing unread backlog: if the channel is not currently marked, and a lastReadId is provided, the code seeds unread state from the provided history so the user sees what they missed. If the channel is marked, the code attempts to preserve the unread marker by inserting UnreadMarkerRule() at a known anchor position; if the anchor cannot be located within the fetched batch, the marker is dropped and the anchor tracking for that channel is cleared.
-
-The method keeps the display coherent across history loads by either re-anchoring the marker or seeding unread state, and it updates the channel's last date when available. This coordination helps maintain a stable user experience as history is navigated.
+This method centralizes the process of presenting a channel’s historical backlog and synchronizing the unread state. It coordinates with the marker system to preserve the unread marker position when history is reloaded, using `_markerAnchor` and `_markedChannels` to decide where (and whether) to insert the `UnreadMarkerRule()` in the freshly formatted history. If the anchor isn’t present in the newly loaded page, the marker is dropped and the anchor mapping is cleared. When there is no active anchor but a `lastReadId` is supplied, the backlog is seeded from history via `SeedUnreadFromHistory`. The operation updates per-channel caches (`_channelMessages`, `_channelNewestId`, `_channelLastDate`) and raises `MessagesChanged` to refresh the UI.
 
 ## Notes
-
-- Marker anchor handling may drop the unread marker if the anchor falls outside the fetched history window; in that case the channel's marker tracking is cleared.
-- When lastReadId is provided and there is history, unread state is seeded from history only if the channel is not currently marked with an anchor.
-- There are internal caches being updated (_channelMessages, _channelNewestId, _channelLastDate, etc.) and a UI notification is raised via MessagesChanged; callers should ensure thread-safety or call this from a suitable thread to avoid races.
+- If the fetched `messages` list is empty, the method still replaces the channel’s history with an empty formatted sequence and clears any stored last date for the channel.
+- The unread-marker behavior depends on the anchor being present in the current fetch window; otherwise, the marker is removed, which may affect how the UI highlights the unread portion.
+- The method raises `MessagesChanged` after state updates, so listeners should be prepared for synchronous reentrancy during UI refresh.
 
 ---
 
@@ -822,14 +711,13 @@ private void MarkRead(string channelName)
 **Returns:** `void`
 
 
-Updates the internal read-tracking state for a chat channel by setting the last-read marker to the channel's newest known message ID, if available. It is a small internal helper used when the user has effectively read up to the latest message in the specified channel.
+MarkRead updates the per-channel read-tracking state by recording the latest known message id for the given channel. If the provided `channelName` is non-empty and `_channelNewestId` contains a value for that channel, it assigns that value to `_lastRead[channelName]`, effectively marking all messages up to that id as read. This method is typically invoked when a user opens a channel or after messages are loaded to refresh unread indicators without altering read state when the channel is unknown or there is no known newest id.
 
 ## Remarks
-This method serves as a concise read-tracking primitive within ChatMessageManager. It relies on two internal structures—_channelNewestId (the newest known message ID per channel) and _lastRead (the last-read position per channel)—to advance the read marker without exposing the internal collections to external callers. By performing a safe fetch and updating only when a newest ID exists, it provides a robust, side-effect-limited mechanism for synchronizing UI read state with the channel's latest activity.
+This small helper encapsulates read-state mutation, tying together `_channelNewestId` (the latest-known message id per channel) with `_lastRead` (the per-channel read pointer). It prevents updates for channels that have no known newest id and keeps the UI's unread indicators consistent as users navigate or when new messages arrive.
 
 ## Notes
-- No-op if channelName is null or empty, or if there is no entry for the channel in _channelNewestId; in these cases, no exception is thrown and the state remains unchanged.
-
+- If `channelName` is null or empty, or `_channelNewestId` does not contain an entry for the channel, this method becomes a no-op.
 
 ---
 
@@ -850,15 +738,14 @@ internal static string PadNick(string nick)
 **Returns:** `string`
 
 
-Right-aligns a nickname into the fixed nickname column, truncating nicknames that exceed the available width with an ellipsis, while respecting grapheme boundaries and display column widths. This ensures consistent, visually aligned nicknames in the chat UI regardless of complex characters.
+PadNick right-aligns a nickname into the fixed nick column by measuring its display width via `nick.GetColumns()` and truncating long nicknames with a Unicode ellipsis. It is grapheme- and column-aware, iterating grapheme clusters with `GraphemeHelper.GetGraphemes(nick)` and using `g.GetColumns()` (clamped to at least 1) to respect visual widths, stopping before exceeding `NickColWidth - 1` and appending `…` when truncation occurs. If the nickname fits, the method pads on the left with spaces to reach `NickColWidth`.
 
 ## Remarks
-Right-aligns a nickname within a fixed-width column and centralizes the logic for width-aware truncation. By counting display columns per grapheme and never splitting a grapheme cluster, it preserves user-visible completeness (including emoji and combining characters) while maintaining a stable layout. The ellipsis is appended when truncation is necessary, and the result is padded on the left to exactly fill NickColWidth columns.
+This symbol encapsulates the alignment policy for chat nicknames: a grapheme- and column-aware truncation to a fixed width, followed by left-padding with spaces. It centralizes the logic that keeps the nick column visually stable across scripts and emoji, decoupling width calculations from rendering code.
 
 ## Notes
-- The truncation reserves one column for the ellipsis (NickColWidth - 1) to preserve the final width.
-- Each grapheme's display width is obtained via g.GetColumns(), with a minimum of 1 column to avoid stalls on zero-width elements.
-- NickColWidth should be a positive, reasonable value to ensure the UI remains legible; extreme values may produce unexpected padding.
+- Grapheme-aware truncation prevents splitting a grapheme or emoji when fitting within `NickColWidth`.
+- An ellipsis `…` is appended when truncation occurs to signal omitted content and preserve readability.
 
 ---
 
@@ -880,15 +767,7 @@ public void PrependHistory(string channelName, List<MessageDto> olderMessages)
 **Returns:** `void`
 
 
-PrependHistory prepends older messages to the front of a channel’s in-memory buffer, skipping any that are already present. It filters olderMessages to those not already in the buffer by MessageId, formats the new messages into display lines (respecting the channel’s date-rule conventions), and inserts them at the beginning of the buffer. If the channel isn’t tracked, or if no new lines are produced, the method returns without side effects. When the update targets the currently displayed channel, it raises the HistoryPrepended event to signal the UI to reflect the new history.
-
-## Remarks
-Conceptually, this method isolates the concerns of history retrieval, formatting, and UI notification from higher-level chat flow. It relies on MessageId to detect duplicates and on date-rule formatting to ensure the inserted lines align with existing visual rules. By conditionally removing a redundant leading date line when the batch ends on the same day as the current first line, it avoids duplicating date indicators at the top of the buffer.
-
-## Notes
-- The method mutates the in-memory channel buffer in place and may affect the UI; callers should be aware of in-memory state changes.
-- Deduplication uses MessageId; messages without an Id will be treated as new and could be inserted if not already present.
-- HistoryPrepended is raised only when the target channel is the currently active channel (_currentChannel); otherwise, no event is fired.
+PrependHistory inserts a batch of `olderMessages` at the front of a channel's in-memory buffer, skipping any items that already exist by comparing their `Id` against the set of current `MessageId`s, and formats the remaining ones using `FormatWithDateRules` into `newLines` before insertion. If no new lines are produced, the method returns early. If `lastBatchDate` is non-null and the existing buffer's first line has a `RuleLabel` equal to `DateRuleLabel(batchDate)` (and that line is not an unread marker), the code removes that leading line to avoid duplicating date separators. Finally, the new lines are inserted at the front, and if the target channel is the currently active channel (`_currentChannel`), the `HistoryPrepended` event is fired to notify the UI.
 
 ---
 
@@ -907,14 +786,17 @@ private static List<ChatSegment> RailPrefix() =>
 **Returns:** `List<ChatSegment>`
 
 
-RailPrefix produces the indentation prefix used for lines that continue or attach to a chat message. It builds two ChatSegment entries: a leading blank-space block sized to accommodate the nickname column plus padding, and a rail segment rendering the vertical continuation rail. A fresh mutable `List<ChatSegment>` is returned on every call so callers can compose per-line prefixes without mutating shared state.
+RailPrefix builds the indentation rail used to align continuation/attachment/embed lines under the message text. It returns a new mutable `List<ChatSegment>` that begins with a padding string of length 6 + `NickColWidth` + 1, followed by a rail segment `│ ` colored with `ChatColors.RailAttr`.
 
 ## Remarks
-RailPrefix encapsulates the alignment rule used for multi-line messages, ensuring that continuation lines align consistently with the main message regardless of nickname width or color settings. The first segment accounts for the nickname column width (NickColWidth) plus a small padding, while the second segment draws the rail using ChatColors.RailAttr, producing a visually distinct vertical guide. Returning a new list on each call avoids cross-call mutations and keeps prefix construction side-effect free.
+
+This helper centralizes rail construction so all rendering paths share the same prefix, ensuring consistent alignment and color usage for continuation rails. It depends on `NickColWidth` to determine the padding width and on `ChatColors.RailAttr` for the rail color, keeping presentation concerns in one place.
 
 ## Notes
-- Changing NickColWidth or RailAttr will affect the resulting prefix, so coordinate styling changes to avoid misalignment.
-- The method returns a new `List<ChatSegment>` that callers are free to mutate; it does not mutate any shared state.
+
+- This method produces a fresh `List<ChatSegment>` per call; callers can mutate it without affecting other render paths.
+- The exact prefix width is tied to `NickColWidth`; changing it at runtime may alter alignment across rails.
+- If the rail color theme changes, `ChatColors.RailAttr` will drive the rendered color automatically.
 
 ---
 
@@ -936,15 +818,15 @@ public void RemoveMessage(string channelName, Guid messageId)
 **Returns:** `void`
 
 
-Removes all lines associated with a specific message ID from the client's in-memory per-channel message collection. It locates the list for the given channelName, eliminates any entries whose MessageId matches the provided messageId, and, if the updated channel is the current one, raises the MessagesChanged event to trigger a UI refresh. This method is useful when you need to purge a message from the local view (for example after a retraction or client-side filtering) without affecting server-side state.
+Removes all lines associated with a specific message ID from the channel's message collection. It looks up the channel in the internal store `_channelMessages` and, if found, calls `RemoveAll` on the channel's list to drop any entries whose `MessageId` matches the provided `messageId`. If the affected channel is the current one (`_currentChannel`), it invokes the `MessagesChanged` event to signal the UI to refresh for that channel.
 
 ## Remarks
-By centralizing the removal logic, this symbol ensures consistent mutation of the per-channel message lists and a single notification point for UI updates. The operation is scoped to a single channel, and the UI will only refresh when the target channel is currently active. Because the method operates purely on the client-side in-memory structure, there is no server communication performed by this call.
+This method centralizes the mutation of the in-memory per-channel message store and the corresponding UI update. It encapsulates the cleanup for a given `MessageId`, ensuring all related lines are removed in one operation, and it notifies listeners only for the active channel to avoid unnecessary redraws.
 
 ## Notes
-- Not thread-safe as written; ensure marshaling to UI thread or proper synchronization when accessing _channelMessages or the channel's message list.
-- Assumes MessageId uniquely identifies a line; if duplicates exist, all matching lines are removed.
-
+- If the channel is not present in `_channelMessages`, the call is a no-op.
+- Removing by `MessageId` may delete multiple lines if duplicates exist.
+- The method does not return a value; UI refresh relies on the `MessagesChanged` event when the current channel is affected.
 
 ---
 
@@ -965,15 +847,15 @@ private void RemoveUnreadMarker(string channel)
 **Returns:** `void`
 
 
-Removes the unread marker for a given chat channel by validating the input, clearing the channel from the marked set, detaching its UI marker anchor, and purging any unread-marker flags from the channel’s messages.
+Removes the unread marker state for a specific channel. If the provided `channel` is null or empty, or the channel is not currently tracked in `_markedChannels`, the method returns early and makes no changes. When it proceeds, it removes the channel from `_markerAnchor` and, if there are messages stored for that channel in `_channelMessages`, clears all items where `IsUnreadMarker` is true.
 
 ## Remarks
-As a private helper, it centralizes the unread-marker lifecycle in ChatMessageManager, coordinating _markedChannels, _markerAnchor, and _channelMessages to keep UI state and data in sync. The early return guards prevent unnecessary work when the channel is invalid or already cleared. The removal of IsUnreadMarker flags happens only after the channel is removed from the marked set, ensuring a consistent, single source of truth for whether a channel shows an unread indicator.
+RemoveUnreadMarker centralizes the cleanup of unread-marker state across internal collections. It relies on three collaborators: `_markedChannels` to determine if the channel currently has an unread marker, `_markerAnchor` to drop the visual or structural marker, and `_channelMessages` to scrub per-message flags. By encapsulating this logic, callers avoid inconsistent states where a channel might be marked as unread while the marker remains or vice versa.
 
 ## Notes
-- This method is private; external callers should not rely on its behavior. 
-- There is no synchronization visible in the snippet, so concurrent invocations may require external synchronization. 
-- If there are unread indicators outside the IsUnreadMarker flags, they will not be cleared by this method.
+- This is a private helper; it is intended to be invoked by other methods within the same class when the unread state for a channel should be cleared.
+- It mutates multiple internal structures, so ensure appropriate synchronization if called from multiple threads.
+- If `_channelMessages` has no entry for the given `channel`, the per-message cleanup is skipped gracefully.
 
 ---
 
@@ -994,7 +876,7 @@ private static ChatLine ReplyQuoteLine(ReplyRefDto replyTo)
 **Returns:** [`ChatLine`](ChatLine.cs.md)
 
 
-Constructs a compact, rail-prefixed quote line for an incoming reply. It carries the original message id (JumpToMessageId) so selecting the quote navigates to the source, and it truncates the displayed snippet to fit the UI width. The snippet is sanitized by replacing newline characters with spaces, optionally converted to an action-style prefix if a known action is detected, and transformed with emoji glyph replacement. The result is a ChatLine composed of three segments: a rail prefix, the sender's username (colored), and the snippet (system-colored). The line also exposes JumpToMessageId for navigation and ContinuationPrefixSegments to align any continued lines of the rail.
+The `ReplyQuoteLine` method constructs the quoted, dim-lined representation of a replied message that appears above the original message in the chat UI. Given a [`ReplyRefDto`](../../../EchoHub.Core/DTOs/ChatDtos.cs.md), it builds a single-line rail segment that shows the sender’s username and a truncated snippet of the original content, while carrying the original message id so activating the line jumps back to that message. The snippet is first normalized (newlines replaced), optionally rewritten into an action-format via `MessageConventions.TryParseAction`, and then passed through `EmojiHelper.ReplaceEmoji`. It truncates by grapheme width to fit within `maxSnippetCols` (60 columns) to avoid breaking grapheme clusters, appending a trailing ellipsis when needed. The final display uses the rail prefix and renders the sender name with `NickColorHelper.GetAttribute`, followed by the snippet in the system color (`ChatColors.SystemAttr`). The method returns a [`ChatLine`](ChatLine.cs.md) whose `JumpToMessageId` is set to `replyTo.MessageId` and whose `ContinuationPrefixSegments` are the rail prefix, enabling proper alignment for any following lines in the rail.
 
 ---
 
@@ -1019,15 +901,17 @@ private void SeedUnreadFromHistory(string channelName, List<MessageDto> messages
 **Returns:** `void`
 
 
-Reconstructs unread state from a persisted last-read message id for a channel by inserting an unread marker before the first unread message in the current fetch window and, for inactive channels, seeding the unread count and @mention highlight. If the last-read id is no longer present in the fetched window, the entire window is treated as unread.
+SeedUnreadFromHistory restores the UI unread-state after a history fetch for a given channel by locating the boundary between read and unread messages using the provided `lastReadId`, inserting an unread marker before the first unread message in the rendered `formatted` lines via `UnreadMarkerRule()`, and updating per-channel state such as `_markedChannels` and `_markerAnchor`. For channels other than the currently active one (`_currentChannel`), it also seeds the per-channel unread count (`_channelUnread`) and, if `_currentUser` is present, collects any mentions of the current user to highlight in background channels via `_mentionChannels`. If the `lastReadId` is not present in the fetched `messages` window, the first unread index becomes 0 and the entire window is treated as unread. The method is intended to be invoked during history loading to align the rendered chat with the user's last reading position.
 
 ## Remarks
-This symbol centralizes how persisted read positions are translated into the UI's unread indicators. It updates internal trackers (_markedChannels, _markerAnchor, _channelUnread, and _mentionChannels) and mutates the formatted message list to place the visual cue that new messages are available. Because it only applies the badge/mention behavior to background channels, the active channel remains visually unaffected beyond the standard read state.
+SeedUnreadFromHistory centralizes unread-state reconstruction after history fetches, coordinating between the logical unread boundary, the rendered view, and channel-scoped UI hints. By inserting the marker at the exact position corresponding to the first unread message and storing an anchor, the UI can reliably indicate where unread content begins and support navigation to that point. The method differentiates the active channel (which does not accrue badges or mention highlights) from background channels, populating per-channel unread counts and optional @mention tracking to enhance visibility without cluttering the current reading experience.
 
 ## Notes
-- If the computed anchor line cannot be found in the current formatted list, no marker is inserted and the method returns.
-- When lastReadId is not found in messages, firstUnread becomes 0, so the marker targets the very first message in the window.
-- Mentions are evaluated only for non-active channels; active channels do not receive mention highlights from this method.
+- If the `lastReadId` is not present in the fetched `messages`, the calculation yields an index of 0 and the entire window is marked as unread.
+- If the anchor line cannot be found in `formatted`, no marker is inserted and no per-channel state is updated for that call.
+- The operation mutates both the rendered view (`formatted`) and several per-channel state collections; callers should ensure it runs in a UI-context where such mutations are safe and up-to-date with the latest history fetch.
+- Mention detection is case-insensitive and checks both message content for `@currentUser` and the sender of a replied-to message, if available.
+
 
 ---
 
@@ -1048,15 +932,7 @@ public void SetChatWidth(int width) => _chatWidth = width
 **Returns:** `void`
 
 
-Sets the internal chat width used by the chat rendering logic. This method is a concise mutator that assigns the provided width to the private _chatWidth field. Use it when you need to programmatically adjust the chat area width, such as in response to layout changes or user actions that resize the chat panel.
-
-## Remarks
-
-Centralizes width mutations behind a single API, preserving encapsulation of layout state. It also paves the way for future side effects (for example, triggering a layout refresh or validating the value) without changing call sites. Keeping this logic in one place reduces duplication and makes behavior easier to evolve.
-
-## Notes
-
-- No validation on the input width; callers should ensure the value is non-negative and within reasonable bounds to avoid render glitches.
+Updates the internal `_chatWidth` field to the provided value, effectively setting the chat panel's width. Call this method when you need to adjust the chat area at runtime (e.g., in response to layout changes or user preferences) rather than modifying the field directly.
 
 ---
 
@@ -1077,13 +953,10 @@ public void SetCurrentUser(string username) => _currentUser = username
 **Returns:** `void`
 
 
-Sets the internal _currentUser field to the provided username, updating the chat subsystem's notion of who is the current user. This method should be used whenever the active user changes (for example, after a user logs in or switches accounts) so that subsequent messages can be attributed to the correct user in the UI.
+Sets the current user by assigning the provided `username` to the internal `_currentUser` field. This simple mutator establishes the active user context for subsequent chat message operations that depend on the current user.
 
 ## Remarks
-Centralizes mutation of the current user state within ChatMessageManager, making it easier to add side effects (such as updating UI elements, tagging messages, or enforcing user-specific behavior) without changing call sites. By routing changes through SetCurrentUser, the class can evolve to perform validation, trigger events, or refresh displays in a single place.
-
-## Notes
-- No input validation or normalization is performed; the value is assigned directly to _currentUser. Passes such as null or empty strings may lead to an invalid or inconsistent state unless the caller ensures proper validation.
+This is a straightforward mutator that updates internal state by assigning to `_currentUser`. It does not perform validation or trigger side effects beyond updating the active user; callers should ensure the correct sequencing of calls if the current user is relied upon by subsequent operations, especially in multi-threaded scenarios.
 
 ---
 
@@ -1109,14 +982,10 @@ private static List<ChatSegment> SystemHeaderSegments(string time) =>
 **Returns:** `List<ChatSegment>`
 
 
-This private helper constructs the header segments for a system/status line. When given a formatted time string, it returns a three-segment header (ChatSegment list) that renders: the time, a padded system nickname placeholder, and a leading rail separator, all styled with the project's chat color attributes. The header segments correspond to the three elements in the returned list: the time string followed by a space colored with TimestampAttr, the PadNick(\"--\") value colored with TimestampAttr, and the literal rail \" │ \" colored with RailAttr. This utility is used by the chat header rendering logic to produce a consistent appearance for system messages.
+Constructs the header variant used for system/status lines in the chat UI. Given a `string time`, it returns a `List<ChatSegment>` containing three segments: the first renders the time with `ChatColors.TimestampAttr`, the second renders the padded nick placeholder via `PadNick("--")` using the same timestamp styling, and the third renders the rail separator as `" │ "` with `ChatColors.RailAttr`. This header is used to prefix system messages and provide a consistent visual cue for system status.
 
 ## Remarks
-This private method encapsulates the three-part system header used for status lines, anchoring time, nickname placeholder, and the rail separator in one place. It relies on PadNick for the nickname placeholder width and on ChatColors attributes to keep the look aligned with the rest of the chat chrome.
-
-## Notes
-- The time argument should already be formatted for display; the method does not parse or reformat it.
-- The header relies on PadNick to produce a fixed-width nickname; changes to PadNick's output or width could affect alignment.
+Centralizes header composition for system messages, enabling consistent styling and reduced duplication. By composing pre-styled segments instead of scattering formatting throughout callers, it makes maintenance easier and helps ensure system headers look the same across the chat surface.
 
 ---
 
@@ -1132,14 +1001,10 @@ private static ChatLine UnreadMarkerRule() =>
 **Returns:** [`ChatLine`](ChatLine.cs.md)
 
 
-Creates a ChatLine that renders the '── new messages ──' unread marker using the UnreadMarker color attribute. This private helper is used when building the chat line sequence to visually indicate that there are unread messages in the conversation.
+This private helper constructs a [`ChatLine`](ChatLine.cs.md) that represents an unread-messages marker in the chat UI. It builds a single-token line containing the literal label `── new messages ──`, colored by `ChatColors.UnreadMarkerAttr`, and marks the line with `IsUnreadMarker = true` and `RuleLabel = `new messages``.
 
 ## Remarks
-To centralize the styling and labeling of the unread marker, this helper bundles the label ('new messages'), the color attribute (ChatColors.UnreadMarkerAttr), and the unread-marker flag (IsUnreadMarker = true). It keeps the construction logic in one place so changes to the marker's text or color propagate consistently across callers. The private visibility signals that this is an internal construction detail of the chat rendering pipeline.
-
-## Notes
-- This symbol is private; it cannot be called from outside its containing class. If you need to render unread markers elsewhere, consider exposing a public API or refactoring the helper into a shared utility.
-- The returned ChatLine is explicitly marked as an unread marker; consumers should treat it as a UI cue rather than a regular chat message.
+This factory encapsulates the visual convention for unread indicators, ensuring a consistent appearance across the UI without scattering literal tokens. By centralizing the construction, changes to the marker's label text or color attribute only need to be updated in one place. It also clearly communicates intent: lines produced by this helper are unread markers and should be treated accordingly by the rendering pipeline.
 
 ---
 
@@ -1161,11 +1026,34 @@ private static List<string> WordWrap(string text, int maxCols)
 **Returns:** `List<string>`
 
 
-WordWrap is a private utility that converts a single string into a list of lines whose display width does not exceed a specified maxCols. It's designed for UI scenarios (for example, chat messages) where wrapping must be deterministic and centralized. If maxCols <= 0, the method returns a single-element list containing the original text.
+The `WordWrap` method transforms a block of text into a list of lines that fit within a specified maximum column width by wrapping at spaces. If `maxCols` is less than or equal to zero, wrapping is skipped and the original `text` is returned as a single line. The wrap logic uses `GetColumns()` to measure display width, ensuring truncation reflects actual rendered width rather than raw character count. This private helper centralizes line-breaking behavior for UI rendering (e.g., chat messages) so callers render consistently.
 
-Otherwise, it splits the input on spaces (collapsing multiple spaces) and greedily builds lines by appending words until adding the next word would exceed maxCols as measured by GetColumns. When a word would overflow the current line, the line is committed and a new one starts with that word. The final line is added after processing all words. The resulting lines use single spaces between words.
+## Remarks
+This private static helper encapsulates the core concern of rendering text within a fixed-width area. By delegating width calculation to `GetColumns()`, it remains resilient to character widths and potential emoji or wide characters, while keeping the wrapping policy consistent across the class. Centralizing this logic avoids ad-hoc wrapping scattered across call sites and makes future width-policy changes easier to propagate.
 
-Note that a single word longer than maxCols will be placed on its own line and may exceed the requested width.
+## Notes
+- If a single word is longer than `maxCols`, the word is placed on its own line and may exceed the specified width; the function does not hyphenate or break long words.
+- Wrapping relies on `StringSplitOptions.RemoveEmptyEntries`, so consecutive spaces are treated as a single separator and do not produce empty lines.
+- Because the method is `private`, its reuse is restricted to its declaring type; if you need wrapping elsewhere, consider extracting it to a shared utility.
+
+---
+
+### ContentIndentCols
+> **File:** `src/EchoHub.Client/UI/Chat/ChatMessageManager.cs`  
+> **Kind:** field
+
+```csharp
+public const int ContentIndentCols = 6 + NickColWidth + 3
+```
+
+
+ContentIndentCols is the left-padding width, in characters, for the chat message text. It is computed as `6 + NickColWidth + 3`, corresponding to the fixed time prefix `HH:mm `, the nickname column width `NickColWidth`, and the leading separator ` │ `. Use this constant whenever you render or measure the start column of the message body to ensure consistent alignment.
+
+## Remarks
+ContentIndentCols centralizes the left margin calculation for chat lines, ensuring message text starts at a single, predictable column regardless of nickname width. By deriving the indentation from `NickColWidth`, changes to nickname sizing propagate to the layout without scattering magic numbers. This constant is baked into compile-time calculations, so the layout remains stable across the codebase.
+
+## Notes
+- It is a compile-time constant; changing `NickColWidth` or `ContentIndentCols` requires a rebuild of the consuming code.
 
 ---
 
@@ -1178,38 +1066,6 @@ public const int NickColWidth = 12
 ```
 
 
-NickColWidth defines the fixed width of the nickname column in the chat UI, reserving 12 characters on the right to align nicknames in a WeeChat-style layout. It is used by the chat rendering logic in ChatMessageManager to keep nickname alignment consistent across messages.
-
-## Remarks
-Centralizes the presentation detail of the nickname column, avoiding scattered magic numbers across rendering code. By exposing this as a single public constant, it’s straightforward to tweak the overall alignment of the chat UI while keeping the rest of the layout logic unchanged. It also communicates intent clearly to future contributors who are adjusting how usernames appear in chat rows.
-
-## Notes
-- As a public compile-time constant, changing NickColWidth requires recompiling dependents to pick up the new value.
-- Prefer referencing NickColWidth in formatting/layout code rather than using hard-coded numeric literals to maintain consistent alignment.
-
----
-
-## ContentIndentCols
-> **File:** `src/EchoHub.Client/UI/Chat/ChatMessageManager.cs`  
-> **Kind:** field
-
-```csharp
-public const int ContentIndentCols = 6 + NickColWidth + 3
-```
-
-
-ContentIndentCols represents the total number of character columns that precede the actual message text in a chat line. It is computed as 6 (the length of the "HH:mm " timestamp prefix) plus NickColWidth (the width of the nickname column) plus 3 (the " │ " separator). Use ContentIndentCols when you need to align or wrap the message body so that it starts at a consistent column after the header.
-
-## Remarks
-This abstraction ties the content start position to the header region, ensuring consistent alignment across messages even if nickname width or the time prefix changes. By centralizing the indentation budget behind a single public constant, rendering code avoids scattered magic numbers and remains coherent when layout assumptions evolve.
-
-## Example
-```csharp
-// Example: build an indented content line for a chat message
-string line = new string(' ', ContentIndentCols) + body;
-```
-
-## Notes
-- The constant is a compile-time value (public const int). If you need dynamic indentation per message or per theme, compute it at runtime instead of using ContentIndentCols.
+Defines the fixed width of the right-aligned nick column used in the chat message layout (WeeChat-style). The value `NickColWidth` reserves that many characters for the nick portion, ensuring consistent alignment of message text across lines.
 
 ---

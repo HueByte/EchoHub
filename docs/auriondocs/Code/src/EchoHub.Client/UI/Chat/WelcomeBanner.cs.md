@@ -8,17 +8,6 @@ internal static class WelcomeBanner
 ```
 
 
-Renders a MOTD-style splash in the chat pane when no channel is selected — a gold-gradient ASCII logo accompanied by a version tagline and quick usage hints, evoking classic IRC greetings. Use WelcomeBanner.Build to generate the banner lines for a given viewport width and version string, then feed those lines into the chat UI.
+The `WelcomeBanner` class provides the MOTD-style splash shown in the chat pane when no channel is selected. It renders a gold-gradient ASCII logo by choosing between `BigLogo` (for wider viewports) and `SmallLogo` (for narrow panes), centers the logo within the given width, and appends a version tagline and quick-use hints. The static `Build` method returns a list of [`ChatLine`](ChatLine.cs.md) objects that the UI can render to display the branded welcome banner for a given `width` and `version` string.
 
-## Remarks
-WelcomeBanner encapsulates the presentation of the welcome banner: centering, padding, colorization, and the two-logo strategy are all handled here so the rest of the chat UI can simply render a sequence of lines. It selects between a full-width BigLogo and a compact SmallLogo based on the viewport width, scales the gradient across the chosen logo, and appends a version tagline plus a set of user hints. This keeps branding consistent across sizes and isolates banner-specific formatting from the broader rendering pipeline.
-
-## Example
-```csharp
-var lines = WelcomeBanner.Build(80, "1.2.3");
-// integrate 'lines' into the chat pane
-```
-
-## Notes
-- The logo variant is chosen based on the provided width; very small panes will display SmallLogo to preserve legibility.
-- The color attributes (Attributes on ChatSegment) require UI support in the chat renderer; without color support the banner falls back to plain text.
+The banner is designed to be self-contained: it composes ASCII art, a vertical color gradient (`Gradient`), and a small set of hints (`Hints`) into a sequence of renderable lines. This keeps the welcome experience consistent across sessions and isolates branding concerns from the main channel rendering logic.

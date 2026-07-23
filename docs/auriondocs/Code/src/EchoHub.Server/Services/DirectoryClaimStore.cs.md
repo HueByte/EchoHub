@@ -18,40 +18,17 @@ public sealed class DirectoryClaimStore
 ```
 
 
-Persists the directory claim token (an opaque secret issued on first registration) together with the server's stable ServerId, and exposes a short-lived RegistrationStatus used by operator-facing endpoints. Use this type when you need a simple on-disk, atomic store for the initial claim token and ServerId and also want to surface the most recent registration outcome (success or failure) for diagnostics or UI.
+Persists an opaque directory claim token and the row's stable `ServerId` to disk and exposes that data plus an ephemeral `RegistrationStatus` for operator-facing endpoints. Reach for `DirectoryClaimStore` when the process needs to remember the one-time claim token issued at first registration and to report current registration status; it handles atomic on-disk writes and concurrent access within the process so callers can read `ClaimToken`, `ServerId`, and `Status` without taking locks.
 
 ## Remarks
-This class centralises two responsibilities: durable storage of the claim token + ServerId and an in-memory, ephemeral view of registration status. The file write uses an atomic temporary-write-then-rename strategy (so partial writes are avoided) and callers should treat the stored contents as a secret. Concurrency is handled with a SemaphoreSlim for writes and Volatile reads/writes for the in-memory references: SaveClaimAsync and UpdateServerIdAsync serialize on-disk updates while ClaimToken, ServerId and Status are safe to read without taking the write lock.
-
-## Example
-```csharp
-// resolve IConfiguration and ILogger<DirectoryClaimStore> from your DI container
-var store = new DirectoryClaimStore(configuration, logger);
-
-// Persist the one-time claim token and server id (called once when first claimed)
-await store.SaveClaimAsync(claimToken, serverId);
-
-// Read back the persisted values later
-var token = store.ClaimToken; // may be null until saved
-var id = store.ServerId;     // may be null until saved
-
-// Update only the ServerId when re-registering with the same token
-await store.UpdateServerIdAsync(newServerId);
-
-// Report ephemeral registration outcomes for operator UI
-store.SetSuccess(serverId);
-// or on failure:
-store.SetFailure("ConflictError", new[] { "host-a", "host-b" });
-
-// Inspect the last registration status
-var status = store.Status;
-```
+`DirectoryClaimStore` separates durable state (the `PersistedClaim` containing `ClaimToken` and `ServerId`) from ephemeral state (`RegistrationStatus`). Durable state is loaded once in the constructor (via configuration-resolved `FilePath`) and updated by `SaveClaimAsync` and `UpdateServerIdAsync` using an atomic write strategy (tmp file + rename). Ephemeral `Status` is updated in-memory by `SetSuccess` and `SetFailure` for operator/UI endpoints and is intentionally not written to disk. Thread-safety is achieved by using `Volatile.Read`/`Volatile.Write` for lock-free readers and a private `SemaphoreSlim` (`_writeLock`) to serialize writers; writers also perform the atomic file swap.
 
 ## Notes
-- The on-disk file is treated as a secret; protect filesystem permissions and backups accordingly.
-- Status is ephemeral and kept only in memory; SetSuccess/SetFailure do not persist to disk.
-- SaveClaimAsync is intended to be called once per row's lifetime (first claim). UpdateServerIdAsync is a no-op when the ServerId is unchanged.
-- ClaimToken and ServerId properties may be null until a persisted value is loaded or saved.
+- The on-disk file is treated as a secret; callers and operators should protect the `FilePath` and its contents (it contains the `ClaimToken`).
+- `SaveClaimAsync` is intended to be called only once per row's lifetime (on first claim). `UpdateServerIdAsync` is used when re-registering with an existing token and is a no-op when the `ServerId` is unchanged.
+- `SetSuccess` / `SetFailure` mutate only the in-memory `Status` and do not persist anything; process restarts will lose these ephemeral fields (durable `PersistedClaim` is preserved).
+- Writes use an atomic tmp+rename strategy to avoid partial files, but this class does not coordinate cross-process access beyond the atomic replace; if multiple processes may write the same file concurrently, external synchronization is required to avoid races.
+- I/O errors from loading or writing the backing file (e.g. permissions, disk full) will surface to callers of the write methods or during construction; callers should handle or surface those exceptions as appropriate.
 
 ---
 
@@ -79,12 +56,13 @@ public sealed record RegistrationStatus(
 | `ConflictingHosts` | `string[]?` | — |
 
 
-RegistrationStatus is a small, immutable data container that captures the outcome of attempting to register a directory claim in the EchoHub server. It indicates whether the registration succeeded and optionally conveys the server identity, timestamp, error details, and any conflicting hosts so higher-level logic can react accordingly.
+Represents the outcome of attempting to register a server with the directory claim store. This `record` is an immutable value type that carries the essential pieces of registration state: whether the entity is registered (`IsRegistered`), the assigned `ServerId` if one exists, the time of the last registration attempt (`LastRegisteredAt`, a `DateTimeOffset?`), an optional `LastError` describing the failure, and any `ConflictingHosts` that prevented registration. Consumers typically construct or propagate this value from the registration workflow and use it to inform callers, UI logic, or logging code rather than broadcasting multiple primitive values.
 
 ## Remarks
-RegistrationStatus models a single, transportable result from a registration process. As a record, it benefits from value-based equality, making it easy to compare results across layers or to cache and reuse them. The nullable fields reflect real-world outcomes: a registration attempt may not yield a ServerId or LastRegisteredAt, and LastError plus ConflictingHosts carry additional context when registration fails or is disputed. This abstraction isolates the surface area of registration outcomes from the rest of the directory claim store, enabling consistent handling without sprinkling primitive flags throughout the codebase.
+As a `sealed` `record`, `RegistrationStatus` provides value-based equality and immutability, making it a safe, portable summary of a registration outcome across components. The nullable members reflect that some details may be unavailable depending on the failure mode (for example, no `ServerId` if registration hasn't completed). The `ConflictingHosts` array communicates all hosts involved in a conflict, enabling callers to present a remediation path.
 
 ## Notes
-- Nullable fields indicate optional context; always guard before accessing ServerId, LastRegisteredAt, LastError, and ConflictingHosts to avoid NullReferenceException.
+- The `string[]?` `ConflictingHosts` is an array, which is mutable. If you publish this instance or cache its value, clone the array to prevent external mutation from changing the documented status.
+- Nullability semantics: `ServerId`, `LastRegisteredAt`, `LastError`, and `ConflictingHosts` being `null` means the data is not available in the current outcome; interpret accordingly and avoid conflating a genuine value with absence.
 
 ---

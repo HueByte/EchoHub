@@ -25,21 +25,13 @@ public record CreateInviteRequest(int? MaxUses = null, int? ExpiresInHours = nul
 | `ExpiresInHours` | `int?` | `null` |
 
 
-This record serves as the payload for creating an invitation. It carries optional constraints that govern the invite: MaxUses limits how many times the invite can be redeemed, and ExpiresInHours determines how long the invite remains valid (in hours). When constructing the request, omit values you don’t want to constrain; null properties indicate the server should apply its defaults.
+Represents the request payload for creating an invite, carrying optional constraints for the invite. The nullable `MaxUses` and `ExpiresInHours` allow callers to omit constraints. As a `record`, it provides value-based equality and immutability, making it a convenient, typed carrier for API calls.
 
 ## Remarks
-Because CreateInviteRequest is a C# record, it provides value-based equality and immutable semantics, making it a reliable DTO for API calls and caching. The nullable properties express optional constraints without introducing separate flags, keeping the surface area small and expressive.
-
-## Example
-```csharp
-var request = new CreateInviteRequest(MaxUses: 5, ExpiresInHours: 24);
-```
+This type centralizes the concept of invite constraints and cleanly separates client request construction from business logic. It interoperates with the invite-creation pathway by encoding optional parameters as nullable properties, allowing the API to apply defaults when a field is null.
 
 ## Notes
-- Null on a property means no constraint; the API defaults apply.
-- Many serializers omit null fields; if the API requires an explicit indicator for "no constraint," ensure your serializer preserves the field or you configure it accordingly.
-- If you need to convey zero constraints explicitly, pass 0 (not null) for the respective property; null is not the same as zero.
-
+- Null values indicate 'not specified' and will be treated as absent by the invite-creation endpoint; set only the fields you intend to constrain.
 
 ---
 
@@ -69,26 +61,9 @@ public record InviteDto(
 | `UseCount` | `int` | — |
 
 
-InviteDto is a small, transport-oriented representation of an invitation. It encapsulates the invitation code, the creator's username, the moment of creation, an optional expiry, and simple usage counters, making it suitable for API responses and inter-layer data transfers without revealing domain internals.
+InviteDto is an immutable data transfer object that carries the metadata for an invitation: the `Code`, the creator's username (`CreatedByUsername`), the creation time (`CreatedAt`), an optional expiration (`ExpiresAt`), and usage counters (`MaxUses` and `UseCount`). It is designed for transporting invitation data across application boundaries without behavior, making it easy to serialize, deserialize, and compare by value.
 
 ## Remarks
-As a record, InviteDto is immutable and uses value-based equality, which makes caching and comparisons straightforward. It decouples transport concerns from domain logic by presenting only the data clients need. The fields map directly to invitation semantics: Code is the token, CreatedByUsername and CreatedAt capture provenance, ExpiresAt denotes expiry (nullable means no expiry), and MaxUses/UseCount express the usage limits and current consumption.
-
-## Example
-```csharp
-var invite = new InviteDto(
-    Code: "WELCOME-ABC123",
-    CreatedByUsername: "admin",
-    CreatedAt: DateTimeOffset.UtcNow,
-    ExpiresAt: DateTimeOffset.UtcNow.AddDays(7),
-    MaxUses: 5,
-    UseCount: 0
-);
-```
-
-## Notes
-- Null ExpiresAt means the invitation does not expire; ensure your validation logic accounts for that.
-- InviteDto is immutable; to reflect state changes (e.g., after a use), construct a new instance rather than mutating the existing one.
-- Use UTC times for CreatedAt/ExpiresAt to avoid timezone ambiguity.
+Because it is defined as a `record`, `InviteDto` benefits from value-based equality and structural immutability, ensuring that two invitations with the same data compare equal and that the payload remains unchanged after construction. The nullable `ExpiresAt` conveys that an invitation might have no expiration; consumers must treat a null as no expiry. The `MaxUses` together with `UseCount` enables the system to enforce limits at the boundary without embedding logic here. This symbol sits at the boundary between persistence, API contracts, and business logic, keeping the shape of invitation data consistent across layers.
 
 ---
