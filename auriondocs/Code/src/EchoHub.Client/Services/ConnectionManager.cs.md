@@ -18,15 +18,16 @@ internal sealed class ConnectionManager : IAsyncDisposable
 ```
 
 
-Manages a server connection end-to-end: handles authentication via [`ApiClient`](ApiClient.cs.md), establishes end-to-end encryption, creates and wires an [`EchoHubConnection`](EchoHubConnection.cs.md), tracks joined channels, and exposes SignalR events so higher-level orchestrators can react without touching connection internals. Reach for `ConnectionManager` when you want UI code (for example an [`AppOrchestrator`](../AppOrchestrator.cs.md)) to observe connection and chat events through simple events rather than managing [`ApiClient`](ApiClient.cs.md) and [`EchoHubConnection`](EchoHubConnection.cs.md) yourself.
+Owns the full client-side connection lifecycle: authenticating via the `ApiClient`, establishing and wiring an `EchoHubConnection` (SignalR) for realtime events, enabling end-to-end encryption via the `ClientEncryptionService`, and tracking channel membership in `RoomKeyStore` and `_joinedChannels`. Reach for `ConnectionManager` when you want a single, high-level component to manage connection setup, token refresh handling, event forwarding, and channel join/leave logic instead of manipulating `ApiClient` and `EchoHubConnection` directly.
 
 ## Remarks
-`ConnectionManager` centralizes lifecycle concerns: it authenticates (login/registration/refresh), subscribes to token rotation, attempts to fetch and apply the E2E encryption key, constructs and registers handlers on the [`EchoHubConnection`](EchoHubConnection.cs.md), and ensures channel membership state is tracked. It forwards the hub's runtime events (for example `MessageReceived`, `UserJoined`, `ChannelUpdated`) so callers receive high-level notifications and do not need to bind SignalR handlers directly. The class is intended as the single place that composes [`ApiClient`](ApiClient.cs.md), [`ClientEncryptionService`](ClientEncryptionService.cs.md)/[`RoomKeyStore`](RoomKeyStore.cs.md), and [`EchoHubConnection`](EchoHubConnection.cs.md) into a usable connection for the UI.
+`ConnectionManager` is the orchestration point between the networking primitives (`ApiClient` and `EchoHubConnection`) and the UI layer. It centralizes responsibility for: authenticating (including login, register, and refresh-token flows), persisting rotated refresh tokens via `OnTokensRefreshed`/`HandleTokensRefreshed`, attempting to establish an E2E encryption key with `ClientEncryptionService`, and forwarding SignalR events to consumers through its public events (for example `MessageReceived`, `UserJoined`, `ChannelUpdated`, and `ConnectionStatusChanged`). By exposing `IsConnected`, `IsAuthenticated`, `Api`, and `RoomKeys`, it gives callers enough state to update UI and perform API operations without needing to manage low-level connection state or event wiring.
 
 ## Notes
-- `ConnectAsync` reports progress via the `onStatus` callback and will throw on authentication failure — callers are expected to handle saved-session expiry and similar error flows.  
-- Event handlers (for example `MessageReceived`, `UserJoined`, `ConnectionStatusChanged`) may be invoked from signalr/connection threads; subscribers should not assume they run on the UI thread and must marshal to the UI thread when necessary.  
-- Always `await` disposing the manager (it implements `IAsyncDisposable`) so underlying resources such as the [`EchoHubConnection`](EchoHubConnection.cs.md) and [`ApiClient`](ApiClient.cs.md) are cleanly released; failing to do so can leave connections or background work active.
+- `ConnectAsync` throws on authentication failure — callers are expected to handle saved-session expiry and related UI flows.  See the `ConnectAsync` progress messages for how the method reports intermediate status.
+- The class disposes and replaces the internal `ApiClient` during `ConnectAsync` (it calls `_apiClient?.Dispose()`), and implements `IAsyncDisposable`; callers should ensure `DisposeAsync` is invoked when the manager is no longer needed to avoid resource leaks.
+- Encryption is best-effort: if fetching the encryption key fails (`GetEncryptionKeyAsync`), the manager logs a warning and continues with an unencrypted session — consumers should not assume messages are always encrypted.
+- The implementation mutates internal fields like `_apiClient`, `_connection`, and `_joinedChannels` without visible synchronization. The class appears intended for single-threaded/UI-thread usage; consumers that access it from multiple threads should serialize calls externally to avoid race conditions.
 
 ---
 
@@ -38,24 +39,27 @@ Manages a server connection end-to-end: handles authentication via [`ApiClient`]
 internal record ConnectResult(
     LoginResponse Login,
     List<ChannelDto> Channels,
-    Dictionary<string, List<MessageDto>> Histories)
+    Dictionary<string, List<MessageDto>> Histories,
+    ServerStatusDto? ServerInfo = null)
 ```
 
 **Parameters:**
 
 | Parameter | Type | Default |
 |-----------|------|---------|
-| `Login` | [`LoginResponse`](../../EchoHub.Core/DTOs/AuthDtos.cs.md) | — |
+| `Login` | `LoginResponse` | — |
 | `Channels` | `List<ChannelDto>` | — |
 | `Histories` | `Dictionary<string, List<MessageDto>>` | — |
+| `ServerInfo` | `ServerStatusDto?` | `null` |
 
 
-ConnectResult represents the payload returned after a successful connection, carrying everything the [`AppOrchestrator`](../AppOrchestrator.cs.md) needs to update the UI. It includes the authenticated login information (`Login`), the collection of available channels (`Channels`), and the initial per-channel histories (`Histories`), where each channel name maps to its starting list of messages, always including the default channel.
+ConnectResult is an internal, immutable `record` that represents the successful outcome of establishing a connection and is returned to the `AppOrchestrator` to drive UI updates. It bundles the login information (`Login`) of type `LoginResponse`, the joined channels (`Channels`) as `List<ChannelDto>`, the initial per-channel histories (`Histories`) as `Dictionary<string, List<MessageDto>>`, and optional server status (`ServerInfo`) as `ServerStatusDto?`. The `Histories` dictionary maps channel names to their corresponding history lists and always includes the default channel.
 
 ## Remarks
-ConnectResult is a `record`, so it participates in value-based equality and can be treated as a single unit when comparing connection outcomes. Note that its `Channels` and `Histories` collections are mutable (`List<ChannelDto>` and `Dictionary<string, List<MessageDto>>`); if you need true immutability, expose read-only wrappers or clone the collections when passing them onward.
+ConnectResult acts as a single, UI-facing snapshot of the connected state. It collects authentication results, channel roster, initial per-channel histories, and optional server health/status so the `AppOrchestrator` can immediately render the connected view without issuing further requests.
 
 ## Notes
-- The contained `List<ChannelDto>` and `Dictionary<string, List<MessageDto>>` are mutable; avoid mutating them in place and consider treating the `ConnectResult` as a snapshot that should be cloned if you require immutability downstream.
+- ConnectResult is immutable; use a `with` expression to derive a modified copy rather than mutating the existing instance.
+- `ServerInfo` may be null; callers should handle absence gracefully.
 
 ---

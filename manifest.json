@@ -4675,6 +4675,16 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "auriondocs/Synthesis/DriftReport.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Synthesis/DriftReport.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "auriondocs/Synthesis/Onboarding.md",
       "output": {
         "resource": {
