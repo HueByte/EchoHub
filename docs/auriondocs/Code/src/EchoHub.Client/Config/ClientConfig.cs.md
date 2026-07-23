@@ -20,15 +20,24 @@ public class AccountPreset
 ```
 
 
-AccountPreset is a lightweight data container that groups three optional account identity properties—DisplayName, Bio, and NicknameColor—so callers can apply or persist a predefined persona for an account. It is intended for use in client configuration (ClientConfig.cs), enabling a consistent, reusable identity profile to be attached to account-related logic.
+AccountPreset is a lightweight data container that groups optional account presentation attributes used by client configuration. It encapsulates a DisplayName, Bio, and NicknameColor so a named preset can be stored, transferred, or reapplied as a unit to influence how an account is presented in the UI.
 
 ## Remarks
-AccountPreset exists to keep related identity attributes together, reducing the surface area of APIs that need to accept or propagate persona data. It aligns with a configuration/templating pattern in the client, making it easier to serialize, store, and reuse account personas across components that render or modify user identity.
+This type exists to package related display properties together, enabling reuse and persistence of account presentation presets. Since all properties are nullable, consumers can merge a preset with existing data and only override the attributes that are explicitly set.
+
+## Example
+```csharp
+var preset = new AccountPreset
+{
+    DisplayName = "Nova",
+    Bio = "Exploring the stars of code",
+    NicknameColor = "#1E90FF"
+};
+```
 
 ## Notes
-- All properties are nullable; callers must define default behavior when a property is null (e.g., preserve existing values or apply a fallback).
-- Null-valued properties may be serialized depending on the chosen serializer; configure to ignore nulls if you prefer a clean configuration payload.
-- There is no validation here; enforce constraints instead in the surrounding configuration or UI logic.
+- Null properties indicate that the corresponding attribute should not override any existing value when applying the preset to an existing account.
+
 
 ---
 
@@ -41,31 +50,10 @@ public class ClientConfig
 ```
 
 
-ClientConfig is the central container for a user's preferences and runtime state in the EchoHub client. It aggregates saved servers, the active account preset, the UI theme, notification settings, and attachment-handling options such as the download path and ASCII-rendering size.
+ClientConfig is a simple data container that groups the client’s preferences and runtime settings into a single object. It includes the list of configured servers (`SavedServers`), the default account preset (`DefaultPreset`), the currently selected theme (`ActiveTheme`), and the notification configuration (`Notifications`). It also carries optional application paths and rendering settings: `DownloadPath` specifies where attachments are saved (null means use the OS Downloads folder), and `DefaultAsciiSize` selects the ASCII-art rendering size for attached images (values 's', 'm', or 'l', defaulting to 'm').
 
 ## Remarks
-
-It acts as a single source of truth for components that configure server connectivity, UI theming, and how attachments are stored and rendered. Centralizing defaults and user-specific values reduces duplication and helps ensure consistent behavior across sessions and test environments.
-
-## Example
-
-```csharp
-var config = new ClientConfig
-{
-  SavedServers = new List<SavedServer>
-  {
-    new SavedServer { Name = "Work", Url = "https://work.example", RememberMe = true }
-  },
-  DownloadPath = @"C:\Downloads",
-  DefaultAsciiSize = "m"
-};
-```
-
-## Notes
-
-- DownloadPath being null means attachments and saved images go to the OS Downloads folder. Ensure the application has write permissions to that location when relying on the default.
-- DefaultAsciiSize accepts "s" (40×40), "m" (80×80), or "l" (120×120). This size applies to copy-paste/drag-drop attachments that do not carry a per-file size flag.
-
+ClientConfig centralizes user preferences and runtime settings, so components can rely on a single source of truth for initialization, persistence, and UI decisions. It folds server configuration (`SavedServers`) together with user-facing settings like the default preset (`DefaultPreset`), the active theme (`ActiveTheme`), and notification behavior (`Notifications`), reducing coupling between subsystems. By exposing `DownloadPath` and `DefaultAsciiSize`, it also captures file-management and rendering preferences that affect attachments across the app.
 
 ---
 
@@ -78,28 +66,10 @@ public class NotificationConfig
 ```
 
 
-NotificationConfig is a lightweight data container used by the EchoHub client to express how notifications should behave. It encapsulates three related knobs: Enabled, Volume, and SoundFile. Developers instantiate this class to configure or override the client's notification behavior when wiring up configuration (for example, within ClientConfig) or when configuring the notifier component. The defaults indicate that notifications are enabled by default, a modest default volume, and no custom sound file unless specified.
+The `NotificationConfig` class is a small, strongly-typed container for notification playback settings used by the client. It exposes `Enabled`, `Volume`, and an optional `SoundFile` to customize sound behavior. By default, `Enabled` is `true`, `Volume` is `30`, and `SoundFile` is unset, making it ready to bind from configuration sources.
 
 ## Remarks
-
-By grouping notification-related settings into a single object, NotificationConfig reduces coupling between components that render or play notification sounds and the rest of the configuration. It also provides a clean extension point: new knobs can be added in the future without scattering settings across call sites, since a single configuration object can be passed around.
-
-## Example
-
-```csharp
-var config = new NotificationConfig
-{
-    Enabled = true,
-    Volume = 40,
-    SoundFile = "assets/notify.wav"
-};
-```
-
-## Notes
-
-- Volume is stored as a byte (0–255). If your UI operates in a 0–100 range, map or clamp values appropriately before consumption.
-- SoundFile is nullable; when it is null, the consumer should handle the absence of a custom sound (e.g., fall back to a default sound or skip audible notification based on the environment).
-
+This is a lightweight configuration object that decouples notification behavior from business logic and supports binding from JSON or other configuration providers. It keeps the surface minimal while making it easy to override defaults without code changes.
 
 ---
 
@@ -112,13 +82,34 @@ public class SavedServer
 ```
 
 
-SavedServer is a client-side representation of a per-server configuration and its associated local state for the EchoHub client. It stores credentials and connection details (Name, Url, Username, RefreshToken), a RememberMe flag, and the last connection timestamp (LastConnected). It also holds per-channel state that remains on the client: ChannelKeys (end-to-end encrypted keys cached per channel), LeftChannels (channels the user explicitly left), and LastReadMessages (per-channel read markers). These keys live only on the user's machine; the server never sees them.
+SavedServer is a client-side representation of a configured server for the EchoHub client. It aggregates the server identity (Name and Url), optional user credentials (Username and RefreshToken), user preferences (RememberMe), and per-server state needed to restore a session across restarts. Notably, it includes per-channel encryption state (ChannelKeys), channel-level navigation state (LeftChannels), and per-channel read-tracking (LastReadMessages). These members are stored locally and are not exposed to the server; the server never sees the encryption keys, which are encrypted at rest and scoped to the local machine (see [`RoomKeyProtector`](../Services/RoomKeyProtector.cs.md)). At startup, the client can deserialize this object to rehydrate connections, rejoin channels (excluding those the user explicitly left), and persist unread counts and mentions across restarts.
 
 ## Remarks
-SavedServer acts as the single source of truth for a user's relationship to a particular server within the client. By keeping ChannelKeys and LastReadMessages client-side, the app can decrypt and present channel content and maintain read state even after restarts, without leaking sensitive information to the server. LeftChannels honors user intent by preventing auto-joining of channels the user has consciously left, until they rejoin. This abstraction fits alongside other per-server configuration objects and collates server identity, credentials, and per-channel metadata for efficient session restore and UX.
+The `SavedServer` acts as a simple data container that binds together server identity, user identity (when supplied), and user-driven state that enhances the reconnect experience. It sits at the boundary between the persistence layer and the networking layer: serialization of this object enables quick restoration of a user session without re-issuing authentication or resynchronizing channel state. The `ChannelKeys` field, in particular, represents sensitive data tied to end-to-end encrypted channels and is kept on the client; its lifecycle is intentionally scoped to the user’s device and is managed with the same care prescribed for the `RefreshToken`.
+
+## Example
+```csharp
+var server = new SavedServer
+{
+    Name = "EchoHub",
+    Url = "https://echo.example",
+    Username = "alice",
+    RememberMe = true,
+    LastConnected = DateTimeOffset.UtcNow,
+    ChannelKeys = new Dictionary<string, string>
+    {
+        { "general", "base64encryptedKeyHere" }
+    },
+    LeftChannels = new List<string> { "old-channel" },
+    LastReadMessages = new Dictionary<string, string>
+    {
+        { "general", "12345" }
+    }
+};
+```
 
 ## Notes
-- Sensitive data such as RefreshToken and ChannelKeys should be stored securely at rest; the server never holds these values. 
-- These collections are mutable; ensure proper synchronization if accessed from multiple threads to avoid data races or inconsistent state.
+- Treat `ChannelKeys` as sensitive data: avoid logging them or exposing them to the UI; ensure at-rest encryption via the client’s security model. The keys are stored only on the client device and are not sent to `server` endpoints.
+- This class is intended as a plain data carrier (DTO) used by the persistence and connection layers; do not embed domain logic here. When upgrading or migrating fields, consider versioning in the surrounding storage layer to preserve compatibility.
 
 ---

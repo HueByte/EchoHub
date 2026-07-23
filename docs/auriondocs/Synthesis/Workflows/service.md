@@ -2,13 +2,9 @@
 
 > *Workflow template auto-derived from 8 existing exemplar(s).*
 
-Adding a new service
-
-When you need to encapsulate a piece of server functionality—either a long-lived background job or an application service consumed by controllers and other services—you add a new service type in this codebase. Use the existing service types in src/EchoHub.Server/Services as your models: pick a clear name that ends with "Service", place the source alongside the other services, and wire it up where services are registered.
+When you need to add a new application service or a long-running background task to EchoHub.Server, add a new type alongside the existing services and register it where services are composed. The examples in src/EchoHub.Server/Services show both ordinary services and BackgroundService-based hosted tasks; model a new instance on those concrete types and then wire it into the application startup.
 
 ## Reference implementation
-
-Real code from `src/EchoHub.Server/Services/MuteExpirationService.cs` that a new instance can be modelled on:
 
 ```csharp
 /// <summary>
@@ -73,11 +69,11 @@ public sealed class MuteExpirationService : BackgroundService
 
 ## Where it lives
 
-Service source files are placed in src/EchoHub.Server/Services. Existing service types include names such as ChannelService, ChatService, FileCleanupService, FileStorageService, LinkEmbedService, MessageEncryptionService, MuteExpirationService, and ServerDirectoryService; each service file in that folder defines the corresponding type (for example, public class ChannelService : IChannelService and public sealed class FileCleanupService : BackgroundService). Follow the same placement and name your new type with a Service suffix so it sits alongside these exemplars.
+Create the new service type under src/EchoHub.Server/Services. The repository contains multiple service types in that folder whose type names end with "Service", for example ChannelService, ChatService, FileCleanupService, FileStorageService, LinkEmbedService, MessageEncryptionService, MuteExpirationService, and ServerDirectoryService.
 
 ## Wiring
 
-Detected registration/composition site: src/EchoHub.Server/Program.cs. Inspect that file to see how services from src/EchoHub.Server/Services are registered and how hosted/background services are added to the application; new service types should be wired there consistent with the existing registrations.
+Registration and composition of services was detected in src/EchoHub.Server/Program.cs. Add the new service's registration in that file alongside the existing service registrations; inspect src/EchoHub.Server/Program.cs and the exemplars to follow the same wiring approach used for other services.
 
 ## Existing examples
 
@@ -91,4 +87,4 @@ Detected registration/composition site: src/EchoHub.Server/Program.cs. Inspect t
 - [`ServerDirectoryService`](../../Code/src/EchoHub.Server/Services/ServerDirectoryService.cs.md)
 
 ---
-*Synthesised by Aurion on 2026-07-23 05:55:34 UTC*
+*Synthesised by AurionDocs on 2026-07-23 09:35:20 UTC*

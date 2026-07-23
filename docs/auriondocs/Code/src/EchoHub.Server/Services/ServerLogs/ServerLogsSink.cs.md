@@ -8,12 +8,12 @@ public sealed class ServerLogsSink : ILogEventSink
 ```
 
 
-ServerLogsSink is a Serilog sink that feeds the live log room by buffering log events in a bounded channel and exposing them to the streaming pipeline without persisting them. It enforces a minimum log level, filters out internal sources to avoid feedback loops, and writes accepted events into a single-reader queue consumed by the live broadcast path. This sink thus serves as a lightweight, non-persistent conduit for real-time visibility of logging activity.
+ServerLogsSink is a Serilog sink that buffers recent `LogEvent`s into a bounded, single-reader [`Channel<LogEvent>`](../../../EchoHub.Core/Models/Channel.cs.md) and exposes a `Reader` for the live log streaming path. It enforces a minimum level via the `ServerLogsOptions.MinLevel` and filters out internal streaming sources using `ExcludedSourcePrefixes` to prevent a feedback loop where a log would broadcast and re-log itself.
 
 ## Remarks
-The sink decouples log emission from the live broadcast pathway, providing backpressure via a bounded channel (capacity 512) with drop-oldest semantics to prevent unbounded memory growth. Internal pipeline events are culled by inspecting the SourceContext and excluding known internal prefixes, which prevents the log → broadcast → log feedback loop. By not writing to a database, the component prioritizes timely visibility for operators and clients over long-term auditing.
+Serving as a bridge between Serilog and the live log room, `ServerLogsSink` deliberately does not write to a database; events are queued for streaming consumption by [`ServerLogsStreamService`](ServerLogsStreamService.cs.md). The channel is sized with a capacity of 512 and uses `BoundedChannelFullMode.DropOldest` with `SingleReader = true`, which preserves the most recent events while avoiding unbounded memory growth. The internal filtering — checking `Constants.SourceContextPropertyName` and skipping any source that starts with entries in `ExcludedSourcePrefixes` — protects against recursive logging from the streaming infrastructure.
 
 ## Notes
-- When the channel is full, TryWrite may return false and the log event will be dropped, ensuring the application does not stall due to logging backpressure.
-- The channel is configured with SingleReader = true, so there is a single consumer in the streaming path; additional readers would not receive the full event sequence.
-- Only events that pass the MinLevel filter and do not originate from excluded internal sources are enqueued for broadcast.
+- The bound buffer capacity is 512 and uses `BoundedChannelFullMode.DropOldest`; when full, the oldest buffered events are dropped to make room for newer ones.
+- `Emit` uses `TryWrite` and ignores the return value; under load, logs may be dropped if the consumer lags behind.
+- Internal sources are excluded by prefix; adding new internal namespaces requires updating `ExcludedSourcePrefixes` to avoid self-logging.

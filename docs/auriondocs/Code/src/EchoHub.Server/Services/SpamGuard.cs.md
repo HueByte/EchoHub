@@ -19,17 +19,15 @@ public sealed class SpamGuard
 ```
 
 
-An in-memory, per-user spam protection component used by the server to enforce rate limits and duplicate-content rules across all ingress protocols (SignalR, IRC, etc.). SpamGuard centralizes checks for message sends, channel joins and channel creations so the same limits apply regardless of how a user interacts with the system. Its state is process-local (not persisted) and it delegates configuration to the supplied SpamOptions; the Enabled property exposes whether checks are active.
+In-memory, per-user spam protection consulted by the server-side ingress points (for example [`ChatService`](ChatService.cs.md) for messages and joins, and [`ChannelService`](ChannelService.cs.md) for channel creation). Reach for `SpamGuard` when you need a lightweight, process-local policy that enforces rate limits, duplicate-message checks, and simple escalation (auto-mute) without persisting state or inspecting decrypted content.
 
 ## Remarks
-SpamGuard exists to provide a single place for applying and counting spam-related events so different services (for example ChatService for messages/joins and ChannelService for channel creation) share the same view of a user's recent activity and violations. It keeps compact per-user state (queues of timestamps and a small duplicate-detection cache) and prunes stale entries lazily to avoid unbounded memory growth on busy servers. The class performs all checks under a private lock, so callers do not need to synchronize access; moderators (role >= ServerRole.Mod) are exempted from checks.
+`SpamGuard` centralizes cross-protocol ingress throttling so SignalR, IRC, and other entry points share the same limits and violation tracking. State is stored only in-process (the private `_users` dictionary) and is pruned lazily (see `PruneThreshold` and `StaleAfter`) to avoid unbounded growth on busy servers. It operates on content the server already has (so for end-to-end encrypted rooms this is ciphertext) and does not perform decryption. Staff users bypass the guard (`role >= ServerRole.Mod`), rejections are recorded as violations, and repeated rejected messages inside the configured violation window can escalate to `SpamVerdictKind.AutoMute` (the escalation is evaluated only when a message is rejected).
 
 ## Notes
-- State is process-local and not persisted: restarts or multi-process deployments will reset per-user counters; auto-mutes are recorded in the normal mute store (outside this class).
-- Time sources default to DateTimeOffset.UtcNow but can be overridden via the optional nowOverride parameter (useful for deterministic testing).
-- Flood detection counts every attempt (including retries), and uses a sliding window configured via SpamOptions (Prune before enqueueing and compare against MaxMessagesPerWindow).
-- Duplicate detection compares trimmed, case-insensitive content to the immediately previous message only (back-to-back duplicates); RepeatCount is incremented for consecutive repeats and compared to MaxDuplicateMessages.
-- Only rejected actions are recorded as violations for escalation; a non-rejected (clean) message cannot by itself trigger an auto-mute. The escalation logic (violations -> SpamVerdictKind.AutoMute) is evaluated only on rejected messages.
+- State is process-local and not persisted: `SpamGuard` does not provide global or cross-instance enforcement. On a multi-server deployment, limits and violation histories are not shared between processes.
+- Duplicate detection uses a simple normalization (`Trim()` + `ToLowerInvariant()`): whitespace differences and casing are ignored when comparing `content` to `UserState.LastContent`; `RepeatCount` is reset when normalized content changes.
+- All checks run under the internal `Lock` (`lock (_lock)`), so `SpamGuard` is thread-safe but its callers may observe brief blocking under contention; where tests or deterministic timing are needed, use the `nowOverride` parameter to supply a fixed time.
 
 ---
 
@@ -53,21 +51,13 @@ public readonly record struct SpamVerdict(SpamVerdictKind Kind, string? Reason =
 | `MuteDuration` | `TimeSpan` | `default` |
 
 
-SpamVerdict is an immutable value-type that conveys the outcome of a spam check. It carries a Kind from SpamVerdictKind to describe the verdict, an optional Reason for explaining the result, and a MuteDuration indicating how long to suppress further messages when applicable. Defined as a readonly record struct, it benefits from value-based equality and guarantees immutability across boundaries. A convenient static instance, SpamVerdict.Allowed, represents the common case where a message passes spam checks without penalty.
+SpamVerdict is an immutable value-type that conveys the outcome of a spam check. It aggregates the verdict kind (`SpamVerdictKind`), an optional `Reason` for extra context, and a `MuteDuration` that can specify how long to mute the sender when appropriate. A single, shared instance `SpamVerdict.Allowed` is provided for the common case where no action is needed, enabling callers to express acceptance without allocating a new structure.
 
 ## Remarks
-Because the verdict is packaged as a single object, this abstraction lets the rest of the system reason about spam results without ad-hoc boolean flags scattered through the code. It fits into the SpamGuard workflow by serving as a single, transportable payload that downstream components can inspect via Kind and optionally read the Reason or respect the MuteDuration. The immutability of the type helps prevent accidental mutations once a verdict has been created.
-
-## Example
-```csharp
-// Common usage: treat messages as allowed by the spam guard
-var verdict = SpamVerdict.Allowed;
-```
+SpamVerdict is a `readonly record struct`, which gives it value-based equality, structural deconstruction, and immutability. This design keeps spam-check results small and cheap to pass across boundaries, while centralizing how verdicts are represented and interpreted by the rest of the system.
 
 ## Notes
-- Reason is nullable; when present, it should be used for diagnostics or logs rather than for control flow. If you need extra context, supply Reason; otherwise leave it null.
-- MuteDuration defaults to TimeSpan.Zero. To mute a user or channel for a period, provide a non-zero duration.
-- SpamVerdict.Allowed is a convenient singleton for the common allowed case, but it does not encode a Reason or a non-zero MuteDuration. If you need those metadata, construct a new SpamVerdict explicitly.
+- The `Reason` is optional; code must account for `null` when presenting or logging context.
 
 ---
 
@@ -86,14 +76,12 @@ public enum SpamVerdictKind
 ```
 
 
-SpamVerdictKind enumerates the possible outcomes of a spam evaluation. It is used by enforcement logic to decide whether to allow, reject, or mute a user based on the spam check; AutoMute indicates the caller should apply a timed mute.
+The `SpamVerdictKind` enum encapsulates the outcome of a spam policy evaluation performed by the `SpamGuard`. It is used to drive downstream behavior without embedding policy logic in callers: `Allowed` means the action may proceed, `Rejected` means the action is blocked, and `AutoMute` signals that the user has crossed the violation threshold — the caller should apply a timed mute.
 
 ## Remarks
-By centralizing these verdicts, the codebase can route enforcement consistently without scattering string literals or magic numbers. The AutoMute value communicates a specific consequence (a timed mute) that callers should implement, decoupling the decision from the actual enforcement mechanism. This abstraction helps evolve spam-policy over time while keeping evaluation and enforcement loosely coupled.
+This enum separates policy evaluation from enforcement, allowing a single, centralized decision point at the boundary of spam checks. Downstream code can switch on the verdict to implement appropriate behavior; the exact duration and rules of a timed mute are defined elsewhere and are not baked into this type.
 
 ## Notes
-- AutoMute carries no duration or scope; the enforcement layer must supply the mute length and target(s).
-- There is no payload attached to the verdict; if more context is needed (e.g., risk score, user ID), pass it separately alongside the verdict.
-- Be mindful when updating this enum; adding values requires updating all readers to handle new cases.
+- The duration of an auto mute is not encoded in the enum; callers must resolve duration from configuration or a separate policy engine.
 
 ---

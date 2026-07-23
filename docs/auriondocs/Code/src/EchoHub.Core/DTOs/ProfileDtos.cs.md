@@ -27,21 +27,7 @@ public record AvatarUploadResponse(string AvatarAscii)
 | `AvatarAscii` | `string` | — |
 
 
-AvatarUploadResponse is a tiny, immutable data container that represents the server’s response to an avatar-upload operation. It carries a single payload, AvatarAscii, which holds the ASCII-art representation of the uploaded avatar. Use this type as a typed contract when returning avatar data from a service or API endpoint, rather than returning a raw string scattered through your responses.
-
-## Remarks
-This abstracted DTO isolates the avatar representation behind a named contract, making it easier to evolve the API (e.g., by adding metadata) without breaking call sites. The record semantics ensure value-based equality and straightforward deconstruction, which pairs well with serialization and testing.
-
-## Example
-```csharp
-var resp = new AvatarUploadResponse("ASCII_ART");
-Console.WriteLine(resp.AvatarAscii);
-```
-
-## Notes
-- AvatarAscii may contain newline characters; ensure your JSON/HTTP layer preserves them.
-- Keep the payload size reasonable; extremely large ASCII art can inflate responses.
-- This type is a pure DTO with no behavior; avoid placing business logic here.
+AvatarUploadResponse is a lightweight data container that carries the ASCII representation of a user-uploaded avatar. Its sole payload is the `AvatarAscii` string, which downstream clients can render to display the avatar in text form after an upload.
 
 ---
 
@@ -65,23 +51,22 @@ public record UpdateProfileRequest(
 | `NicknameColor` | `string?` | `null` |
 
 
-UpdateProfileRequest is a data transfer object used when updating a user's profile. All fields are optional, enabling partial updates by supplying only the fields you want to change (DisplayName, Bio, or NicknameColor). This object is typically sent to a profile update endpoint or service, where the provided values are applied while unspecified fields remain unchanged.
+This `UpdateProfileRequest` is a `record` that carries a partial update payload for a user's profile. By supplying only non-null properties (e.g. `DisplayName`, `Bio`, or `NicknameColor`), callers express which fields should be updated; fields left as `null` indicate no change for that field.
 
 ## Remarks
-By modeling the payload as a record with nullable properties, this abstraction communicates intent clearly: you're patching specific aspects of a profile rather than replacing it wholesale. It decouples API contract from the underlying domain model and reinforces immutability semantics for the request object. The combination of a concise DTO and nullable members makes it straightforward for clients to express partial updates without constructing separate patch types.
+
+Using a `record` provides value-based equality and inherent immutability, which makes it ideal for data-carrying DTOs. The ability to set properties to `null` gives a clean contract for partial updates; consumers should treat nulls as 'do not modify' for that field and pass through only the intended changes to the update operation.
 
 ## Example
-```csharp
-// Update only the display name
-var request1 = new UpdateProfileRequest(DisplayName: "Nova");
 
-// Update multiple fields
-var request2 = new UpdateProfileRequest(DisplayName: "Nova", Bio: "Software engineer", NicknameColor: "#1E90FF");
+```csharp
+var request = new UpdateProfileRequest(DisplayName: "Nova", NicknameColor: "#FFAA00");
 ```
 
 ## Notes
-- Omitted properties are treated as "no update" by the receiver; a null value may be interpreted differently depending on backend semantics.
-- If you need to clear a value, verify the server's rules: null may not clear a field unless explicitly supported; you may need to provide an empty string or use a dedicated API path to clear a value.
+
+- Ensure the update handler interprets nulls as "no change" to avoid overwriting existing values.
+
 
 ---
 
@@ -103,14 +88,15 @@ public record UpdateStatusRequest(
 | `StatusMessage` | `string?` | `null` |
 
 
-UpdateStatusRequest is a small, immutable data transfer object used to submit a user's status update. It bundles the new Status and, optionally, an accompanying StatusMessage to be processed by a profile update operation.
+This `UpdateStatusRequest` record encapsulates the payload required to update a user's profile status. It carries the new [`UserStatus`](../Models/UserStatus.cs.md) and an optional `StatusMessage`, and is intended to be used when issuing a status update to APIs or command handlers where a consistent update payload is expected.
 
 ## Remarks
-Being a C# 9 record, UpdateStatusRequest is immutable and supports value-based equality, which makes it reliable to pass across process boundaries and into tests. The Status is a required field that identifies the new user state via UserStatus, while StatusMessage provides optional context. This DTO participates in the profile update workflow and is typically serialized as part of requests to the profile service.
+
+By modeling the input as a dedicated value object, this abstraction centralizes validation and transport concerns at the boundaries between the domain and application layers, ensuring a stable contract for status updates. It also isolates update-related concerns from the rest of the profile payload, making it easier to evolve serialization, auditing, or routing rules without touching domain entities.
 
 ## Notes
-- StatusMessage is nullable; if the receiver accepts no message, null can be sent and should be handled gracefully.
-- Because UpdateStatusRequest is a record, you can create modified copies using the with expression, e.g. existing with { Status = newStatus } to preserve other fields.
+
+- The `StatusMessage` property is nullable. Callers must handle the possibility of a missing message when consuming this payload.
 
 ---
 
@@ -142,15 +128,10 @@ public record UserPresenceDto(
 | `IsIrc` | `bool` | `false` |
 
 
-Represents a single snapshot of a user's presence in EchoHub. This record aggregates the user's identity (Username and optional DisplayName), their current presence state (Status and optional StatusMessage), and their server role (Role). It also carries UI-related hints such as NicknameColor and an IsIrc flag indicating whether the presence originated from IRC. The type is a C# record with positional parameters, making it an immutable, value-based data object that is ideal for transport across API boundaries and for equality comparisons of presence data.
+Represents the presence-related data for a user in profile contexts, bundling the `Username`, optional `DisplayName`, optional `NicknameColor`, current `Status`, optional `StatusMessage`, `Role`, and the `IsIrc` flag into a single immutable DTO (with `IsIrc` defaulting to `false`). It is intended to be created and transported as a coherent unit when rendering user cards or updating presence in the UI or API responses, rather than scattering these fields across multiple structures.
 
 ## Remarks
-Consolidating identity, status, and role into one DTO reduces the number of cross-cutting data transfers required to render a user in a presence list or chat UI. The NicknameColor provides a presentation cue without forcing consumers to derive display styling; the IsIrc flag lets calling code distinguish between sources. As a record, instances compare by their values, enabling straightforward caching, deduplication, and change detection.
-
-## Notes
-- Nullable fields (DisplayName, NicknameColor, and StatusMessage) may be null; callers should handle nulls gracefully.
-- IsIrc defaults to false; set to true when constructing from IRC-origin data.
-- This is a positional-parameter record; properties are init-only and the object is immutable after construction; create a new instance to represent a changed presence.
+Acts as a stable boundary for presence data used by profile-related UI and API surfaces, consolidating identity, status, and role information into one payload. The [`UserStatus`](../Models/UserStatus.cs.md) and [`ServerRole`](../Models/ServerRole.cs.md) collaborators encode the allowed presence states and roles, while `NicknameColor` provides a UI cue without forcing a separate domain type. Being a `record`, it relies on value equality to simplify change detection and caching as presence updates propagate.
 
 ---
 
@@ -190,13 +171,9 @@ public record UserProfileDto(
 | `LastSeenAt` | `DateTimeOffset` | — |
 
 
-Represents a compact, transport-friendly snapshot of a user's profile used across boundaries (e.g., API responses, UI layers). As a C# record, it provides value-based equality and immutability, ensuring a stable contract when serializing user data. It collects identity (Id, Username), optional display attributes (DisplayName, Bio, NicknameColor, AvatarAscii), current status (Status, StatusMessage), role (Role), and timestamp metadata (CreatedAt, LastSeenAt).
+UserProfileDto is an immutable data transfer object that represents a snapshot of a user's profile for API responses and inter-layer communication. Implemented as a `record`, it carries a stable payload including the user's identity (`Id` of type `Guid`, `Username`), optional display details (`DisplayName`, `Bio`, `NicknameColor`, `AvatarAscii`), presence (`Status` of type [`UserStatus`](../Models/UserStatus.cs.md), `StatusMessage`), role (`Role` of type [`ServerRole`](../Models/ServerRole.cs.md)), and timestamps (`CreatedAt`, `LastSeenAt` of type `DateTimeOffset`).
 
 ## Remarks
-This DTO exists to decouple internal domain models from the data contract exposed to clients. By using a dedicated record, changes to the underlying domain models won't automatically ripple into API payloads. The explicit nullable fields model optional user attributes, and the timestamp fields communicate when the profile was created and last observed; consumers must handle time values robustly across time zones.
-
-## Notes
-- Nullable properties (DisplayName, Bio, NicknameColor, AvatarAscii, StatusMessage) may be null; handle accordingly in consumers.
-- CreatedAt and LastSeenAt are DateTimeOffset values; when displaying, convert to a user-friendly timezone or use UTC representation as defined by the API contract.
+By modelling the payload as a `record`, `UserProfileDto` benefits from value-based equality and straightforward serialization for API clients. It serves as a transport contract that decouples external API surfaces from the internal domain model, allowing optional fields to convey partial profile information without mutating server state.
 
 ---

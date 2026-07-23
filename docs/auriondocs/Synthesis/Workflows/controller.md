@@ -2,9 +2,11 @@
 
 > *Workflow template auto-derived from 7 existing exemplar(s).*
 
-This template describes how to add a new HTTP controller to the server: reach for this pattern when you need a new API surface implemented as an [ApiController] class that exposes routes and actions. Use the reference controller below as the concrete shape to copy (attributes, base class, constructor injection, and action patterns), and consult the existing examples to match naming and placement.
+Adding a new controller in this codebase means adding an ASP.NET Core API controller class under src/EchoHub.Server/Controllers that follows the shape shown in the reference FilesController. A developer would reach for this pattern when they need to expose a new HTTP API surface: controllers are decorated with controller attributes, derive from ControllerBase, and implement actions (HttpGet/HttpPost/etc.) that the framework routes to.
 
 ## Reference implementation
+
+Real code from src/EchoHub.Server/Controllers/FilesController.cs that you can model a new controller on:
 
 ```csharp
 [ApiController]
@@ -69,11 +71,11 @@ public class FilesController : ControllerBase
 
 ## Where it lives
 
-Controllers in this codebase are placed under src/EchoHub.Server/Controllers, and exemplar files use names such as AuthController.cs, ChannelsController.cs, FilesController.cs, InvitesController.cs, ModerationController.cs, ServerController.cs, and UsersController.cs with corresponding public classes named AuthController, ChannelsController, FilesController, InvitesController, ModerationController, ServerController, and UsersController. Use that same folder and naming pattern when adding a new controller file.
+Controllers in this project appear under src/EchoHub.Server/Controllers and use the Controller naming form (for example FilesController, AuthController, ChannelsController, etc.). Each controller is a class that carries the [ApiController] attribute and derives from ControllerBase; routing is provided with [Route("...")] on the class and action attributes like [HttpGet] on methods.
 
 ## Wiring
 
-A specific registration site for controllers was not detected in the symbol graph provided. Inspect the existing controllers listed below to see how they are referenced in the project and to follow the same runtime usage patterns used by the application.
+A registration/composition site for controllers was not detected in the provided wiring list. To see how controllers are used and how their action surface looks in practice, inspect the existing controllers listed in "Existing examples" below and model your new controller on those files.
 
 ## Existing examples
 
@@ -86,4 +88,4 @@ A specific registration site for controllers was not detected in the symbol grap
 - [`UsersController`](../../Code/src/EchoHub.Server/Controllers/UsersController.cs.md)
 
 ---
-*Synthesised by Aurion on 2026-07-23 05:55:15 UTC*
+*Synthesised by AurionDocs on 2026-07-23 09:35:00 UTC*

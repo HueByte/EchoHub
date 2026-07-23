@@ -8,12 +8,12 @@ public static class EmojiHelper
 ```
 
 
-EmojiHelper converts emoji grapheme clusters to text shortcodes for safe TUI rendering. It replaces emoji with fixed-width ASCII shortcodes when available, falling back to a generic [emoji] placeholder for unknown symbols; non-emoji text passes through unchanged.
+EmojiHelper is a static utility that converts emoji grapheme clusters in a string into text shortcodes for safe rendering in terminal-based UIs. It scans input text, splits it into grapheme elements, and replaces any grapheme containing emoji with a corresponding shortcode from `EmojiShortcodes`; if no mapping exists for the full grapheme, it attempts the base emoji (the first rune) and uses its shortcode; if that also fails, it inserts a generic `[emoji]` placeholder. Non-emoji text passes through unchanged. This approach avoids inconsistent emoji rendering across terminals by providing fixed-width ASCII representations for display-only outputs.
 
 ## Remarks
-
-This utility uses grapheme-aware processing to handle complex emoji sequences (including ZWJ-joined glyphs and modifier-bearing emojis) by iterating over text elements rather than individual code points. It first attempts a full-grapheme shortcode lookup, then falls back to the base emoji (the first rune of the grapheme) if necessary, and finally uses the [emoji] placeholder when no mapping exists. An initial pass quickly determines whether any emoji exist in the input to avoid unnecessary work. The implementation relies on StringBuilder for efficient string construction, StringInfo for grapheme segmentation, and the EmojiShortcodes mapping as the source of truth for replacements.
+EmojiHelper centralizes the emoji-to-shortcode conversion, isolating terminal rendering concerns from application logic. It relies on `EmojiShortcodes` for mapping and uses `StringInfo.GetTextElementEnumerator` to respect grapheme boundaries, ensuring sequences like complex emoji are treated coherently. The abstraction keeps emoji translation testable and swapable, so you can adjust shortcodes without touching UI code.
 
 ## Notes
-
-- Unknown or unmapped emoji are replaced with [emoji], which can reduce expressiveness if the shortcode dictionary is incomplete. Ensure EmojiShortcodes covers the emoji you expect to render in your UI.
+- Unknown emoji yields a generic `[emoji]` placeholder; ensure `EmojiShortcodes` covers targets or plan fallback behavior.
+- Emoji detection uses a set of Unicode ranges to decide whether a grapheme contains emoji; new or platform-specific emoji outside these ranges may be missed.
+- This replacement is intended for display only; do not rely on reversibility for data persistence, and be aware that updates to `EmojiShortcodes` may change outputs.

@@ -8,32 +8,33 @@ public class PresenceTracker
 ```
 
 
-Tracks active connections and per-user channel membership for a server-side hub/service. Use this when you need to know which usernames are currently connected (counting a user with multiple connections only once), map individual connection IDs to their user, and query which users are in which chat channels.
+Maintains an in-memory registry of active connections, per-user connection sets, and per-user channel memberships. Use `PresenceTracker` when a hub or real-time service needs a centralized, process-local view of who is online (distinct users are counted once even if they have multiple connections), which channels each user has joined, and to obtain connection IDs for broadcasting to members of channels.
 
 ## Remarks
-PresenceTracker centralizes presence state in three concurrent dictionaries: a connectionId → (userId, username) map, a username → set-of-connectionIds map, and a username → set-of-channelNames map. It uses a single private lock to make operations on the HashSet values atomic because ConcurrentDictionary only protects access to individual slots, not the mutable collections stored as values. The UserCountChanged event is raised only when the distinct online user count changes (for example, when a user's first connection is added or their last connection is removed); the implementation invokes the event outside the lock to avoid holding the lock while user code runs.
+`PresenceTracker` centralises presence state so hubs or services can avoid scattering connection and channel bookkeeping across call sites. It stores a mapping of connection id → `(userId, username)` in `_connections`, a mapping of `username` → connection id set in `_userConnections`, and a mapping of `username` → channel name set in `_userChannels`. The class deduplicates users with multiple connections (a user with N connections is one online user) and raises `UserCountChanged` only when the distinct online user count changes. Internally it uses a private lock (`_lock`) around operations that mutate the `HashSet` values because `ConcurrentDictionary` protects its buckets but not the mutability of objects stored inside them; this ensures consistency for the `TryGetValue` → modify sequences and for multi-step cleanup when the last connection for a user is removed.
 
 ## Example
 ```csharp
 var tracker = new PresenceTracker();
 tracker.UserCountChanged += count => Console.WriteLine($"Online users: {count}");
 
-// user connects from two clients (only the first connection should trigger the count change)
-tracker.UserConnected("conn-1", Guid.NewGuid(), "alice"); // triggers UserCountChanged -> 1
-tracker.UserConnected("conn-2", Guid.NewGuid(), "alice"); // no count change
+// A client connects with two transports (two connection IDs) for the same logical user
+var aliceId = Guid.NewGuid();
+tracker.UserConnected("conn-1", aliceId, "alice");
+tracker.UserConnected("conn-2", aliceId, "alice");
 
-// join a channel and query who is in it
-tracker.JoinChannel("alice", "general");
-var usersInGeneral = tracker.GetOnlineUsersInChannel("general"); // contains "alice"
+// Join a channel; returns true only if this `username` was not already in the channel
+var firstJoin = tracker.JoinChannel("alice", "general");
 
-// disconnect one connection; user still online because another connection remains
-tracker.UserDisconnected("conn-1"); // returns "alice"; no UserCountChanged
+// Read who is in a channel (snapshot list)
+var usersInGeneral = tracker.GetOnlineUsersInChannel("general");
 
-// final disconnect removes the user and triggers UserCountChanged
-tracker.UserDisconnected("conn-2"); // returns "alice"; triggers UserCountChanged -> 0
+// When a connection goes away
+tracker.UserDisconnected("conn-1");
+// When the last connection is removed, `UserCountChanged` will fire and channel membership for that user is cleaned up
 ```
 
 ## Notes
-- The class treats usernames as dictionary keys using the string's default equality (case-sensitive by default). Normalize or use a consistent casing strategy before calling if your application expects case-insensitive behavior.
-- The lock protects the HashSet instances stored in the dictionaries; callers do not need to synchronize when calling the public methods, but should avoid long-running work inside UserCountChanged handlers because the event is invoked from the presence-tracking flow (the implementation intentionally invokes the event outside the lock, but handlers that re-enter tracker methods could still affect ordering).
-- The provided source appears truncated / contains a small syntax issue near GetChannelsForUser and GetConnectionsInChannels; verify the final implementation of those methods before relying on their exact return behavior.
+- `UserCountChanged` is invoked synchronously on the calling thread after the internal lock is released; subscribers are called inline and should avoid long-running work to prevent blocking the caller.  
+- `JoinChannel` creates or updates the per-`username` channel set in `_userChannels` even if that `username` currently has no active connections; channel membership is tracked separately from `_connections`.  
+- The implementation uses a single private lock (`_lock`) to protect mutations of the `HashSet` values stored in the `ConcurrentDictionary` instances; this simplifies correctness but can be a contention point at very large scale. Consider sharding presence state if you expect thousands of concurrent mutations per second.

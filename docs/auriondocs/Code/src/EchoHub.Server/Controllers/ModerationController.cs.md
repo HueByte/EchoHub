@@ -8,46 +8,32 @@
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#faf7ef','primaryColor':'#f0e2c2','primaryTextColor':'#1f2840','primaryBorderColor':'#8a7548','secondaryColor':'#d9efec','secondaryBorderColor':'#1d8a80','secondaryTextColor':'#1f2840','tertiaryColor':'#f2ebd8','tertiaryBorderColor':'#8a7548','tertiaryTextColor':'#1f2840','lineColor':'#1d8a80','titleColor':'#1f2840','fontSize':'14px','edgeLabelBackground':'#faf7ef','clusterBkg':'#f2ebd8','clusterBorder':'#8a7548','actorBkg':'#f0e2c2','actorBorder':'#8a7548','actorTextColor':'#1f2840','actorLineColor':'#8a7548','signalColor':'#1d8a80','signalTextColor':'#1f2840','activationBkgColor':'#d9efec','activationBorderColor':'#1d8a80','noteBkgColor':'#f2ebd8','noteBorderColor':'#8a7548','noteTextColor':'#1f2840','labelBoxBkgColor':'#f0e2c2','labelBoxBorderColor':'#8a7548','labelTextColor':'#1f2840','transitionColor':'#1d8a80','transitionLabelColor':'#1f2840','stateLabelColor':'#1f2840','altBackground':'#f2ebd8'}}}%%
 flowchart TB
-Start["POST api/moderation/role - AssignRoleRequest"]
-GetCaller["Call GetCallerAsync(ServerRole.Admin)"]
-CallerError{"GetCaller returned error?"}
-ReturnError["Return ErrorResponse and stop"]
+A["ModerationController POST role receives AssignRoleRequest"]
+A --> B["Call GetCallerAsync(ServerRole.Admin)"]
+B -->|"error != null"|C["Return ErrorResponse"]
+B -->|"caller authorized"|D["If request.Role == ServerRole.Owner -> BadRequest(ErrorResponse)"]
+D -->|"true"|C
+D -->|"false"|E["Query EchoHubDbContext.Users for target Username (toLower)"]
+E -->|"not found"|F["Return NotFound(ErrorResponse)"]
+E -->|"found"|G["If target.Role == ServerRole.Owner -> BadRequest(ErrorResponse)"]
+G -->|"true"|C
+G -->|"false"|H["If request.Role >= caller.Role -> BadRequest(ErrorResponse)"]
+H -->|"true"|C
+H -->|"false"|I["Set previousRole and assign target.Role = request.Role"]
+I --> J["Call EchoHubDbContext.SaveChangesAsync()"]
+J --> K["Log information about role change"]
+K --> L["Return Ok with success message"]
 
-CheckOwnerReq{"request.Role == ServerRole.Owner?"}
-BadRequestOwner["Return BadRequest(ErrorResponse: Cannot assign the Owner role.)"]
-
-FindTarget["Query EchoHubDbContext.Users for request.Username.ToLower()"]
-TargetNotFound{"target is null?"}
-ReturnNotFound["Return NotFound(ErrorResponse: user not found)"]
-
-TargetIsOwner{"target.Role == ServerRole.Owner?"}
-BadRequestOwner2["Return BadRequest(ErrorResponse: Cannot change the server owner role.)"]
-
-RoleTooHigh{"request.Role >= caller.Role?"}
-BadRequestRole["Return BadRequest(ErrorResponse: Cannot assign a role equal to or above your own.)"]
-
-ApplyChange["Set previousRole, assign request.Role to target, call EchoHubDbContext.SaveChangesAsync()"]
-ReturnOk["Return Ok(message: user is now role)"]
-
-Start --> GetCaller
-GetCaller --> CallerError
-CallerError -->|Yes| ReturnError
-CallerError -->|No| CheckOwnerReq
-
-CheckOwnerReq -->|Yes| BadRequestOwner
-CheckOwnerReq -->|No| FindTarget
-
-FindTarget --> TargetNotFound
-TargetNotFound -->|Yes| ReturnNotFound
-TargetNotFound -->|No| TargetIsOwner
-
-TargetIsOwner -->|Yes| BadRequestOwner2
-TargetIsOwner -->|No| RoleTooHigh
-
-RoleTooHigh -->|Yes| BadRequestRole
-RoleTooHigh -->|No| ApplyChange
-
-ApplyChange --> ReturnOk
+M["ModerationController POST kick/{username} receives KickRequest?"]
+M --> N["Call GetCallerAsync(ServerRole.Mod)"]
+N -->|"error != null"|C
+N -->|"caller authorized"|O["Query EchoHubDbContext.Users for target Username"]
+O -->|"not found"|F
+O -->|"found"|P["If target.Role >= caller.Role -> BadRequest(ErrorResponse)"]
+P -->|"true"|C
+P -->|"false"|Q["channels = PresenceTracker.GetChannelsForUser(target.Username)"]
+Q --> R["For each Channel in channels: broadcast kick via IChatBroadcaster and clean presence"]
+R --> S["Proceed to perform broadcast and cleanup (truncated)"]
 ```
 
 ```csharp
@@ -59,13 +45,14 @@ public class ModerationController : ControllerBase
 ```
 
 
-Exposes HTTP endpoints under api/moderation for server moderation operations such as assigning roles, kicking users, and banning users. Reach for this controller when implementing administrative or moderation features (web UI, automated moderation tools, or internal scripts) that must enforce role hierarchy, persist changes to the user store, notify connected clients, and clean up presence/connection state.
+Provides HTTP endpoints under `api/moderation` for server moderation operations such as assigning roles, kicking and banning users. Use `ModerationController` when you need a centralized, authenticated API surface to perform privileged user-management actions that update persistent state and notify connected clients.
 
 ## Remarks
-This controller centralizes server-side moderation logic and enforces policy at the API boundary: callers must be authenticated and possess the appropriate ServerRole before actions are performed. It coordinates several responsibilities through injected services — persisting role changes via the DbContext, enumerating and notifying affected channels via the PresenceTracker and IChatBroadcaster implementations, forcing connection teardown and cleanup, and recording moderation metrics with ServerStatsCollector. The design keeps authorization and business rules (for example, preventing Owner reassignment and preventing actors from assigning or acting on users with equal or higher roles) inside the controller so callers cannot bypass them.
+`ModerationController` centralizes moderation workflows: it validates the caller's privileges (via the controller's caller-checking helpers), performs database updates through [`EchoHubDbContext`](../Data/EchoHubDbContext.cs.md), emits real-time notifications to connected clients through [`IChatBroadcaster`](../../EchoHub.Core/Contracts/IChatBroadcaster.cs.md) implementations, and updates runtime state via [`PresenceTracker`](../Services/PresenceTracker.cs.md) and [`ServerStatsCollector`](../Services/Stats/ServerStatsCollector.cs.md). The class is decorated with `[Authorize]` and `[EnableRateLimiting("general")]`, so all endpoints require an authenticated caller and are subject to the configured rate limits. Actions that modify user connectivity (for example kicking a user) will both broadcast the event to affected channels and invoke the controller's disconnect/cleanup logic to remove presence and force client disconnects.
 
 ## Notes
-- Usernames are normalized (lowercased) before lookup; callers should supply usernames case-insensitively.
-- Role comparisons rely on the numeric ordering of ServerRole (the controller rejects assigning or acting on roles that are equal to or higher than the caller).
-- Methods have observable side effects: database updates, broadcasts to connected clients, forced disconnects and presence cleanup, and server-stat increments — consumers should treat these endpoints as state-changing and potentially long-running operations.
-- The controller logs moderation actions (role changes, kicks, etc.); ensure logging and monitoring are configured appropriately for audit purposes.
+- User lookup uses a lowercased username (e.g. `username.ToLowerInvariant()`), so callers should supply the canonical username form; mismatched casing can lead to `NotFound` responses.  
+- Role hierarchy is enforced: the controller prevents assigning the `ServerRole.Owner`, prevents changing the server owner's role, and disallows assigning or acting on users with roles equal to or higher than the caller (see the `AssignRole` and `KickUser` checks).  
+- Persistent changes are saved via `EchoHubDbContext.SaveChangesAsync()` and important actions are logged with the injected `ILogger<ModerationController>`, so moderation operations are durable and auditable.  
+- Because the controller broadcasts moderation events using [`IChatBroadcaster`](../../EchoHub.Core/Contracts/IChatBroadcaster.cs.md) and may call `ForceDisconnectAndCleanupAsync`, clients connected to channels may be forcibly disconnected as part of an action — callers should expect immediate real-time side effects beyond the HTTP response.  
+- The `[EnableRateLimiting("general")]` attribute can cause requests to be throttled under high load; plan client-side retry/backoff for operator tooling that calls these endpoints.

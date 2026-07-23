@@ -8,15 +8,13 @@ public sealed class IrcClientConnection : IAsyncDisposable
 ```
 
 
-Manages a single IRC client TCP connection: wraps a TcpClient/Stream pair, serializes outgoing IRC lines, provides simple registration and channel membership state, and exposes read/write helpers for the IRC protocol. Use this when handling a single connected client in server code so you get consistent CRLF framing, UTF-8 encoding without BOM, and serialized writes.
+Manages a single IRC-over-TCP client connection: reads and writes CRLF-delimited lines, holds simple registration state, and tracks joined channels. Use `IrcClientConnection` when the server needs a lightweight, per-socket representation of a connected IRC client (rather than passing raw `TcpClient`/`Stream` around).
 
 ## Remarks
-This type represents the per-connection state and I/O for one IRC client. It centralizes the socket-level StreamReader/StreamWriter setup (UTF-8 without BOM, CRLF line endings, AutoFlush) and enforces serialized writes with an internal SemaphoreSlim. The class keeps mutable registration and presence properties (nickname, username, authentication flags, away message, joined channels) so higher-level command handlers and broadcaster threads can consult or update a single source of truth. Channel membership access is guarded by a private lock and exposed via snapshot methods so broadcaster threads can read without additional synchronization.
+`IrcClientConnection` encapsulates the I/O and minimal protocol state for one IRC client. It creates `StreamReader`/`StreamWriter` pair configured with UTF-8 without BOM (via `UTF8Encoding`) and `StreamWriter` options `AutoFlush` and `NewLine = "\r\n"` so callers can read/write logical IRC lines. Outgoing writes are serialized using the private `SemaphoreSlim` (`_writeLock`) so concurrent senders do not interleave data. Channel membership is stored in the private `_joinedChannels` and guarded by `_channelLock`, allowing safe reads by broadcaster threads while command handlers mutate the set. Connection identity is exposed through `ConnectionId` (prefixed with `HubConstants.IrcConnectionIdPrefix` and a `Guid`), and a simple `Hostmask` string is provided based on `Nickname` and `Username`.
 
 ## Notes
-- ReadLineAsync swallows read exceptions and returns null; treat a null result as "connection closed" or irrecoverable read error.
-- SendAsync swallows write exceptions (connection lost) after serializing via an internal semaphore; callers cannot observe write failures directly.
-- Registration properties (Nickname, Username, UserId, IsRegistered, etc.) are not synchronized by this class — callers should coordinate concurrent access if needed.
-- Channel membership APIs (JoinChannel, LeaveChannel, IsInChannel, GetJoinedChannels) are thread-safe: the implementation takes a lock and GetJoinedChannels returns a snapshot list to avoid callers iterating the internal set directly.
-- Hostmask composes Nickname and Username; Username may be null so Hostmask uses Username ?? Nickname in its string formatting.
-- DisposeAsync closes the underlying TcpClient and disposes the reader/writer and semaphore; do not use the connection after disposing.
+- `ReadLineAsync` returns `null` on error or when the underlying read fails; callers must treat `null` as a disconnected/error condition rather than a valid empty line.  
+- `SendAsync` and the numeric helpers (`SendNumericAsync`) swallow exceptions raised while writing (connection loss is silently ignored), so sending failures will not throw — design choice to avoid bubbling socket errors to callers.  
+- Only channel-related state (`_joinedChannels`) is synchronized. Properties such as `Nickname`, `Username`, `IsRegistered`, `IsAuthenticated`, and `AwayMessage` are not individually thread-safe; if you access them concurrently from multiple threads, add external synchronization.
+- `DisposeAsync` closes the underlying `TcpClient` and disposes the reader, writer, and `_writeLock`, but does not attempt to coordinate or await in-flight operations beyond disposing those resources.

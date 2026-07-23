@@ -7,16 +7,24 @@
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#faf7ef','primaryColor':'#f0e2c2','primaryTextColor':'#1f2840','primaryBorderColor':'#8a7548','secondaryColor':'#d9efec','secondaryBorderColor':'#1d8a80','secondaryTextColor':'#1f2840','tertiaryColor':'#f2ebd8','tertiaryBorderColor':'#8a7548','tertiaryTextColor':'#1f2840','lineColor':'#1d8a80','titleColor':'#1f2840','fontSize':'14px','edgeLabelBackground':'#faf7ef','clusterBkg':'#f2ebd8','clusterBorder':'#8a7548','actorBkg':'#f0e2c2','actorBorder':'#8a7548','actorTextColor':'#1f2840','actorLineColor':'#8a7548','signalColor':'#1d8a80','signalTextColor':'#1f2840','activationBkgColor':'#d9efec','activationBorderColor':'#1d8a80','noteBkgColor':'#f2ebd8','noteBorderColor':'#8a7548','noteTextColor':'#1f2840','labelBoxBkgColor':'#f0e2c2','labelBoxBorderColor':'#8a7548','labelTextColor':'#1f2840','transitionColor':'#1d8a80','transitionLabelColor':'#1f2840','stateLabelColor':'#1f2840','altBackground':'#f2ebd8'}}}%%
 flowchart TB
-IChannelService["IChannelService: entry"]
-IChannelService -->|"GetChannelsAsync"| PaginatedResponse["PaginatedResponse<ChannelDto>"]
-PaginatedResponse -->|"items"| ChannelDto["ChannelDto"]
-IChannelService -->|"GetChannelByNameAsync"| ChannelDto
-IChannelService -->|"CreateChannelAsync / UpdateTopicAsync / SetChannelPasswordAsync / RekeyChannelAsync / DeleteChannelAsync"| ChannelOperationResult["ChannelOperationResult"]
-IChannelService -->|"GetChannelListAsync"| ChannelListItem["List<ChannelListItem>"]
-IChannelService -->|"GetChannelMetaAsync"| ChannelMetaDto["ChannelMetaDto"]
-IChannelService -->|"GetChannelCryptoAsync / GetChannelKeyEnvelopeAsync"| ChannelCryptoDto["ChannelCryptoDto"]
-IChannelService -->|"EnsureSystemChannelAsync"| Channel["Ensure or create server-managed Channel"]
-Channel -->|"returns"| ChannelDto
+IChannelService["IChannelService: entry"] -->|"GetChannelsAsync(userId, offset, limit)"| PaginatedResponse["Build PaginatedResponse of ChannelDto"]
+PaginatedResponse -->|"items: ChannelDto"| ChannelDto["Map DB rows to ChannelDto"]
+IChannelService -->|"CreateChannelAsync(creatorUserId, name, topic, isPublic, password?, encryptionSalt?, wrappedRoomKey?)"| Channel["Create Channel record"]
+Channel -->|"return"| ChannelOperationResult["ChannelOperationResult (success/error)"]
+IChannelService -->|"UpdateTopicAsync(callerUserId, channelName, topic?)"| ChannelOperationResult
+IChannelService -->|"SetChannelPasswordAsync(callerUserId, channelName, password?)"| ChannelOperationResult
+IChannelService -->|"RekeyChannelAsync(callerUserId, channelName, oldPassword, newPassword, newEncryptionSalt, newWrappedRoomKey)"| ChannelCryptoDto["Update encryptionSalt and wrappedRoomKey"]
+ChannelCryptoDto -->|"return"| ChannelOperationResult
+IChannelService -->|"DeleteChannelAsync(callerUserId, channelName)"| ChannelOperationResult
+IChannelService -->|"GetChannelByNameAsync(channelName)"| ChannelDto
+IChannelService -->|"GetChannelMetaAsync(channelName)"| ChannelMetaDto
+IChannelService -->|"GetChannelCryptoAsync(channelName)"| ChannelCryptoDto
+IChannelService -->|"GetChannelKeyEnvelopeAsync(channelName) -> (EncryptionSalt, WrappedRoomKey)"| ChannelCryptoDto
+IChannelService -->|"GetChannelTopicAsync(channelName) -> (Topic, Exists)"| ChannelMetaDto
+IChannelService -->|"GetChannelListAsync()"| ChannelListItem["Return list of ChannelListItem"]
+IChannelService -->|"EnsureChannelMembershipAsync(userId, channelName, password?) -> (Success, Error, PasswordRequired)"| ChannelOperationResult
+IChannelService -->|"EnsureSystemChannelAsync(channelName, topic?)"| Channel["Create or reclaim system Channel"]
+Channel -->|"return ChannelDto"| ChannelDto
 ```
 
 ## Contents
@@ -35,45 +43,32 @@ public interface IChannelService
 ```
 
 
-Provides an asynchronous API for creating, updating, deleting and querying chat channels, managing membership, and exposing channel encryption metadata. Implement this interface to centralize channel lifecycle, access control and crypto-envelope access rather than manipulating persistence or membership directly.
+Provides the canonical server-side API for creating, querying, updating, and deleting chat channels and for enforcing membership and channel-level security. Use `IChannelService` when implementing application logic that needs to manage channel lifecycle (CRUD), inspect channel metadata or crypto information, handle membership checks (including password-protected rooms), or ensure server-owned system channels exist and cannot be hijacked by user-created channels.
 
 ## Remarks
-The interface groups CRUD operations, read/query methods, membership checks, and crypto-related lookups so callers can depend on a single abstraction for channel business rules. Mutating methods return ChannelOperationResult (which carries IsSuccess and factory helpers) to make success/failure handling explicit; query methods return lightweight DTOs or tuples for simple lookups. EnsureSystemChannelAsync is a server-managed path that ensures required system channels exist and prevents server content from being written into user-owned rooms.
+`IChannelService` centralizes channel-related policy and state so higher-level features (e.g. connection/auth layers, hub message routing, admin tools) can treat channel management as a single abstraction. It separates responsibilities: CRUD and topic/password operations return a [`ChannelOperationResult`](../DTOs/CommonDtos.cs.md) that callers must inspect (via `ChannelOperationResult.IsSuccess`) while read-only queries (e.g. [`GetChannelByNameAsync`](../../EchoHub.Server/Services/ChannelService.cs.md), `GetChannelMetaAsync`, `GetChannelCryptoAsync`) let callers obtain DTO representations. Crypto and key-envelope methods (`GetChannelCryptoAsync`, [`GetChannelKeyEnvelopeAsync`](../../EchoHub.Server/Services/ChannelService.cs.md), `RekeyChannelAsync`) keep cryptographic metadata operations colocated with channel lifecycle logic. The [`EnsureSystemChannelAsync`](../../EchoHub.Server/Services/ChannelService.cs.md) method is intentionally server-managed: it creates missing system channels and reclaims any same-named user-owned channels so server content is never stored in a user-controlled room.
 
 ## Example
 ```csharp
-// Create a public channel and inspect the operation result
-var createResult = await channelService.CreateChannelAsync(creatorUserId, "general", "General discussion", true);
-if (createResult.IsSuccess)
+// create a public channel and then fetch its DTO if creation succeeded
+var result = await channelService.CreateChannelAsync(creatorUserId, "general", "General chat", isPublic: true);
+if (result.IsSuccess)
 {
-    var created = createResult; // ChannelOperationResult.Success contains the created ChannelDto
+    var channel = await channelService.GetChannelByNameAsync("general");
+    // use 'channel' (type: ChannelDto) for further operations
 }
 else
 {
-    // handle failure
-}
-
-// Ensure membership for a user (third parameter is the optional password/credential)
-var membership = await channelService.EnsureChannelMembershipAsync(userId, "general", null);
-if (membership.Success)
-{
-    // user is a member or was added
-}
-else if (membership.PasswordRequired)
-{
-    // prompt for password and retry
-}
-else
-{
-    // membership failed; membership.Error contains a message
+    // handle failure (inspect result for details provided by the implementation)
 }
 ```
 
 ## Notes
-- Always check ChannelOperationResult.IsSuccess before assuming a mutating operation succeeded; use the provided factory helpers on ChannelOperationResult to construct success/failure values.
-- Methods that return encryption metadata (encryption salt, wrapped room key) expose envelopes, not raw symmetric keys; treat any secrets derived from these values securely.
-- The source contains redacted/truncated text in some method signatures (CreateChannelAsync and EnsureChannelMembershipAsync). Verify the real parameter names and optional overloads in the codebase before calling those methods.
-
+- Methods that return [`ChannelOperationResult`](../DTOs/CommonDtos.cs.md) (for example `CreateChannelAsync`, [`UpdateTopicAsync`](../../EchoHub.Server/Services/ChannelService.cs.md), [`SetChannelPasswordAsync`](../../EchoHub.Server/Services/ChannelService.cs.md), `RekeyChannelAsync`, `DeleteChannelAsync`) must have their `ChannelOperationResult.IsSuccess` checked before assuming the operation succeeded. Do not assume a returned DTO exists unless the operation reports success.
+- Several parameters are nullable (`topic`, `password`, `encryptionSalt`, `wrappedRoomKey`); callers should explicitly pass `null` when no value is intended and be prepared for implementations to treat `null` as "no value" or as an instruction to remove/clear a setting (verify service semantics for your deployment).
+- [`GetChannelTopicAsync`](../../EchoHub.Server/Services/ChannelService.cs.md) returns `(string? Topic, bool Exists)` — a `null` `Topic` can mean either an empty topic or that no topic was set; check `Exists` to distinguish a non-existent channel from a channel with a `null` topic.
+- [`EnsureChannelMembershipAsync`](../../EchoHub.Server/Services/ChannelService.cs.md) returns a tuple including `PasswordRequired`; if `PasswordRequired` is `true`, callers should prompt for and supply a password on subsequent calls. The `Error` element may contain implementation-specific failure information.
+- `GetChannelsAsync` accepts `offset` and `limit` for pagination; callers are responsible for passing sensible bounds and handling potentially large result sets incrementally.
 
 ---
 
@@ -96,26 +91,18 @@ public record ChannelListItem(string Name, string? Topic, int OnlineCount, bool 
 | `IsProtected` | `bool` | `false` |
 
 
-ChannelListItem is an immutable value that represents a single entry in a channel list. It carries the core metadata needed to display or transport channel information: the channel Name, an optional Topic, the current OnlineCount, and two visibility flags (IsPublic and IsProtected) which default to true and false respectively. Use this type whenever you need a concise, stable descriptor of a channel for UI lists, payloads, or comparisons, rather than a mutable or richer domain model.
+ChannelListItem is an immutable value object that describes a single channel in a channel list. It carries the channel's display name (`Name`), an optional topic (`Topic`), the number of online users (`OnlineCount`), and visibility flags (`IsPublic` and `IsProtected`). As a `record`, it provides value-based equality and straightforward construction for transport or UI scenarios, with `IsPublic` defaulting to true and `IsProtected` defaulting to false.
 
 ## Remarks
-ChannelListItem benefits from value-based equality inherent to records, so two items with identical fields compare as equal, which helps with list diffs, caching, and deduplication. The Topic is nullable to accommodate channels without a topic. Defaults (IsPublic = true, IsProtected = false) reflect common expectations for channels unless stated otherwise. Because this is a record, instances are immutable; to reflect changes (for example, a rising OnlineCount), create a new instance via a with-expression.
+The use of a `record` signals that this is a lightweight value object intended for transport and comparison across boundaries. It models channel metadata as a single, cohesive unit, aiding deduplication and consistent rendering in lists or API responses.
 
 ## Example
 ```csharp
-// Basic construction with defaults for visibility flags
-var item = new ChannelListItem("general", "Public channel for announcements", 12);
-
-// Or using named arguments for clarity
-var itemNamed = new ChannelListItem(Name: "general", Topic: "Public channel for announcements", OnlineCount: 12);
-
-// Immutability in action: create a modified copy with an updated OnlineCount
-var updated = item with { OnlineCount = 13 };
+var item = new ChannelListItem("general", "General discussion", 12);
 ```
 
 ## Notes
-- Topic is nullable; pass null if the channel has no topic.
-- To reflect a change in OnlineCount or other fields, use the with-expression since ChannelListItem is immutable.
-
+- Topic may be null to indicate no topic is set.
+- IsPublic defaults to true and IsProtected defaults to false; pass explicit values to override.
 
 ---

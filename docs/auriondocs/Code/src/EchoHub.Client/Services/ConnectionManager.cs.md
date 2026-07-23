@@ -18,16 +18,15 @@ internal sealed class ConnectionManager : IAsyncDisposable
 ```
 
 
-Manages the full lifecycle of a live chat connection: authenticating with the server, establishing end-to-end encryption keys, creating and wiring the SignalR (EchoHub) connection, tracking joined channels, and exposing a thin event surface that the UI (AppOrchestrator) can subscribe to. Use this when you want a single, high-level component to own connection state and SignalR event forwarding instead of manipulating ApiClient and EchoHubConnection directly.
+Manages a server connection end-to-end: handles authentication via [`ApiClient`](ApiClient.cs.md), establishes end-to-end encryption, creates and wires an [`EchoHubConnection`](EchoHubConnection.cs.md), tracks joined channels, and exposes SignalR events so higher-level orchestrators can react without touching connection internals. Reach for `ConnectionManager` when you want UI code (for example an [`AppOrchestrator`](../AppOrchestrator.cs.md)) to observe connection and chat events through simple events rather than managing [`ApiClient`](ApiClient.cs.md) and [`EchoHubConnection`](EchoHubConnection.cs.md) yourself.
 
 ## Remarks
-This class centralizes the responsibilities that would otherwise be scattered across UI code: authentication and token rotation, attempting to fetch and apply the E2E encryption key, instantiating and wiring an EchoHubConnection, and keeping track of which channels have been joined. It forwards SignalR events as simple .NET events so the UI layer can react without needing to know SignalR details. ConnectionManager also implements IAsyncDisposable so callers can cleanly tear down both the EchoHubConnection and the underlying ApiClient.
+`ConnectionManager` centralizes lifecycle concerns: it authenticates (login/registration/refresh), subscribes to token rotation, attempts to fetch and apply the E2E encryption key, constructs and registers handlers on the [`EchoHubConnection`](EchoHubConnection.cs.md), and ensures channel membership state is tracked. It forwards the hub's runtime events (for example `MessageReceived`, `UserJoined`, `ChannelUpdated`) so callers receive high-level notifications and do not need to bind SignalR handlers directly. The class is intended as the single place that composes [`ApiClient`](ApiClient.cs.md), [`ClientEncryptionService`](ClientEncryptionService.cs.md)/[`RoomKeyStore`](RoomKeyStore.cs.md), and [`EchoHubConnection`](EchoHubConnection.cs.md) into a usable connection for the UI.
 
 ## Notes
-- ConnectionManager may raise forwarded events from background threads (SignalR callbacks). UI handlers should marshal to the UI thread if required by the UI framework.
-- ConnectAsync reports progress via the onStatus callback and will throw on authentication failure; callers are expected to handle expired saved sessions or retry logic.
-- Failure to fetch the encryption key is treated as non-fatal: the manager logs a warning and proceeds without message encryption.
-- Dispose of the manager (DisposeAsync) when the app shuts down to ensure the hub connection and ApiClient are cleaned up.
+- `ConnectAsync` reports progress via the `onStatus` callback and will throw on authentication failure — callers are expected to handle saved-session expiry and similar error flows.  
+- Event handlers (for example `MessageReceived`, `UserJoined`, `ConnectionStatusChanged`) may be invoked from signalr/connection threads; subscribers should not assume they run on the UI thread and must marshal to the UI thread when necessary.  
+- Always `await` disposing the manager (it implements `IAsyncDisposable`) so underlying resources such as the [`EchoHubConnection`](EchoHubConnection.cs.md) and [`ApiClient`](ApiClient.cs.md) are cleanly released; failing to do so can leave connections or background work active.
 
 ---
 
@@ -51,13 +50,12 @@ internal record ConnectResult(
 | `Histories` | `Dictionary<string, List<MessageDto>>` | — |
 
 
-Represents the outcome of a successful connection, returned to AppOrchestrator for UI updates. It bundles the authentication result, the current set of channels, and the initial histories for every auto-joined channel (keyed by channel name and including the default channel). As an immutable record, it serves as a single, self-contained snapshot that the UI can bootstrap from after a connect.
+ConnectResult represents the payload returned after a successful connection, carrying everything the [`AppOrchestrator`](../AppOrchestrator.cs.md) needs to update the UI. It includes the authenticated login information (`Login`), the collection of available channels (`Channels`), and the initial per-channel histories (`Histories`), where each channel name maps to its starting list of messages, always including the default channel.
 
 ## Remarks
-This object centralizes the data needed to render the initial connected state, decoupling the connection logic from the UI orchestration. By passing a single ConnectResult, the AppOrchestrator can immediately populate channel lists and histories without issuing additional fetches, promoting a clean separation between connection handling and presentation concerns.
+ConnectResult is a `record`, so it participates in value-based equality and can be treated as a single unit when comparing connection outcomes. Note that its `Channels` and `Histories` collections are mutable (`List<ChannelDto>` and `Dictionary<string, List<MessageDto>>`); if you need true immutability, expose read-only wrappers or clone the collections when passing them onward.
 
 ## Notes
-- ConnectResult is immutable; to reflect changes (e.g., new messages or channels), construct and pass a new instance rather than mutating the existing one.
-- Histories is a dictionary keyed by channel name that contains the initial per-channel histories; ensure channel names in the dictionary align with the Channels list to avoid inconsistencies.
+- The contained `List<ChannelDto>` and `Dictionary<string, List<MessageDto>>` are mutable; avoid mutating them in place and consider treating the `ConnectResult` as a snapshot that should be cloned if you require immutability downstream.
 
 ---

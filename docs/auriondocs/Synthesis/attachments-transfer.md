@@ -1,41 +1,31 @@
-# Attachments and file transfers
+# Attachments transfer
 
-> Staging and sending attachments in chat messages and coordinating outbound attachments.
+> Attachment handling for staged files and outgoing attachments in chat messages.
 
-Outgoing attachments are staged in the UI, packaged as transport objects, and then coordinated through the app orchestrator into the live connection for transmission. This topic shows the small set of types and methods that carry file streams and metadata from the MainWindow staging UI through AppOrchestrator into the connection layer so they can be uploaded (optionally encrypted) and surfaced as attachment DTOs in messages.
+This guide describes how the client UI stages user-provided files and how the application constructs the immutable attachment objects that travel with outgoing chat messages. It explains the UI surface that users interact with, the small data carrier used to represent a prepared attachment, and the orchestrator that connects the two when a send or clear action occurs. Read this to quickly locate the methods you'll call to stage files, build upload payloads, and clean up temporary paste artifacts.
 
-## OutgoingAttachment.cs
-Represents an attachment queued for sending to a channel or user.
+## MainWindow
+Stage and manage file attachments in the chat input.
 
-The [OutgoingAttachment](../Code/src/EchoHub.Client/Services/OutgoingAttachment.cs.md) record is the in-process transport object used to carry a single file stream and its filename through the sending pipeline. It declares four properties: the raw Stream and FileName (required), and two optional strings DeclaredKind and EncryptedPreview which are intended for end-to-end encrypted scenarios. As a record it provides value-based equality for tracking/deduplication but notably does not manage the Stream lifetime — callers open and dispose streams around instances of this type. In this topic it is produced/consumed by the orchestrator layer (see [AppOrchestrator](../Code/src/EchoHub.Client/AppOrchestrator.cs.md)).
+The [MainWindow](../Code/src/EchoHub.Client/UI/MainWindow.cs.md) type is the UI surface for composing messages and managing staged attachments. Its documented members include explicit input- and attachment-focused operations such as SetStagedAttachments and StageFiles (for adding files from disk or paste), ClearAll and HandleCmdClearAttachments-related flows, plus many UI helpers (FocusInput, UpdateInputTitle, UpdateInputReadOnly) that keep the compose area in sync. Per the file relationships, MainWindow is used by [AppOrchestrator](../Code/src/EchoHub.Client/AppOrchestrator.cs.md); the orchestrator drives MainWindow to display or clear staged attachments and reacts to user commands emitted from the window.
 
-## MainWindow.cs
-Provides UI hooks for staging attachments and displaying progress.
+## OutgoingAttachment
+Represents attachments prepared for sending with messages.
 
-The [MainWindow](../Code/src/EchoHub.Client/UI/MainWindow.cs.md) component exposes the user-facing hooks that allow files to be staged and progress or status to be shown. Among its many members are StageFiles (to accept user-selected files) and SetStagedAttachments (to update the UI with the current list of staged items), plus UI update methods such as UpdateSpinner/UpdateInputTitle to reflect in-progress operations. MainWindow depends on the message/attachment DTO types in [ChatDtos.cs](../Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md) for rendering metadata and is called by [AppOrchestrator](../Code/src/EchoHub.Client/AppOrchestrator.cs.md) when orchestrated work (prepare/send/clear attachments) must update the UI.
+The [OutgoingAttachment](../Code/src/EchoHub.Client/Services/OutgoingAttachment.cs.md) record is a compact, immutable data carrier containing a Stream and the original FileName plus two optional fields: DeclaredKind and EncryptedPreview. As a record it provides value-based equality so attachments can be compared or deduplicated as they move through the pipeline. The DeclaredKind/EncryptedPreview pair is used to carry presentation/encryption metadata for end-to-end encrypted channels, while normal (non-encrypted) sends typically populate only Stream and FileName. The file is consumed by the orchestrator when preparing payloads for transmit.
 
-## AppOrchestrator.cs
-Builds outbound attachments and coordinates sending operations.
+## AppOrchestrator
+`AppOrchestrator` collaborates directly with `OutgoingAttachment` and other members of this topic (2 dependency links).
 
-The [AppOrchestrator](../Code/src/EchoHub.Client/AppOrchestrator.cs.md) owns the high-level send flow: it implements BuildOutgoingAttachmentAsync to assemble outbound attachment payloads (creating [OutgoingAttachment](../Code/src/EchoHub.Client/Services/OutgoingAttachment.cs.md) instances), provides cleanup helpers such as CleanupPastedTempFiles, and contains command handlers like HandleCmdSendFile and HandleCmdClearAttachments that respond to user actions. It depends on the DTO types in [ChatDtos.cs](../Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md) when preparing message payloads and coordinates with the UI by reading staged files from and writing status back to [MainWindow](../Code/src/EchoHub.Client/UI/MainWindow.cs.md). For transmission the orchestrator delegates connection and delivery responsibilities to the connection layer ([ConnectionManager](../Code/src/EchoHub.Client/Services/ConnectionManager.cs.md)).
-
-## ConnectionManager.cs
-`ConnectionManager` collaborates directly with `AppOrchestrator` and other members of this topic (4 dependency links).
-
-The [ConnectionManager](../Code/src/EchoHub.Client/Services/ConnectionManager.cs.md) encapsulates the live chat connection lifecycle: authentication, optional end-to-end key fetching, and instantiation/wiring of the SignalR hub connection. It exposes a thin event surface so UI code (principally [AppOrchestrator](../Code/src/EchoHub.Client/AppOrchestrator.cs.md)) can subscribe to SignalR events without dealing with SignalR details, and it implements IAsyncDisposable so the orchestrator can tear down network resources cleanly. ConnectAsync (documented in the file) reports progress via a provided onStatus callback, treats failure to obtain an E2E key as non-fatal, and returns compound results (the internal [ConnectResult](../Code/src/EchoHub.Client/Services/ConnectionManager.cs.md) record) that include login, channel list, and histories for the orchestrator to use.
-
-## ChatDtos.cs
-`AttachmentDto` collaborates directly with `AppOrchestrator` and other members of this topic (4 dependency links).
-
-The [AttachmentDto](../Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md) is the immutable transport representation of an attachment that travels with messages: it records the attachment Kind, a Url where the resource can be retrieved, FileName, FileSize, and an optional AsciiPreview used for character-art rendering. The DTO is the canonical metadata shape used across UI, API, and connection boundaries; the orchestrator uses these DTO types when composing or processing message payloads, and the MainWindow reads them to render attachments in the UI. In end-to-end encrypted channels the DTO’s Url and AsciiPreview may represent ciphertext that the server cannot interpret.
+The [AppOrchestrator](../Code/src/EchoHub.Client/AppOrchestrator.cs.md) mediates between UI actions and the attachment/send logic. Notable documented members include BuildOutgoingAttachmentAsync (the builder that produces an [OutgoingAttachment](../Code/src/EchoHub.Client/Services/OutgoingAttachment.cs.md) from a file/clipboard source), CleanupPastedTempFiles (removes temporary files created when pasting), and explicit command handlers such as HandleCmdSendFile and HandleCmdClearAttachments. AppOrchestrator depends on [MainWindow](../Code/src/EchoHub.Client/UI/MainWindow.cs.md) to reflect staged attachments in the UI and to respond to user-driven events; it constructs the immutable OutgoingAttachment values and manages lifecycle concerns (downloads, ensuring room unlocked for send, and cleanup).
 
 How the pieces fit
 
-- UI staging: users pick files via [MainWindow](../Code/src/EchoHub.Client/UI/MainWindow.cs.md). MainWindow.StageFiles and SetStagedAttachments hold the files and show progress to the user while AppOrchestrator drives the workflow.
-- Packaging: [AppOrchestrator](../Code/src/EchoHub.Client/AppOrchestrator.cs.md) constructs [OutgoingAttachment](../Code/src/EchoHub.Client/Services/OutgoingAttachment.cs.md) records (via BuildOutgoingAttachmentAsync), cleans up temp files, and maps to the DTO shapes from [ChatDtos.cs](../Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md) when preparing messages.
-- Delivery: the orchestrator delegates network work to [ConnectionManager](../Code/src/EchoHub.Client/Services/ConnectionManager.cs.md), which manages connection/auth/E2E keys and forwards events so the UI and orchestrator can report progress and completion.
+- MainWindow is the UI owner of staged files: it exposes StageFiles, SetStagedAttachments, ClearAll and other composition helpers so users can add, view, and remove attachments before sending.
+- AppOrchestrator listens for UI commands, calls BuildOutgoingAttachmentAsync to turn staged input into an [OutgoingAttachment](../Code/src/EchoHub.Client/Services/OutgoingAttachment.cs.md), and invokes the send/download/cleanup flows (including CleanupPastedTempFiles) as needed.
+- OutgoingAttachment is the immutable transport object passed from the orchestrator into the send pipeline; optional DeclaredKind and EncryptedPreview carry E2EE-specific metadata when applicable.
 
 ---
-*Covers 5 of 5 source files identified for this topic.*
+*Covers 3 of 3 source files identified for this topic.*
 
-*Synthesised by Aurion on 2026-07-23 05:53:19 UTC*
+*Synthesised by AurionDocs on 2026-07-23 09:32:36 UTC*

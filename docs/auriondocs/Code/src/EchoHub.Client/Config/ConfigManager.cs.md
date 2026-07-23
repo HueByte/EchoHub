@@ -8,14 +8,18 @@ public static class ConfigManager
 ```
 
 
-ConfigManager provides a thread-safe, single-point API for loading and persisting the client's configuration to disk. Use Load to read the current ClientConfig and Save/SaveServer/RemoveServer to apply changes from the UI or background tasks (for example, after token refreshes or updating saved servers).
+ConfigManager is a static helper that persists the client configuration to a JSON file under the user's profile directory and provides focused APIs for loading, saving, and managing saved servers. It centralizes file I/O behind a private lock to serialize access from UI actions and background tasks (token refresh, room keys, last-read checkpoints), helping prevent race conditions that could corrupt the config.
+
+Use `ConfigManager.Load()` to obtain the current configuration (or a default [`ClientConfig`](ClientConfig.cs.md) when the file is missing or unreadable), modify the returned object, and persist changes with `ConfigManager.Save(config)`.
+
+To manage saved servers, use `ConfigManager.SaveServer(...)` to upsert by `Url` and `ConfigManager.RemoveServer(string url)` to delete by `Url` (case-insensitive).
 
 ## Remarks
 
-ConfigManager stores the configuration in a JSON file named config.json inside a per-user directory (.echohub) under the current user's profile. All file I/O is serialized with a private lock (FileLock) to prevent concurrent access from UI threads and background tasks. When you call SaveServer, the code locates an existing SavedServer by URL (case-insensitive) and updates it, or appends a new one if none exists; RemoveServer deletes entries by URL. The design uses best-effort error handling—exceptions are swallowed to avoid disrupting the app—but this means persistence failures are not surfaced to callers unless they implement their own checks.
+All file I/O performed by `ConfigManager` is guarded by a single static lock (the private `Lock` named `FileLock`), ensuring reads and writes do not interleave across threads. The design favors resilience: a missing or unreadable config yields a fresh [`ClientConfig`](ClientConfig.cs.md), and save errors are swallowed to avoid crashing the host process. When upserting or removing saved servers, the code compares the server URLs using a case-insensitive match (`StringComparison.OrdinalIgnoreCase`), so entries differing only by casing do not duplicate and removals reliably locate targets.
 
 ## Notes
 
-- Persistence operations swallow all exceptions, making failures non-fatal but potentially leading to invisible data loss.
-- SavedServers are deduplicated by URL using a case-insensitive comparison; updating an existing URL won't create a duplicate.
-- ConfigDir uses Environment.GetFolderPath(Environment.SpecialFolder.UserProfile); on systems where a user profile is unavailable or access is restricted, initialization may fall back to a default path.
+- Saves are best-effort; any exception during persistence is swallowed so callers should not depend on hard failures for user feedback. 
+- If the config file is absent, the directory is created and a default [`ClientConfig`](ClientConfig.cs.md) is used when loading. 
+- URL-based operations for saved servers use case-insensitive matching to maintain a consistent, deduplicated set.

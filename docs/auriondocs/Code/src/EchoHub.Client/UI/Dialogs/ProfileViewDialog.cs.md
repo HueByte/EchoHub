@@ -18,14 +18,15 @@ public sealed class ProfileViewDialog
 ```
 
 
-ProfileViewDialog renders a dialog to view a user's server profile; when showing the current user's profile it also exposes action buttons (Edit Profile / Set Status) and returns the chosen ProfileAction, while viewing another user yields a read-only presentation.
+ProfileViewDialog encapsulates the UI for inspecting a user's server profile in a terminal-style dialog. It renders a read-only view when displaying another user, and when shown for the current user via `ShowOwn`, it includes action buttons (edit profile and set status) and returns the chosen `ProfileAction`.
 
 ## Remarks
-ProfileViewDialog encapsulates all the layout and formatting decisions for a user profile in a single place. It dynamically switches between a read-only view and an ownership-aware view that surfaces actions, and it applies color theming to the status and nickname fields. By centralizing this UI behavior, the dialog remains consistent across the application and reduces duplication by isolating profile presentation from business logic. The component gracefully handles a missing profile by showing an error message and returning a Close action, which defines a clear contract for callers.
+Internally, `Show` delegates to `ShowInternal` with `isOwnProfile` set to false, while `ShowOwn` passes `isOwnProfile` true along with the current status and message. The dialog is constructed as a `Dialog` with title `My Profile` or `Profile — {profile.Username}`, and it populates rows for `Username`, `Name`, `Status`, [`Message`](../../../EchoHub.Core/Models/Message.cs.md) (when present), `Color`, and `Bio` using `Label`s and a `TextView`. The status value is chosen as the live status when viewing your own profile, otherwise the stored status from the profile; the status text is produced by `FormatStatus` and the color by `GetStatusColor`. The nickname color is parsed via `HexColorHelper.ParseHexColor` and applied as a scheme to the color label when available. If the provided `profile` is `null`, it shows an error dialog with `MessageBox.ErrorQuery` and returns `ProfileAction.Close`.
 
 ## Notes
-- If invoked with a null profile, the dialog shows an error and returns ProfileAction.Close; callers should guard against null input or handle the Close result accordingly.
-- The dialog title differentiates ownership with "My Profile" for the current user and "Profile — {username}" for others, and it uses color-coding helpers to reflect status and nickname color for quick visual cues.
+- If `profile` is `null`, the dialog informs the user and returns `ProfileAction.Close`, signaling callers to handle the absence gracefully.
+- The nickname color is applied only when `HexColorHelper.ParseHexColor(profile.NicknameColor)` yields a valid color attribute; otherwise the color styling is skipped, avoiding exceptions.
+
 
 ---
 
@@ -43,9 +44,6 @@ public enum ProfileAction
 ```
 
 
-ProfileAction defines the set of actions a user can select from their profile dialog: Close, EditProfile, and SetStatus. It provides a typed representation of user intent that downstream UI logic can handle in a deterministic way, rather than relying on magic strings or numeric codes.
-
-## Remarks
-ProfileAction represents the user’s chosen action from the profile dialog, allowing the UI layer to dispatch the appropriate workflow in a type-safe way. By enumerating possible intents, the code can exhaustively handle all cases in a switch or pattern-match, reducing errors from invalid values. The Close action also clarifies that the action is about dialog lifecycle control as opposed to in-dialog tasks such as editing or setting status. If new actions are required in the future, they should be added here with clear naming that maps to corresponding UI behaviors.
+The `ProfileAction` enum encodes the concrete actions a user selects from their profile dialog. Its values `Close`, `EditProfile`, and `SetStatus` map user intent to distinct application paths, replacing ad-hoc strings with a strongly-typed signal. Consumers use this enum in the dialog result handling to drive navigation and state changes without inspecting UI text.
 
 ---

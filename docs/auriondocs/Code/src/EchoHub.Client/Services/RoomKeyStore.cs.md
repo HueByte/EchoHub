@@ -8,36 +8,12 @@ public sealed class RoomKeyStore
 ```
 
 
-Holds and manages end-to-end encrypted room keys for a single client instance: it keeps a decrypted, in-memory cache for the active session and a per-server persisted, encrypted copy so users do not have to re-enter passphrases each launch. Use RoomKeyStore when you need a thread-safe local store that provides room keys to the runtime and ensures keys are encrypted at rest via RoomKeyProtector.
+Holds and manages room content keys for end-to-end encrypted channels for the active session and the persisted per-server client configuration. Use `RoomKeyStore` when you need a single place to cache decrypted room keys in memory, persist them encrypted to the local config (so users don't retype passphrases on each launch), and track which channels are known to be end-to-end encrypted.
 
 ## Remarks
-RoomKeyStore links transient runtime state with the client's persisted configuration. It binds to a server (LoadForServer), loads that server's saved ChannelKeys (unprotecting them with RoomKeyProtector), and exposes methods to read, add, replace, or remove keys while persisting changes back to the SavedServer entry. It also records which channels are known to be encrypted so callers can avoid emitting plaintext into rooms without a cached key. The class performs a one-way upgrade of legacy unprotected entries to the protected format when possible and logs unreadable entries rather than failing.
-
-## Example
-```csharp
-var store = new RoomKeyStore();
-store.LoadForServer("https://chat.example.com");
-
-// Generate and store a new room key for a channel
-byte[] newKey = RoomCrypto.GenerateRoomKey();
-store.StoreKey("#team-room", newKey);
-
-// Retrieve a key for sending encrypted messages
-if (store.TryGetKey("#team-room", out var key))
-{
-    // Use `key` with RoomCrypto API to encrypt message content
-}
-
-// Accept an encrypted envelope and store the unwrapped key only if the KEK opens it
-string wrapped = "..."; // envelope string received
-byte[] kek = /* key-encryption-key */ new byte[RoomCrypto.KeySizeBytes];
-if (store.TryStoreFromEnvelope("#other-room", wrapped, kek))
-{
-    // successfully unwrapped and cached
-}
-```
+`RoomKeyStore` is the in-process authority for room keys: it keeps a memory cache (`_keys`) for the running session and a set (`_encryptedChannels`) to mark channels that are treated as encrypted. It delegates on-disk protection to [`RoomKeyProtector`](RoomKeyProtector.cs.md) so keys never leave the machine in plaintext. Calling `LoadForServer` binds the store to a specific server URL, loads that server's `SavedServer.ChannelKeys` via `ConfigManager.Load()`, and hydates the in-memory cache (skipping unreadable entries). Legacy plaintext/legacy-storage entries detected by `RoomKeyProtector.TryUnprotect` are re-encrypted and re-persisted as a one-way upgrade. All public mutation and lookup methods synchronize on the internal `Lock` (`_lock`) to provide basic thread-safety for concurrent callers.
 
 ## Notes
-- Call LoadForServer(serverUrl) before persisting or retrieving server-scoped keys; the store clears and reinitializes its cache when bound to a server.  
-- Legacy (plain/base64) saved entries are upgraded to the protector-backed format when possible; entries that cannot be unprotected are ignored and logged.  
-- The class uses an internal lock for basic thread-safety of the in-memory cache; avoid holding returned keys while performing long synchronous work that might race with store mutations.
+- `TryGetKey` returns the stored byte array reference from the internal `_keys` map (no defensive copy). Callers must not mutate the returned `byte[]` in-place — clone it first if modification is required.
+- Channel name lookup is case-insensitive because the internal collections use `StringComparer.OrdinalIgnoreCase`. Treat channel names consistently to avoid duplicate/lookup surprises.
+- Loading ignores unreadable cached entries and will re-persist only entries that [`RoomKeyProtector`](RoomKeyProtector.cs.md) could successfully unprotect; `TryStoreFromEnvelope` returns false when the provided KEK fails to unwrap the envelope and will leave the cache unchanged. Storing or removing a key persists the corresponding `SavedServer.ChannelKeys` entry immediately (via the store's persistence path).

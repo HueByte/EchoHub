@@ -8,41 +8,71 @@ public sealed class ServerLogsStreamService : BackgroundService
 ```
 
 
-Streams queued log events to the live log room as ephemeral SignalR messages, never persisting them to the IRC gateway or a database, and with a guard against introducing new logging from the streaming path itself. It runs as a background service, ensuring the destination room exists before sending each event and recreating it if needed, so live viewers can always join the stream without manual intervention.
+Description:
+
+Streams queued log events to the live log room as ephemeral SignalR messages, ensuring the room exists before each publish and recreating it on demand if it was removed. The streaming path is intentionally non-logging to avoid recursive logging and potential message sprawl. Use this service when you want real-time, in-memory broadcasts of server log events to connected clients without persisting those lines to a database.
 
 ## Remarks
-This symbol acts as a thin, resilient bridge between the server-side log sink and the real-time chat hub. It separates the streaming path from log persistence, enforcing a no-log-from-stream policy to avoid feedback loops where streaming would itself generate more log lines. By lazily resolving the hub context, it avoids tight coupling during service construction and ensures the ChatHub context is available when streaming begins. The class also enforces room existence in a lightweight, interval-bounded way to tolerate transient room removal without blocking the live stream.
+
+This symbol acts as the dedicated conduit between the server-side log sink and the live chat hub. It coordinates with a channel service to guarantee the existence of the log room (and to recreate it if it disappears), throttling such housekeeping to at most once every 15 seconds to avoid excessive churn. Messages are encrypted before transmission and delivered to the room group via a lazily-resolved `HubContext`, which is intentionally retrieved only after the host has fully configured its DI graph. The static `Format` helper is public for tests, enabling validation of the exact, client-rendered payload without instantiating the streaming pipeline. This separation keeps streaming concerns isolated from the rest of the logging infrastructure and prevents per-event logging from leaking into the stream itself.
 
 ## Notes
-- The streaming path must never emit logs of its own activity; per-event logging is explicitly suppressed to prevent cascading streams.
-- TryEnsureRoomAsync re-checks the room at most once per EnsureInterval (15 seconds) to balance responsiveness with avoiding repeated recreation attempts.
-- Messages are formatted and then encrypted before sending; the client receives an encrypted payload and is responsible for decrypting it, mirroring the design that prioritizes privacy and transport safety. The public Format method is exposed for tests, reflecting a desire to validate formatting behavior in isolation.
-- If room recreation fails, events are streamed to a group with no members until the next interval, ensuring that the streaming pipeline remains non-blocking and resilient to transient failures.
+
+- The service reads from `ServerLogsSink.Reader` and, for each event, ensures the destination room exists, formats the log event, encrypts the payload, and sends it to the [`ChatHub`](../../Hubs/ChatHub.cs.md) group corresponding to the room name.
+- Room creation/verification is throttled by `EnsureInterval` (15 seconds) to avoid excessive calls during high-frequency log bursts; failed attempts are silently retried on the next interval.
+- The streaming path is guarded to swallow non-cancellation exceptions to prevent re-entrancy into the logging pipeline.
+- The `Format` method is intentionally public for testability, and truncates messages to `HubConstants.MaxMessageLength` with an ellipsis when necessary.
 
 ## Example
-- Not included: non-obvious usage from the signature; the behavior is exercised through the background streaming loop and the TryEnsureRoomAsync room-recovery logic. See the source for exact flow and state transitions. 
+
+```csharp
+// The example demonstrates formatting a log event for client rendering and ensuring the message is wrapped for transport.
+var logEvent = new LogEvent(/* parameters omitted for brevity */);
+var payload = ServerLogsStreamService.Format(logEvent);
+// payload is then embedded in a [`MessageDto`](../../../EchoHub.Core/DTOs/ChatDtos.cs.md), encrypted, and sent to the SignalR hub.
+```
+
+## Dependencies
+
+- SignalR, BackgroundService, MessageDto, StringBuilder, TimeSpan, DateTimeOffset, Reader, Guid
 
 ## Dependency APIs (verified signatures)
+
 The REAL, parser-verified API surface of this symbol's collaborators:
 
-- MessageDto (src/EchoHub.Core/DTOs/ChatDtos.cs)
-- Reader (src/EchoHub.Server/Services/ServerLogs/ServerLogsSink.cs)
-- ServerLogsService (src/EchoHub.Server/Services/ServerLogs/ServerLogsService.cs)
-  - SenderName, RoomTopic, TimestampFormat, TailReadBytes
-  - ServerLogsService(ServerLogsOptions options)
-  - Options, IsLogsChannel, CanView(ServerRole)
-  - ReadBacklog(), GroupIntoEntries(`IReadOnlyList<string>`, bool, int)
-  - TryParseTimestamp(string, out DateTimeOffset, out string)
-- HubContext (src/EchoHub.Server/Services/ServerLogs/ServerLogsStreamService.cs)
-- HubConstants (src/EchoHub.Core/Constants/HubConstants.cs)
-  - ChatHubPath, DefaultChannel, IrcConnectionIdPrefix, DefaultHistoryCount, MaxMessageLength
-  - MaxImageSizeBytes, MaxAudioFileSizeBytes, MaxFileSizeBytes, MaxAvatarSizeBytes
-  - MaxMessageNewlines, MaxAttachmentsPerMessage, MaxConsecutiveNewlines
+- record [`MessageDto`](../../../EchoHub.Core/DTOs/ChatDtos.cs.md) (`src/EchoHub.Core/DTOs/ChatDtos.cs`)
+- property `Reader` (`src/EchoHub.Server/Services/ServerLogs/ServerLogsSink.cs`)
+- class [`ServerLogsService`](ServerLogsService.cs.md) (`src/EchoHub.Server/Services/ServerLogs/ServerLogsService.cs`)
+  - field `string SenderName`
+  - field `string RoomTopic`
+  - field `string TimestampFormat`
+  - field `int TailReadBytes`
+  - `ServerLogsService(ServerLogsOptions options)`
+  - property `ServerLogsOptions Options`
+  - `bool IsLogsChannel(string channelName)`
+  - `bool CanView(ServerRole role)`
+  - `IReadOnlyList<LogBacklogEntry> ReadBacklog()`
+  - `IReadOnlyList<LogBacklogEntry> GroupIntoEntries(IReadOnlyList<string> lines, bool skipLeadingContinuations, int maxEntries)`
+  - `bool TryParseTimestamp(string line, out DateTimeOffset timestamp, out string rest)`
+- property `HubContext` (`src/EchoHub.Server/Services/ServerLogs/ServerLogsStreamService.cs`)
+- class [`HubConstants`](../../../EchoHub.Core/Constants/HubConstants.cs.md) (`src/EchoHub.Core/Constants/HubConstants.cs`)
+  - field `string ChatHubPath`
+  - field `string DefaultChannel`
+  - field `string IrcConnectionIdPrefix`
+  - field `int DefaultHistoryCount`
+  - field `int MaxMessageLength`
+  - field `int MaxImageSizeBytes`
+  - field `int MaxAudioFileSizeBytes`
+  - field `int MaxFileSizeBytes`
+  - field `int MaxAvatarSizeBytes`
+  - field `int MaxMessageNewlines`
+  - field `int MaxAttachmentsPerMessage`
+  - field `int MaxConsecutiveNewlines`
   - …and 7 more member(s) not shown
 
 ## Symbol To Document
-- Name: ServerLogsStreamService
+- Name: `ServerLogsStreamService`
 - Kind: class
-- File: src/EchoHub.Server/Services/ServerLogs/ServerLogsStreamService.cs
-- Language: csharp
-- ID: fe54ac96-642e-4dbe-af25-3d2559e01299
+- File: `src/EchoHub.Server/Services/ServerLogs/ServerLogsStreamService.cs`
+- Language: `csharp`
+- ID: 24389698-e5ce-4385-b392-f34e08edf31f

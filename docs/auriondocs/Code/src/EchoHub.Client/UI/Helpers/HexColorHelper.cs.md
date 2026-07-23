@@ -8,11 +8,10 @@ public static class HexColorHelper
 ```
 
 
-HexColorHelper is a small utility that converts hex color strings into Terminal.Gui coloring primitives. Use ParseHexColor to obtain an Attribute suitable for styling a control's foreground, and ParseHexToColor when you need a Color value with a safe fallback for invalid input.
+HexColorHelper is a small static utility that converts hex color strings into Terminal.Gui color representations. Use `ParseHexColor` when you need an `Attribute` for immediate application to a UI element, and `ParseHexToColor` when you only need the `Color` value (with an optional `fallback`) for other color-related properties.
 
 ## Remarks
-By centralizing hex parsing, HexColorHelper avoids duplicating color-conversion logic and provides predictable fallbacks for malformed input. It interprets a hex string as an RGB triplet and applies it as the foreground color (with no explicit background). This keeps styling decisions consistent across the UI while keeping the parsing logic isolated in one place.
+These helpers centralize hex parsing to ensure consistent handling of hex colors across the UI layer. They both tolerate the common '#'-prefixed form and treat invalid inputs gracefully by returning null or a fallback color, preventing exceptions from propagating into UI code. By encapsulating parsing logic here, you avoid duplicating string-to-color conversions and make future changes (e.g., supporting shorthand hex) easier.
 
 ## Notes
-- Invalid input yields null (for ParseHexColor) or the provided fallback (for ParseHexToColor); no exceptions are thrown.
-- A 6-digit hex value is required after an optional leading '#'. Non-hex characters or incorrect length return fallback/null.
+- Leading whitespace before the optional '#' is not trimmed; strings starting with spaces will fail to parse gracefully.

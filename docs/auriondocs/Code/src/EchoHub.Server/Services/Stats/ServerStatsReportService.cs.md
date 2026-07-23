@@ -8,12 +8,11 @@ public sealed class ServerStatsReportService : BackgroundService
 ```
 
 
-ServerStatsReportService is a background task that periodically snapshots server activity over the current reporting window, logs the snapshot as pretty-printed JSON (visible in the live server-logs room), and persists a ServerStatsReport to the database for historical trend analysis. The cadence and retention are controlled by StatsOptions; if IntervalHours is non-positive the service uses a 6-hour default.
+Background service that periodically snapshots server activity over a rolling window, logs a pretty-printed JSON snapshot (which surfaces in the live server-logs room), and persists the results to the database for historical trends. It reads cadence and retention from [`StatsOptions`](../../Config/StatsOptions.cs.md) and coordinates with [`PresenceTracker`](../PresenceTracker.cs.md), [`ServerStatsCollector`](ServerStatsCollector.cs.md), and [`EchoHubDbContext`](../../Data/EchoHubDbContext.cs.md) to compute windowed metrics such as messages sent, active members, attachments uploaded, and user counts.
 
 ## Remarks
-To achieve this, the service reads the online user count from PresenceTracker, captures in-memory statistics from ServerStatsCollector, and then opens a scoped EchoHubDbContext to compute metrics such as messages sent, active members, files uploaded, and new users within the reporting window. A fresh DI scope is created per report to ensure proper EF Core lifetimes and isolation between reports. The reporting window is defined by _periodStart and periodEnd to align live counters with database-derived metrics, ensuring the report reflects the same time span across in-memory and persisted data. The pretty-printed JSON log enhances operational visibility by surfacing structured data in the logs.
+This symbol acts as an orchestration point between live state, in-memory counters, and durable storage to provide a stable, windowed view of server activity. It builds a [`ServerStatsReport`](../../../EchoHub.Core/Models/ServerStatsReport.cs.md) for each interval and uses a dedicated scope to query [`EchoHubDbContext`](../../Data/EchoHubDbContext.cs.md), ensuring isolation from other requests. By anchoring the window to `_periodStart` and `periodEnd`, it aligns in-memory counters with database-derived counts to avoid drift.
 
 ## Notes
-- The background loop honors cancellation by awaiting Task.Delay with the provided CancellationToken and catching OperationCanceledException to exit promptly.
-- IntervalHours is validated: non-positive values fall back to 6 hours, and the interval is floored at 1 second to avoid a spinning loop.
-- Each report uses its own DbContext scope (via _scopeFactory.CreateScope()) to query the database and persist the resulting ServerStatsReport, ensuring clean lifetimes and minimal cross-report contention.
+- The interval is computed from `StatsOptions.IntervalHours`; non-positive values default to 6 hours and the interval is clamped to at least 1 second to prevent a runaway loop.
+- Restarting the service resets the reporting window; data prior to the restart belongs to the previous period and will not be included in the new interval unless recalculated by the next run.

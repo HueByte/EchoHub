@@ -8,25 +8,20 @@ public static class ClipboardFiles
 ```
 
 
-ClipboardFiles reads file paths from the clipboard when the clipboard contains a file-list (such as after copying files in Explorer/Finder). Use TryGetFiles to retrieve those paths so you can attach copied files directly without pasting textual paths; this works on Windows and Linux, while macOS and other platforms do not expose a file-list clipboard.
+ClipboardFiles reads the OS clipboard to obtain a list of files when the clipboard holds a file-list (such as after copying files in a file manager). This enables scenarios where a copied set of files can be pasted or attached directly, without requiring the user to paste raw text paths. Call `TryGetFiles` to retrieve existing file paths from the clipboard; the method returns true when one or more valid paths are found, and false otherwise (including on platforms without file-list clipboard support).
 
 ## Remarks
-ClipboardFiles encapsulates platform differences behind a single API. It isolates Windows-specific CF_HDROP handling and Linux's text/uri-list retrieval, performing path existence checks and filtering out non-file entries to return a clean list of existing paths. It returns true only when at least one file is found; otherwise false, letting callers gracefully fall back to other input methods.
+This helper abstracts away platform differences in clipboard formats and presents a single, cohesive API for retrieving file lists from the clipboard. On Windows it enumerates files via the CF_HDROP channel and returns the paths that point to existing files. On Linux it reads a `text/uri-list` from the clipboard (via `wl-paste` or `xclip`), converts `file://` URLs to local paths, and keeps only paths that exist. The implementation favors a graceful failure path: any read-time exception is logged and the caller simply receives a non-success result, allowing callers to degrade gracefully without crashing. The API design emphasizes a simple success/failure boolean along with a concrete list of files, enabling straightforward integration into UX flows that want to treat copied files as attachable entities rather than plain text.
 
 ## Example
 ```csharp
 if (ClipboardFiles.TryGetFiles(out var files))
 {
-    Console.WriteLine($"Clipboard contains {files.Count} file(s): {string.Join(", ", files)}");
-}
-else
-{
-    Console.WriteLine("Clipboard does not contain a file-list or contains only non-existent paths.");
+    foreach (var path in files)
+        Console.WriteLine(path);
 }
 ```
 
 ## Notes
-- Returns only existing files; non-existent or inaccessible paths are ignored.
-- Windows implementation relies on CF_HDROP with a brief retry loop to tolerate clipboard contention.
-- Linux implementation uses wl-paste or xclip (one must be available for success).
-- macOS and other platforms do not provide file-list clipboard support.
+- macOS and other non-supported platforms do not provide a file-list clipboard, so `TryGetFiles` returns false there.
+- The method only returns paths that actually exist on disk; non-existent or malformed clipboard entries are ignored, and an empty result yields false.

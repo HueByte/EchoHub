@@ -14,11 +14,11 @@ public enum MessageType
 ```
 
 
-Represents the category of a message in EchoHub. MessageType defines the four concrete payload kinds that a message can carry: Text, Image, File, or Audio. Use this enum whenever a component, data model, or API needs to convey which kind of content is attached to a message so consumers can handle, display, or validate it in a type-safe way instead of relying on strings or magic numbers.
+Represents the category of a message payload within the model, enabling code to distinguish between textual content, images, files, and audio. Use `MessageType` to drive type-specific logic (rendering, validation, or serialization) by switching on the enum values rather than inspecting the payload directly.
 
 ## Remarks
-Centralizes classification: this enum provides a single source of truth for message content kinds, enabling consistent routing, rendering, and validation across the system. It helps collaborators—models, serializers, and UI layers—make decisions based on content type without duplicating logic for string constants. By using an enum, you get compile-time checks and clearer intent.
+By centralizing the variety of message payloads behind a single discriminator, `MessageType` makes it easier to extend support for new kinds. Renderers, validators, and serializers can rely on this enum to route behavior without peeking into payload internals, promoting cleaner separation of concerns.
 
 ## Notes
-- When stored or transferred, the underlying value defaults to int (0-3) in the order shown; changing the sequence or renaming members may break persisted data.
-- If external systems expect string representations, consider mapping to/from MessageType names to avoid breaking compatibility.
+- When adding a new member to `MessageType`, update all switch expressions that handle the enum to avoid unhandled values at runtime. Prefer exhaustiveness to catch omissions at compile time.
+- Do not repurpose existing values; if the meaning changes, introduce a new member to preserve backward compatibility and serialization stability.

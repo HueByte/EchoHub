@@ -4,12 +4,12 @@
 > **Kind:** file
 
 
-The Program file serves as the application's entry point and startup bootstrap for the EchoHub client. It coordinates early startup tasks such as rollback handling, permission checks, configuration provisioning, logging setup, PATH preparation, post-update cleanup, and UI initialization before handing control to the main orchestrator and theme system.
+The `Program` file serves as the entry point for the EchoHub client. It bootstraps startup by handling a potential CLI rollback (`--rollback`), performing a best-effort Unix execute-permission check, provisioning configuration (loading from `appsettings.json` with a fallback embedded resource at `EchoHub.Client.appsettings.example.json`), and configuring `Serilog` from the configuration before loading the runtime settings via [`ConfigManager`](Config/ConfigManager.cs.md) and initializing the Terminal.Gui UI with `Application.Create().Init()`.
 
 ## Remarks
-It functions as a central bootstrap that hides cross-cutting concerns from downstream components. By coordinating UpdateBackupService for rollback support, PathSetup for PATH hygiene, and ThemeManager for theming, it decouples startup sequencing from the rest of the application and ensures the runtime begins in a well-defined state.
+This file centralizes environment preparation and startup orchestration, encapsulating cross-platform concerns (rollback handling, permission checks, path setup, and post-update housekeeping) so the rest of the application can assume a ready, consistent runtime context. It also exposes a clear, testable bootstrap path that wires configuration, logging, and the UI startup in a single phase, reducing duplication across modules.
 
 ## Notes
-- Rollback path exits the process after attempting a restore; normal startup does not proceed.
-- If appsettings.json is missing, the code seeds it from an embedded example; if the resource isn't available, startup continues with defaults.
-- Several operations are best-effort and exceptions are swallowed to avoid stopping startup (e.g., Unix permissions adjustments, cleanup of a leftover .old executable).
+- Rolling back can terminate startup early because `UpdateBackupService.RestoreBackup()` or subsequent error paths invoke `Environment.Exit`.
+- Unix permission checks are best-effort and any failures are swallowed to avoid blocking startup on platform quirks.
+- The initial configuration may be sourced from an embedded resource (`EchoHub.Client.appsettings.example.json`) if `appsettings.json` is absent, providing a safe fallback during first-run scenarios.

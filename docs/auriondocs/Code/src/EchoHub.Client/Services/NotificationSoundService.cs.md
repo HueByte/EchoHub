@@ -8,12 +8,16 @@ public class NotificationSoundService
 ```
 
 
-NotificationSoundService centralizes the playback of the notification sound. It resolves the sound file from configuration (if specified and found) or falls back to a bundled default, then plays the sound at a configurable volume when requested. The service exposes SetEnabled and SetVolume for simple runtime tuning, and PlayAsync for normal operation or PlayTestAsync for QA scenarios where playback should occur regardless of the Enabled flag. Internally it uses a semaphore to serialize concurrent playback, and a 10-second timeout to prevent a stuck caller if the sound does not finish.
+NotificationSoundService coordinates playback of the application's notification sound using a configurable file path and volume. It exposes `PlayAsync` for normal operation (respecting the `Enabled` setting) and `PlayTestAsync` to audition the sound regardless of that setting; internally it resolves the sound path, applies the configured volume, and uses a `SemaphoreSlim` lock plus a timeout (`PlaybackTimeout`) to avoid blocking future notifications.
 
 ## Remarks
-The class isolates all concerns around audio playback: path resolution, volume handling, concurrency, and fault tolerance. By hiding these details behind a single service, higher-level notification logic can simply request a sound without worrying about file presence, logging, or synchronization. The design anticipates environments where a sound file might be missing or playback might stall, and it ensures resources are released and the system remains responsive.
+
+Architecturally, this class centralizes notification sound behavior so callers don't need to touch the `_player` or handle `PlaybackFinished` events directly. It encapsulates path resolution: first a user-configured path (`_config.SoundFile`), if present and exists, else a bundled default at `Path.Combine(AppContext.BaseDirectory, "Assets", "Notification.mp3")`. The combination of a serializing lock (`_lock`) and a guarded finish path ensures only one sound plays at a time and that resources are released promptly even if playback misbehaves.
+
+The playback flow subscribes to `_player.PlaybackFinished` and uses a `TaskCompletionSource` to await either completion or the timeout; this design guarantees the lock is released even if playback misfires or completes synchronously.
 
 ## Notes
-- Silent fallback if a sound file cannot be found; production environments should ensure the asset exists if audible alerts are required.
-- The PlaybackFinished event and the 10-second timeout guard the system against hangs; the lock may be released before the sound finishes, which means subsequent playback requests can start while a prior one is still playing.
-- PlayAsync respects the Enabled flag, while PlayTestAsync allows testing the sound regardless of Enabled.
+
+- If no valid sound file is found, notifications will be silent (log: "No notification sound file found — notifications will be silent").
+- `PlayAsync` will early-return if `_config.Enabled` is false or `_resolvedSoundPath` is null; `PlayTestAsync` will still return early if `_resolvedSoundPath` is null. Both rely on a correctly resolved path to function.
+- The `_lock` is released in a `finally` block to guarantee progress even when exceptions occur.
