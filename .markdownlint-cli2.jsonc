@@ -22,6 +22,7 @@
     ".dev/**",
     "docs/_site/**",
     "docs/api/**",
+    "docs/auriondocs/**",
     "node_modules/**",
     "**/bin/**",
     "**/obj/**",
