@@ -3335,6 +3335,1456 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "auriondocs/Agent/README.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Agent/README.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Agent/repo-map.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Agent/repo-map.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Agent/symbol-graph.json",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Agent/symbol-graph.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/index.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/index.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/AppOrchestrator.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/AppOrchestrator.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Commands/CommandHandler.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Commands/CommandHandler.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Config/ClientConfig.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Config/ClientConfig.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Config/ConfigManager.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Config/ConfigManager.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Program.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Program.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Services/ApiClient.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Services/ApiClient.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Services/AsyncRunner.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Services/AsyncRunner.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Services/AudioPlaybackService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Services/AudioPlaybackService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Services/AvatarHelper.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Services/AvatarHelper.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Services/ClientEncryptionService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Services/ClientEncryptionService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Services/ClipboardFiles.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Services/ClipboardFiles.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Services/ClipboardImage.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Services/ClipboardImage.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Services/ConnectionManager.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Services/ConnectionManager.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Services/EchoHubConnection.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Services/EchoHubConnection.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Services/NativeFolderPicker.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Services/NativeFolderPicker.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Services/NotificationSoundService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Services/NotificationSoundService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Services/OutgoingAttachment.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Services/OutgoingAttachment.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Services/PathSetup.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Services/PathSetup.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Services/RoomKeyProtector.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Services/RoomKeyProtector.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Services/RoomKeyStore.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Services/RoomKeyStore.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Services/UpdateBackupService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Services/UpdateBackupService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Services/UpdateChecker.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Services/UpdateChecker.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Services/UserSession.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Services/UserSession.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Themes/Theme.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Themes/Theme.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/Themes/ThemeManager.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/Themes/ThemeManager.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Chat/ChatColors.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Chat/ChatColors.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Chat/ChatLine.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Chat/ChatLine.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Chat/ChatListSource.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Chat/ChatListSource.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Chat/ChatMessageManager.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Chat/ChatMessageManager.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Chat/ChatSegment.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Chat/ChatSegment.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Chat/RenderHelpers.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Chat/RenderHelpers.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Chat/WelcomeBanner.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Chat/WelcomeBanner.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Dialogs/AudioPlayerDialog.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Dialogs/AudioPlayerDialog.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Dialogs/ChannelPasswordDialog.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Dialogs/ChannelPasswordDialog.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Dialogs/ConnectDialog.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Dialogs/CreateChannelDialog.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Dialogs/CreateChannelDialog.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Dialogs/ProfileEditDialog.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Dialogs/ProfileEditDialog.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Dialogs/ProfileViewDialog.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Dialogs/ProfileViewDialog.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Dialogs/SearchDialog.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Dialogs/SearchDialog.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Dialogs/StatusDialog.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Dialogs/StatusDialog.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Dialogs/UpdateConfirmDialog.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Dialogs/UpdateConfirmDialog.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Helpers/DroppedFileParser.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Helpers/DroppedFileParser.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Helpers/EmojiHelper.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Helpers/EmojiHelper.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Helpers/HexColorHelper.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Helpers/HexColorHelper.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Helpers/NickColorHelper.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/Helpers/NickColorHelper.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/ListSources/ChannelListSource.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/ListSources/ChannelListSource.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/ListSources/SearchListSource.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/ListSources/SearchListSource.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/ListSources/UserListSource.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/ListSources/UserListSource.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Client/UI/MainWindow.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Client/UI/MainWindow.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Constants/HubConstants.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Constants/HubConstants.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Constants/MessageConventions.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Constants/MessageConventions.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Constants/ValidationConstants.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Constants/ValidationConstants.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Contracts/IChannelService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Contracts/IChannelService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Contracts/IChatBroadcaster.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Contracts/IChatBroadcaster.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Contracts/IChatService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Contracts/IChatService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Contracts/IEchoHubClient.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Contracts/IEchoHubClient.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Contracts/IMessageEncryptionService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Contracts/IMessageEncryptionService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Contracts/IUserService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Contracts/IUserService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/DTOs/AccountDtos.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/DTOs/AccountDtos.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/DTOs/AuthDtos.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/DTOs/AuthDtos.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/DTOs/CommonDtos.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/DTOs/CommonDtos.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/DTOs/InviteDtos.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/DTOs/InviteDtos.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/DTOs/ModerationDtos.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/DTOs/ModerationDtos.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/DTOs/ProfileDtos.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/DTOs/ProfileDtos.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/DTOs/ServerDtos.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/DTOs/ServerDtos.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Models/Attachment.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Models/Attachment.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Models/AttachmentKind.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Models/AttachmentKind.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Models/Channel.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Models/Channel.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Models/ChannelMembership.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Models/ChannelMembership.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Models/InviteCode.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Models/InviteCode.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Models/Message.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Models/Message.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Models/MessageType.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Models/MessageType.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Models/RefreshToken.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Models/RefreshToken.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Models/ServerRole.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Models/ServerRole.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Models/ServerStatsReport.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Models/ServerStatsReport.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Models/User.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Models/User.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Models/UserStatus.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Models/UserStatus.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Security/RoomCrypto.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Security/RoomCrypto.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Services/AsciiBannerService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Services/AsciiBannerService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Services/FileValidationHelper.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Services/FileValidationHelper.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Core/Services/ImageToAsciiService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Core/Services/ImageToAsciiService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server.Irc/IrcBroadcaster.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server.Irc/IrcBroadcaster.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server.Irc/IrcClientConnection.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server.Irc/IrcClientConnection.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server.Irc/IrcCommandHandler.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server.Irc/IrcCommandHandler.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server.Irc/IrcGatewayService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server.Irc/IrcGatewayService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server.Irc/IrcMessage.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server.Irc/IrcMessage.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server.Irc/IrcMessageFormatter.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server.Irc/IrcMessageFormatter.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server.Irc/IrcNumericReply.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server.Irc/IrcNumericReply.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server.Irc/IrcOptions.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server.Irc/IrcOptions.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server.Irc/IrcServiceExtensions.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server.Irc/IrcServiceExtensions.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Auth/JwtTokenService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Auth/JwtTokenService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Config/ServerLogsOptions.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Config/ServerLogsOptions.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Config/SpamOptions.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Config/SpamOptions.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Config/StatsOptions.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Config/StatsOptions.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Config/UploadLimits.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Config/UploadLimits.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Controllers/AuthController.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Controllers/AuthController.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Controllers/ChannelsController.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Controllers/ChannelsController.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Controllers/FilesController.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Controllers/FilesController.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Controllers/InvitesController.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Controllers/InvitesController.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Controllers/ModerationController.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Controllers/ModerationController.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Controllers/ServerController.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Controllers/ServerController.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Controllers/UsersController.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Controllers/UsersController.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Data/EchoHubDbContext.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Data/EchoHubDbContext.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Hubs/ChatHub.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Hubs/ChatHub.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Program.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Program.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Services/ChannelService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Services/ChannelService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Services/ChatService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Services/ChatService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Services/DirectoryClaimStore.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Services/DirectoryClaimStore.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Services/FileCleanupService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Services/FileCleanupService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Services/FileStorageService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Services/FileStorageService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Services/LinkEmbedService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Services/LinkEmbedService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Services/MessageEncryptionService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Services/MessageEncryptionService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Services/MuteExpirationService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Services/MuteExpirationService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Services/PresenceTracker.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Services/PresenceTracker.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Services/ServerDirectoryService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Services/ServerDirectoryService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Services/ServerLogs/ServerLogsService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Services/ServerLogs/ServerLogsService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Services/ServerLogs/ServerLogsSink.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Services/ServerLogs/ServerLogsSink.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Services/ServerLogs/ServerLogsStreamService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Services/ServerLogs/ServerLogsStreamService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Services/SignalRBroadcaster.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Services/SignalRBroadcaster.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Services/SpamGuard.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Services/SpamGuard.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Services/Stats/ServerStatsCollector.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Services/Stats/ServerStatsCollector.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Services/Stats/ServerStatsReportService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Services/Stats/ServerStatsReportService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Services/UserService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Services/UserService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Setup/DataMigrationService.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Setup/DataMigrationService.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Setup/DatabaseSetup.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Setup/DatabaseSetup.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Server/Setup/FirstRunSetup.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Server/Setup/FirstRunSetup.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Code/src/EchoHub.Tests/Irc/TestHelpers.cs.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Code/src/EchoHub.Tests/Irc/TestHelpers.cs.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/README.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/README.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Synthesis/Architecture.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Synthesis/Architecture.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Synthesis/Onboarding.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Synthesis/Onboarding.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Synthesis/Workflows/controller.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Synthesis/Workflows/controller.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Synthesis/Workflows/service.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Synthesis/Workflows/service.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Synthesis/api-client-authentication.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Synthesis/api-client-authentication.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Synthesis/attachments-transfer.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Synthesis/attachments-transfer.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Synthesis/clipboard-tools.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Synthesis/clipboard-tools.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Synthesis/command-handling.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Synthesis/command-handling.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Synthesis/encryption-roomkeys.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Synthesis/encryption-roomkeys.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Synthesis/real-time-connection.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Synthesis/real-time-connection.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Synthesis/ui-theming.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Synthesis/ui-theming.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "auriondocs/Synthesis/update-management.md",
+      "output": {
+        "resource": {
+          "relative_path": "auriondocs/Synthesis/update-management.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "auriondocs/index.html",
       "output": {
         "resource": {
