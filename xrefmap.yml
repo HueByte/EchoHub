@@ -15388,15 +15388,15 @@ references:
   fullName.vb: EchoHub.Core.DTOs.ServerStatusDto.New(EchoHub.Core.DTOs.ServerStatusDto)
   nameWithType: ServerStatusDto.ServerStatusDto(ServerStatusDto)
   nameWithType.vb: ServerStatusDto.New(ServerStatusDto)
-- uid: EchoHub.Core.DTOs.ServerStatusDto.#ctor(System.String,System.String,System.Int32,System.Int32,System.String)
-  name: ServerStatusDto(string, string?, int, int, string)
-  href: api/core/EchoHub.Core.DTOs.ServerStatusDto.html#EchoHub_Core_DTOs_ServerStatusDto__ctor_System_String_System_String_System_Int32_System_Int32_System_String_
-  commentId: M:EchoHub.Core.DTOs.ServerStatusDto.#ctor(System.String,System.String,System.Int32,System.Int32,System.String)
-  name.vb: New(String, String, Integer, Integer, String)
-  fullName: EchoHub.Core.DTOs.ServerStatusDto.ServerStatusDto(string, string?, int, int, string)
-  fullName.vb: EchoHub.Core.DTOs.ServerStatusDto.New(String, String, Integer, Integer, String)
-  nameWithType: ServerStatusDto.ServerStatusDto(string, string?, int, int, string)
-  nameWithType.vb: ServerStatusDto.New(String, String, Integer, Integer, String)
+- uid: EchoHub.Core.DTOs.ServerStatusDto.#ctor(System.String,System.String,System.Int32,System.Int32,System.String,System.String)
+  name: ServerStatusDto(string, string?, int, int, string, string)
+  href: api/core/EchoHub.Core.DTOs.ServerStatusDto.html#EchoHub_Core_DTOs_ServerStatusDto__ctor_System_String_System_String_System_Int32_System_Int32_System_String_System_String_
+  commentId: M:EchoHub.Core.DTOs.ServerStatusDto.#ctor(System.String,System.String,System.Int32,System.Int32,System.String,System.String)
+  name.vb: New(String, String, Integer, Integer, String, String)
+  fullName: EchoHub.Core.DTOs.ServerStatusDto.ServerStatusDto(string, string?, int, int, string, string)
+  fullName.vb: EchoHub.Core.DTOs.ServerStatusDto.New(String, String, Integer, Integer, String, String)
+  nameWithType: ServerStatusDto.ServerStatusDto(string, string?, int, int, string, string)
+  nameWithType.vb: ServerStatusDto.New(String, String, Integer, Integer, String, String)
 - uid: EchoHub.Core.DTOs.ServerStatusDto.#ctor*
   name: ServerStatusDto
   href: api/core/EchoHub.Core.DTOs.ServerStatusDto.html#EchoHub_Core_DTOs_ServerStatusDto__ctor_
@@ -15406,15 +15406,15 @@ references:
   fullName.vb: EchoHub.Core.DTOs.ServerStatusDto.New
   nameWithType: ServerStatusDto.ServerStatusDto
   nameWithType.vb: ServerStatusDto.New
-- uid: EchoHub.Core.DTOs.ServerStatusDto.Deconstruct(System.String@,System.String@,System.Int32@,System.Int32@,System.String@)
-  name: Deconstruct(out string, out string?, out int, out int, out string)
-  href: api/core/EchoHub.Core.DTOs.ServerStatusDto.html#EchoHub_Core_DTOs_ServerStatusDto_Deconstruct_System_String__System_String__System_Int32__System_Int32__System_String__
-  commentId: M:EchoHub.Core.DTOs.ServerStatusDto.Deconstruct(System.String@,System.String@,System.Int32@,System.Int32@,System.String@)
-  name.vb: Deconstruct(String, String, Integer, Integer, String)
-  fullName: EchoHub.Core.DTOs.ServerStatusDto.Deconstruct(out string, out string?, out int, out int, out string)
-  fullName.vb: EchoHub.Core.DTOs.ServerStatusDto.Deconstruct(String, String, Integer, Integer, String)
-  nameWithType: ServerStatusDto.Deconstruct(out string, out string?, out int, out int, out string)
-  nameWithType.vb: ServerStatusDto.Deconstruct(String, String, Integer, Integer, String)
+- uid: EchoHub.Core.DTOs.ServerStatusDto.Deconstruct(System.String@,System.String@,System.Int32@,System.Int32@,System.String@,System.String@)
+  name: Deconstruct(out string, out string?, out int, out int, out string, out string)
+  href: api/core/EchoHub.Core.DTOs.ServerStatusDto.html#EchoHub_Core_DTOs_ServerStatusDto_Deconstruct_System_String__System_String__System_Int32__System_Int32__System_String__System_String__
+  commentId: M:EchoHub.Core.DTOs.ServerStatusDto.Deconstruct(System.String@,System.String@,System.Int32@,System.Int32@,System.String@,System.String@)
+  name.vb: Deconstruct(String, String, Integer, Integer, String, String)
+  fullName: EchoHub.Core.DTOs.ServerStatusDto.Deconstruct(out string, out string?, out int, out int, out string, out string)
+  fullName.vb: EchoHub.Core.DTOs.ServerStatusDto.Deconstruct(String, String, Integer, Integer, String, String)
+  nameWithType: ServerStatusDto.Deconstruct(out string, out string?, out int, out int, out string, out string)
+  nameWithType.vb: ServerStatusDto.Deconstruct(String, String, Integer, Integer, String, String)
 - uid: EchoHub.Core.DTOs.ServerStatusDto.Deconstruct*
   name: Deconstruct
   href: api/core/EchoHub.Core.DTOs.ServerStatusDto.html#EchoHub_Core_DTOs_ServerStatusDto_Deconstruct_
@@ -15553,6 +15553,18 @@ references:
   commentId: Overload:EchoHub.Core.DTOs.ServerStatusDto.TotalChannels
   fullName: EchoHub.Core.DTOs.ServerStatusDto.TotalChannels
   nameWithType: ServerStatusDto.TotalChannels
+- uid: EchoHub.Core.DTOs.ServerStatusDto.Version
+  name: Version
+  href: api/core/EchoHub.Core.DTOs.ServerStatusDto.html#EchoHub_Core_DTOs_ServerStatusDto_Version
+  commentId: P:EchoHub.Core.DTOs.ServerStatusDto.Version
+  fullName: EchoHub.Core.DTOs.ServerStatusDto.Version
+  nameWithType: ServerStatusDto.Version
+- uid: EchoHub.Core.DTOs.ServerStatusDto.Version*
+  name: Version
+  href: api/core/EchoHub.Core.DTOs.ServerStatusDto.html#EchoHub_Core_DTOs_ServerStatusDto_Version_
+  commentId: Overload:EchoHub.Core.DTOs.ServerStatusDto.Version
+  fullName: EchoHub.Core.DTOs.ServerStatusDto.Version
+  nameWithType: ServerStatusDto.Version
 - uid: EchoHub.Core.DTOs.ServerStatusDto.op_Equality(EchoHub.Core.DTOs.ServerStatusDto,EchoHub.Core.DTOs.ServerStatusDto)
   name: operator ==(ServerStatusDto?, ServerStatusDto?)
   href: api/core/EchoHub.Core.DTOs.ServerStatusDto.html#EchoHub_Core_DTOs_ServerStatusDto_op_Equality_EchoHub_Core_DTOs_ServerStatusDto_EchoHub_Core_DTOs_ServerStatusDto_

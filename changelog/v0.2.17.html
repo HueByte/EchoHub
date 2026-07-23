@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Changelog | EchoHub Documentation </title>
+      <title>v0.2.17 | EchoHub Documentation </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Changelog | EchoHub Documentation ">
+      <meta name="title" content="v0.2.17 | EchoHub Documentation ">
       
       
       <link rel="icon" href="../images/hue_icon.svg">
@@ -85,31 +85,15 @@
         </div>
 
         <article data-uid="">
-<h1 id="changelog">Changelog</h1>
+<h1 id="v0217">v0.2.17</h1>
 
-<p>Release history for EchoHub.</p>
-<h2 id="releases">Releases</h2>
+<h2 id="new-features">New Features</h2>
 <ul>
-<li><a href="v0.2.17.html">v0.2.17</a> - Server Version Reporting &amp; IRC Multi-Line Fix</li>
-<li><a href="v0.2.16.html">v0.2.16</a> - Periodic Server-Stats Report, Upload &amp; Moderation Logging &amp; Quieter Connection Logs</li>
-<li><a href="v0.2.15.html">v0.2.15</a> - Invite Codes, Data Export &amp; Deletion, /me, /banner, Replies, Open Images In Browser &amp; IRC Image Links</li>
-<li><a href="v0.2.14.html">v0.2.14</a> - Clipboard Image &amp; Multi-File Paste, E2E Room Unlock Fixes, Encrypted Key Cache &amp; IRC Gateway Polish</li>
-<li><a href="v0.2.13.html">v0.2.13</a> - Chat Visual Overhaul, Auto-Join All Channels &amp; Persistent Read Positions</li>
-<li><a href="v0.2.12.html">v0.2.12</a> - End-to-End Encrypted Channels, IRC Channel Keys, Image Save &amp; Ctrl+W Crash Fix</li>
-<li><a href="v0.2.11.html">v0.2.11</a> - EchoHubSpace Auth, Live Directory Updates &amp; Server Browser Metadata</li>
-<li><a href="v0.2.10.html">v0.2.10</a> - Command Palette, Infinite History Scroll &amp; Auto-Updater Fixes</li>
-<li><a href="v0.2.9.html">v0.2.9</a> - Install Script &amp; Chocolatey Fixes</li>
-<li><a href="v0.2.8.html">v0.2.8</a> - Docker Support, IRC Account Creation &amp; BOM Fix</li>
-<li><a href="v0.2.7.html">v0.2.7</a> - User List Fix &amp; Terminal.Gui NuGet Migration</li>
-<li><a href="v0.2.6.html">v0.2.6</a> - Major Refactoring &amp; Code Organization</li>
-<li><a href="v0.2.5.html">v0.2.5</a> - Session Persistence, Auto-Updates, Audio &amp; Transparent Theme</li>
-<li><a href="v0.2.4.html">v0.2.4</a> - E2E Message Encryption</li>
-<li><a href="v0.2.3.html">v0.2.3</a> - Moderation, Embeds &amp; UI Overhaul</li>
-<li><a href="v0.2.2.html">v0.2.2</a> - Startup &amp; Shutdown Fixes</li>
-<li><a href="v0.2.1.html">v0.2.1</a> - Shutdown &amp; CI Fixes</li>
-<li><a href="v0.2.0.html">v0.2.0</a> - IRC Gateway</li>
-<li><a href="v0.1.1.html">v0.1.1</a> - Directory Connection Self-Healing</li>
-<li><a href="v0.1.0.html">v0.1.0</a> - Initial Release</li>
+<li><strong>Server version reporting</strong> — <code>GET /api/server/info</code> now returns the server version. The client fetches it on connect and shows a warning dialog when the server and client versions don't match, with the option to continue or disconnect.</li>
+</ul>
+<h2 id="bug-fixes">Bug Fixes</h2>
+<ul>
+<li><strong>IRC multi-line messages</strong> — sending a message with line breaks from the TUI now correctly delivers each line as a separate PRIVMSG to IRC clients. Previously newlines were embedded raw in the IRC frame, so IRC clients silently dropped everything after the first line — most visibly, a link on its own line disappeared while its embed preview still showed.</li>
 </ul>
 
 </article>
