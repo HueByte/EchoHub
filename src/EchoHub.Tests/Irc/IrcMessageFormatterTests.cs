@@ -243,6 +243,36 @@ public class IrcMessageFormatterTests
     }
 
     [Fact]
+    public void FormatMessage_UrlOnOwnLine_EmitsUrlAsItsOwnPrivmsg()
+    {
+        // Regression: multi-line content used to go out as ONE line with a raw \n
+        // embedded. IRC clients drop everything after the newline as a malformed
+        // frame, so a URL on its own line silently vanished while the embed lines
+        // (separate, valid PRIVMSGs) still rendered.
+        var embeds = new List<EmbedDto>
+        {
+            new("Example Site", "Page Title", "Description", null, "https://example.com")
+        };
+        var msg = CreateTextMessage("check this out\nhttps://example.com", embeds: embeds);
+        var lines = IrcMessageFormatter.FormatMessage(msg);
+
+        Assert.Contains(lines, l => l.EndsWith("PRIVMSG #general :check this out"));
+        Assert.Contains(lines, l => l.EndsWith("PRIVMSG #general :https://example.com"));
+        Assert.All(lines, l => Assert.DoesNotContain('\n', l));
+        Assert.All(lines, l => Assert.DoesNotContain('\r', l));
+    }
+
+    [Fact]
+    public void SplitMessage_MultiLineContent_SplitsOnNewlines()
+    {
+        var chunks = IrcMessageFormatter.SplitMessage("line one\nhttps://example.com/page", 400);
+
+        Assert.Equal(2, chunks.Count);
+        Assert.Equal("line one", chunks[0]);
+        Assert.Equal("https://example.com/page", chunks[1]);
+    }
+
+    [Fact]
     public void SplitMessage_UnicodeContent_CountsUtf8Bytes()
     {
         // Japanese text: each char is 3 bytes in UTF-8

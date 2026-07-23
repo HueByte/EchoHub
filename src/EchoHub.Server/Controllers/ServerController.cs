@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Security.Claims;
 using EchoHub.Core.DTOs;
 using EchoHub.Core.Models;
@@ -38,12 +39,15 @@ public class ServerController : ControllerBase
             _ => "open",
         };
 
+        var version = typeof(ServerController).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
+
         var status = new ServerStatusDto(
             _config["Server:Name"] ?? "EchoHub Server",
             _config["Server:Description"],
             userCount,
             channelCount,
-            registrationMode);
+            registrationMode,
+            version);
 
         return Ok(status);
     }
