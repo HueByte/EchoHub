@@ -8,12 +8,11 @@ public static class IrcServiceExtensions
 ```
 
 
-Extends WebApplicationBuilder with AddIrcGateway to wire up IRC gateway support. It reads a configuration flag to enable or disable the gateway and wires the necessary services when enabled, returning the builder for fluent startup configuration.
+Extends `WebApplicationBuilder` with `AddIrcGateway` to wire IRC gateway support into an ASP.NET Core app. It configures [`IrcOptions`](IrcOptions.cs.md) from configuration and, when `Irc:Enabled` is true, registers [`IrcGatewayService`](IrcGatewayService.cs.md) as a singleton, wires [`IChatBroadcaster`](../EchoHub.Core/Contracts/IChatBroadcaster.cs.md) to [`IrcBroadcaster`](IrcBroadcaster.cs.md), and adds the gateway as a hosted service, returning the original builder for fluent chaining.
 
 ## Remarks
-Centralizes startup concerns for the IRC gateway: the extension reads IrcOptions from a configured section and conditionally registers the gateway components, enabling the feature via configuration. It keeps startup code concise and tests-focused by encapsulating the wiring behind a single extension method.
+This extension encapsulates opt-in startup logic and centralizes the wiring of the IRC gateway, ensuring consistent DI lifetimes and configuration handling across the app. It coordinates the lifecycle of [`IrcGatewayService`](IrcGatewayService.cs.md) and the broadcaster ([`IChatBroadcaster`](../EchoHub.Core/Contracts/IChatBroadcaster.cs.md) implemented by [`IrcBroadcaster`](IrcBroadcaster.cs.md)) by hosting the gateway as a background service.
 
 ## Notes
-- IrcGatewayService and IrcBroadcaster registrations are conditional on Irc:Enabled; if false, IRC components are not registered.
-- Ensure IrcOptions.SectionName matches your configuration so there is a valid section to bind from.
-- Returning the builder enables fluent chaining like builder.AddIrcGateway().<other extensions>()
+- Calling `AddIrcGateway` multiple times can register multiple hosted services and singletons; call it once during startup to avoid duplicate registrations.
+- The extension only activates when `Irc:Enabled` is true. If the flag is false or missing, it will configure [`IrcOptions`](IrcOptions.cs.md) but will not start or register the gateway components. Ensure configuration sources are loaded before invocation.

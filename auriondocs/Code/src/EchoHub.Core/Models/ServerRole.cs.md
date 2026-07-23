@@ -14,31 +14,7 @@ public enum ServerRole
 ```
 
 
-Represents the role assigned to a member within a server context in EchoHub. It defines four distinct levels of authority: Member, Mod (moderator), Admin, and Owner. Use this enum whenever you need to distinguish capabilities, gate UI or actions, or persist role information instead of relying on magic numbers.
+Represents the role a user holds within a server in EchoHub. It categorizes users into distinct permission tiers: `Member`, `Mod`, `Admin`, and `Owner`, which are used to drive authorization and feature availability without scattering numeric checks throughout the codebase.
 
 ## Remarks
-By centralizing roles in a single enum, the codebase can map each role to its corresponding permissions in one place, enabling consistent authorization checks across services. The explicit integer values also support stable serialization and interop when persisting or transmitting role data, without forcing string-based representations.
-
-## Example
-```csharp
-var role = ServerRole.Admin;
-switch (role)
-{
-    case ServerRole.Owner:
-    case ServerRole.Admin:
-        // elevated permissions
-        break;
-    case ServerRole.Mod:
-        // moderation tasks
-        break;
-    case ServerRole.Member:
-        // regular user actions
-        break;
-}
-Console.WriteLine($"User role: {role}"); // prints Owner, Admin, Mod, or Member
-```
-
-## Notes
-- Do not treat ServerRole as a Flags enum; do not combine roles with bitwise operators.
-- Prefer using the named constants in checks; avoid relying on numeric ordering for access decisions.
-- Changing the underlying values (0–3) can affect serialized data; coordinate evolution across all consumers to preserve compatibility.
+This enum provides a stable abstraction for role-based access control, allowing components to reason about capabilities (moderation, configuration, ownership) by comparing against `ServerRole` values. Centralizing roles reduces duplication of permission logic and helps ensure consistent authorization across command handlers, UI components, and services. It also offers an extension point: adding a new role or reordering the hierarchy can be localized to this enum and its consumers.

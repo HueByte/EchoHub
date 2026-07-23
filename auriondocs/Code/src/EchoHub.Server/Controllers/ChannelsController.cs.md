@@ -5,18 +5,18 @@
 ## Contents
 
 - [ChannelsController](#channelscontroller)
-  - [ChannelsController (constructor)](#channelscontroller-constructor)
   - [CreateChannel](#createchannel)
   - [DeleteChannel](#deletechannel)
   - [GetChannelCrypto](#getchannelcrypto)
+  - [GetChannelMeta](#getchannelmeta)
+  - [GetChannels](#getchannels)
   - [MapChannelError](#mapchannelerror)
   - [ParseKind](#parsekind)
-- [GetChannelMeta](#getchannelmeta)
-- [GetChannels](#getchannels)
-- [RekeyChannel](#rekeychannel)
-- [SendMessageWithAttachments](#sendmessagewithattachments)
-- [SendUrl](#sendurl)
-- [UpdateTopic](#updatetopic)
+  - [RekeyChannel](#rekeychannel)
+  - [SendMessageWithAttachments](#sendmessagewithattachments)
+  - [SendUrl](#sendurl)
+  - [UpdateTopic](#updatetopic)
+- [ChannelsController (constructor)](#channelscontroller-constructor)
 
 ---
 
@@ -33,19 +33,328 @@ public class ChannelsController : ControllerBase
 ```
 
 
-Exposes the HTTP surface for channel-related operations under the route prefix api/channels. Authenticated clients use this controller to list and create channels, retrieve public crypto metadata and human-facing channel summaries, perform passphrase rewraps (rekey), update topics, delete channels, and post messages (including multipart uploads). Prefer calling these endpoints from client code or tests; use the underlying services (IChannelService, IMessageEncryptionService, etc.) directly only when you need to bypass HTTP semantics or perform server-side orchestration.
+Exposes the channel-oriented HTTP API beneath `api/channels` for listing, creating, updating and deleting channels, for retrieving channel metadata and public crypto parameters, for changing an encrypted channel's passphrase, and for posting messages (including attachments). Reach for `ChannelsController` when implementing server-side channel management or wiring client HTTP calls: it is the main HTTP surface that enforces authentication, rate limits and upload policies for channel operations.
 
 ## Remarks
-This controller is a thin HTTP façade that orchestrates several backend services rather than implementing business logic itself. It enforces [Authorize] and configurable rate-limiting (attributes show general and upload policy groups) and delegates persistence, file storage, ASCII preview generation, encryption operations, and chat routing to injected dependencies such as IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IMessageEncryptionService, IChatService and UploadLimits. Upload size and multipart limits are applied at runtime using the UploadLimits configuration rather than compile-time attributes so the controller can honor configurable limits for large attachments.
+`ChannelsController` is a thin HTTP façade that delegates domain work to services such as [`IChannelService`](../../EchoHub.Core/Contracts/IChannelService.cs.md), [`IChatService`](../../EchoHub.Core/Contracts/IChatService.cs.md) and [`IMessageEncryptionService`](../../EchoHub.Core/Contracts/IMessageEncryptionService.cs.md) while persisting metadata via [`EchoHubDbContext`](../Data/EchoHubDbContext.cs.md). It centralizes cross-cutting concerns: request authorization (`[Authorize]`), rate limiting (the controller is annotated with `EnableRateLimiting("general")` and the attachment upload endpoint uses `EnableRateLimiting("upload")`), runtime-configured upload limits via the injected [`UploadLimits`](../Config/UploadLimits.cs.md), file handling via [`FileStorageService`](../Services/FileStorageService.cs.md), and image preview generation via [`ImageToAsciiService`](../../EchoHub.Core/Services/ImageToAsciiService.cs.md). The controller intentionally keeps cryptographic secrets off the public endpoints — for example, `GetChannelCrypto` returns only public metadata (including the PBKDF2 salt) and never hands out the wrapped room key; `RekeyChannel` re-wraps a channel's room key without re-encrypting historical messages.
 
 ## Notes
-- GetChannelCrypto returns public crypto metadata and the PBKDF2 salt clients need to derive a join credential; it never returns the wrapped room key (that is issued only after a successful join).
-- RekeyChannel re-wraps the room key to change the passphrase; historical messages are not re-encrypted (the room content key itself does not change).
-- SendMessageWithAttachments applies upload limits at runtime from UploadLimits; the controller trusts clients for encrypted-channel attachments (clients must declare each file's kind and provide room-encrypted previews), while for non-encrypted channels the server may inspect files and generate ASCII previews for images.
+- The server does not attempt to decrypt or inspect message contents for end-to-end encrypted channels; encrypted attachments must be uploaded as ciphertext and the client must provide the declared `kind` and the room-encrypted `preview` aligned with attachment order. The controller treats those blobs as opaque.
+- Request body and multipart limits are applied at runtime from the injected [`UploadLimits`](../Config/UploadLimits.cs.md) rather than using compile-time attributes like `[RequestSizeLimit]`. The implementation raises the request body ceiling from [`UploadLimits`](../Config/UploadLimits.cs.md) before the body is read to support configurable upload maxima.
+- `RekeyChannel` changes how the room key is wrapped (the passphrase) but does not re-encrypt existing history — the underlying room content key remains the same, so historical ciphertext is not rewritten.
 
 ---
 
-### ChannelsController (constructor)
+### CreateChannel
+> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
+> **Kind:** method
+
+```csharp
+[HttpPost]
+    public async Task<IActionResult> CreateChannel([FromBody] CreateChannelRequest request)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `request` | [`CreateChannelRequest`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) | — |
+
+**Returns:** `[HttpPost]
+    public async `Task<IActionResult>``
+
+
+Creates a new channel for the authenticated user via HTTP POST. It first authenticates by reading the `NameIdentifier` from `ClaimTypes.NameIdentifier` in [`User`](../../EchoHub.Core/Models/User.cs.md); if missing, it returns `Unauthorized` with an [`ErrorResponse`](../../EchoHub.Core/DTOs/CommonDtos.cs.md). On success, it calls `_channelService.CreateChannelAsync` with the parsed GUID from the `NameIdentifier` claim and the fields from `request` (`Name`, `Topic`, `IsPublic`, `Password`, `EncryptionSalt`, `WrappedRoomKey`). If the result indicates failure, it returns the mapped error via `MapChannelError`. If the created channel is public, it notifies clients by calling `_chatService.BroadcastChannelUpdatedAsync`. Finally it returns `Created` with the new channel at `/api/channels/{result.Channel.Name}`.
+
+---
+
+### DeleteChannel
+> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
+> **Kind:** method
+
+```csharp
+[HttpDelete("{channel}")]
+    public async Task<IActionResult> DeleteChannel(string channel)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `"{channel}"` | — | — |
+
+
+Deletes a channel for the currently authenticated user. It first validates authentication by reading the `NameIdentifier` claim from [`User`](../../EchoHub.Core/Models/User.cs.md) and returns `Unauthorized` with an [`ErrorResponse`](../../EchoHub.Core/DTOs/CommonDtos.cs.md) if missing; otherwise it calls `_channelService.DeleteChannelAsync` with the parsed `Guid` user id and the provided `channel` name. If the deletion succeeds it broadcasts the channel deletion to the chat subsystem via `_chatService.BroadcastChannelDeletedAsync` (the channel name lowercased and trimmed) and returns `NoContent`; if it fails, it returns the mapped error using `MapChannelError`.
+
+## Remarks
+
+This method acts as an orchestration boundary, ensuring only authenticated users can delete their channels and coordinating the domain operation with cross-service notification to keep clients in sync.
+
+## Notes
+
+- Potential exception if the `NameIdentifier` claim isn't a valid GUID; consider using `Guid.TryParse` or additional validation.
+
+---
+
+### GetChannelCrypto
+> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
+> **Kind:** method
+
+```csharp
+[HttpGet("{channel}/crypto")]
+    public async Task<IActionResult> GetChannelCrypto(string channel)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `"{channel}/crypto"` | — | — |
+
+
+GetChannelCrypto is an HTTP GET endpoint that returns the public crypto metadata for a given channel, including whether the channel is end-to-end encrypted and the PBKDF2 salt used to derive the join credential. It never returns the wrapped room key; if the channel doesn't exist, the endpoint responds with `NotFound` and an [`ErrorResponse`](../../EchoHub.Core/DTOs/CommonDtos.cs.md); otherwise it returns the metadata with an `Ok(crypto)` result.
+
+## Remarks
+This endpoint centralizes crypto-configuration retrieval for a channel, keeping actual keys out of reach and clarifying that the response is metadata only. It delegates to `_channelService.GetChannelCryptoAsync(channel)` to obtain the data and uses the 404/not-found path to signal missing channels or missing crypto metadata. It sits in the `ChannelsController` and complements the security model by exposing minimal, auditable information required by clients to participate in encrypted joins.
+
+## Notes
+- If `_channelService.GetChannelCryptoAsync(channel)` returns null, the API responds with 404 via the same messaging, conflating a missing channel with missing crypto metadata.
+- The endpoint does not expose any cryptographic material beyond the publicly exposable metadata; actual keys are never returned.
+
+---
+
+### GetChannelMeta
+> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
+> **Kind:** method
+
+```csharp
+[HttpGet("{channel}/meta")]
+    public async Task<IActionResult> GetChannelMeta(string channel)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `"{channel}/meta"` | — | — |
+
+
+GetChannelMeta exposes channel metadata for a given `channel` via HTTP GET to `"{channel}/meta"`. It delegates to `_channelService.GetChannelMetaAsync(channel)` to assemble metadata such as message count, unique posters, estimated size, creation date, and room id. This remains available for encrypted channels as well since the server tracks this metadata independent of the messages. If the channel does not exist, the endpoint returns `NotFound(new ErrorResponse($"Channel '{channel}' does not exist."))`; otherwise it returns the metadata payload with `Ok(meta)`.
+
+---
+
+### GetChannels
+> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
+> **Kind:** method
+
+```csharp
+[HttpGet]
+    public async Task<IActionResult> GetChannels([FromQuery] int offset = 0, [FromQuery] int limit = 50)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `offset` | `int` | `0` |
+| `limit` | `int` | `50` |
+
+**Returns:** `[HttpGet]
+    public async `Task<IActionResult>``
+
+
+GetChannels is an HTTP GET endpoint on the `ChannelsController` that returns a paged list of channels for the currently authenticated user. It reads the query parameters `offset` and `limit`, clamps them to sane bounds, parses the user GUID from the `NameIdentifier` claim, delegates to `_channelService.GetChannelsAsync(Guid.Parse(userIdClaim), offset, limit)`, and returns the data in an `Ok` response.
+
+## Remarks
+As an HTTP boundary, this method coordinates authentication and paging concerns, keeping the controller thin by delegating data retrieval to `_channelService.GetChannelsAsync(...)`. It relies on [`ErrorResponse`](../../EchoHub.Core/DTOs/CommonDtos.cs.md) to signal authentication failures and on the service to fetch domain data, forming a simple, testable conduit between the HTTP layer and business logic.
+
+## Notes
+- It assumes the `NameIdentifier` claim contains a valid GUID; if not, `Guid.Parse` will throw. Consider using `Guid.TryParse` or stricter claim validation to avoid runtime exceptions.
+
+---
+
+### MapChannelError
+> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
+> **Kind:** method
+
+```csharp
+private IActionResult MapChannelError(ChannelOperationResult result) => result.Error switch
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `result` | [`ChannelOperationResult`](../../EchoHub.Core/DTOs/CommonDtos.cs.md) | — |
+
+**Returns:** `IActionResult`
+
+
+MapChannelError is a private helper in `ChannelsController` that translates a [`ChannelOperationResult`](../../EchoHub.Core/DTOs/CommonDtos.cs.md) into an HTTP response by switching on `result.Error`. It centralizes the mapping from domain channel errors (the [`ChannelError`](../../EchoHub.Core/DTOs/CommonDtos.cs.md) enum) to HTTP status results, covering common cases: `ChannelError.ValidationFailed` yields a `BadRequest` with an [`ErrorResponse`](../../EchoHub.Core/DTOs/CommonDtos.cs.md) payload containing the error message, `ChannelError.AlreadyExists` yields `Conflict`, `ChannelError.NotFound` yields `NotFound`, `ChannelError.Forbidden` yields a 403 via `StatusCode(403, ...)`, and `ChannelError.Protected` yields `BadRequest`; any unlisted error falls back to a `BadRequest` with either the provided `ErrorMessage` or the string `"Unknown error."`. All branches construct the error payload with `new ErrorResponse(result.ErrorMessage!)` (except the fallback) to deliver structured error information to the client.
+
+## Remarks
+This helper encapsulates the error-to-HTTP translation for channel operations, ensuring consistent client-facing semantics across the controller. By funneling all channel-related errors through a single switch, changes to HTTP status mappings or payload shape can be made in one place. The method returns an `IActionResult` and always uses an [`ErrorResponse`](../../EchoHub.Core/DTOs/CommonDtos.cs.md) payload to provide a predictable error contract to clients; callers do not need to repeat boilerplate error handling.
+
+## Notes
+- The code uses the null-forgiving operator on `ErrorMessage` in most branches; ensure `ErrorMessage` is populated for those [`ChannelError`](../../EchoHub.Core/DTOs/CommonDtos.cs.md) values, or risk a runtime null allocation.
+- The default branch returns a `BadRequest` with either the provided message or a fallback of `"Unknown error."`, which avoids leaking a null payload but may obscure the underlying error if messages are not consistently set.
+
+---
+
+### ParseKind
+> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
+> **Kind:** method
+
+```csharp
+private static AttachmentKind ParseKind(string? kind) => kind?.ToLowerInvariant() switch
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `kind` | `string?` | — |
+
+**Returns:** [`AttachmentKind`](../../EchoHub.Core/Models/AttachmentKind.cs.md)
+
+
+Converts an optional string describing an attachment into the corresponding [`AttachmentKind`](../../EchoHub.Core/Models/AttachmentKind.cs.md) enum value. It normalizes the input with `ToLowerInvariant()` and returns `AttachmentKind.Image` for `image`, `AttachmentKind.Audio` for `audio`, or `AttachmentKind.File` for any other value (including when the input is `null`).
+
+## Remarks
+By centralizing this mapping in a private helper, the server ensures consistent classification of attachments across callers and makes future changes to the mapping straightforward. The use of `ToLowerInvariant()` guarantees predictable behavior regardless of the runtime culture.
+
+## Notes
+- If a new attachment kind is introduced, this method must be updated; otherwise unknown values default to `AttachmentKind.File`.
+
+---
+
+### RekeyChannel
+> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
+> **Kind:** method
+
+```csharp
+[HttpPost("{channel}/rekey")]
+    public async Task<IActionResult> RekeyChannel(string channel, [FromBody] RekeyChannelRequest request)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `"{channel}/rekey"` | — | — |
+
+
+RekeyChannel rotates an encrypted channel's passphrase by re-wrapping its room key. It authenticates the caller via the `ClaimTypes.NameIdentifier` claim and requires knowledge of the old password (provided as `OldPassword` in the request) to authorize the change; the operation preserves history by not re-encrypting the room content key.
+
+## Remarks
+RekeyChannel delegates the actual rotation to `_channelService.RekeyChannelAsync`, which performs the rewrapping logic and returns a result. If the operation succeeds, the updated channel is returned with `Ok`, otherwise `MapChannelError` translates failures into the appropriate HTTP error response. The endpoint is exposed at the route `"{channel}/rekey"`, enforcing authentication at the boundary via the user identity claim.
+
+## Notes
+- Authentication relies on the presence of the `NameIdentifier` claim in [`User`](../../EchoHub.Core/Models/User.cs.md); if it is missing, the method responds with `Unauthorized(new ErrorResponse("Authentication required."))`.
+- The code calls `Guid.Parse(userIdClaim)` on the claim value; if the `NameIdentifier` claim is present but not a valid GUID, an exception could be thrown at runtime.
+- This operation re-wraps the room key to rotate the channel's passphrase without altering the underlying room content key, preserving historical data while changing access material.
+
+
+---
+
+### SendMessageWithAttachments
+> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
+> **Kind:** method
+
+```csharp
+[HttpPost("{channel}/messages")]
+    [EnableRateLimiting("upload")]
+    public async Task<IActionResult> SendMessageWithAttachments(string channel, [FromQuery] string? size = null)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `"{channel}/messages"` | — | — |
+
+
+SendMessageWithAttachments posts a single chat message to a named channel, optionally including plaintext `content` and zero or more attachments delivered as multipart form data.
+
+For non-encrypted channels the server may inspect attachments and render ASCII previews; for room-encrypted channels the client supplies ciphertext with per-file `kind` and a pre-rendered `preview`, and the server never inspects the ciphertext.
+
+The action enforces runtime upload limits, validates authentication and channel state, requires multipart content with at least one attachment, and observes per-channel constraints such as maximum attachments per message and maximum message length for non-encrypted content.
+
+## Remarks
+`SendMessageWithAttachments` is a boundary between the chat surface and the attachment pipeline. It coordinates authentication, channel resolution, and per-channel policy (read-only channels, allowed attachment counts, and length limits), then delegates the heavier lifting of encryption handling and persistence to the underlying services (`_encryption`, `_channelService`, and the database context). By centralizing multipart request handling and per-file metadata (such as `Attachment.Kind` and `Attachment.AsciiPreview`), it provides a single, secure entry point for composing rich messages that may include both plaintext and encrypted payloads, while ensuring that encrypted channels never disclose raw attachment data to the server.
+
+## Notes
+- If the channel is encrypted, the endpoint relies on the client-provided per-file metadata (e.g., `kind` and `preview`) and does not perform server-side inspection of the ciphertext blobs; ensure consistency between client-provided metadata and channel state to avoid mismatches. 
+
+---
+
+### SendUrl
+> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
+> **Kind:** method
+
+```csharp
+[HttpPost("{channel}/send-url")]
+    [EnableRateLimiting("upload")]
+    public async Task<IActionResult> SendUrl(string channel, [FromBody] SendUrlRequest request, [FromQuery] string? size = null)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `"{channel}/send-url"` | — | — |
+
+
+SendUrl is an HTTP POST action that enables an authenticated user to attach an image to a channel by URL. It coordinates authentication, channel validation, image download, format and size validation, storage, and ASCII preview generation, applying channel policies (such as read-only `IsSystem` channels and end-to-end encrypted `IsEncrypted` channels) before persisting the asset.
+
+## Remarks
+This action centralizes URL-based image delivery, delegating channel lookup to `` `_channelService` ``, remote download/validation to the HTTP client path, and persistence to ``_fileStorage``. It ensures that content is only added to writable channels and that encrypted channels disallow URL-based image sending, thereby reducing risk and keeping concerns isolated. The composition makes testing and reuse consistent with other upload flows in the codebase, leveraging collaborators such as [`FileValidationHelper`](../../EchoHub.Core/Services/FileValidationHelper.cs.md) for image validation and [`ImageToAsciiService`](../../EchoHub.Core/Services/ImageToAsciiService.cs.md) for the ASCII preview.
+
+## Example
+```csharp
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+
+var payload = new { Url = "https://example.com/image.png" };
+var json = JsonSerializer.Serialize(payload);
+using var content = new StringContent(json, Encoding.UTF8, "application/json");
+using var client = new HttpClient(); // configure base address and authentication as needed
+var response = await client.PostAsync("/channels/general/send-url?size=1024", content);
+```
+
+## Notes
+- Requires authentication; requests without credentials yield `Unauthorized` with an [`ErrorResponse`](../../EchoHub.Core/DTOs/CommonDtos.cs.md).
+- Validates channel name via `ValidationConstants.ChannelNameRegex` and checks channel existence (`NotFound`) and state (`IsSystem` / `IsEncrypted`).
+- Downloads the image using the named HttpClient `"ImageDownload"`, enforces the maximum size via `_uploadLimits.MaxImageSizeBytes`, and validates the actual image content with `FileValidationHelper.IsValidImage`.
+- If the downloaded data cannot be interpreted as a supported image, returns a `BadRequest` with an explanatory message.
+
+---
+
+### UpdateTopic
+> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
+> **Kind:** method
+
+```csharp
+[HttpPut("{channel}/topic")]
+    public async Task<IActionResult> UpdateTopic(string channel, [FromBody] UpdateTopicRequest request)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `"{channel}/topic"` | — | — |
+
+
+UpdateTopic handles PUT requests to update a channel's topic for the authenticated user. It reads the `NameIdentifier` claim and, if missing, returns `Unauthorized(new ErrorResponse("Authentication required."))`; otherwise it calls `_channelService.UpdateTopicAsync(Guid.Parse(userIdClaim), channel, request.Topic)`, maps errors via `MapChannelError` on failure, and on success broadcasts the update with `_chatService.BroadcastChannelUpdatedAsync(result.Channel!, channel.ToLowerInvariant().Trim())` before returning `Ok(result.Channel)`.
+
+## Remarks
+This endpoint centralizes authentication checks and cross-service coordination for topic changes. It ensures only authenticated users can modify a channel topic and that updates are propagated to connected clients via the `_chatService.BroadcastChannelUpdatedAsync` call.
+
+---
+
+## ChannelsController (constructor)
 > **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
 > **Kind:** constructor
 
@@ -77,377 +386,13 @@ public ChannelsController(
 | `logger` | `ILogger<ChannelsController>` | — |
 
 
-The ChannelsController constructor wires up the controller by receiving its dependencies through dependency injection and assigning them to private fields. This pattern allows the controller to orchestrate channel-related functionality by delegating to dedicated services such as IChannelService, EchoHubDbContext, FileStorageService, ImageToAsciiService, IHttpClientFactory, IChatService, IMessageEncryptionService, UploadLimits, and `ILogger<ChannelsController>`. The framework supplies these collaborators at creation time, enabling a testable, loosely coupled design where concerns are separated and easily mockable for unit tests. This constructor is invoked by the ASP.NET Core runtime during request handling, not by consumer code directly.
+The `ChannelsController` constructor wires the controller to its collaborators by accepting all required services via dependency injection and storing them for use in action methods. It is invoked by the ASP.NET Core DI container when handling channel-related requests, meaning developers should avoid manual instantiation and instead provide mocks or fakes for its dependencies in tests.
 
 ## Remarks
-The constructor centralizes the wiring of the controller's collaborators, which supports clean separation of concerns and testability. It enables the ChannelsController to delegate specialized tasks (e.g., data access, file handling, image processing, HTTP calls, chat interactions, and encryption) to dedicated services rather than embedding logic directly.
-
-The lack of explicit null validation means misconfigured dependency injection (missing service registrations) could surface as NullReferenceExceptions later when members are used. Relying on the DI container to validate registrations is common, but tests should provide explicit mocks to ensure predictable behavior.
+By composing [`IChannelService`](../../EchoHub.Core/Contracts/IChannelService.cs.md), [`EchoHubDbContext`](../Data/EchoHubDbContext.cs.md), [`FileStorageService`](../Services/FileStorageService.cs.md), [`ImageToAsciiService`](../../EchoHub.Core/Services/ImageToAsciiService.cs.md), `IHttpClientFactory`, [`IChatService`](../../EchoHub.Core/Contracts/IChatService.cs.md), [`IMessageEncryptionService`](../../EchoHub.Core/Contracts/IMessageEncryptionService.cs.md), [`UploadLimits`](../Config/UploadLimits.cs.md), and `ILogger<ChannelsController>` in a single place, the constructor positions `ChannelsController` as a coordinator that delegates work to specialized services. This composition reflects a separation of concerns across persistence, media processing, HTTP communication, chat orchestration, encryption, and logging.
 
 ## Notes
-- The constructor does not perform null checks; ensure all dependencies are registered in the DI container to avoid runtime null reference issues.
-- When writing unit tests for ChannelsController, provide concrete or mock implementations for all injected services to exercise behavior reliably.
-
----
-
-### CreateChannel
-> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
-> **Kind:** method
-
-```csharp
-[HttpPost]
-    public async Task<IActionResult> CreateChannel([FromBody] CreateChannelRequest request)
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `request` | [`CreateChannelRequest`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) | — |
-
-**Returns:** `[HttpPost]
-    public async `Task<IActionResult>``
-
-
-Source Code
-The CreateChannel action handles the HTTP POST to create a new channel for the authenticated user. It first verifies authentication by pulling the user ID from the current user’s claims; if the claim is missing, it responds with Unauthorized and an ErrorResponse indicating that authentication is required. It then delegates the actual creation to the channel service via CreateChannelAsync, passing the caller’s GUID along with the channel properties supplied in the request (Name, Topic, IsPublic, Password, EncryptionSalt, WrappedRoomKey). If the service reports a failure, the action returns a mapped error via MapChannelError. If a channel is successfully created and it is public, it broadcasts the updated channel through the chat service to notify connected clients. Finally, it returns a 201 Created response with the location of the new channel and the Channel data in the response body.
-
-Dependencies
-- IActionResult
-- ErrorResponse
-- User
-- ClaimTypes
-- Guid
-- Channel
-
-Dependency APIs (verified signatures)
-- record [`ErrorResponse`](../../EchoHub.Core/DTOs/CommonDtos.cs.md) (`src/EchoHub.Core/DTOs/CommonDtos.cs`)
-- property [`User`](../../EchoHub.Core/Models/User.cs.md) (`src/EchoHub.Core/Models/RefreshToken.cs`)
-- class [`Channel`](../../EchoHub.Core/Models/Channel.cs.md) (`src/EchoHub.Core/Models/Channel.cs`)
-  - `Guid Id`
-  - `string Name`
-  - `string? Topic`
-  - `bool IsPublic`
-  - `bool IsSystem`
-  - `string? PasswordHash`
-  - `string? EncryptionSalt`
-  - `string? WrappedRoomKey`
-  - `DateTimeOffset CreatedAt`
-  - `Guid CreatedByUserId`
-  - `List<Message> Messages`
-
-Symbol To Document
-- Name: CreateChannel
-- Kind: method
-- File: src/EchoHub.Server/Controllers/ChannelsController.cs
-- Language: csharp
-- ID: 373f63c8-2a87-460c-9821-46640d93a9fc
-
-## Remarks
-Creates a channel on behalf of the authenticated user and encapsulates the orchestration between the domain service and the HTTP response surface. It relies on _channelService to enforce business rules and persistence, and on _chatService to refresh client views when appropriate. This action adheres to RESTful semantics by returning 401 for unauthenticated requests, propagating domain errors via MapChannelError, broadcasting updates for public channels, and signaling successful creation with 201 and the new channel resource.
-
-## Notes
-- Be aware that Guid.Parse is used on the user ID claim. If the claim value is not a valid GUID, this will throw. Consider validating with Guid.TryParse at the call site if you anticipate non-GUID claim values.
-- The publication check (IsPublic) gates whether a channel update is broadcast to clients; non-public channels skip broadcasting to peers.
-
-
----
-
-### DeleteChannel
-> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
-> **Kind:** method
-
-```csharp
-[HttpDelete("{channel}")]
-    public async Task<IActionResult> DeleteChannel(string channel)
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `"{channel}"` | — | — |
-
-
-Deletes a channel for the authenticated user by handling an HTTP DELETE request to the channel route. It reads the user's ID from the authentication claims, delegates the deletion to the channel service using that ID and the channel name, and, on success, broadcasts the deletion to the chat service before returning HTTP 204 No Content. If authentication is missing, the method responds with 401 Unauthorized and an ErrorResponse.
-
-## Remarks
-This endpoint acts as a thin HTTP boundary that orchestrates authentication, domain deletion, and cross-service notification. It centralizes HTTP-level error handling (Unauthorized, error mapping) while delegating business rules to the channel service and the side-effect of notifying the chat service. The normalization of the channel name for the broadcast (lowercase and trimmed) helps ensure consumers react to a consistent channel identifier.
-
-## Notes
-- Authentication is required; requests without a valid NameIdentifier claim result in 401 Unauthorized with an ErrorResponse.
-- The broadcast step uses channel.ToLowerInvariant().Trim(); differences between input casing and broadcast casing could affect downstream consumers.
-- If the channel is deleted successfully but the broadcast fails, the method will surface a failure (no explicit retry here); consider compensating actions if eventual consistency is important.
-
----
-
-### GetChannelCrypto
-> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
-> **Kind:** method
-
-```csharp
-[HttpGet("{channel}/crypto")]
-    public async Task<IActionResult> GetChannelCrypto(string channel)
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `"{channel}/crypto"` | — | — |
-
-
-GetChannelCrypto is an HTTP GET action on ChannelsController that exposes essential cryptographic metadata for a channel. It indicates whether the channel is end-to-end encrypted and provides the PBKDF2 salt clients need to derive their join credential. The endpoint deliberately does not return the wrapped room key; that secret is only handed out after a successful join. The action delegates retrieval to the channel service and translates the result into standard HTTP responses: 200 OK with the crypto data when the channel exists, or 404 Not Found with an ErrorResponse if the channel does not exist.
-
-## Remarks
-By wrapping the service call behind a minimal HTTP surface, this symbol centralizes how cryptographic metadata is surfaced while keeping the actual cryptographic material protected. It demonstrates a clear separation of concerns: business logic lives in the ChannelService, while the controller handles HTTP semantics and error translation. The exposed salt enables client-side credential derivation, while the wrapped key remains strictly withheld until the proper join flow.
-
-## Notes
-- The action does not perform explicit authorization; ensure the surrounding middleware or route configuration enforces the intended access policy.
-- It returns 404 with a generic ErrorResponse when the channel does not exist; clients should handle this scenario as an absence of channel crypto metadata.
-- Do not rely on this endpoint to retrieve any sensitive material beyond allowed cryptographic metadata; the wrapped key must never be exposed through this action.
-
----
-
-### MapChannelError
-> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
-> **Kind:** method
-
-```csharp
-private IActionResult MapChannelError(ChannelOperationResult result) => result.Error switch
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `result` | [`ChannelOperationResult`](../../EchoHub.Core/DTOs/CommonDtos.cs.md) | — |
-
-**Returns:** `IActionResult`
-
-
-Converts a ChannelOperationResult into an API response by pattern-matching on result.Error and returning an appropriate HTTP result that wraps an ErrorResponse. It centralizes the translation from channel-domain errors to standard HTTP status codes (400, 403, 404, 409) so the rest of the controller does not duplicate error handling logic.
-
-## Remarks
-This encapsulates the error-handling policy for channel operations, ensuring clients see consistent HTTP semantics across all channel actions. It decouples domain error codes from HTTP choices, so updates to status codes or payload shapes can be made in one place rather than at every call site.
-
-## Notes
-- The branches pass result.ErrorMessage! into ErrorResponse; if ErrorMessage can be null for any mapped error, this will throw at runtime.
-- New ChannelError values require extending this switch to preserve the API's error contract.
-
-
----
-
-### ParseKind
-> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
-> **Kind:** method
-
-```csharp
-private static AttachmentKind ParseKind(string? kind) => kind?.ToLowerInvariant() switch
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `kind` | `string?` | — |
-
-**Returns:** [`AttachmentKind`](../../EchoHub.Core/Models/AttachmentKind.cs.md)
-
-
-This private helper translates a nullable string that labels an attachment into a concrete AttachmentKind enum. It uses a case-insensitive comparison (ToLowerInvariant) to recognize 'image' and 'audio' and map them to AttachmentKind.Image and AttachmentKind.Audio, respectively; any other label (including null) falls back to AttachmentKind.File. Callers rely on this mapping when normalizing incoming attachment metadata before further processing in the channel/server pipeline.
-
-## Remarks
-Centralizes the normalization logic so all attachment-kind labels are interpreted consistently across the server. By funneling strings through this method, the rest of the attachment processing can operate on a well-defined enum, reducing branching and potential mismatches.
-
-## Notes
-- Unknown labels are treated as File by design; if a new kind is introduced, update this method or extend the enum.
-- Because the method is private, it's exercised via the class's public APIs; ensure tests cover scenarios that exercise this mapping through those entry points.
-
----
-
-## GetChannelMeta
-> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
-> **Kind:** method
-
-```csharp
-[HttpGet("{channel}/meta")]
-    public async Task<IActionResult> GetChannelMeta(string channel)
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `"{channel}/meta"` | — | — |
-
-
-Retrieves the channel metadata for a given channel identifier via HTTP GET. It returns key overview details such as message count, the number of unique posters, an estimated size, the creation date, and the room id. These metadata are tracked by the server and are available even for encrypted channels, where the server cannot access the actual messages. If the channel does not exist, it responds with 404 and an ErrorResponse; otherwise it returns the metadata payload with a 200 OK.
-
-## Remarks
-This endpoint provides a read-only surface for obtaining channel overview information without exposing message contents. It enables clients to populate channel lists or dashboards while preserving message privacy, including for encrypted channels. By delegating the data retrieval to _channelService.GetChannelMetaAsync, the API keeps data access concerns centralized and allows the underlying storage/collection strategy to evolve without changing the surface contract.
-
-## Notes
-- The caller must handle a 404 NotFound with an ErrorResponse when the channel is missing. The error payload documents the failure reason.
-- The endpoint exposes only metadata about a channel; actual messages remain inaccessible, preserving privacy for encrypted channels.
-- The operation is asynchronous; consider service performance characteristics or potential caching strategies if metadata is requested frequently.
-
----
-
-## GetChannels
-> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
-> **Kind:** method
-
-```csharp
-[HttpGet]
-    public async Task<IActionResult> GetChannels([FromQuery] int offset = 0, [FromQuery] int limit = 50)
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `offset` | `int` | `0` |
-| `limit` | `int` | `50` |
-
-**Returns:** `[HttpGet]
-    public async `Task<IActionResult>``
-
-
-Gets a paged list of channels for the authenticated user. It enforces authentication by checking the user claims, reads the user's GUID from the claims, normalizes paging parameters (offset non-negative; limit clamped to 1–100), and delegates to the channel service to retrieve the channels, returning the result in an HTTP 200 response.
-
-## Remarks
-
-This action is intentionally thin: it performs authentication, input normalization, and orchestration between the API layer and the domain service. Centralizing paging bounds and user identification here provides consistent behavior and error handling for per-user channel retrieval across clients.
-
-## Notes
-
-- Be aware that if the NameIdentifier claim is present but is not a valid GUID, Guid.Parse will throw. Prefer Guid.TryParse or ensure identity claims are well-formed.
-- The limit is clamped to the range 1–100; requests outside that range are adjusted to the nearest bound.
-
----
-
-## RekeyChannel
-> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
-> **Kind:** method
-
-```csharp
-[HttpPost("{channel}/rekey")]
-    public async Task<IActionResult> RekeyChannel(string channel, [FromBody] RekeyChannelRequest request)
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `"{channel}/rekey"` | — | — |
-
-
-Changes an encrypted channel's passphrase by re-wrapping its room key. The caller proves knowledge of the existing passphrase via the old authentication key, and this operation preserves history by not changing the room content key.
-
-## Remarks
-RekeyChannel acts as a thin HTTP boundary that enforces authentication and delegates the cryptographic work to the channel service. By re-wrapping the existing room key instead of re-encrypting the historical content, it minimizes disruption while changing access controls. The controller handles authentication and error translation, while RekeyChannelAsync encapsulates the cryptographic policy in the domain layer.
-
-## Notes
-- Authentication is mandatory; if the user is not authenticated, the endpoint returns 401 Unauthorized with ErrorResponse("Authentication required.").
-- The code uses Guid.Parse on the NameIdentifier claim; if the claim is present but not a valid GUID, a runtime exception may be thrown.
-
----
-
-## SendMessageWithAttachments
-> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
-> **Kind:** method
-
-```csharp
-[HttpPost("{channel}/messages")]
-    [EnableRateLimiting("upload")]
-    public async Task<IActionResult> SendMessageWithAttachments(string channel, [FromQuery] string? size = null)
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `"{channel}/messages"` | — | — |
-
-
-Use SendMessageWithAttachments when you need to post a chat message to a channel that includes optional text and one or more attachments, while enforcing per-channel upload limits and channel permissions.
-
-It supports both cleartext and end-to-end encrypted channels: in cleartext channels the server inspects file kinds to render ASCII previews and decrypts the content, while in encrypted channels the client uploads ciphertext with per-file kind and a pre-rendered encrypted preview and the server never inspects the ciphertext.
-
-## Remarks
-
-This endpoint centralizes the server-side orchestration for uploading messages with attachments, coordinating authentication via user claims, channel validation and mutability checks, multipart form handling, per-attachment processing, and interaction with the encryption and upload-limit subsystems. It relies on collaborators such as the channel service, the database context, and the encryption helper to enforce read-only channels, mute state, and maximum message length in a consistent manner. By encapsulating these concerns, it ensures secure, policy-compliant message delivery and prevents plaintext exposure of encrypted payloads. In short, it is the single integration point for sending rich messages with attachments in EchoHub.Server.
-
-## Notes
-
-- The request size is governed at runtime by UploadLimits; configure this to control maximum allowed payloads.
-- For encrypted channels, ensure that per-file previews are provided in the ciphertext workflow and that file order remains aligned with the declared previews to avoid misrendering on the client.
-
----
-
-## SendUrl
-> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
-> **Kind:** method
-
-```csharp
-[HttpPost("{channel}/send-url")]
-    [EnableRateLimiting("upload")]
-    public async Task<IActionResult> SendUrl(string channel, [FromBody] SendUrlRequest request, [FromQuery] string? size = null)
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `"{channel}/send-url"` | — | — |
-
-
-SendUrl is an HTTP POST endpoint on ChannelsController that accepts a channel name, a request body containing an image URL, and an optional size parameter. It authenticates the caller, validates the channel, enforces channel policies (rejects system/read-only and end-to-end encrypted channels), validates the URL, downloads the image server-side, enforces size limits, validates the image format, saves the file, and generates an ASCII preview for display in the channel.
-
-## Remarks
-
-Centralizes remote image ingestion with strict, server-side validation to prevent improper content, inconsistent client behavior, or abuse. The endpoint relies on the application's security and storage abstractions: it checks user claims, ensures channel permissions, uses FileStorage to persist the file, and uses ImageToAsciiService to produce a lightweight ASCII representation for previews. The EnableRateLimiting("upload") attribute signals this is a potentially resource-intensive operation and should be throttled to guard against abuse.
-
-## Notes
-
-- Requires authentication; missing user claims yield Unauthorized responses with a helpful error.
-- Validates channel state: if the channel does not exist, is system (read-only), or is encrypted, it responds with NotFound/403/400 and an ErrorResponse explaining the reason.
-- Validates the supplied URL and only accepts http/https URLs; invalid URLs or unsupported schemes produce a BadRequest with a descriptive message.
-- Downloads the image server-side using an HttpClient named "ImageDownload". It handles timeouts and HTTP errors by returning BadRequest with a clear message.
-- Enforces file size limits via _uploadLimits.MaxImageSizeBytes before and after downloading the content.
-- Validates that the downloaded content is a real image (JPEG, PNG, GIF, WebP) before persisting.
-- Determines a filename from the URL or Content-Type; if missing, it falls back to a generated name with an appropriate extension.
-- Persists the file and creates an ASCII representation (via ImageToAsciiService) for downstream use.
-
-
----
-
-## UpdateTopic
-> **File:** `src/EchoHub.Server/Controllers/ChannelsController.cs`  
-> **Kind:** method
-
-```csharp
-[HttpPut("{channel}/topic")]
-    public async Task<IActionResult> UpdateTopic(string channel, [FromBody] UpdateTopicRequest request)
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `"{channel}/topic"` | — | — |
-
-
-Updates a channel's topic for the currently authenticated user via HTTP PUT. It verifies authentication, calls ChannelService.UpdateTopicAsync with the user's ID, the channel, and the new topic, and on success broadcasts the channel update before returning the updated channel; on failure or missing authentication, it yields an HTTP error.
-
-## Remarks
-
-Acts as the HTTP API boundary for updating a channel topic, delegating the actual update to the domain service and handling authentication. It centralizes error translation via MapChannelError and ensures clients are informed of changes in real time by broadcasting after a successful update.
-
-## Notes
-
-- Be aware that Guid.Parse could throw if the user claim is not a valid GUID; consider Guid.TryParse to avoid runtime exceptions.
-- The broadcast channel is normalized by lowercasing and trimming the channel name; this affects how subscribers perceive channel identifiers in updates.
+- Do not instantiate `ChannelsController` yourself; rely on the DI container so tests can provide mocks or fakes.
+- A constructor with many dependencies can indicate the controller has multiple responsibilities; consider extracting a higher-level service if you find yourself needing to mock many collaborators in tests.
 
 ---

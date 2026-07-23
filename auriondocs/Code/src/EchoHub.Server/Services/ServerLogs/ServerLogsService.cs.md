@@ -7,18 +7,20 @@
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#faf7ef','primaryColor':'#f0e2c2','primaryTextColor':'#1f2840','primaryBorderColor':'#8a7548','secondaryColor':'#d9efec','secondaryBorderColor':'#1d8a80','secondaryTextColor':'#1f2840','tertiaryColor':'#f2ebd8','tertiaryBorderColor':'#8a7548','tertiaryTextColor':'#1f2840','lineColor':'#1d8a80','titleColor':'#1f2840','fontSize':'14px','edgeLabelBackground':'#faf7ef','clusterBkg':'#f2ebd8','clusterBorder':'#8a7548','actorBkg':'#f0e2c2','actorBorder':'#8a7548','actorTextColor':'#1f2840','actorLineColor':'#8a7548','signalColor':'#1d8a80','signalTextColor':'#1f2840','activationBkgColor':'#d9efec','activationBorderColor':'#1d8a80','noteBkgColor':'#f2ebd8','noteBorderColor':'#8a7548','noteTextColor':'#1f2840','labelBoxBkgColor':'#f0e2c2','labelBoxBorderColor':'#8a7548','labelTextColor':'#1f2840','transitionColor':'#1d8a80','transitionLabelColor':'#1f2840','stateLabelColor':'#1f2840','altBackground':'#f2ebd8'}}}%%
 flowchart TB
-A[ServerLogsService ReadBacklog]
-A --> B[Resolve ServerLogsOptions LogDirectory]
-B --> Dir{Directory exists}
-Dir -->|Yes| C[Find newest file matching LogFilePattern]
-Dir -->|No| E[Return empty list]
-C --> F{Newest file found}
-F -->|No| E
-F -->|Yes| G[Open newest file with FileShare ReadWrite Delete then seek to tail when stream longer than TailReadBytes]
-G --> H[Read to end and split by newline into lines]
-H --> I[Group lines into LogBacklogEntry with skipLeadingContinuations if seeked and limit from ServerLogsOptions BacklogLines]
-I --> J[Return list of LogBacklogEntry]
-A -.-> E
+ServerLogsService["Start ReadBacklog()"]
+ServerLogsOptions["Load ServerLogsOptions (LogDirectory, LogFilePattern, BacklogLines)"]
+LogBacklogEntry["Return IReadOnlyList of LogBacklogEntry (backlog or empty)"]
+
+ServerLogsService -->|"Resolve full path of LogDirectory"| ServerLogsOptions
+ServerLogsOptions -->|"If directory does not exist -> return empty list"| LogBacklogEntry
+ServerLogsOptions -->|"Find newest file matching LogFilePattern (order by LastWriteTimeUtc)"| ServerLogsService
+ServerLogsService -->|"If no newest file -> return empty list"| LogBacklogEntry
+ServerLogsService -->|"Open FileStream(newest.FullName, FileMode.Open, FileAccess.Read, FileShare ReadWrite and Delete)"| ServerLogsOptions
+ServerLogsOptions -->|"Determine if stream.Length > TailReadBytes (seeked)"| ServerLogsService
+ServerLogsService -->|"If seeked -> stream.Seek(-TailReadBytes, SeekOrigin.End)"| ServerLogsOptions
+ServerLogsOptions -->|"Read remainder with StreamReader and split into lines"| ServerLogsService
+ServerLogsService -->|"Call GroupIntoEntries(lines, skipLeadingContinuations: seeked, BacklogLines)"| LogBacklogEntry
+ServerLogsService -->|"On any exception -> return empty list"| LogBacklogEntry
 ```
 
 ## Contents
@@ -37,37 +39,16 @@ public sealed class ServerLogsService
 ```
 
 
-Provides the logic needed to present a read-only "live logs" room: it exposes the room identity, the role-based gate for who may join, and a best-effort reader that returns the most recent log entries from the active rolling Serilog file. Use this service when you need to show a live, read-only backlog of server log entries (rather than storing log lines as chat messages).
+Provides utilities for exposing a read-only, live server log room: it knows the room identity and access gate and can read the tail of the current rolling log file into `LogBacklogEntry` items for display. Use `ServerLogsService` when you need to determine whether a channel is the configured logs room, check whether a role may view logs, or retrieve a best-effort backlog snapshot from the most recent log file (rather than relying on persisted messages).
 
 ## Remarks
-This class centralizes the concerns required for a live log room: determining the configured room name and sender, enforcing the minimum role required to view logs, and extracting a focused backlog from the current log file on disk. It treats the file sink as the single source of truth (Serilog keeps the file open and rolls it), reads only the tail of the newest file up to a bounded byte size, and groups raw lines into logical entries by detecting timestamp-prefixed lines. ReadBacklog is resilient: any I/O or parsing problem yields an empty backlog rather than propagating an error.
-
-## Example
-```csharp
-// 'options' is an existing ServerLogsOptions instance configured for the server.
-var service = new ServerLogsService(options);
-
-// Check whether a user role may view/join the live logs room
-if (service.CanView(userRole))
-{
-    // Read the most recent backlog entries (best-effort; may be empty on error)
-    var backlog = service.ReadBacklog();
-    foreach (var entry in backlog)
-    {
-        // LogBacklogEntry exposes a timestamp and the concatenated content
-        Console.WriteLine($"{entry.Timestamp:O} {entry.Content}");
-    }
-}
-
-// Room identity helpers
-var isLogs = service.IsLogsChannel("logs");
-var sender = ServerLogsService.SenderName; // "server"
-```
+`ServerLogsService` centralizes the concerns around presenting live server logs without persisting log lines as messages. It uses the configured [`ServerLogsOptions`](../../Config/ServerLogsOptions.cs.md) to decide whether logging is enabled, to match a channel name (`NormalizedRoomName`) in `IsLogsChannel`, and to gate access with `CanView` based on `MinRole`. For backlog retrieval, `ReadBacklog` opens the newest file matching `LogFilePattern` in `LogDirectory` with `FileShare.ReadWrite | FileShare.Delete` (to cooperate with a rolling sink like Serilog), reads up to `TailReadBytes` from the file end, and converts raw lines into `LogBacklogEntry` instances via `GroupIntoEntries`. The `GroupIntoEntries` method is public to allow unit testing of the timestamp-based grouping logic.
 
 ## Notes
-- ReadBacklog swallows all exceptions and returns an empty list on any I/O problem; callers must tolerate an empty backlog as a sign of transient failure or missing files.
-- To avoid reading an arbitrarily large file, the reader seeks to the last TailReadBytes bytes; that can start the scan mid-entry, so the grouping logic optionally drops leading continuation lines when the tail was seeked.
-- The FileStream is opened with FileShare.ReadWrite | FileShare.Delete because the Serilog file sink typically keeps the file open for writing and may roll it; the service reads concurrently without taking exclusive locks.
+- `IsLogsChannel` calls `Trim()` on the provided `channelName`; passing `null` will throw a `NullReferenceException` — callers should ensure they pass a non-null string or guard accordingly.
+- `ReadBacklog` is intentionally best-effort: it catches all exceptions and returns an empty list on any I/O or parsing failure. This prevents join failures but can hide filesystem problems; monitor logs or surface errors elsewhere if you need diagnostics.
+- The grouping logic depends on lines that start with the timestamp format defined by `TimestampFormat`. If your log sink uses a different timestamp template, `GroupIntoEntries` will treat those timestamped lines as continuations and entries will be merged incorrectly.
+- When the newest file is larger than `TailReadBytes`, `ReadBacklog` seeks into the file and sets `skipLeadingContinuations` so a partial entry at the seek boundary is dropped. This is deliberate to avoid presenting truncated entries but means very long single entries near the file end can be partially excluded.
 
 ---
 
@@ -87,13 +68,12 @@ public record LogBacklogEntry(DateTimeOffset Timestamp, string Content)
 | `Content` | `string` | — |
 
 
-LogBacklogEntry is a tiny, immutable data container that models a single backlog item read from the server log file. It captures the timestamp of the original log line via Timestamp and the associated log text in Content, which may include the initial line plus any continuation lines (such as exception stack traces) that followed it. Use this type when you need to treat a complete backlog segment as a unit, instead of handling raw lines individually; it’s especially helpful for grouping, displaying, or analyzing backlog entries after parsing.
+LogBacklogEntry is an immutable value object that captures a backlog entry read from the log file. It consists of a timestamp (`Timestamp`) and the associated content (`Content`), representing the first line of the backlog entry plus any continuation lines (such as exception stack traces) that followed it.
 
 ## Remarks
-Because LogBacklogEntry is a record, it benefits from value-based equality and concise deconstruction, making it easy to compare backlog entries or to extract the fields in pattern-matching. The Content field holds a multi-line string that includes the initial line and any continuation text that followed it; consumers should be aware that the entry may span multiple lines. This type is commonly produced by the server log reader (e.g., ServerLogsService) when assembling backlog entries from the log file, serving as a stable data carrier between parsing and presentation layers.
+Because this is a `record`, it provides value-based equality and deconstruction, which simplifies comparing backlog entries and passing them through the processing pipeline without mutation. It acts as a lightweight data carrier that decouples raw log parsing from higher-level log aggregation or display concerns, allowing the server logs service to operate on coherent chunks of log data.
 
 ## Notes
-- When collecting backlog lines, ensure that each entry groups the initial timestamped line with its subsequent continuation lines exactly once; splitting or merging entries incorrectly can corrupt the log's temporal grouping.
-
+- The `Content` may be large and contain newline characters representing multi-line stack traces; treat it as an opaque blob when storing or transmitting.
 
 ---

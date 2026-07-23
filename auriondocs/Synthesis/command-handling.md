@@ -1,46 +1,53 @@
-# Command handling
+# Slash command handling
 
-> Slash-command parsing and dispatching command actions from UI and orchestrator.
+> Parsing and executing user commands entered as slash commands in chat.
 
-*Figure: How Command handling works.*
+*Figure: How Slash command handling works.*
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#faf7ef','primaryColor':'#f0e2c2','primaryTextColor':'#1f2840','primaryBorderColor':'#8a7548','secondaryColor':'#d9efec','secondaryBorderColor':'#1d8a80','secondaryTextColor':'#1f2840','tertiaryColor':'#f2ebd8','tertiaryBorderColor':'#8a7548','tertiaryTextColor':'#1f2840','lineColor':'#1d8a80','titleColor':'#1f2840','fontSize':'14px','edgeLabelBackground':'#faf7ef','clusterBkg':'#f2ebd8','clusterBorder':'#8a7548','actorBkg':'#f0e2c2','actorBorder':'#8a7548','actorTextColor':'#1f2840','actorLineColor':'#8a7548','signalColor':'#1d8a80','signalTextColor':'#1f2840','activationBkgColor':'#d9efec','activationBorderColor':'#1d8a80','noteBkgColor':'#f2ebd8','noteBorderColor':'#8a7548','noteTextColor':'#1f2840','labelBoxBkgColor':'#f0e2c2','labelBoxBorderColor':'#8a7548','labelTextColor':'#1f2840','transitionColor':'#1d8a80','transitionLabelColor':'#1f2840','stateLabelColor':'#1f2840','altBackground':'#f2ebd8'}}}%%
 sequenceDiagram
 participant Client
-participant ConnectionManager_cs as ConnectionManager.cs
-participant AppOrchestrator_cs as AppOrchestrator.cs
-participant CommandHandler_cs as CommandHandler.cs
-Client->>ConnectionManager_cs: UI sends slash command
-ConnectionManager_cs->>AppOrchestrator_cs: forward command to orchestrator
-AppOrchestrator_cs->>CommandHandler_cs: invoke command parsing and dispatch
-CommandHandler_cs-->>AppOrchestrator_cs: return parsed action/result
-AppOrchestrator_cs->>ConnectionManager_cs: dispatch action / send response
-ConnectionManager_cs-->>Client: deliver response to UI
+participant ConnectionManager
+participant AppOrchestrator
+participant CommandHandler
+
+Client->>ConnectionManager: Send slash command
+activate ConnectionManager
+ConnectionManager->>AppOrchestrator: OnSlashCommandReceived
+activate AppOrchestrator
+AppOrchestrator->>CommandHandler: ParseAndExecute(command)
+activate CommandHandler
+CommandHandler-->>AppOrchestrator: ExecutionResult
+deactivate CommandHandler
+AppOrchestrator-->>ConnectionManager: Response(result)
+deactivate AppOrchestrator
+ConnectionManager-->>Client: Send response
+deactivate ConnectionManager
 ```
 
-This guide explains how user-entered slash commands move from text input into application behavior and network actions. It describes the parsing and event surface (the command-to-event bridge), the central orchestrator that implements command handlers and coordinates UI-side concerns, and the connection manager that owns the live SignalR connection and performs the network work the orchestrator requests.
+This guide explains how slash-style chat input is parsed and executed across three collaborating components: a parser/dispatcher, an application orchestrator that implements command behavior and UI coordination, and a connection manager that exposes server and SignalR events. Read this to understand which file performs parsing, which one implements the command actions and UI glue, and which one owns the network and lifecycle concerns so you can correctly subscribe handlers and marshal events to the UI thread.
 
 ## CommandHandler.cs
-Parses and executes chat commands; determines if input is a command.
+Parses and executes slash commands from the chat input.
 
-The [CommandHandler](../Code/src/EchoHub.Client/Commands/CommandHandler.cs.md) class is the input-to-event bridge: it recognizes whether a text input is a slash command (via IsCommand) and runs a suite of HandleXxx parsing routines (for example HandleSetStatus, HandleSendAction, HandleCreateInvite, HandleExportData and many others listed in the source). It does not perform side effects itself; instead it exposes one event per supported command (OnSetStatus, OnSendAction, OnCreateInvite, OnExportData, etc.) and raises asynchronous events after parsing. The class also contains parsing helpers and semantics notes (status handling, StripQuotes, IsValidHex, ParsePathAndSizeFlag) so subscribers can depend on a consistent interpretation of user input. According to the topic relationships, this component is consumed by the [AppOrchestrator](../Code/src/EchoHub.Client/AppOrchestrator.cs.md), which subscribes to those events to implement behavior.
+The [CommandHandler](../Code/src/EchoHub.Client/Commands/CommandHandler.cs.md) class is the parser and event-based dispatcher for any string that looks like a slash command. Its primary entry is HandleAsync which analyses the incoming text, maps it to one of many command handlers (the file lists HandleAvatar, HandleBan, HandleSend, HandleSetStatus, HandleJoin, etc.), raises the corresponding asynchronous On... events (consumer-provided Func<..., Task> handlers), and returns a CommandResult describing success, usage, or error. CommandHandler also includes parsing helpers such as IsCommand, IsValidHex, StripQuotes and ParsePathAndSizeFlag and exposes small helpers like StatusUsage and HandleDownloadPath so callers can rely on consistent argument parsing. Relationship: App code (the [AppOrchestrator](../Code/src/EchoHub.Client/AppOrchestrator.cs.md)) consumes CommandHandler by subscribing to its events so that parsed commands are executed by the orchestrator's handlers rather than by the parser itself.
 
 ## AppOrchestrator.cs
-Central coordinator handling command-related actions and user commands across the app.
+Wires command events to UI and coordinates command handling with the app lifecycle.
 
-The [AppOrchestrator](../Code/src/EchoHub.Client/AppOrchestrator.cs.md) wires the command parsing surface into application behavior: it subscribes to the events emitted by the [CommandHandler](../Code/src/EchoHub.Client/Commands/CommandHandler.cs.md) and implements the concrete handlers named in the source (a large set of HandleCmd* methods such as HandleCmdSetStatus, HandleCmdSendFile, HandleCmdJoinChannel, HandleCmdCreateInvite, HandleCmdExportData, HandleCmdKickUser, HandleCmdNukeChannel, etc.). It also owns UI-side responsibilities like BuildOutgoingAttachmentAsync, EnsureRoomUnlockedForSendAsync, CleanupPastedTempFiles, pending reply management, and resource cleanup (Dispose). Per its relationships the orchestrator depends on both [CommandHandler](../Code/src/EchoHub.Client/Commands/CommandHandler.cs.md) for parsing and [ConnectionManager](../Code/src/EchoHub.Client/Services/ConnectionManager.cs.md) for performing network operations; the source shows it translating parsed commands into calls and requests that drive the connection layer. The file also documents many small, focused flow steps (ApplyAsciiSize, HandleChannelSelected, HandleEditProfile, etc.) that adapt command intent into concrete application actions.
+The [AppOrchestrator](../Code/src/EchoHub.Client/AppOrchestrator.cs.md) implements the concrete behavior for the commands exposed by the parser: it defines a large set of HandleCmd* methods (for example HandleCmdSetStatus, HandleCmdSendFile, HandleCmdJoinChannel, HandleCmdKickUser, HandleCmdCreateInvite, HandleCmdExportData and many more) plus UI-oriented helpers (MainWindow, BuildOutgoingAttachmentAsync, DownloadAttachmentAsync, ApplyAsciiSize, AsciiSizeLabel, CleanupPastedTempFiles). In practice the orchestrator subscribes the CommandHandler events to these HandleCmd* methods so that when the parser raises an On... event the orchestrator performs the actual action, updates UI state, manages attachments and download paths, and enforces room locking or permission checks (for example EnsureRoomUnlockedForSendAsync). Relationship: AppOrchestrator depends on the parser ([CommandHandler](../Code/src/EchoHub.Client/Commands/CommandHandler.cs.md)) to receive parsed commands and on the connection layer to execute server-facing actions; it wires command events into UI flows and uses ConnectionManager to carry out network operations.
 
 ## ConnectionManager.cs
 `ConnectionManager` collaborates directly with `AppOrchestrator` and other members of this topic (4 dependency links).
 
-The [ConnectionManager](../Code/src/EchoHub.Client/Services/ConnectionManager.cs.md) owns the full lifecycle of a live chat connection: authentication and token handling, attempting to fetch and apply end-to-end encryption keys, instantiating and wiring the EchoHub (SignalR) connection, tracking which channels are joined, and forwarding SignalR callbacks as simple .NET events the UI can subscribe to. It exposes ConnectAsync semantics (reporting progress via an onStatus callback and throwing on authentication failure) and implements IAsyncDisposable so callers can call DisposeAsync to tear down the hub and underlying ApiClient. The file also defines the [ConnectResult](../Code/src/EchoHub.Client/Services/ConnectionManager.cs.md) record (Login, Channels, Histories) that packages the login response, joined channels list, and message histories returned by ConnectAsync. Notes in the source call out important behaviors: failures to fetch encryption keys are non-fatal, forwarded events may arrive on background threads, and callers (principally the [AppOrchestrator](../Code/src/EchoHub.Client/AppOrchestrator.cs.md)) must handle marshal-to-UI-thread concerns.
+The [ConnectionManager](../Code/src/EchoHub.Client/Services/ConnectionManager.cs.md) is the single place that manages the server connection lifecycle: it performs authentication (via the API client referenced in the docs), attempts to fetch and apply end-to-end encryption keys, constructs and registers handlers on the hub connection, and tracks channel membership state. It exposes high-level events forwarded from the underlying hub (MessageReceived, UserJoined, ChannelUpdated, ConnectionStatusChanged and similar) so callers like the orchestrator can subscribe without binding SignalR handlers directly. Important operational notes surfaced by the doc: ConnectAsync reports progress through an onStatus callback and will throw on authentication failure, its event callbacks may run on SignalR threads so UI code must marshal to the UI thread, and the manager implements IAsyncDisposable so callers should await disposal to release connection and API resources. Relationship: AppOrchestrator uses ConnectionManager to perform server actions and to observe incoming runtime events; ConnectionManager is therefore the network-facing collaborator the orchestrator relies on.
 
 How the pieces fit
 
-User input flows into [CommandHandler](../Code/src/EchoHub.Client/Commands/CommandHandler.cs.md), which parses text and emits a focused event per command. [AppOrchestrator](../Code/src/EchoHub.Client/AppOrchestrator.cs.md) subscribes to those events and implements the HandleCmd* methods that translate parsed intent into application actions and requests; when a command requires network interaction, AppOrchestrator delegates to [ConnectionManager](../Code/src/EchoHub.Client/Services/ConnectionManager.cs.md). ConnectionManager manages the SignalR connection and returns results or raises network events back to the orchestrator, while AppOrchestrator handles UI concerns (attachments, pending replies, local state) and coordinates lifecycle and cleanup.
+CommandHandler is the stateless parser/dispatcher that turns raw slash input into event invocations. AppOrchestrator subscribes to those events and implements the actual command semantics, UI updates, and attachment/download flows. ConnectionManager centralizes authentication, E2E key application, hub creation and SignalR event forwarding so AppOrchestrator can call into the network layer and react to server-originated events without handling low-level connection details.
 
 ---
 *Covers 3 of 3 source files identified for this topic.*
 
-*Synthesised by Aurion on 2026-07-23 05:52:46 UTC*
+*Synthesised by AurionDocs on 2026-07-23 09:32:15 UTC*

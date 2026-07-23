@@ -8,23 +8,18 @@ public static class MessageConventions
 ```
 
 
-Cross-protocol message conventions are centralized in this static helper. It provides formatting and parsing for IRC CTCP ACTION-style messages, so /me-like actions render consistently across clients. Action messages are stored as the CTCP framing: 0x01 + "ACTION " + text + 0x01; MessageConventions.FormatAction(text) wraps a plain text string in that payload, and TryParseAction(content, out actionText) extracts the inner text when the content matches the framing. In end-to-end encrypted rooms the action marker travels with the text, preserving semantics.
+Cross-protocol message conventions for action messages. Action messages (the /me style) are stored using the IRC CTCP ACTION wire format: a 0x01 prefix, the literal string `ACTION `, the text, and a trailing 0x01 suffix. This class exposes the constants `ActionPrefix` and `ActionSuffix`, plus helpers `FormatAction` and `TryParseAction` to wrap and unwrap the action text, ensuring consistent storage, rendering, and encryption behavior.
 
 ## Remarks
-- This abstraction prevents scattering the CTCP ACTION framing constants across the codebase and offers a single source of truth for how action messages are stored and read.
-- It isolates the low-level framing from higher-level message handling, making testing and future changes safer and easier.
-- The parsing path uses ordinal string comparisons and explicitly requires both the proper prefix and suffix, plus non-empty inner text, to succeed.
+ActionConventions centralize the wire-format markers so changes in one place don't ripple through callers, and to provide a clear boundary between encoding and decoding of action messages. `FormatAction` encapsulates the exact wrapper, while `TryParseAction` validates the pattern and extracts the inner text without exposing the wire markers to callers. This avoids scattering the CTCP formatting details throughout the codebase and keeps rendering logic aligned with storage format.
 
 ## Example
 ```csharp
-var action = MessageConventions.FormatAction("waves");
-if (MessageConventions.TryParseAction(action, out var text))
-{
-    // text == "waves"
-}
+string content = MessageConventions.FormatAction("waves");
+bool ok = MessageConventions.TryParseAction(content, out var actionText);
+// ok == true, actionText == "waves"
 ```
 
 ## Notes
-- TryParseAction(content, out actionText) returns true only if the content starts with ActionPrefix, ends with ActionSuffix, and the extracted inner text has length > 0; otherwise actionText is null and the method returns false.
-- The behavior relies on ordinal comparisons to avoid culture-related differences in prefix/suffix checks.
-- The inner action text can contain arbitrary characters; the method only enforces the framing and non-emptiness of the payload.
+- `TryParseAction` requires the content to start with `ActionPrefix`, end with `ActionSuffix`, and have non-empty inner text; otherwise it returns false and sets `actionText` to null.
+- The implementation uses ordinal comparisons to check the markers for performance and culture-invariant behavior.

@@ -24,14 +24,10 @@ public record EncryptionKeyResponse(string Key)
 | `Key` | `string` | — |
 
 
-EncryptionKeyResponse is a tiny, immutable data transfer object that carries a single encryption key via its Key property. Use it whenever a caller must receive an encryption key in a strongly-typed envelope (instead of returning a plain string) to improve clarity and compatibility with serialization and tooling.
+EncryptionKeyResponse is a minimal, strongly-typed envelope used to return an encryption key from server-side DTOs. It is implemented as a C# `record` with a single property `string Key`, providing value-based equality and convenient deconstruction while keeping the surface area stable for serialization and future extension.
 
 ## Remarks
-By leveraging a C# record, EncryptionKeyResponse benefits from value-based equality, structural deconstruction, and concise construction. It serves as a semantic wrapper around the raw key, making intent explicit in APIs that issue or relay keys, and aligns with other DTOs in the EchoHub.Core DTOs layer.
-
-## Notes
-- The Key contains sensitive material; avoid logging or exposing it in request traces. Ensure transport channels are secure (TLS) and that only authorized callers can obtain the key.
-- Because it is a simple wrapper, use it when a typed envelope adds value (e.g., API contracts or structured responses) and avoid over-modeling plain, ephemeral keys.
+Using a one-property `record` as a DTO provides a stable, strongly-typed surface for returning the key, while enabling easy evolution (e.g., adding metadata like algorithm, expiration, or salt) without breaking client contracts. It also leverages `record` semantics to support value-based equality and clean deconstruction when used in responses.
 
 
 ---
@@ -60,14 +56,13 @@ public record ServerStatusDto(
 | `RegistrationMode` | `string` | `"open"` |
 
 
-ServerStatusDto is an immutable data-transfer object that represents the current status of a server in EchoHub. It exposes the server name, an optional description, the number of online users, the total number of channels, and a registration mode (defaulting to open). As a C# record with a primary constructor, it benefits from value-based equality and convenient deconstruction, making it a natural payload for API responses that describe the server's state.
+Represents a lightweight, immutable snapshot of a server's status for transport between layers or to clients. It exposes the server's `Name`, optional `Description`, current `OnlineUsers`, total `TotalChannels`, and the `RegistrationMode` (defaulting to `open` when not provided).
 
 ## Remarks
-A record provides value-based equality and immutability for a simple data carrier, which is exactly what a status payload is. The Description field is optional, so consumers must be prepared to handle null. The shape is designed to be serialized to JSON for API responses and easily deconstructed when mapping to other domain models.
+Because this is a `record`, it uses value-based equality and immutable properties, making it ideal as a DTO boundary between internal domain models and external consumers. Construct this type from your server state when returning status information to clients, rather than leaking domain entities.
 
 ## Notes
-- Nullable Description means clients must handle nulls.
-- RegistrationMode defaults to "open" when not supplied, preserving backward compatibility.
-- As a record, two instances with identical property values compare equal (value equality).
+- `Description` is nullable (`string?`). Guard against null or provide a fallback when presenting it to callers.
+- To derive a modified copy (e.g., update `OnlineUsers`), use the `with` expression since `ServerStatusDto` is immutable.
 
 ---

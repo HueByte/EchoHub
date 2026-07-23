@@ -8,15 +8,12 @@ public class SearchListSource(List<SearchResult> items) : IListDataSource
 ```
 
 
-List data source that feeds a search dialog's ListView: it maintains an original item list, supports case-insensitive filtering by label or key, raises a Reset collection-changed notification when the filter changes (unless suspended), and renders each row with color-coding depending on the SearchResultType.
+A list-data source implementation used by the search dialog that presents a filtered view of [`SearchResult`](../Dialogs/SearchDialog.cs.md) items and renders each entry with type-specific coloring. Use `SearchListSource` when you need a lightweight, read-only collection for a `ListView` that supports text filtering via `Filter` and per-item rendering via `Render`.
 
 ## Remarks
-This class combines two responsibilities commonly needed by a search dialog: fast, in-memory filtering of a fixed set of SearchResult records and rendering of those results into a ListView with per-type coloring. Consumers attach to CollectionChanged to refresh the UI when Filter(string) updates the visible set. Render uses RenderHelpers.WriteText to draw the label and then fills the remainder of the column; it chooses a highlight (selected) attribute from the ListView or a per-result attribute (channel/action) and preserves the list's background when a per-result attribute leaves the background as Color.None.
+`SearchListSource` holds the full set of items in `_allItems` and maintains a filtered snapshot in `_filtered` that drives `Count`, `MaxItemLength`, `GetItem`, and `ToList`. Filtering is performed by `Filter` using `StringComparison.OrdinalIgnoreCase` against both the `Label` and `Key` of each [`SearchResult`](../Dialogs/SearchDialog.cs.md). Rendering delegates text layout to `RenderHelpers.WriteText` and chooses visual attributes based on the [`SearchResultType`](../Dialogs/SearchDialog.cs.md) (using `ChannelAttribute` and `ActionAttribute`); when a chosen attribute has no background color it inherits the `ListView` fill background so the entry blends with the surrounding cells. The `CollectionChanged` event is raised with a `NotifyCollectionChangedEventArgs` reset after `Filter` updates unless `SuspendCollectionChangedEvent` is set.
 
 ## Notes
-- Filter is case-insensitive and matches either SearchResult.Label or SearchResult.Key.
-- When Filter receives a null/whitespace query the visible list is reset to all items and a Reset event is raised (unless SuspendCollectionChangedEvent is true).
-- IsMarked and SetMark are no-ops; this data source does not track per-item marks.
-- Dispose is a no-op; there are no unmanaged resources to release.
-- MaxItemLength returns 0 when there are no filtered items.
-- This class does not provide internal synchronization; callers should ensure thread-safety when mutating the source list or calling Filter from multiple threads.
+- `Render` indexes into `_filtered` directly and assumes the caller supplies a valid `item` index; callers should use `Count` or `GetItem` to validate indices to avoid out-of-range access.
+- `IsMarked` and `SetMark` are intentionally no-ops: this source does not track per-item marks, so code that expects marking behavior will need a wrapper or a different `IListDataSource` implementation.
+- `Dispose` is a no-op; there are no native resources held by `SearchListSource`, but consumers that expect disposal semantics should be aware nothing is released by calling `Dispose`.

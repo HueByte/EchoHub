@@ -12,12 +12,14 @@ public class FilesController : ControllerBase
 ```
 
 
-Serves an uploaded file anonymously by design: the unguessable GUID in the URL is the access token (Discord-CDN-style capability URL), so attachment links can be opened directly in a browser and shared to IRC clients. E2E-encrypted room blobs are ciphertext at rest, so anonymous access reveals nothing for those channels.
+Serves an uploaded file via the GET endpoint `api/files/{fileId}` and intentionally allows anonymous access through the unguessable GUID in the URL, enabling direct browser viewing or sharing of attachments. The controller uses [`FileStorageService`](../Services/FileStorageService.cs.md) (via `_fileStorage`) to resolve the file path and returns the file with an appropriate `Content-Type`; images and audio render inline in the browser, while other types trigger a download with the original filename. 
 
 ## Remarks
-This symbol provides a minimal, token-based file access surface that does not require user authentication. It delegates path resolution to FileStorageService and consolidates content-type handling in one place, so callers can rely on consistent delivery behavior across file types. The design emphasizes shareable, browser-friendly links while safeguarding sensitive payloads behind the GUID-based URL.
+
+FilesController decouples storage concerns from HTTP delivery, enabling shareable, tokenized links without per-request authentication. It relies on `_fileStorage.GetFilePath` to verify existence and obtain a path, while validating the input with `Guid.TryParse` to guard against malformed requests. The design relies on the GUID in the URL as an access token, so the security model hinges on the token being effectively unguessable to limit exposure of attachments. 
 
 ## Notes
-- The endpoint validates the fileId as a GUID before attempting any storage access; invalid IDs yield a BadRequest response.
-- Content types are determined by file extension with a broad fallback to application/octet-stream; unknown extensions will download as a generic binary.
-- Images and audio files are rendered inline in the browser, while other types are delivered as attachments with the original file name.
+
+- Anonymous access means links can be shared; treat the `fileId` as a security token and rotate or revoke links as needed. 
+- The MIME type is derived from the file extension via `Path.GetExtension`; ensure file extensions are correct to avoid misrepresented MIME types or unintended inline rendering. 
+- Images and audio render inline (`Content-Type` starts with `image/` or `audio/`); all other files are delivered as attachments with the file name.

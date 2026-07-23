@@ -8,31 +8,27 @@ public static class RoomCrypto
 ```
 
 
-Client-side envelope encryption primitives used for end-to-end encrypted channels: derive per-room keys from a passphrase, generate random room content keys (RCKs), and encrypt/decrypt room content using AES-GCM. Use this class when you need a canonical, interoperable way to create room key material, wrap/unlock a room key with a passphrase-derived key, and produce/recognize the wire format used on the server ($RC1$base64(nonce||tag||ciphertext)).
+Client-side utilities for envelope encryption used by private (end-to-end encrypted) channels. Use `RoomCrypto` when you need a simple, opinionated way to derive keys from a passphrase, generate a random room content key (RCK), and encrypt/decrypt room content in the wire format this project uses (a `$RC1$`-prefixed base64 blob for text and a nonce||tag||ciphertext blob for raw bytes).
 
 ## Remarks
-This class encapsulates the protocol choices and low-level crypto work so callers don't compose PBKDF2, hex encoding, and AES-GCM themselves. It implements an envelope pattern: the client generates a random 256-bit room content key (RCK) to encrypt room data; the RCK is stored server-side wrapped (AES-GCM) with a key-encryption key (KEK) derived from the user's passphrase. PBKDF2-SHA256 with 210000 iterations produces 64 bytes: the first 32 bytes (returned as lowercase hex) are the auth key used as the join gate, and the final 32 bytes are the KEK (never sent). Re-wrapping the RCK on passphrase change avoids re-encrypting history.
+`RoomCrypto` implements the client-side half of an envelope-encryption scheme: the client generates a random 256-bit room content key (RCK) that actually encrypts all channel content, and a key-encryption key (KEK) derived from the user's passphrase is used to wrap the RCK before the wrapped RCK is stored on the server. The derivation uses PBKDF2-SHA256 with `Pbkdf2Iterations` (210000) and a `SaltSizeBytes` (16) salt; the resulting 64 bytes are split so the first `KeySizeBytes` (32) bytes are exported as a lowercase hex `AuthKeyHex` (the join credential) and the last `KeySizeBytes` bytes are kept as the `KeyEncryptionKey`. `RoomCrypto` keeps a small, explicit surface: `GenerateSalt`, `GenerateRoomKey`, `DeriveKeys`, `EncryptText`, `TryDecryptText`, `IsRoomCiphertext`, and byte-level `EncryptBytes`/`DecryptBytes` (used internally). The text wire format is the literal `CiphertextPrefix` (`"$RC1$"`) followed by `Convert.ToBase64String(nonce||tag||ciphertext)`; binary APIs return/expect the raw `nonce||tag||ciphertext` blob. The implementation zeroes the slice of derived bytes used for the auth key after converting to hex to reduce exposure of sensitive material.
 
 ## Example
 ```csharp
-// Typical client flow:
-// 1) Create room: generate salt and room key, derive keys from passphrase, wrap RCK and send auth key + wrapped blob to server.
+// Typical client flow: derive keys from a passphrase, create a room key, encrypt and decrypt text.
 var salt = RoomCrypto.GenerateSalt();
-var roomKey = RoomCrypto.GenerateRoomKey();
 var derived = RoomCrypto.DeriveKeys("correct horse battery staple", salt);
-// derived.AuthKeyHex is sent to server as the join credential
-// derived.KeyEncryptionKey (KEK) is used locally to wrap roomKey with AES-GCM (use EncryptBytes/EncryptText as appropriate)
+// `derived.AuthKeyHex` is sent to the server as the join credential; `derived.KeyEncryptionKey` stays local.
+var roomKey = RoomCrypto.GenerateRoomKey();
 
-// 2) Encrypt/decrypt room content with the room key
-var plaintext = "hello room";
-var ct = RoomCrypto.EncryptText(plaintext, roomKey);
-if (RoomCrypto.IsRoomCiphertext(ct) && RoomCrypto.TryDecryptText(ct, roomKey, out var recovered))
+var ciphertext = RoomCrypto.EncryptText("hello room", roomKey);
+if (RoomCrypto.TryDecryptText(ciphertext, roomKey, out var plaintext))
 {
-    // recovered == "hello room"
+    // plaintext == "hello room"
 }
 ```
 
 ## Notes
-- PBKDF2 parameters are fixed: 16-byte salt, 210000 iterations, 64-byte output; the auth key is returned as lowercase hex and the KEK as raw bytes.
-- AES-GCM parameters are fixed: 12-byte nonce, 16-byte tag, 32-byte key (AES-256). Text wire format is the literal prefix "$RC1$" then base64(nonce||tag||ciphertext).
-- TryDecryptText returns false for non-room ciphertext or when decryption/authentication fails (malformed base64, wrong key, or tampering). Protect KEK and RCK in memory and avoid persisting raw keys.
+- `RoomCrypto` expects a `KeySizeBytes`-length key (32 bytes) for its AES-GCM operations; supplying a key of the wrong length will fail when constructing the cipher.
+- Nonces are randomly generated per-encryption (`NonceSizeBytes` = 12). Do not reuse a `roomKey`/nonce pair for different plaintexts; the implementation already generates random nonces, so avoid reusing the same nonce manually.
+- `TryDecryptText` returns `false` (and sets `plaintext` to empty) both for non-room content (missing the `CiphertextPrefix`) and for any integrity/format errors (bad base64, authentication failure).

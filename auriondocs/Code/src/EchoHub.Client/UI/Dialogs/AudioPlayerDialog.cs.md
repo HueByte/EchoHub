@@ -8,10 +8,10 @@ public sealed class AudioPlayerDialog
 ```
 
 
-AudioPlayerDialog is a sealed class that presents a modal Audio Player UI within the application's terminal UI. It assembles a compact layout with the current file name, a wave-like block visualization, playback status, and simple volume and playback controls, all exposed via a single Show method that binds an IApplication and an AudioPlaybackService to the dialog's lifecycle.
+AudioPlayerDialog is a sealed UI helper that renders a compact, terminal-style audio player within the application. When `Show` is invoked, it builds a `Dialog` titled "Audio Player" containing a file name header, a wave visualization area, a status label, volume controls, and playback controls (Play, Stop, Close). It also orchestrates a simple block-wave animation using `WaveBlocks` and a timer to provide a visual indication of activity, while delegating actual playback logic to the provided [`AudioPlaybackService`](../../Services/AudioPlaybackService.cs.md).
 
 ## Remarks
-By encapsulating layout, colors, and animation in one place, it provides a reusable, cohesive UX for audio playback that can be dropped into different screens without duplicating UI code. The class relies on themed attributes (e.g. WaveActiveAttr, WaveIdleAttr, FileNameAttr, Status*Attr) to ensure consistent appearance, and uses a timer-driven animation loop to render the wave pattern while playback is active.
+AudioPlayerDialog centralizes the presentation of audio playback in a terminal UI. It encapsulates the layout and styling (via `FileNameAttr`, `WaveIdleAttr`, and status attributes such as `StatusPlayingAttr`, `StatusPausedAttr`, and `StatusStoppedAttr`) so callers can surface audio without constructing the controls themselves. It collaborates with `IApplication` to host the dialog in the UI thread and with [`AudioPlaybackService`](../../Services/AudioPlaybackService.cs.md) to reflect playback state and drive the actual audio logic while the dialog handles user interactions and visuals.
 
 ## Example
 ```csharp
@@ -19,5 +19,6 @@ AudioPlayerDialog.Show(app, audioService, "/path/to/song.mp3", "song.mp3");
 ```
 
 ## Notes
-- The waveform visualization uses Unicode block characters; ensure your terminal font supports these glyphs for correct rendering.
-- The dialog starts a background animation timer; dispose the dialog or stop the timer to avoid leaks when closing.
+- The wave visualization relies on Unicode block characters from `WaveBlocks`; ensure the terminal/font supports these glyphs for proper rendering.
+- The animation is driven by a timer using `AnimationIntervalMs`; changing the cadence affects how lively the waveform appears.
+- The volume UI initializes with a local `currentVolume` and the wiring between the volume controls and [`AudioPlaybackService`](../../Services/AudioPlaybackService.cs.md) is not shown in the excerpt; connect changes to the service to affect real playback.

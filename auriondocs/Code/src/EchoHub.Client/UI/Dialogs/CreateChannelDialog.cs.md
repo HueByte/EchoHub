@@ -18,15 +18,15 @@ public sealed class CreateChannelDialog
 ```
 
 
-Displays a modal Create Channel dialog that collects the details needed to create a new channel: a name, an optional topic, a password, and a public visibility setting. The name is trimmed and normalized to lower case; if it is empty, the dialog reports an error and stays open. On Create, it builds a CreateChannelResult containing the name, topic (nullable), isPublic, and the password; on Cancel it returns null. The dialog runs via the provided IApplication instance and returns after the user makes a choice.
+CreateChannelDialog.Show renders a modal 'Create Channel' dialog via the supplied `IApplication`, collecting a channel `name`, an optional `topic`, and an optional `password`, validating inputs, and returning a `CreateChannelResult` when the user confirms, or `null` if canceled. The entered `name` is trimmed and converted to lowercase; the `topic` is optional, and a blank `password` yields a `null` password in the result.
 
 ## Remarks
-Encapsulates all UI logic for channel creation into a single entry point, enabling consistent behavior across the app and isolating rendering from business logic. The class acts as a small, self-contained UX widget that constructs the result object, ensuring callers need only handle the CreateChannelResult or null.
+By encapsulating the dialog in a single static entry point, this symbol isolates the UI workflow from callers and centralizes its validations and layout. It coordinates several UI components (`Dialog`, `Label`, `TextField`, `Button`) and user input handling so that changes to the channel-creation UX don't ripple through the rest of the codebase.
 
 ## Notes
-- Name validation is minimal in code: the name is trimmed and lowercased, and non-empty; there is no explicit enforcement of length or allowed character patterns at runtime beyond what the UI hints suggest.
-- Password handling appears behind-the-scenes (the UI labels redact the password, yet the password value is captured and returned as part of the result); ensure secure handling and minimize exposure of the plaintext password.
-- The snippet references passwordField and publicCheckbox, which must exist in the full class scope; if you modify the UI composition, ensure these controls are present and wired consistently with the password retrieval and public visibility logic.
+- Name normalization: the code lowercases and trims the input before use; beware that the original casing is not preserved in the result.
+- Password handling: the password is optional; if left blank, the resulting `password` becomes `null`.
+- Redacted password placeholder: the label uses a redacted placeholder `[REDACTED:CONNECTION_STRING_PASSWORD]`, indicating the actual password source isn't visible in the snippet; ensure the real value is supplied by the surrounding application context.
 
 ---
 
@@ -48,27 +48,6 @@ public record CreateChannelResult(string Name, string? Topic, bool IsPublic, str
 | `Password` | `string?` | — |
 
 
-CreateChannelResult is an immutable data carrier that represents the outcome of creating a channel in the EchoHub client UI. It carries the channel's Name, an optional Topic, a flag IsPublic indicating whether the channel is public, and an optional Password.
-
-## Remarks
-As a record, CreateChannelResult participates in value-based equality, making comparisons straightforward without manual field checks. The positional constructor provides a concise, immutable payload that is easy to pass through layers (UI, services, or view models). You can deconstruct a result into its components, or derive a modified copy with a with-expression if you need a slightly different result without mutating the original. This type is intended to be produced by the channel-creation flow and consumed by UI code and downstream components.
-
-## Example
-```csharp
-// Common case: create a public channel with a topic and password
-var result = new CreateChannelResult("General", "Team discussions", true, "s3cr3t");
-
-// Access fields
-string name = result.Name;
-string? topic = result.Topic;
-bool isPublic = result.IsPublic;
-string? password = result.Password;
-
-// Deconstruct for convenience
-var (n, t, pub, pwd) = result;
-
-// Create a modified copy
-var updated = result with { Topic = "New topic" };
-```
+Represents the outcome of a channel-creation operation in the UI. The `CreateChannelResult` type carries the channel's `Name`, an optional `Topic`, a boolean `IsPublic` indicating if the channel is public, and an optional `Password` for password-protected channels, enabling downstream UI logic to respond to the created channel.
 
 ---

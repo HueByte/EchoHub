@@ -20,15 +20,11 @@ internal partial class BackupJsonContext : System.Text.Json.Serialization.JsonSe
 ```
 
 
-BackupJsonContext is an internal partial class that provides the source-generated JSON serialization metadata for the BackupInfo type. It plugs into System.Text.Json’s source generator, enabling reflection-free serialization of BackupInfo when you configure a JsonSerializerOptions with this context.
+Defines a source-generated JSON serialization context for `BackupInfo` by annotating the internal partial class ``BackupJsonContext`` with ``JsonSerializable(typeof(BackupInfo))``. This enables high-performance, reflection-free JSON serialization and deserialization via System.Text.Json's source generator when working with ``BackupInfo``.
 
 ## Remarks
-This symbol acts as the concrete carrier of serialization metadata for BackupInfo within the JSON pipeline of EchoHub’s client. By centralizing the generated type information in a single context, it keeps serialization concerns isolated from business logic and allows the type to evolve without scattering attributes across multiple call sites. The pattern here—one generated context per data contract—supports predictable performance improvements while preserving a clean, minimal public surface.
+By centralizing the JSON metadata in ``BackupJsonContext``, the codebase gains a single, version-stable contract for serializing ``BackupInfo``. The generated ```JsonTypeInfo<BackupInfo>``` exposed as ``BackupJsonContext.Default.BackupInfo`` is consumed by ``JsonSerializer`` overloads that accept type metadata, reducing runtime reflection and enabling better inlining and optimization. This scope-limited context also makes it straightforward to extend serialization support to additional related types by extending the same context without changing call-sites.
 
-## Notes
-- The symbol is internal; it is intended for use within the containing assembly, not by external callers.
-- The class is generated and partial; do not edit it by hand, as changes will be overwritten by the source generator.
-- If you modify the BackupInfo shape, you must re-run code generation to keep the context in sync with the data contract.
 
 ---
 
@@ -41,7 +37,7 @@ public static class UpdateBackupService
 ```
 
 
-Manages pre-update backups for the auto-updater and provides rollback support by snapshotting the running application prior to an update. Backups are stored under ~/.echohub/update-backup/ as backup.zip with a companion backup-info.json that records the version, application directory, and UTC timestamp. Use CreateBackup before applying an update; verify presence with BackupExists and inspect metadata with GetBackupInfo to drive a rollback if needed. The IsPostUpdate flag signals that a backup from a recent update exists, allowing startup logic to react accordingly.
+UpdateBackupService is a centralized helper that manages pre-update backups and rollback restoration for the auto-updater. It stores backups under the user profile in `~/.echohub/update-backup/` and exposes operations to create a snapshot, verify an existing backup, and read its metadata. Before applying an update, `CreateBackup()` snapshots the current application directory (via `AppContext.BaseDirectory`) into a ZIP named `backup.zip` and writes a `backup-info.json` containing the version, app directory, and timestamp. It skips log files to avoid locking issues, uses `CompressionLevel.Fastest` for speed, and annotates the backup with the current version from `UpdateChecker.CurrentVersion`. `BackupExists()` checks for the presence of both `backup.zip` and `backup-info.json`, while `GetBackupInfo()` reads and deserializes the metadata using `BackupJsonContext.Default.BackupInfo`. The `IsPostUpdate` flag signals that a post-update backup was produced and may influence rollback or recovery flow.
 
 ---
 
@@ -65,22 +61,13 @@ public record BackupInfo(
 | `CreatedAt` | `DateTimeOffset` | — |
 
 
-BackupInfo is a lightweight, value-like record that encapsulates metadata about a created backup. It carries the backup Version, the AppDirectory that was backed up, and the CreatedAt timestamp, enabling complete backup metadata to be passed around as a single unit.
+BackupInfo is a `record` that encapsulates the metadata for a backup produced by the application. It aggregates the `Version` string, the `AppDirectory` path where the backup resides, and the creation timestamp `CreatedAt` as a `DateTimeOffset`, providing a single, immutable value that callers can transport, compare, or display without reconstructing individual fields. Use this type whenever you need to pass around a complete snapshot of backup identity and location rather than scattering primitive values.
 
 ## Remarks
-BackupInfo, being a record with positional parameters, is immutable and benefits from value-based equality. This makes it ideal as a canonical data carrier when the UpdateBackupService reports or persists backup information, or when UI/logging layers need to compare or display backup entries.
-
-## Example
-```csharp
-var backup = new BackupInfo(
-    Version: "1.2.3",
-    AppDirectory: "/opt/MyApp",
-    CreatedAt: DateTimeOffset.UtcNow
-);
-```
+Because `BackupInfo` is a `record`, it provides value-based equality and immutability, so two backups with the same `Version`, `AppDirectory`, and `CreatedAt` compare as equal. This makes it ideal as a transport object across service boundaries and as a stable key or result in collections. It also supports deconstruction, enabling concise extraction of its three fields when needed.
 
 ## Notes
-- Records provide structural equality; two instances with the same Version, AppDirectory, and CreatedAt compare as equal.
-- CreatedAt uses DateTimeOffset to preserve offset information; prefer UTC (DateTimeOffset.UtcNow) when constructing backups to avoid timezone ambiguities.
+- This object is immutable; its properties are set at construction time and cannot be changed afterward.
+- The `CreatedAt` value uses `DateTimeOffset` to preserve the exact point in time including offset, which is important for cross-system backups and logs.
 
 ---

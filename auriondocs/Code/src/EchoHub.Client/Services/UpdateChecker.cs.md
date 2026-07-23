@@ -8,29 +8,30 @@ public sealed class UpdateChecker : IDisposable
 ```
 
 
-Checks for application updates in the background, presents a TUI confirmation dialog when a new version is available, and defers the actual download/extract/restart work until after the terminal UI has been shut down. Use this class when the host application runs a Terminal.Gui main loop and needs a safe way to offer in-place updates without deadlocking the console or performing heavy I/O while the TUI still owns the terminal.
+Checks for application updates on a background schedule and coordinates a safe, post-TUI update process. Use `UpdateChecker` when you want automatic or on-demand update checks inside a Terminal.Gui-based host but need the actual download/extract/restart work to run after the UI main loop has exited.
 
 ## Remarks
-This class encapsulates polling and manual update checks via an internal Updater instance and marshals user interaction back onto the provided IApplication main loop using _app.Invoke. When the user confirms an update, UpdateChecker does not perform the network/download work immediately; instead it sets PendingUpdate to an awaitable callback (ApplyUpdateAsync), stores the selected version, and requests the TUI to stop. The host is expected to call PendingUpdate after the main loop exits and the console has been restored so the update process can safely run headless (the Updater's update flow may restart the process and call Environment.Exit).
+`UpdateChecker` encapsulates the interaction between the UI, a periodic `Updater` and the host process that must perform the actual update. It listens for `Updater` events and, when the user confirms an update via `UpdateConfirmDialog.Show`, sets the public [`PendingUpdate`](../AppOrchestrator.cs.md) delegate and requests the UI to stop so the host can perform the heavy work on a plain console. This design avoids the console deadlock that would occur if the updating process tried to restart while the Terminal.Gui main loop still owned the console. `CurrentVersion` exposes the assembly version used in the confirmation UI.
 
 ## Example
 ```csharp
 // During application startup
-var updateChecker = new UpdateChecker(app);
-updateChecker.Start(); // starts periodic checks in RELEASE builds
+var checker = new UpdateChecker(app);
+checker.Start(); // starts periodic checks in RELEASE builds
 
-// ... run Terminal.Gui main loop ...
+// Trigger a manual check from UI or command handler
+await checker.CheckNowAsync();
 
-// After the main loop exits and the console is restored, run any pending update
-if (updateChecker.PendingUpdate != null)
+// After the Terminal.Gui main loop exits, the host should run any pending update
+if (checker.PendingUpdate != null)
 {
-    await updateChecker.PendingUpdate();
+    await checker.PendingUpdate(); // will download/extract and may restart the process
 }
 ```
 
 ## Notes
-- Start only activates the background poller in RELEASE builds (the Start method is no-op in non-RELEASE builds).
-- PendingUpdate is deliberately set to a Task-returning delegate and intended to be invoked by the host after the TUI has fully stopped; running it while the TUI still owns the console can deadlock the restart flow.
-- ApplyUpdateAsync attempts to create a pre-update backup with UpdateBackupService.CreateBackup; backup creation failures are logged and the update continues.
-- ApplyUpdateAsync sets Console.OutputEncoding = UTF8 but swallows exceptions (useful when stdout is redirected or non-interactive).
-- CurrentVersion reads the assembly version and falls back to "0.0.0" if unavailable.
+- [`PendingUpdate`](../AppOrchestrator.cs.md) is only set when the user confirms an available update via `UpdateConfirmDialog.Show`; the host must check and invoke [`PendingUpdate`](../AppOrchestrator.cs.md) after the TUI main loop exits.
+- `Start()` is conditional on the `RELEASE` build symbol — in non-RELEASE builds the periodic checker does not run.
+- Invoking the [`PendingUpdate`](../AppOrchestrator.cs.md) delegate runs the updater on a plain console and may end by restarting the app (the code calls into the `Updater` which performs download/extract/restart). The host should not expect normal process continuation after the update completes.
+- `CurrentVersion` reads the assembly version and will return `"0.0.0"` if the assembly version cannot be determined.
+- Backup creation is attempted via `UpdateBackupService.CreateBackup()` before applying an update; failures are logged and the update continues without a backup.

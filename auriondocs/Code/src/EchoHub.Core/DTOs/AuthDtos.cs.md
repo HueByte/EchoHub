@@ -27,22 +27,13 @@ public record LoginRequest(string Username, string Password)
 | `Password` | `string` | — |
 
 
-Represents the credentials needed to log a user in. This immutable record carries a Username and Password and is intended to be used as a data transfer object when submitting login data to authentication endpoints.
+Represents the credentials payload for a login operation as an immutable data transfer object. It carries the two required fields, `Username` and `Password`, and is intended to be sent to the authentication boundary to perform sign-in. Use `LoginRequest` when you need to pass user credentials through service boundaries in a strongly-typed, single payload rather than as separate arguments.
 
 ## Remarks
-
-As a positional record, LoginRequest provides value-based equality and deconstruction. It is immutable, with init-only properties, which helps prevent accidental mutation of credential data as it travels across system boundaries. Treat Password as sensitive data: avoid logging or displaying it, and ensure transport security when sending this DTO.
-
-## Example
-
-```csharp
-var request = new LoginRequest("alice", "P@ssw0rd!");
-```
+Because `LoginRequest` is a `record`, it provides value-based equality and immutability, which makes it a natural data carrier across application layers. This abstraction helps decouple transport concerns from domain logic by centralizing credentials into a single, typed payload.
 
 ## Notes
-
-- Password is sensitive data; avoid logging or displaying it; mask when emitted in logs or error messages.
-- This is a simple data-transfer object; it contains no business logic.
+- Do not log or serialize the `Password` value; treat `LoginRequest` as sensitive data and ensure transport uses TLS.
 
 ---
 
@@ -72,27 +63,25 @@ public record LoginResponse(
 | `NicknameColor` | `string?` | — |
 
 
-LoginResponse is a data transfer object that represents the server's response to a successful login. It bundles the authentication tokens (Token and RefreshToken), the token expiration moment (ExpiresAt), and the authenticated user's identity (Username), along with optional personalization fields (DisplayName and NicknameColor). This object is intended for consumption by clients to establish authenticated sessions, attach the access token to requests, refresh tokens when needed, and present user information in the UI.
+`LoginResponse` represents the result of a login attempt, carrying the [`Token`](../../EchoHub.Client/Services/ApiClient.cs.md), `RefreshToken`, `ExpiresAt`, and user identity data like `Username`, with optional `DisplayName` and `NicknameColor` for UI personalization. As a `record`, it is immutable and uses value-based equality, making it a convenient, transportable payload for authentication flows.
 
 ## Remarks
-LoginResponse is an immutable value object (a record) whose identity is defined by its content. It cleanly separates transport concerns from domain logic, acting as a simple contract that different layers can rely on without side effects. The optional DisplayName and NicknameColor fields model user-facing personalization; callers must handle potential nulls when those fields are not provided.
+Immutability and value-based equality make `LoginResponse` easy to compare, cache, and pattern-match in authentication workflows. It groups all login-related data in one cohesive container, reducing the risk of mismatched fields across layers. The optional `DisplayName` and `NicknameColor` allow UI layers to present user-friendly details without forcing these values for every login.
 
 ## Example
 ```csharp
 var response = new LoginResponse(
     Token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    RefreshToken: "def123-refresh",
+    RefreshToken: "defghijklmnopqrstuvwxyz",
     ExpiresAt: DateTimeOffset.UtcNow.AddHours(1),
-    Username: "alex",
-    DisplayName: "Alex Doe",
-    NicknameColor: "#FF6A00"
+    Username: "alice",
+    DisplayName: "Alice",
+    NicknameColor: "#1E90FF"
 );
 ```
 
 ## Notes
-- DisplayName and NicknameColor may be null if the server omits them.
-- Treat this type as data-only; avoid adding behavior such as validation or mutation.
-- Token values are sensitive; avoid logging them and consider secure storage/handling in the client.
+- Token and RefreshToken are sensitive; avoid logging them or exposing them in UI or analytics outputs. Treat these values as secrets and secure any transport or storage paths that handle them.
 
 ---
 
@@ -111,21 +100,14 @@ public record RefreshRequest(string RefreshToken)
 | `RefreshToken` | `string` | — |
 
 
-RefreshRequest is a small, immutable data transfer object (a C# record) that carries a single value: the RefreshToken. It is used when a client requests a new access token from the authentication service, typically by posting this payload to the refresh endpoint.
+An immutable data container representing the payload of a token refresh request. It exposes a single property, `RefreshToken`, which the authentication workflow uses to obtain new access tokens.
 
 ## Remarks
-By representing the refresh payload as a dedicated type, the API boundary gains a clear, strongly-typed contract that can be validated and logged consistently. The use of a record ensures value-based equality and immutable semantics, which helps prevent accidental mutation during transport or handling and makes it straightforward to pattern-match or deconstruct if needed in higher layers. In the overall authentication flow, this DTO sits alongside other EchoHub authentication DTOs and forms the low-level transport shape for refresh token exchanges.
-
-## Example
-```csharp
-var request = new RefreshRequest("sample-refresh-token");
-```
+Because this is a `record` with a single value, it provides value-based equality and straightforward deconstruction, making it ideal as a data-transfer object (DTO) across API boundaries. It decouples transport concerns from token-issuance logic, enabling the controller to receive and forward the refresh token without embedding behavior.
 
 ## Notes
-- Do not log or expose the RefreshToken; avoid writing it to logs or UI.
-- Ensure the token is transmitted over HTTPS and handled only in the request body, not in URLs.
-- Validate that the token is non-empty before sending to the refresh endpoint; handle nulls gracefully.
-
+- `RefreshToken` is sensitive data; avoid logging it or exposing it in error payloads. 
+- This type is a plain DTO with no validation or side effects; validation should occur in the service layer.
 
 ---
 
@@ -147,22 +129,13 @@ public record RegisterRequest(string Username, string Password, string? DisplayN
 | [`InviteCode`](../Models/InviteCode.cs.md) | `string?` | `null` |
 
 
-RegisterRequest is a compact data-transfer object used to convey the information necessary to register a new user. It requires a Username and Password, and optionally accepts a DisplayName and an InviteCode. Implemented as a C# positional record, it is immutable and uses value-based equality, making it ideal for transport across API boundaries and for straightforward comparisons in tests. This DTO is typically produced by a client during registration and consumed by server-side authentication logic. The DisplayName parameter is nullable with a default of null, allowing clients to omit it; InviteCode is also nullable and used only when the onboarding flow supports invitation codes.
+RegisterRequest is a data-transfer object that captures the input for a user registration operation. It encapsulates the required `Username` and `Password` and includes optional `DisplayName` and [`InviteCode`](../Models/InviteCode.cs.md) so callers can supply additional metadata in a single payload to the authentication endpoint.
 
 ## Remarks
-This symbol acts as a stable contract for the registration flow: it encapsulates the required credentials and optional metadata in a single, immutable object. By using a record, equality and deconstruction align with value semantics, making it easy to compare requests and to pass them through layers without mutation. Because DisplayName and InviteCode are optional, validation often happens elsewhere, enabling flexible client behavior while preserving a clear API boundary.
-
-## Example
-```csharp
-// Typical usage with all fields
-var full = new RegisterRequest("jdoe", "P@ssw0rd", "John Doe", "INVITE-42");
-
-// Minimal usage: only required fields
-var minimal = new RegisterRequest("jdoe", "P@ssw0rd");
-```
+As a simple DTO, `RegisterRequest` acts as a stable contract between the public API surface and the authentication logic. It isolates the registration input structure from internal domain models, enabling independent evolution and simpler testing while the underlying registration workflow evolves.
 
 ## Notes
-- Do not log or leak the Password value; treat it as sensitive data and rely on secure transport and proper logging practices.
-- Optional fields may be null; server-side validation should enforce any business rules regarding DisplayName or InviteCode as appropriate.
+- Do not log or serialize the `Password` field in logs or telemetry; treat it as sensitive data and rely on transport security.
+- The optional fields `DisplayName` and [`InviteCode`](../Models/InviteCode.cs.md) may be `null`; downstream code should handle nulls gracefully and only include them when provided.
 
 ---

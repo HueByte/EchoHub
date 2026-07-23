@@ -5,53 +5,39 @@
 > dependencies, and open the linked per-file docs for behaviour — instead of
 > scanning the source tree.
 
-Commit `4dcb480d1d43e4efaaa9b2e190c7275fcab94d23` · 201 symbols · 128 files · 648 dependency edges
+Commit `40aea9a04b2b4bd3a2e431cdd1cf4e1bfa11c343` · 201 symbols · 128 files · 655 dependency edges
 
 ## Subsystems
 
 *Structural clusters detected from the dependency graph — groups of symbols more densely wired to each other than to the rest of the codebase.*
 
-### src/EchoHub.Core/DTOs · ChatService
-
-23 symbols across 14 files. Key symbols (by connectivity):
-
-- [`ChatService`](../Code/src/EchoHub.Server/Services/ChatService.cs.md) (class) — `src/EchoHub.Server/Services/ChatService.cs`
-- [`MessageDto`](../Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md) (record) — `src/EchoHub.Core/DTOs/ChatDtos.cs`
-- [`UserStatus`](../Code/src/EchoHub.Core/Models/UserStatus.cs.md) (enum) — `src/EchoHub.Core/Models/UserStatus.cs`
-- [`EchoHubConnection`](../Code/src/EchoHub.Client/Services/EchoHubConnection.cs.md) (class) — `src/EchoHub.Client/Services/EchoHubConnection.cs`
-- [`ChannelDto`](../Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md) (record) — `src/EchoHub.Core/DTOs/ChatDtos.cs`
-- [`UserPresenceDto`](../Code/src/EchoHub.Core/DTOs/ProfileDtos.cs.md) (record) — `src/EchoHub.Core/DTOs/ProfileDtos.cs`
-- [`ChatHub`](../Code/src/EchoHub.Server/Hubs/ChatHub.cs.md) (class) — `src/EchoHub.Server/Hubs/ChatHub.cs`
-- [`IChatService`](../Code/src/EchoHub.Core/Contracts/IChatService.cs.md) (interface) — `src/EchoHub.Core/Contracts/IChatService.cs`
-- *…and 15 more (see symbol-graph.json)*
-
 ### src/EchoHub.Client/Services · AppOrchestrator
 
-21 symbols across 16 files. Key symbols (by connectivity):
+37 symbols across 23 files. Key symbols (by connectivity):
 
 - [`AppOrchestrator`](../Code/src/EchoHub.Client/AppOrchestrator.cs.md) (class) — `src/EchoHub.Client/AppOrchestrator.cs`
 - [`ConnectionManager`](../Code/src/EchoHub.Client/Services/ConnectionManager.cs.md) (class) — `src/EchoHub.Client/Services/ConnectionManager.cs`
+- [`MessageDto`](../Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md) (record) — `src/EchoHub.Core/DTOs/ChatDtos.cs`
+- [`EchoHubConnection`](../Code/src/EchoHub.Client/Services/EchoHubConnection.cs.md) (class) — `src/EchoHub.Client/Services/EchoHubConnection.cs`
 - [`RefreshToken`](../Code/src/EchoHub.Core/Models/RefreshToken.cs.md) (class) — `src/EchoHub.Core/Models/RefreshToken.cs`
-- [`ConnectResult`](../Code/src/EchoHub.Client/Services/ConnectionManager.cs.md) (record) — `src/EchoHub.Client/Services/ConnectionManager.cs`
-- [`CommandHandler`](../Code/src/EchoHub.Client/Commands/CommandHandler.cs.md) (class) — `src/EchoHub.Client/Commands/CommandHandler.cs`
-- [`LoginResponse`](../Code/src/EchoHub.Core/DTOs/AuthDtos.cs.md) (record) — `src/EchoHub.Core/DTOs/AuthDtos.cs`
-- [`JoinOutcome`](../Code/src/EchoHub.Client/Services/EchoHubConnection.cs.md) (record) — `src/EchoHub.Client/Services/EchoHubConnection.cs`
-- [`ChannelPasswordRequiredException`](../Code/src/EchoHub.Client/Services/EchoHubConnection.cs.md) (class) — `src/EchoHub.Client/Services/EchoHubConnection.cs`
-- *…and 13 more (see symbol-graph.json)*
+- [`SavedServer`](../Code/src/EchoHub.Client/Config/ClientConfig.cs.md) (class) — `src/EchoHub.Client/Config/ClientConfig.cs`
+- [`RoomKeyStore`](../Code/src/EchoHub.Client/Services/RoomKeyStore.cs.md) (class) — `src/EchoHub.Client/Services/RoomKeyStore.cs`
+- [`IrcMessageFormatter`](../Code/src/EchoHub.Server.Irc/IrcMessageFormatter.cs.md) (class) — `src/EchoHub.Server.Irc/IrcMessageFormatter.cs`
+- *…and 29 more (see symbol-graph.json)*
 
 ### src/EchoHub.Client/UI · MainWindow
 
-21 symbols across 18 files. Key symbols (by connectivity):
+22 symbols across 19 files. Key symbols (by connectivity):
 
 - [`MainWindow`](../Code/src/EchoHub.Client/UI/MainWindow.cs.md) (class) — `src/EchoHub.Client/UI/MainWindow.cs`
 - [`ChatMessageManager`](../Code/src/EchoHub.Client/UI/Chat/ChatMessageManager.cs.md) (class) — `src/EchoHub.Client/UI/Chat/ChatMessageManager.cs`
 - [`ChatLine`](../Code/src/EchoHub.Client/UI/Chat/ChatLine.cs.md) (class) — `src/EchoHub.Client/UI/Chat/ChatLine.cs`
 - [`ProfileViewDialog`](../Code/src/EchoHub.Client/UI/Dialogs/ProfileViewDialog.cs.md) (class) — `src/EchoHub.Client/UI/Dialogs/ProfileViewDialog.cs`
 - [`AttachmentKind`](../Code/src/EchoHub.Core/Models/AttachmentKind.cs.md) (enum) — `src/EchoHub.Core/Models/AttachmentKind.cs`
+- [`AttachmentDto`](../Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md) (record) — `src/EchoHub.Core/DTOs/ChatDtos.cs`
 - [`ChatColors`](../Code/src/EchoHub.Client/UI/Chat/ChatColors.cs.md) (class) — `src/EchoHub.Client/UI/Chat/ChatColors.cs`
 - [`ChatSegment`](../Code/src/EchoHub.Client/UI/Chat/ChatSegment.cs.md) (record) — `src/EchoHub.Client/UI/Chat/ChatSegment.cs`
-- [`ChatListSource`](../Code/src/EchoHub.Client/UI/Chat/ChatListSource.cs.md) (class) — `src/EchoHub.Client/UI/Chat/ChatListSource.cs`
-- *…and 13 more (see symbol-graph.json)*
+- *…and 14 more (see symbol-graph.json)*
 
 ### src/EchoHub.Core/DTOs · ApiClient
 
@@ -69,7 +55,7 @@ Commit `4dcb480d1d43e4efaaa9b2e190c7275fcab94d23` · 201 symbols · 128 files ·
 
 ### src/EchoHub.Server · User
 
-17 symbols across 15 files. Key symbols (by connectivity):
+19 symbols across 17 files. Key symbols (by connectivity):
 
 - [`User`](../Code/src/EchoHub.Core/Models/User.cs.md) (class) — `src/EchoHub.Core/Models/User.cs`
 - [`UsersController`](../Code/src/EchoHub.Server/Controllers/UsersController.cs.md) (class) — `src/EchoHub.Server/Controllers/UsersController.cs`
@@ -79,7 +65,7 @@ Commit `4dcb480d1d43e4efaaa9b2e190c7275fcab94d23` · 201 symbols · 128 files ·
 - [`UserProfileDto`](../Code/src/EchoHub.Core/DTOs/ProfileDtos.cs.md) (record) — `src/EchoHub.Core/DTOs/ProfileDtos.cs`
 - [`UserService`](../Code/src/EchoHub.Server/Services/UserService.cs.md) (class) — `src/EchoHub.Server/Services/UserService.cs`
 - [`IUserService`](../Code/src/EchoHub.Core/Contracts/IUserService.cs.md) (interface) — `src/EchoHub.Core/Contracts/IUserService.cs`
-- *…and 9 more (see symbol-graph.json)*
+- *…and 11 more (see symbol-graph.json)*
 
 ### src/EchoHub.Core/DTOs · ChannelService
 
@@ -109,17 +95,19 @@ Commit `4dcb480d1d43e4efaaa9b2e190c7275fcab94d23` · 201 symbols · 128 files ·
 - [`LinkEmbedService`](../Code/src/EchoHub.Server/Services/LinkEmbedService.cs.md) (class) — `src/EchoHub.Server/Services/LinkEmbedService.cs`
 - *…and 5 more (see symbol-graph.json)*
 
-### src/EchoHub.Client/Config
+### src/EchoHub.Core/Contracts · ChannelDto
 
-7 symbols across 5 files. Key symbols (by connectivity):
+9 symbols across 9 files. Key symbols (by connectivity):
 
-- [`RoomKeyStore`](../Code/src/EchoHub.Client/Services/RoomKeyStore.cs.md) (class) — `src/EchoHub.Client/Services/RoomKeyStore.cs`
-- [`ClientConfig`](../Code/src/EchoHub.Client/Config/ClientConfig.cs.md) (class) — `src/EchoHub.Client/Config/ClientConfig.cs`
-- [`SavedServer`](../Code/src/EchoHub.Client/Config/ClientConfig.cs.md) (class) — `src/EchoHub.Client/Config/ClientConfig.cs`
-- [`RoomCrypto`](../Code/src/EchoHub.Core/Security/RoomCrypto.cs.md) (class) — `src/EchoHub.Core/Security/RoomCrypto.cs`
-- [`ConfigManager`](../Code/src/EchoHub.Client/Config/ConfigManager.cs.md) (class) — `src/EchoHub.Client/Config/ConfigManager.cs`
-- [`RoomKeyProtector`](../Code/src/EchoHub.Client/Services/RoomKeyProtector.cs.md) (class) — `src/EchoHub.Client/Services/RoomKeyProtector.cs`
-- [`AccountPreset`](../Code/src/EchoHub.Client/Config/ClientConfig.cs.md) (class) — `src/EchoHub.Client/Config/ClientConfig.cs`
+- [`ChannelDto`](../Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md) (record) — `src/EchoHub.Core/DTOs/ChatDtos.cs`
+- [`UserPresenceDto`](../Code/src/EchoHub.Core/DTOs/ProfileDtos.cs.md) (record) — `src/EchoHub.Core/DTOs/ProfileDtos.cs`
+- [`ChatHub`](../Code/src/EchoHub.Server/Hubs/ChatHub.cs.md) (class) — `src/EchoHub.Server/Hubs/ChatHub.cs`
+- [`IChatService`](../Code/src/EchoHub.Core/Contracts/IChatService.cs.md) (interface) — `src/EchoHub.Core/Contracts/IChatService.cs`
+- [`IChatBroadcaster`](../Code/src/EchoHub.Core/Contracts/IChatBroadcaster.cs.md) (interface) — `src/EchoHub.Core/Contracts/IChatBroadcaster.cs`
+- [`IrcBroadcaster`](../Code/src/EchoHub.Server.Irc/IrcBroadcaster.cs.md) (class) — `src/EchoHub.Server.Irc/IrcBroadcaster.cs`
+- [`SignalRBroadcaster`](../Code/src/EchoHub.Server/Services/SignalRBroadcaster.cs.md) (class) — `src/EchoHub.Server/Services/SignalRBroadcaster.cs`
+- [`IEchoHubClient`](../Code/src/EchoHub.Core/Contracts/IEchoHubClient.cs.md) (interface) — `src/EchoHub.Core/Contracts/IEchoHubClient.cs`
+- *…and 1 more (see symbol-graph.json)*
 
 ### src/EchoHub.Server · ServerDirectoryService
 
@@ -144,6 +132,17 @@ Commit `4dcb480d1d43e4efaaa9b2e190c7275fcab94d23` · 201 symbols · 128 files ·
 - [`SearchResult`](../Code/src/EchoHub.Client/UI/Dialogs/SearchDialog.cs.md) (record) — `src/EchoHub.Client/UI/Dialogs/SearchDialog.cs`
 - [`IrcNumericReply`](../Code/src/EchoHub.Server.Irc/IrcNumericReply.cs.md) (class) — `src/EchoHub.Server.Irc/IrcNumericReply.cs`
 
+### src/EchoHub.Client/UI · UserStatus
+
+6 symbols across 5 files. Key symbols (by connectivity):
+
+- [`UserStatus`](../Code/src/EchoHub.Core/Models/UserStatus.cs.md) (enum) — `src/EchoHub.Core/Models/UserStatus.cs`
+- [`StatusDialog`](../Code/src/EchoHub.Client/UI/Dialogs/StatusDialog.cs.md) (class) — `src/EchoHub.Client/UI/Dialogs/StatusDialog.cs`
+- [`UserSession`](../Code/src/EchoHub.Client/Services/UserSession.cs.md) (class) — `src/EchoHub.Client/Services/UserSession.cs`
+- [`StatusDialogResult`](../Code/src/EchoHub.Client/UI/Dialogs/StatusDialog.cs.md) (record) — `src/EchoHub.Client/UI/Dialogs/StatusDialog.cs`
+- [`UserDto`](../Code/src/EchoHub.Core/DTOs/ChatDtos.cs.md) (record) — `src/EchoHub.Core/DTOs/ChatDtos.cs`
+- [`UpdateStatusRequest`](../Code/src/EchoHub.Core/DTOs/ProfileDtos.cs.md) (record) — `src/EchoHub.Core/DTOs/ProfileDtos.cs`
+
 ### src/EchoHub.Core/DTOs · ChannelsController
 
 6 symbols across 3 files. Key symbols (by connectivity):
@@ -166,7 +165,7 @@ Commit `4dcb480d1d43e4efaaa9b2e190c7275fcab94d23` · 201 symbols · 128 files ·
 - [`MessageType`](../Code/src/EchoHub.Core/Models/MessageType.cs.md) (enum) — `src/EchoHub.Core/Models/MessageType.cs`
 - [`ApiResponse`](../Code/src/EchoHub.Core/DTOs/CommonDtos.cs.md) (record) — `src/EchoHub.Core/DTOs/CommonDtos.cs`
 
-*…and 12 smaller subsystems (see symbol-graph.json).*
+*…and 11 smaller subsystems (see symbol-graph.json).*
 
 ## Most connected symbols
 
@@ -174,7 +173,7 @@ The load-bearing symbols — changes here have the widest blast radius.
 
 | Symbol | Kind | Used by | Uses | File |
 |---|---|---|---|---|
-| [`AppOrchestrator`](../Code/src/EchoHub.Client/AppOrchestrator.cs.md) | class | 3 | 47 | `src/EchoHub.Client/AppOrchestrator.cs` |
+| [`AppOrchestrator`](../Code/src/EchoHub.Client/AppOrchestrator.cs.md) | class | 3 | 54 | `src/EchoHub.Client/AppOrchestrator.cs` |
 | [`Program`](../Code/src/EchoHub.Server/Program.cs.md) | file | 0 | 34 | `src/EchoHub.Server/Program.cs` |
 | [`ApiClient`](../Code/src/EchoHub.Client/Services/ApiClient.cs.md) | class | 3 | 29 | `src/EchoHub.Client/Services/ApiClient.cs` |
 | [`ChatService`](../Code/src/EchoHub.Server/Services/ChatService.cs.md) | class | 2 | 29 | `src/EchoHub.Server/Services/ChatService.cs` |

@@ -19,28 +19,40 @@ public static class SearchDialog
 ```
 
 
-SearchDialog is a command-palette style search dialog used to quickly navigate channels and trigger common app actions from a single, keyboard-driven interface. Use it when you want fast, non-mouse access to channels and actions by filtering a combined list and selecting with Enter.
+## Source Code
+Static class `SearchDialog` provides a Ctrl+K-activated, command-palette style dialog for navigating channels and triggering app actions. It merges the current `IReadOnlyList<string>` of `channels` with a fixed set of default `SearchResult` actions into a single searchable list presented in a `Dialog` consisting of a `Label` hint, a `TextField` input, and a `ListView` of results; typing filters the list and Enter selects. The `Show` method returns the selected `SearchResult` or `null` if canceled, communicating through the provided `IApplication` instance.
 
 ## Remarks
-SearchDialog composes a modal dialog that presents both channel names and a predefined set of actions, merged into a single searchable list via a SearchListSource. It returns the selected SearchResult and signals completion to the hosting application by invoking RequestStop on IApplication, keeping the dialog logic decoupled from the rest of the UI. This abstraction enables a reusable, consistent navigation surface across different parts of the app.
-
-## Example
-```csharp
-// Example
-IApplication app = /* obtain your app instance */;
-IReadOnlyList<string> channels = new[] { "general", "engineering" };
-var result = SearchDialog.Show(app, channels);
-if (result != null)
-{
-    // Handle the selected item (channel or action) here.
-}
-```
+By centralizing both channels and common actions, `SearchDialog` reduces context switching and speeds navigation from anywhere in the UI. The implementation delegates list rendering and filtering to [`SearchListSource`](../ListSources/SearchListSource.cs.md), decoupling the data shape from the presentation; adding new channels or actions simply extends the default actions or the input channels without altering the UI flow.
 
 ## Notes
-- The dialog includes a hint, a text field for filtering, a list of results, and a Cancel button; selection is returned as a SearchResult, or null if cancelled.
-- Ctrl+K handling in both the dialog and the search field cancels the operation by requesting stop from the application, so be aware that this combo acts as a cancel gesture rather than an open/search trigger.
-- When items exist, the first item is pre-selected; filtering updates the source and may reset the selection.
+- The dialog binds Ctrl+K to stop the dialog, so avoid conflicting hotkeys in the surrounding application.
 
+## Dependency APIs (verified signatures)
+The REAL, parser-verified API surface of this symbol's collaborators:
+
+- record `SearchResult` (`src/EchoHub.Client/UI/Dialogs/SearchDialog.cs`)
+- class [`SearchListSource`](../ListSources/SearchListSource.cs.md) (`src/EchoHub.Client/UI/ListSources/SearchListSource.cs`)
+  - field `Attribute ChannelAttribute`
+  - field `Attribute ActionAttribute`
+  - property `int Count`
+  - property `int MaxItemLength`
+  - property `bool SuspendCollectionChangedEvent`
+  - `void Filter(string query)`
+  - `SearchResult? GetItem(int index)`
+  - `bool IsMarked(int item)`
+  - `void SetMark(int item, bool value)`
+  - `IList ToList()`
+  - `void Render(ListView listView, bool selected, int item, int col, int row, int width, int viewportX)`
+  - `void Dispose()`
+- enum `SearchResultType` (`src/EchoHub.Client/UI/Dialogs/SearchDialog.cs`)
+
+## Symbol To Document
+- Name: `SearchDialog`
+- Kind: class
+- File: `src/EchoHub.Client/UI/Dialogs/SearchDialog.cs`
+- Language: `csharp`
+- ID: `7ba458ca-8e14-48c9-9536-988f98e9e83c`
 
 ---
 
@@ -61,15 +73,13 @@ public record SearchResult(SearchResultType Type, string Key, string Label)
 | `Label` | `string` | — |
 
 
-Represents a single entry in search results, encapsulating the result's category (Type), a key (Key), and a user-facing label (Label). As a positional-record, it is immutable and compared by value, which makes it convenient to pass around and render in the search UI.
+Represents a single item in search results as an immutable, value-based carrier. It groups the result kind (`SearchResultType`), an identifying `Key`, and a user-facing `Label` to display in the UI. As a `record`, it gains structural equality and convenient deconstruction, which makes it easy to compare results and extract its fields when handling selections in the search dialog.
 
 ## Remarks
-Use SearchResult to model a single outcome returned by the search feature. Type communicates the kind of item (as defined by SearchResultType), Key is the stable identifier for navigation or lookup, and Label is the display text shown in the results list. Because it is a deconstructible record, you can conveniently extract its fields with deconstruction or pattern matching, and equality checks are based on the content rather than the instance identity.
+This type serves as a stable data contract between the search logic and the UI layer, decoupling data shape from presentation. It uses `record` semantics to provide value equality and immutability, enabling straightforward deduplication and pattern-based handling of results. The three members (`Type`, `Key`, `Label`) collectively support both programmatic lookup and user-friendly rendering.
 
 ## Notes
-- Immutability: SearchResult uses a primary constructor; properties are read-only and a modified instance must be created with a with-expression or a new constructor.
-- Deconstruction: The positional constructor enables deconstruction: var (t, k, l) = result; or access via result.Type, result.Key, result.Label.
-- Type relies on the SearchResultType enum; when consuming code, prefer switching on Type rather than comparing display strings.
+- The `Key` should be stable and unique within a given `Type` to avoid ambiguity when presenting or selecting results.
 
 ---
 
@@ -86,9 +96,25 @@ public enum SearchResultType
 ```
 
 
-Represents the category of a search result in the EchoHub client UI, distinguishing Channel results from Action results. Developers reach for this enum to branch rendering or navigation logic based on the result type, instead of using boolean flags or string comparisons.
+Represents the kind of item produced by a search in the UI, distinguishing [`Channel`](../../../EchoHub.Core/Models/Channel.cs.md) results from `Action` results. Use `SearchResultType` when rendering or handling search results in the `SearchDialog` flow to steer UI decisions without inspecting the raw payload.
 
 ## Remarks
-Because it is a small discriminant, SearchResultType is typically consumed alongside a broader SearchResult structure. It enables simple pattern matching in switch expressions or if statements, guiding UI decisions such as which view to open or which icon to display when a user selects a result.
+This enum centralizes the UI's categorization of search results, enabling the dialog to select icons, labels, or handlers in a type-safe way. It decouples the results' payload from how they're displayed and makes it straightforward to extend with additional result kinds in the future.
+
+## Example
+
+```csharp
+SearchResultType type = SearchResultType.Channel;
+switch (type)
+{
+    case SearchResultType.Channel:
+        Console.WriteLine("Render as channel");
+        break;
+    case SearchResultType.Action:
+        Console.WriteLine("Render as action");
+        break;
+}
+```
+
 
 ---

@@ -10,20 +10,20 @@
   - [BroadcastChannelUpdatedAsync](#broadcastchannelupdatedasync)
   - [BroadcastMessageAsync](#broadcastmessageasync)
   - [BroadcastToAllAsync](#broadcasttoallasync)
+  - [BuildLogBacklog](#buildlogbacklog)
   - [BuildReplyRef](#buildreplyref)
   - [FileIdFromUrl](#fileidfromurl)
   - [GetChannelHistoryAsync](#getchannelhistoryasync)
   - [GetChannelHistoryInternalAsync](#getchannelhistoryinternalasync)
   - [GetChannelsForUserAsync](#getchannelsforuserasync)
   - [GetOnlineUsersAsync](#getonlineusersasync)
+  - [JoinChannelAsync](#joinchannelasync)
   - [LeaveChannelAsync](#leavechannelasync)
+  - [SanitizeNewlines](#sanitizenewlines)
   - [SendMessageAsync](#sendmessageasync)
   - [UpdateStatusAsync](#updatestatusasync)
   - [UserConnectedAsync](#userconnectedasync)
   - [UserDisconnectedAsync](#userdisconnectedasync)
-- [BuildLogBacklog](#buildlogbacklog)
-- [JoinChannelAsync](#joinchannelasync)
-- [SanitizeNewlines](#sanitizenewlines)
 
 ---
 
@@ -36,15 +36,16 @@ public class ChatService : IChatService
 ```
 
 
-Coordinates the server-side chat workflow: presence tracking, channel membership and validation, message handling (decryption, sanitization, spam checks, reply validation, optional link embeds), persistence, and broadcasting to configured IChatBroadcaster implementations. Reach for ChatService when you need the complete, policy-enforced chat behavior used by the hub (connect/disconnect, join/leave, send message, history, status and broadcasts) rather than calling lower-level pieces like the channel store, encryption, or broadcasters individually.
+Coordinates chat-related operations for the server-side hub: connection lifecycle, channel joins/leaves, message sending, history retrieval and broadcasting. Reach for `ChatService` when you need a single, authoritative orchestrator that applies presence tracking, channel validation, encryption/decryption, spam/mute rules, link-embed enrichment, storage and multi-backend broadcasting rather than implementing those concerns in a hub or duplicating them across callers.
 
 ## Remarks
-ChatService is an orchestration façade that centralizes chat policies and cross-cutting concerns so the rest of the system sees a single, consistent chat surface. It delegates channel validation and membership (including password checks) to the channel service, uses PresenceTracker for online lists, defers spam decisions to the SpamGuard, asks LinkEmbedService for embeds, and relies on IMessageEncryptionService for decrypt/encrypt logic. It also records runtime telemetry and logs through ServerStatsCollector and ServerLogsService, and persists or reads backlog data via FileStorageService for special channels (for example, the rolling log room). Finally, it shields broadcasters from internal policies by converting and routing messages appropriately (e.g., encrypted payloads for some clients, plaintext for legacy/IRC broadcasters).
+`ChatService` centralizes cross-cutting chat logic so transport implementations (for example SignalR or an IRC bridge) can remain thin. It delegates channel membership and validation to [`IChannelService`](../../EchoHub.Core/Contracts/IChannelService.cs.md), relies on [`PresenceTracker`](PresenceTracker.cs.md) for presence state, uses [`IMessageEncryptionService`](../../EchoHub.Core/Contracts/IMessageEncryptionService.cs.md) and [`LinkEmbedService`](LinkEmbedService.cs.md) to handle encrypted payloads and link previews, enforces anti-abuse via [`SpamGuard`](SpamGuard.cs.md), persists attachments via [`FileStorageService`](FileStorageService.cs.md), and emits audit/operational data to [`ServerLogsService`](ServerLogs/ServerLogsService.cs.md) and [`ServerStatsCollector`](Stats/ServerStatsCollector.cs.md). Outgoing delivery is performed by the configured [`IChatBroadcaster`](../../EchoHub.Core/Contracts/IChatBroadcaster.cs.md) implementations so the same message lifecycle (validation, enrichment, storage) can be broadcast to multiple transports consistently.
 
 ## Notes
-- Join throttle: only first-time joins (where the user is not already a member) count toward the join throttle to avoid falsely flagging reconnect/auto-join bursts.
-- Live log room is treated as read-only; attempts to write to it are rejected early and its backlog is sourced from a rolling log file — only the first history page returns a backlog.
-- SpamGuard operates on the stored content (ciphertext when end-to-end encryption is used) and never requires or performs decryption; muting and escalation are handled through the service's moderation workflow.
+- Join throttling only counts first-time joins (no existing membership) to avoid tripping during normal auto-join bursts on reconnect; clients that re-join known channels should not trigger the throttle.
+- The special "log"/live-log room is treated as read-only and its backlog comes from rolling log files rather than DB messages; paging behaves differently for that channel.
+- Spam checks operate on the stored content (which may be ciphertext for end-to-end encrypted rooms) — the guard does not require plaintext to function and escalation results in timed mutes issued by the server.
+- Message handling includes decryption (clients may send encrypted payloads while other protocols supply plaintext), stripping of any explicit encryption prefix typed by users to prevent spoofing, and plaintext sanitization (for example collapsing excessive newlines) before optional embed fetching and storage.
 
 ---
 
@@ -84,14 +85,7 @@ public ChatService(
 | `logger` | `ILogger<ChatService>` | — |
 
 
-Constructs a ChatService by injecting its required collaborators and wiring them to private fields. This constructor is invoked by the dependency injection container when a ChatService is created, supplying services for scope management, presence tracking, message broadcasting, content embedding, encryption, channel operations, file storage, spam protection, server logging, and statistics collection. The use of `IEnumerable<IChatBroadcaster>` indicates that multiple broadcasters can participate in delivering messages and events, allowing pluggable delivery strategies without changing ChatService code.
-
-## Remarks
-ChatService acts as an orchestration hub for chat functionality. By depending on interfaces rather than concrete implementations, it remains highly testable and extensible: you can substitute mocks or fakes for broadcasters, presence tracking, or encryption in tests or different environments. The broadcaster collection enables evolving notification strategies by simply registering new IChatBroadcaster implementations, aligning with the open/closed principle.
-
-## Notes
-- No null-checks are performed in the constructor; rely on the DI container to provide non-null dependencies. If ChatService might be created outside the DI pipeline, consider adding guards.
-- When using `IEnumerable<IChatBroadcaster>`, all registered broadcasters will be resolved and invoked; behavior depends on the concrete broadcaster implementations.
+Initializes a new `ChatService` instance by capturing its required collaborators through dependency injection and storing them in private fields for later use. The constructor takes services for scope management (`IServiceScopeFactory`), presence tracking ([`PresenceTracker`](PresenceTracker.cs.md)), a collection of broadcasters ([`IChatBroadcaster`](../../EchoHub.Core/Contracts/IChatBroadcaster.cs.md)), link embedding ([`LinkEmbedService`](LinkEmbedService.cs.md)), message encryption ([`IMessageEncryptionService`](../../EchoHub.Core/Contracts/IMessageEncryptionService.cs.md)), channel operations ([`IChannelService`](../../EchoHub.Core/Contracts/IChannelService.cs.md)), file storage ([`FileStorageService`](FileStorageService.cs.md)), spam protection ([`SpamGuard`](SpamGuard.cs.md)), server-side logging ([`ServerLogsService`](ServerLogs/ServerLogsService.cs.md)), statistics collection ([`ServerStatsCollector`](Stats/ServerStatsCollector.cs.md)), and a logger (`ILogger<ChatService>`), wiring them to internal fields like `_scopeFactory`, `_presenceTracker`, `_broadcasters`, `_embedService`, `_encryption`, `_channelService`, `_fileStorage`, `_spamGuard`, `_serverLogs`, `_statsCollector`, and `_logger` so the service can perform broadcasting, embedding, encryption, channel management, persistence, spam guarding, logging, and metrics collection.
 
 ---
 
@@ -113,14 +107,10 @@ public Task BroadcastChannelDeletedAsync(string channelName)
 **Returns:** `Task`
 
 
-BroadcastChannelDeletedAsync publishes a channel-deletion event to all connected clients by delegating to the shared broadcasting pipeline. It forwards the channelName to each subscriber through SendChannelDeletedAsync, coordinated by BroadcastToAllAsync to ensure every participant receives the notification.
+BroadcastChannelDeletedAsync asynchronously broadcasts a channel-deleted event to all connected clients by invoking `SendChannelDeletedAsync` on each subscriber, via the central `BroadcastToAllAsync` mechanism using the lambda `b => b.SendChannelDeletedAsync(channelName)`. It accepts a `string channelName` and returns a `Task` representing the asynchronous broadcast operation.
 
 ## Remarks
-Provides a domain-friendly API that hides the broadcasting details behind a simple, expressive method name. By delegating to BroadcastToAllAsync, it centralizes how channel-deletion notifications are distributed, reducing duplication and ensuring consistent behavior across all subscribers.
-
-## Notes
-- No input validation is performed on channelName; callers should ensure the value is non-null and meaningful before invocation.
-- Exceptions raised during per-subscriber delivery will propagate via the returned Task; callers should decide whether to await and handle failures.
+This method is a thin facade over the generic broadcasting path. It delegates to `BroadcastToAllAsync` to deliver the `SendChannelDeletedAsync` call to every connected client, isolating the channel-deletion notification from the underlying broadcast implementation and ensuring consistent semantics across different events.
 
 ---
 
@@ -143,14 +133,10 @@ public Task BroadcastChannelUpdatedAsync(ChannelDto channel, string? channelName
 **Returns:** `Task`
 
 
-BroadcastChannelUpdatedAsync is a thin wrapper that notifies all connected clients that the specified channel has been updated. It accepts the ChannelDto describing the channel and an optional new channelName. The method delegates to the shared broadcast mechanism (BroadcastToAllAsync) by applying a function that calls SendChannelUpdatedAsync on each client with the provided payload. Use this when you want real-time client UIs to reflect changes to a channel, such as a rename or updated metadata, without having to push updates individually to each client.
+BroadcastChannelUpdatedAsync forwards the given [`ChannelDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) and an optional `string? channelName` to all connected clients by routing through the shared broadcast pipeline: it calls `BroadcastToAllAsync` with a lambda that invokes each client's `SendChannelUpdatedAsync`.
 
 ## Remarks
-BroadcastChannelUpdatedAsync centralizes the channel-update notification path in ChatService. By encapsulating the broadcast call behind this single method, callers don't need to know about how clients are iterated or how the payload is delivered; tests can mock this entry point, and future changes to the broadcasting strategy stay confined here.
-
-## Notes
-- This method only notifies clients; it does not modify the channel data in storage.
-- If channelName is non-null, it will be included as part of the payload and may be used by clients to display the new name.
+Thin wrapper around the existing broadcast mechanism for the 'channel updated' event. It centralizes the notification path so UI clients stay in sync when a channel changes, and it decouples `ChatService` from the concrete hub method used to push updates. If you add additional update events later, similar wrappers can be introduced to keep the surface area small and consistent.
 
 ---
 
@@ -173,14 +159,11 @@ public Task BroadcastMessageAsync(string channelName, MessageDto message)
 **Returns:** `Task`
 
 
-BroadcastMessageAsync asynchronously broadcasts the provided MessageDto to all clients subscribed to the specified channel by delegating to BroadcastToAllAsync. This method serves as a focused helper for channel-scoped messages, insulating callers from the details of iterating over recipients and invoking SendMessageToChannelAsync on each.
+BroadcastMessageAsync is a thin asynchronous wrapper that broadcasts a [`MessageDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) to a named channel by delegating to the shared broadcast pipeline `BroadcastToAllAsync`. It forwards the `channelName` and `message` to every recipient by invoking the lambda `b => b.SendMessageToChannelAsync(channelName, message)`.
 
 ## Remarks
-This wrapper consolidates the channel-based dispatch pattern into a single, discoverable API on the chat service. It centralizes the broadcasting contract so callers do not need to know how broadcasting is implemented (per-subscriber dispatch vs. transport specifics), and it supports testing and mocking of channel messages by providing a stable entry point.
+This method acts as a channel-scoped entry point for the generic broadcast mechanism, decoupling channel-specific semantics from the underlying broadcasting orchestration. By composing with the `BroadcastToAllAsync` pipeline, it ensures consistent delivery behavior across recipients while allowing the underlying strategy to evolve without changing the public API. The wrapper also simplifies testing by isolating the channel-binding logic from the broadcast traversal.
 
-## Notes
-- The visible code does not show input validation; consider validating channelName and message upstream to avoid potential ArgumentNullException during broadcasting.
-- The method returns a Task; await it to observe completion and to surface any exceptions from the underlying broadcast pipeline (e.g., failures in SendMessageToChannelAsync).
 
 ---
 
@@ -201,15 +184,35 @@ private async Task BroadcastToAllAsync(Func<IChatBroadcaster, Task> action)
 **Returns:** `Task`
 
 
-BroadcastToAllAsync is a private helper that sequentially applies an asynchronous action to every broadcaster in the _broadcasters collection. By awaiting the provided `Func<IChatBroadcaster, Task>` for each broadcaster, it ensures ordered, per-broadcaster execution. If an individual broadcaster throws, the exception is caught and logged with the broadcaster’s runtime type name, allowing the remaining broadcasters to continue without interrupting the overall broadcast flow.
+BroadcastToAllAsync iterates over the collection of `_broadcasters` and applies the provided `Func<IChatBroadcaster, Task>` to each broadcaster, awaiting the resulting task before moving to the next. If an invocation throws, the exception is caught and logged via `_logger.LogError`, including the broadcaster's type name from `broadcaster.GetType().Name`, and processing continues with the remaining broadcasters. Use this helper when you need to perform a common asynchronous operation across all configured broadcasters while tolerating individual failures.
+
+---
+
+### BuildLogBacklog
+> **File:** `src/EchoHub.Server/Services/ChatService.cs`  
+> **Kind:** method
+
+```csharp
+private List<MessageDto> BuildLogBacklog(string channelName)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `channelName` | `string` | — |
+
+**Returns:** `List<MessageDto>`
+
+
+Turns the log backlog into transport-encrypted [`MessageDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md)s so past log lines render identically to streamed messages on the client. It reads backlog entries from `_serverLogs.ReadBacklog()`, encrypts each entry’s content with `_encryption.Encrypt(entry.Content)`, assigns a fresh `Guid` via `Guid.NewGuid()`, uses `ServerLogsService.SenderName` as the sender, attaches the provided `channelName`, and preserves each backlog entry’s `Timestamp`. This method never touches the database.
 
 ## Remarks
-This helper centralizes the common pattern of broadcasting to multiple chat broadcasters while isolating failures. It provides a small orchestration layer that coordinates across the _broadcasters collection and ensures one faulty broadcaster does not derail the entire operation. Because it is private, this logic remains an implementation detail of the class rather than part of its public API.
+Acts as an adapter that repackages backlog entries into the identical [`MessageDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) format used for real-time messages, enabling a seamless, consistent rendering experience for historical logs. It centralizes encryption and ID generation at the point of backlog materialization, reducing divergence between what clients see in history and what they see in live streams.
 
 ## Notes
-- The method is sequential; broadcasting happens one broadcaster after another, not in parallel. If you need parallel broadcasting, use a different approach.
-- Exceptions from action are swallowed per-broadcaster; if you need different error handling, handle it inside the action or upstream.
-- Logging uses broadcaster.GetType().Name to identify failures; if multiple broadcasters share a type, the log may not distinguish instances.
+- The `Id` of each [`MessageDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) is generated per invocation with `Guid.NewGuid()`, so IDs are not stable across reloads.
+- This method is private; it is an internal helper that shapes backlog data specifically for the client-render path and is not directly callable from outside.
 
 ---
 
@@ -230,15 +233,14 @@ private ReplyRefDto BuildReplyRef(Message target)
 **Returns:** [`ReplyRefDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md)
 
 
-BuildReplyRef constructs the wire reference for a reply target by decrypting the target’s content to obtain a plaintext snippet, conditionally truncating it, and then re-encrypting the result into a ReplyRefDto that carries the target’s ID, sender, and the encrypted snippet. Specifically, it decrypts target.Content; if the decrypted text is not recognized as E2E room ciphertext and exceeds 120 characters, it truncates to 120 characters and appends an ellipsis; finally, it encrypts the possibly shortened plaintext and returns a ReplyRefDto.
+Builds a wire reference for a reply target by returning a [`ReplyRefDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) that contains the target’s ID, the sender’s username, and an encrypted surface plaintext. It decrypts the target’s `Content` to obtain plaintext; if the decrypted text is not a room ciphertext (i.e. `!RoomCrypto.IsRoomCiphertext(plain)`) and longer than 120 characters, it truncates to 120 characters and appends an ellipsis. The (potentially truncated) plaintext is then encrypted again with `_encryption.Encrypt` before being stored in the [`ReplyRefDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) alongside the target’s `Id` and `SenderUsername`.
 
 ## Remarks
-Encapsulates the logic for producing a secure, compact teaser of the original message for a reply. It ensures that non-E2E content is truncated to a sane length while guaranteeing that E2E content remains intact (and thus decryptable) by avoiding truncation. It delegates the actual encryption to the central _encryption service and uses RoomCrypto.IsRoomCiphertext to decide when truncation is safe.
+This method centralizes the policy for constructing reply references: End-to-End room ciphertext is preserved as ciphertext and not truncated in this pass, while non-End-to-End plaintext is surfaced only as a concise preview. It coordinates with `_encryption` and [`RoomCrypto`](../../EchoHub.Core/Security/RoomCrypto.cs.md) to decide truncation and to produce a transport-ready reference that the client can render without exposing raw plaintext.
 
 ## Notes
-- Truncation only occurs when the decrypted content does not look like room ciphertext; this prevents corrupting E2E data.
-- The returned snippet is encrypted before being included in ReplyRefDto.
-- The 120-character limit is a fixed server-side threshold governing the preview length.
+- Truncation uses an ellipsis character `…` and a hard limit of 120 characters for non-E2E plaintext.
+
 
 ---
 
@@ -259,14 +261,14 @@ private static string FileIdFromUrl(string url) => url.Split('/')[^1]
 **Returns:** `string`
 
 
-Extracts the storage file id from an attachment URL by taking the last path segment after the final '/'. It is intended for URLs that look like '/api/files/{id}' and is used in scenarios where the code needs to derive the identifier from a URL without performing a full URL parser.
+Extracts the storage file id from an attachment URL by taking the last path segment (for example '/api/files/{id}'). This private helper is used when only the id is needed from a known URL rather than maintaining the id separately. It relies on splitting the URL on '/' and selecting the final segment with `[^1]`, without performing further validation.
 
 ## Remarks
-Because this helper relies on a simple string.Split and the C# index-from-end operator [^1], it assumes the input is a plain path that ends with the id and does not end with a trailing slash. If the URL ends with '/', the result will be an empty string. It also does not guard against null inputs, which would raise an exception at runtime. In practice this method is a tiny, in-class utility that centralizes the id extraction so callers don't duplicate the split logic.
+By centralizing the assumption that the file id is the last path segment, this helper reduces duplication and keeps callers focused on higher-level logic. It relies on a simple split-and-select approach and does not validate edge cases such as trailing slashes or query parameters.
 
 ## Notes
-- Trailing slash in the URL yields an empty id; normalize the URL or trim the trailing slash before calling.
-- Null or empty input is not handled; ensure a non-null, non-empty URL is passed.
+- Trailing slash or query string edge cases may yield an empty result or a value containing extraneous parts.
+- No input validation: passing `null` or clearly malformed URLs will throw at runtime.
 
 ---
 
@@ -289,13 +291,14 @@ public async Task<List<MessageDto>> GetChannelHistoryAsync(string channelName, i
 **Returns:** `Task<List<MessageDto>>`
 
 
-GetChannelHistoryAsync retrieves a paged history of messages for a given channel. It normalizes the channel name to lowercase and trims it, clamps the requested count to the range [1, ValidationConstants.MaxHistoryCount], and ensures offset is non-negative. If the channel is a logs channel (no DB messages), the backlog is read from the rolling log file: the first page is populated via BuildLogBacklog, while older pages are empty (files are archives). For regular channels, a short-lived DI scope is created to resolve EchoHubDbContext, and the method delegates to GetChannelHistoryInternalAsync to fetch the requested slice from the database. The call is asynchronous and returns a `List<MessageDto>`.
+Gets a paginated history of messages for a specified channel. The method normalizes `channelName` to lowercase and trims it, clamps `count` to `ValidationConstants.MaxHistoryCount`, and ensures `offset` is non-negative. If the channel is a log-backed channel (no database messages), it returns the backlog on the first page via `BuildLogBacklog` and an empty list for subsequent pages. Otherwise, it creates a DI scope to obtain an [`EchoHubDbContext`](../Data/EchoHubDbContext.cs.md) and delegates to `GetChannelHistoryInternalAsync` to fetch messages from the database.
 
 ## Remarks
-Serves as a unified history retrieval entry point that abstracts away the storage details behind a paging API. It centralizes channel-history concerns so callers don't need to know whether messages come from the rolling log or the database, while preserving the expected paging semantics across both sources.
+Log-backed channels are served from the rolling log backlog, while database-backed channels fetch history from the [`EchoHubDbContext`](../Data/EchoHubDbContext.cs.md). The method unifies access to channel history by hiding the data source, but preserves the backlog-first paging contract for log channels (as documented in the inline comment).
 
 ## Notes
-- Be aware that for log channels, only the first page contains backlog data; requesting subsequent pages returns an empty list.
+- For log-backed channels, requesting an `offset` > 0 returns an empty list; only the first page can include backlog items.
+- Channel name normalization is performed before retrieval; callers may pass mixed-case or whitespace around the channel name.
 
 ---
 
@@ -319,16 +322,8 @@ private async Task<List<MessageDto>> GetChannelHistoryInternalAsync(EchoHubDbCon
 **Returns:** `Task<List<MessageDto>>`
 
 
-Retrieves a page of messages for a named channel, enriching each entry with sender metadata, attachment data, and embed information, so the client can render a historical view of the chat. Call this when you need to assemble a channel's message history in a transport-ready form, with tombstoned accounts preserved and content decrypted for display.
+Fetches a batch of messages for a named channel and returns them as `List<MessageDto>` after assembling sender metadata, decryption, and attachment/embed preparation. It first resolves the channel by name via `EchoHubDbContext.Channels`; if the channel cannot be found, it returns an empty list. To preserve tombstoned messages (where a sender account has been deleted), it performs a left join with `Users` so messages can still appear with null `NicknameColor` and `DisplayName`, then applies pagination with `offset` and `count` and finally reverses the results to chronological order. The method also gathers reply targets for quotes, groups attachments by message, validates attachments against the current file store via `_fileStorage.GetStoredFileIds()`, decrypts message content using `_encryption.Decrypt`, and decrypts/deserializes embeds from `EmbedJson` using `JsonSerializer`. Attachments are pruned if their underlying files are missing; if a message has no live attachments and no plaintext content, it is pruned from the result. Attachments and previews are re-encrypted for transport, and embedded metadata (when valid JSON) is deserialized into [`EmbedDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) instances. This function coordinates with its dependencies to ensure only live content is delivered and that the client receives an encryption-safe, transport-ready history payload.
 
-## Remarks
-Conceptually, this method centralizes history construction: it loads messages for a channel, preserves messages from deleted accounts by left-joining with users, collects reply targets for quote rendering, and hydrates attachments while pruning entries that no longer have valid files. It decrypts message content and any embed metadata, reconstructs attachments for transport (including per-attachment previews that are re-encrypted), and translates raw data into the client-facing DTOs (MessageDto, AttachmentDto, EmbedDto). This batching approach minimizes round-trips by prefetching related data (replies, attachments, embeds) in a single operation.
-
-## Notes
-- If a channel is not found, the method returns an empty list rather than throwing. Callers should handle an empty history gracefully.
-- Messages associated with deleted users are preserved in history, but their display name and nickname color may be null; UI code should account for missing metadata.
-- Attachments are shown only if their underlying files still exist on disk; messages with only vanished attachments and no plaintext content are pruned from the result.
-- The method decrypts content and embed JSON, and it re-encrypts payloads for transport; the exact transport-encryption details are handled deeper in the pipeline and may depend on the caller's context.
 
 ---
 
@@ -350,17 +345,10 @@ public Task<List<string>> GetChannelsForUserAsync(string username)
 **Returns:** `Task<List<string>>`
 
 
-Retrieves the list of channel names that a specific user participates in, exposed as an asynchronous method. It delegates to the presence tracker via _presenceTracker.GetChannelsForUser(username) and wraps the result in Task.FromResult, which means the call completes synchronously and simply presents an async surface to callers. Use this when you require an async API surface (e.g., to be consistent with other async members) even though the underlying operation is synchronous.
+This method is a thin wrapper around `_presenceTracker.GetChannelsForUser` that returns the channels for a given `username` as a `Task<List<string>>`. It preserves the asynchronous API surface while delegating the actual lookup to the presence tracker.
 
 ## Remarks
-
-It provides an asynchronous API surface for retrieving a user's channel list by delegating to the presence tracker. This keeps ChatService methods consistent in an async context and avoids exposing a synchronous API directly to callers that expect Task-returning methods. The actual retrieval is synchronous, so this wrapper does not introduce true asynchrony.
-
-## Notes
-
-- Completes synchronously; no actual I/O is awaited here.
-- Any exception from _presenceTracker.GetChannelsForUser will be thrown at call time (not surfaced as a faulted Task).
-- If you anticipate long blocking work, prefer an actual asynchronous implementation or an asynchronous presence tracker.
+By delegating to `_presenceTracker`, this symbol keeps the `ChatService` decoupled from the concrete presence-tracking implementation. This makes it easier to test `GetChannelsForUserAsync` in isolation and to swap the presence logic without changing callers, while still offering a stable public surface via `GetChannelsForUserAsync`.
 
 ---
 
@@ -381,22 +369,35 @@ public async Task<List<UserPresenceDto>> GetOnlineUsersAsync(string channelName)
 **Returns:** `Task<List<UserPresenceDto>>`
 
 
-Retrieves the list of online users for a given chat channel by joining the in-memory presence tracker with the database-stored user records. It normalizes the channel name to lowercase and trims whitespace, fetches the set of online usernames from the tracker, queries EchoHubDbContext.Users for those usernames that are not Invisible, and then maps each user to a UserPresenceDto that includes the in-memory IRC-only flag. This method is typically used when you need to present the current participants of a channel, excluding hidden users, with their display metadata.
+GetOnlineUsersAsync returns the current online users for a given channel as a list of [`UserPresenceDto`](../../EchoHub.Core/DTOs/ProfileDtos.cs.md) records. The channel name is normalized with `ToLowerInvariant()` and trimmed, then the in-memory `_presenceTracker` is consulted to obtain the set of online usernames for that channel. A scoped [`EchoHubDbContext`](../Data/EchoHubDbContext.cs.md) is then used to query `db.Users` for those usernames that are not `UserStatus.Invisible`, materializing the result with `ToListAsync()`. Finally, the code maps each [`User`](../../EchoHub.Core/Models/User.cs.md) to a [`UserPresenceDto`](../../EchoHub.Core/DTOs/ProfileDtos.cs.md), including the `IsIrcOnly` flag via `_presenceTracker.IsIrcOnly(u.Username)`, and returns the list.
 
 ## Remarks
-Acts as a bridge between transient presence state and the persistent user store, ensuring that the live list respects visibility rules while enriching with profile data. The conversion to UserPresenceDto happens after the EF query to allow the IRC-only flag to be derived from the presence tracker, not stored in the database. The use of a scoped DbContext keeps the data access isolated and safe for concurrent calls.
-
-## Example
-```csharp
-// Example usage
-var online = await chatService.GetOnlineUsersAsync("general");
-Console.WriteLine($"Online in #general: {online.Count}");
-```
+The method bridges in-memory presence information with the persisted user data, encapsulating the lookup so callers need only know a channel name to obtain current participants. It also enforces visibility rules by excluding users with `UserStatus.Invisible` and by deriving the `IsIrcOnly` state from the live tracker rather than from the database. The scoped [`EchoHubDbContext`](../Data/EchoHubDbContext.cs.md) usage respects dependency injection lifetimes and limits the DbContext to the operation's boundary.
 
 ## Notes
-- If a username is online according to the tracker but missing from the database, it will be ignored.
-- Channel name normalization means calls with different casing or surrounding whitespace map to the same channel.
-- The IsIrcOnly flag is determined by the presence tracker and is included in each UserPresenceDto.
+- Be aware that the query loads a list of [`User`](../../EchoHub.Core/Models/User.cs.md) records for all online usernames; channels with large online counts could have performance implications, and paging or batching may be warranted in high-traffic scenarios.
+
+---
+
+### JoinChannelAsync
+> **File:** `src/EchoHub.Server/Services/ChatService.cs`  
+> **Kind:** method
+
+```csharp
+public async Task<(List<MessageDto> History, string? Error, bool PasswordRequired)> JoinChannelAsync(
+        string connectionId, Guid userId, string username, string channelName, string? password = null)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `History` | `List<MessageDto>` | — |
+| `Error` | `string?` | — |
+| `PasswordRequired` | `bool` | — |
+
+
+Joins a user to a chat channel by orchestrating normalization, anti-spam checks, membership validation, presence setup, and history retrieval in a single, centralized workflow. When a client requests to join a channel, `JoinChannelAsync` lowercases and trims the channel name, enforces a first-time-join throttle via `_spamGuard`, delegates membership and potential password gating to `_channelService.EnsureChannelMembershipAsync`, registers the user in `_presenceTracker`, broadcasts the join to other clients (excluding invisible users via `UserStatus.Invisible`), and finally returns the channel history via `GetChannelHistoryAsync` along with any error and a `PasswordRequired` flag for future joins.
 
 ---
 
@@ -419,26 +420,42 @@ public async Task LeaveChannelAsync(string connectionId, string username, string
 **Returns:** `Task`
 
 
-LeaveChannelAsync handles the workflow for when a user leaves a chat channel. It normalizes the channel name to lowercase, updates the presence tracker to reflect that the user has left, broadcasts a user-left notification to all connected clients in that channel, and logs the action at the debug level.
-
-Developers call this when a user intentionally exits a channel; the method encapsulates the coordinated state change, notification, and observability so callers don't have to orchestrate these steps separately.
+Normalizes the channel name to a canonical form using `ToLowerInvariant()` and `Trim()`, then updates presence via `_presenceTracker.LeaveChannel(username, channelName)`, broadcasts a user-left notification to all connected clients through `BroadcastToAllAsync`, and logs a debug entry with the user and channel via `_logger.LogDebug("{User} left channel '{Channel}'", username, channelName)`.
 
 ## Remarks
-
-It centralizes the leave workflow into a single, reusable operation that updates presence, notifies clients, and records the event for debugging. Normalizing the channel name here prevents case-sensitivity inconsistencies when tracking presence or delivering notifications. Notification is performed asynchronously by the broadcasting layer, which preserves responsiveness and allows the caller to await completion.
-
-## Example
-
-```csharp
-// Most common usage: user "alice" leaves the "General" channel
-await chatService.LeaveChannelAsync("conn-123", "alice", "General");
-```
+By encapsulating normalization, presence update, and broadcast in a single method, this symbol provides a consistent, reusable leave operation for the chat service. It ensures that all participants are informed of departures and that the server's presence state stays in sync across callers. The normalization step guarantees that channel identity is consistent, preventing duplicate or missed leaves due to casing.
 
 ## Notes
+- Channel identity is normalized to lowercase; avoid relying on mixed-case channel names.
+- This method is asynchronous; callers should `await` it to ensure the left-notification is delivered before proceeding.
 
-- ToLowerInvariant is called on channelName without a null-check; passing null will throw. Ensure channelName is non-null before calling, or upstream validation.
-- The connectionId parameter is unused in this implementation; it may be present for correlation or future use.
-- Exceptions from _presenceTracker.LeaveChannel or BroadcastToAllAsync propagate to the caller; no internal retry is performed.
+---
+
+### SanitizeNewlines
+> **File:** `src/EchoHub.Server/Services/ChatService.cs`  
+> **Kind:** method
+
+```csharp
+private static string SanitizeNewlines(string content)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `content` | `string` | — |
+
+**Returns:** `string`
+
+
+SanitizeNewlines is a private helper that cleans up a string by normalizing newline endings and trimming excessive blank lines to prevent newline spam in messages. It converts all CRLF/CR endings to LF, collapses runs of whitespace-only lines to at most `HubConstants.MaxConsecutiveNewlines` in a row, and caps the total line count to `HubConstants.MaxMessageNewlines` before returning the result.
+
+## Remarks
+SanitizeNewlines encapsulates formatting hygiene, centralizing newline handling behind a single, configurable policy. By relying on [`HubConstants`](../../EchoHub.Core/Constants/HubConstants.cs.md), the behavior can be tuned without changing call sites, and its private scope keeps the class’s public surface area focused on higher-level responsibilities for chat content processing.
+
+## Notes
+- If `HubConstants.MaxMessageNewlines` is configured to 0 or negative, the method may return an empty string, effectively dropping content.
+- The method treats any line consisting only of whitespace as a blank line, so lines that look empty but contain spaces or tabs contribute to the consecutive-blank budget and may be collapsed accordingly.
 
 ---
 
@@ -464,15 +481,7 @@ public async Task<string?> SendMessageAsync(Guid userId, string username, string
 **Returns:** `Task<string?>`
 
 
-SendMessageAsync coordinates the end-to-end process of posting a chat message to a named channel. It normalizes the channel name, validates it against allowed patterns, blocks writes to read-only channels (including the logs room and system channels), decrypts incoming content, strips a literal encryption prefix if present to prevent spoofing, and enforces non-empty content and a maximum length. It then looks up the target channel and the sender from the database, enforces mute state (including automatic unmute when a mute has expired), runs a spam guard that can auto-mute or reject messages, validates an optional reply target, and resolves link embeds before persisting the message. The method returns a user-facing string on error or when action is blocked, and returns null on a successful send; side effects include database updates, saving changes, and a moderation log entry when auto-muting occurs.
-
-## Remarks
-The method centralizes chat message submission, ensuring consistent enforcement of security, moderation, and content rules across all channels. It encapsulates cross-cutting concerns (validation, decryption, sanitization, moderation, and embed resolution) behind a single entry point, reducing duplication and potential inconsistencies in callers. By using a scoped DbContext and explicit read-only checks, it mitigates the risk of unintended writes and keeps transactional boundaries clear. The combination of encryption-aware processing, a programmable spam guard, and read-only channel protection reveals a deliberate design to balance user privacy, abuse prevention, and system integrity.
-
-## Notes
-- The method mutates and persists mute state (sender.IsMuted/MutedUntil) in response to spam protection or mute expiry.
-- Returning strings for error/status means callers must handle UI messaging; on success it returns null.
-- Be aware of early returns for read-only channels and non-existent channels; ensure the consumer handles user feedback.
+Sends a message from a user to a channel by validating the channel name, enforcing read-only constraints, decrypting and sanitizing the content, and applying user-state checks and anti-spam rules before proceeding with the submission pipeline. If any validation fails, the method returns a descriptive error string (for example, "Invalid channel name." or "Channel '{channelName}' does not exist."). The operation normalizes the channel name with the regex from `ValidationConstants.ChannelNameRegex()` and enforces the maximum length via `HubConstants.MaxMessageLength`. It rejects writes to log/system channels (`_serverLogs.IsLogsChannel(...)`) and decrypts the incoming content with `_encryption.Decrypt`, removing any literal `'$ENC$'` prefix before validation. After sanitizing newlines, it opens a DI scope to obtain an [`EchoHubDbContext`](../Data/EchoHubDbContext.cs.md), resolves the target [`Channel`](../../EchoHub.Core/Models/Channel.cs.md) (ensuring it exists and is not system-only), and loads the [`User`](../../EchoHub.Core/Models/User.cs.md) to check mute status (including auto-unmuting if the mute has expired). A spam guard (`_spamGuard.CheckMessage`) may auto-mute or reject the message depending on the verdict (`SpamVerdictKind.AutoMute` or `SpamVerdictKind.Rejected`). If a `replyToMessageId` is provided, the method validates the target message exists within the same channel. It also attempts to fetch URL embeds in a guarded block via `_embedServic` to enrich the message without destabilizing the submission flow. All persistence and side-effects occur within the scoped context, and the method returns a user-facing string on fail or proceeds with the normal submission path on success. The orchestration relies on several collaborators, including [`EchoHubDbContext`](../Data/EchoHubDbContext.cs.md), [`EmbedDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md), [`MessageDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md), [`ValidationConstants`](../../EchoHub.Core/Constants/ValidationConstants.cs.md), and [`HubConstants`](../../EchoHub.Core/Constants/HubConstants.cs.md), to enforce channel hygiene, user state, and content enrichment.
 
 ---
 
@@ -496,14 +505,15 @@ public async Task<string?> UpdateStatusAsync(Guid userId, string username, UserS
 **Returns:** `Task<string?>`
 
 
-Updates a user's presence status for the specified userId and username, performing validation, persisting changes to the database, and broadcasting the new presence to connected clients. When the input is invalid or the user cannot be found, it returns a user-facing error string; on success it returns null.
+Updates a user\`s `Status` and optional `StatusMessage`, persists the change to the database, and broadcasts the new presence to all subscribed channels. It validates that the `status` is a defined enum value (guarding against undefined bindings via `Enum.IsDefined`), and enforces the maximum length for `statusMessage` using `ValidationConstants.MaxStatusMessageLength`; on failure it returns a string error, otherwise it returns `null` after a successful update.
+
+It uses a scoped DI container to resolve [`EchoHubDbContext`](../Data/EchoHubDbContext.cs.md), loads the user by `userId`, updates `Status`, `StatusMessage` (trimmed), and `LastSeenAt` to `DateTimeOffset.UtcNow`, saves changes, builds a [`UserPresenceDto`](../../EchoHub.Core/DTOs/ProfileDtos.cs.md) for broadcasting, determines the channels with `_presenceTracker.GetChannelsForUser(username)`, and notifies clients via `BroadcastToAllAsync` calling `SendUserStatusChangedAsync` with the presence payload.
 
 ## Remarks
-The method creates a short-lived DI scope to obtain EchoHubDbContext, updates the user entity (Status, StatusMessage trimmed, and LastSeenAt set to UTC now), and saves changes. It then builds a UserPresenceDto and uses the presence tracker to determine the target channels, broadcasting the updated presence to all relevant clients via BroadcastToAllAsync. The return value encodes success (null) or failure (a user-facing string) without throwing exceptions.
+By performing the work inside a scoped container, the method keeps the Entity Framework context life cycle local to the operation, avoiding leaks across requests. It constructs a [`UserPresenceDto`](../../EchoHub.Core/DTOs/ProfileDtos.cs.md) containing the user's identity and presence details, which is then broadcast to all relevant channels via `BroadcastToAllAsync` and `SendUserStatusChangedAsync`. It also records whether the user is IRC-only using `_presenceTracker.IsIrcOnly(user.Username)` as part of the presence payload, ensuring clients receive a faithful representation of user state.
 
 ## Notes
-- If a value outside the defined UserStatus enum is supplied, the method immediately returns "Invalid status. Use online, away, dnd, or invisible." due to the enum validation check.
-- The status message is length-validated against ValidationConstants.MaxStatusMessageLength and is trimmed before storage; overly long messages produce a descriptive error.
+- The `statusMessage` is trimmed before persistence; a null value yields a null field in storage.
 
 
 ---
@@ -527,17 +537,7 @@ public async Task UserConnectedAsync(string connectionId, Guid userId, string us
 **Returns:** `Task`
 
 
-Upon a client connection, this method coordinates in-memory presence tracking, connection-count telemetry, and optional persistence of the user's online state. It updates the in-memory presence tracker and stats collector with the new connection, then resolves a scoped EchoHubDbContext to locate the user by userId. If the user exists, it updates LastSeenAt to the current UTC time and sets Status to Online, persisting the change via SaveChangesAsync. A debug-level log records the connection event for troubleshooting. The inline comment notes that churn aggregation is performed in the periodic stats report rather than in this hot path.
-
-## Remarks
-
-This method glues together presence, persistence, and telemetry for a user connection. It relies on a scoped DbContext to keep database changes isolated per connection, avoiding long-lived contexts and potential contention. By updating both the in-memory trackers and the persisted user state when a user connects, it helps ensure a consistent view of online users across in-memory data and storage, while gracefully handling the case where a user record may be absent.
-
-## Notes
-
-- If the user record cannot be found in EchoHubDbContext.Users, no database write occurs; the method still updates presence and stats.
-- The LastSeenAt timestamp uses DateTimeOffset.UtcNow to avoid timezone inconsistencies across servers.
-
+UserConnectedAsync handles a user establishing a real-time connection by recording the connection with the in-memory presence tracker (`_presenceTracker`), updating the live online user count via the stats collector (`_statsCollector`), and, within a short-lived scope, persisting the user's state in the database ([`EchoHubDbContext`](../Data/EchoHubDbContext.cs.md)). If a [`User`](../../EchoHub.Core/Models/User.cs.md) exists for the provided `userId`, it updates `LastSeenAt` to `DateTimeOffset.UtcNow` and sets `Status` to `UserStatus.Online`, then saves changes with `SaveChangesAsync`. Finally, it emits a debug log with `username` and `connectionId` via `_logger.LogDebug`.
 
 ---
 
@@ -558,117 +558,6 @@ public async Task<string?> UserDisconnectedAsync(string connectionId)
 **Returns:** `Task<string?>`
 
 
-Handles the disconnection lifecycle for a user in the chat service. Given a connectionId, it resolves the associated username, collects the channels the user was in, updates presence statistics, and if the user is no longer online, persists LastSeenAt and marks the user as Invisible in the database. It also constructs a UserPresenceDto and broadcasts a status-change to the user's previously tracked channels. The method returns the username that disconnected (or null if no user could be resolved from the connectionId).
-
-## Remarks
-
-By isolating persistence and presence updates behind a scoped database context, this method coordinates ephemeral connection state with durable user data. It serves as the boundary between connection lifecycle management and user presence broadcasting, ensuring that changes are persisted and that clients are notified consistently. The pattern of resolving the user from the connection, updating LastSeenAt and Visibility, and broadcasting a UserPresenceDto helps keep the client UIs in sync with accurate user status.
-
-## Notes
-
-- If the connectionId cannot be mapped to a username, the method still records the disconnection count via the stats collector, but skips the database update and user-broadcast.
-- LastSeenAt is updated to DateTimeOffset.UtcNow and Status is set to Invisible only when a valid username is found and the user is no longer online.
-- A scoped EchoHubDbContext is used to persist changes; the DbContext instance is disposed as part of the scope lifecycle. The broadcast is sent to the channels the user was connected to before disconnect; if there were no such channels, there is no targeted broadcast.
-
----
-
-## BuildLogBacklog
-> **File:** `src/EchoHub.Server/Services/ChatService.cs`  
-> **Kind:** method
-
-```csharp
-private List<MessageDto> BuildLogBacklog(string channelName)
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `channelName` | `string` | — |
-
-**Returns:** `List<MessageDto>`
-
-
-Turns the log-file backlog into transport-encrypted MessageDto objects so clients render past log lines exactly like streamed ones. It reads the backlog via the server logs store, encrypts each backlog entry’s content with the encryption service, and wraps it in a new MessageDto using a freshly generated GUID, the SenderName from ServerLogsService, the provided channelName, and the backlog entry’s timestamp. This method never touches the database and serves solely as a transform to replay historical log lines in the same MessageDto format as live messages.
-
-## Remarks
-Acts as a translator between persisted log backlog and the live message stream. By centralizing encryption and formatting, it ensures backlog replay matches live streams and isolates storage concerns from presentation. The use of a new GUID per backlog item also avoids depending on database identifiers for UI rendering.
-
-## Notes
-- The MessageDto payload sent for backlog entries is encrypted; clients must decrypt to display the original content.
-- IDs for backlog items are generated per call (Guid.NewGuid) and are not tied to persisted database IDs.
-
----
-
-## JoinChannelAsync
-> **File:** `src/EchoHub.Server/Services/ChatService.cs`  
-> **Kind:** method
-
-```csharp
-public async Task<(List<MessageDto> History, string? Error, bool PasswordRequired)> JoinChannelAsync(
-        string connectionId, Guid userId, string username, string channelName, string? [REDACTED:CONNECTION_STRING_PASSWORD]
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `History` | `List<MessageDto>` | — |
-| `Error` | `string?` | — |
-| `PasswordRequired` | `bool` | — |
-
-
-Joins a user to a chat channel, performing gating, membership validation, presence tracking, and history retrieval. It first enforces a join throttle via a spam guard, then delegates the channel membership check (including any password gate) to ChannelService. If the gate fails, it returns an empty history with the reason. On a successful gate, it records the join in the presence tracker, fetches a lightweight presence snapshot for broadcasting, broadcasts the join to all connected clients (except when the user is invisible), and finally returns the channel history along with an indication that no error occurred and that no password is required.
-
-## Remarks
-This method encapsulates the end-to-end join workflow in a single, reusable operation, ensuring consistent enforcement of anti-spam, permission, and presence semantics across the chat surface. By obtaining presence information in a scoped, guarded manner, it keeps side effects localized to the join flow while enabling clients to incrementally update their views. The implementation gracefully handles failures when fetching presence data (logging at debug level) without interrupting the primary join path, and it respects user visibility by avoiding broadcasts for invisible users.
-
-## Example
-```csharp
-// Example usage: a user joining a publicly accessible channel without a password
-var (history, error, passwordRequired) = await chatService.JoinChannelAsync(
-    connectionId: "conn-123",
-    userId: userId,
-    username: "Alice",
-    channelName: "general",
-    password: null);
-```
-
-## Notes
-- If the spam guard rejects the join, the method returns immediately with an empty history and a non-null error reason; no membership or presence side effects occur.
-- Invisible users will not trigger a broadcast of the join to other clients, though their history is still returned to them.
-- Presence data is a best-effort fetch; failures are logged at debug level and do not prevent the join from completing or the history from being returned.
-
----
-
-## SanitizeNewlines
-> **File:** `src/EchoHub.Server/Services/ChatService.cs`  
-> **Kind:** method
-
-```csharp
-private static string SanitizeNewlines(string content)
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `content` | `string` | — |
-
-**Returns:** `string`
-
-
-SanitizeNewlines normalizes line endings to a single newline form, collapses consecutive blank lines to at most HubConstants.MaxConsecutiveNewlines, and truncates the total line count to HubConstants.MaxMessageNewlines. This private helper should be invoked when preparing user-provided content for transmission so that messages stay readable and within size limits, rather than letting users push uncontrolled newline spam through the chat pipeline.
-
-## Remarks
-
-SanitizeNewlines centralizes newline handling to ensure consistent formatting across the chat pipeline. It is driven by HubConstants thresholds, avoiding hard-coded limits and enabling consistent behavior wherever message sanitization occurs. As a pure transformation of the input with no external state, it has no side effects beyond returning a sanitized string.
-
-## Notes
-
-- Collapses consecutive whitespace-only lines, which can alter intended spacing in user messages.
-- Truncates lines beyond MaxMessageNewlines, so content beyond the limit is dropped from the end.
-- The function is private and intended for internal use within the ChatService; external callers cannot rely on it.
-
+Handles a user disconnection by resolving the provided `connectionId` to a `username` via `_presenceTracker`, capturing the channels the user was in, and then marking the user as disconnected. If a `username` exists and the user is no longer online, it creates a scoped [`EchoHubDbContext`](../Data/EchoHubDbContext.cs.md), updates the corresponding [`User`](../../EchoHub.Core/Models/User.cs.md)'s `LastSeenAt` to `DateTimeOffset.UtcNow` and `Status` to `UserStatus.Invisible`, saves changes, constructs a [`UserPresenceDto`](../../EchoHub.Core/DTOs/ProfileDtos.cs.md) with the updated presence, and broadcasts the status change to the previously observed channels via `BroadcastToAllAsync` with `SendUserStatusChangedAsync`. Finally, it logs the disconnect with `_logger` and returns the `username` (which may be null).
 
 ---

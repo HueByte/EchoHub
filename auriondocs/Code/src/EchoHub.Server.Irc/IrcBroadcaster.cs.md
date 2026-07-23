@@ -8,12 +8,24 @@ public class IrcBroadcaster : IChatBroadcaster
 ```
 
 
-Broadcasts chat events to IRC clients by translating application-level messages and room/user events into IRC protocol lines and sending them via the IrcGatewayService. Decrypts transport-layer-encrypted message content so IRC clients (which do not support the application's app-layer encryption) receive readable text; end-to-end room ciphertext markers (e.g. $RC1$) are preserved. Use this class when you need to mirror server chat rooms and user lifecycle events to connected IRC clients.
+Bridges application chat events into IRC wire-protocol messages and sends them to connected IRC clients. Use `IrcBroadcaster` when you need chat activity (messages, joins/parts, kicks/bans, topic changes) reflected on an IRC gateway so traditional IRC clients see the room as an IRC channel; prefer using a plain chat broadcaster when you do not need IRC-formatted output.
 
 ## Remarks
-IrcBroadcaster is the IRC-specific implementation of the IChatBroadcaster contract and acts as the bridge between the chat model and the IRC wire format. It relies on IMessageEncryptionService to remove transport-layer encryption for IRC consumers and on IrcMessageFormatter to produce IRC-compliant lines (including splitting long messages and formatting reply prefixes/embeds). Messages are dispatched by enumerating connections returned from the gateway and sending formatted lines to each connection; the broadcaster also follows IRC conventions such as avoiding echoing a message back to the originating connection.
+`IrcBroadcaster` is an [`IChatBroadcaster`](../EchoHub.Core/Contracts/IChatBroadcaster.cs.md) implementation that adapts the application's chat model to IRC conventions. It pulls active connections from the [`IrcGatewayService`](IrcGatewayService.cs.md) (`GetConnectionsInChannel` / `GetAllConnections`), formats user-visible text with `IrcMessageFormatter.FormatMessage` (using the gateway `Options.PublicBaseUrl` for absolute links), and sends one or more IRC lines to each connection via `conn.SendAsync`. Because IRC clients cannot handle app-layer encryption, the broadcaster uses the injected [`IMessageEncryptionService`](../EchoHub.Core/Contracts/IMessageEncryptionService.cs.md) to decrypt transport-encrypted payloads before formatting; end-to-end room ciphertext markers (`$RC1$`) are left intact. The implementation also follows IRC conventions for echo suppression (it excludes the originating connection by `excludeConnectionId`) and for addressing (matching by `ConnectionId` or `Nickname` where appropriate).
+
+## Example
+```csharp
+// given existing instances of IrcGatewayService and IMessageEncryptionService
+var gateway = /* existing IrcGatewayService */;
+var encryption = /* existing IMessageEncryptionService */;
+var broadcaster = new IrcBroadcaster(gateway, encryption);
+
+// broadcast a message to the #general channel but don't echo back to the sender
+await broadcaster.SendMessageToChannelAsync("general", messageDto, excludeConnectionId: "conn-123");
+```
 
 ## Notes
-- Message content is decrypted before formatting; E2E room ciphertext (explicit markers like $RC1$) is left unchanged so room-encrypted messages are not exposed.
-- The broadcaster avoids echoing by comparing connection IDs (excludeConnectionId) when sending normal messages. Be aware this requires callers to pass the originating connection id to suppress local echoes correctly when appropriate.
-- Sends are awaited sequentially per connection/line (each connection's SendAsync is awaited in a loop). Under high fan-out this can introduce latency; consider batching or parallelization at the caller/gateway level if latency becomes an issue.
+- `IrcBroadcaster` explicitly decrypts transport-layer encrypted content using the injected [`IMessageEncryptionService`](../EchoHub.Core/Contracts/IMessageEncryptionService.cs.md); this is necessary because IRC clients do not support the application's app-layer encryption. Messages that contain E2E room ciphertext markers (`$RC1$`) are preserved as-is.
+- Echo suppression is performed by comparing `conn.ConnectionId` to the provided `excludeConnectionId`. This avoids re-sending a message to the origin connection while still delivering it to other sessions belonging to the same user (different connections/nicknames).
+- `IrcMessageFormatter.FormatMessage` may split a single logical message into multiple IRC lines; each resulting line is sent individually with `conn.SendAsync`, so large messages can result in multiple network writes.
+- `SendUserStatusChangedAsync` is a no-op because IRC lacks an active presence broadcast; clients discover away/idle state via `WHO`/`WHOIS` instead.

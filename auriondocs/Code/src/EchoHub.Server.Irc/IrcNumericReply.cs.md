@@ -8,17 +8,11 @@ public static class IrcNumericReply
 ```
 
 
-IrcNumericReply is a static container of string constants that encode the standard IRC protocol numeric replies. It centralizes the protocol’s numeric codes so developers can reference them by name (e.g., RPL_WELCOME, ERR_UNKNOWNCOMMAND) instead of sprinkling literal strings throughout the codebase. The constants are organized by functional areas such as registration, MOTD, channel operations, list operations, WHO/WHOIS, away status, mode, errors, and SASL.
+IrcNumericReply is a centralized, static container of IRC protocol numeric reply codes represented as strings. It defines constants for common server replies and errors, organized by category (Connection registration, MOTD, Channel operations, LIST, WHO/WHOIS, AWAY, MODE, Errors, SASL). Developers reference these constants, such as `IrcNumericReply.RPL_WELCOME` or `IrcNumericReply.ERR_NOSUCHNICK`, when constructing or interpreting IRC protocol messages instead of hard-coding literals. This reduces repetition, prevents typos, and makes maintenance safer if the IRC spec evolves or expands the set of recognized replies.
 
 ## Remarks
-Having all codes in one static class provides a single source of truth and makes it straightforward to update or extend the set as the IRC spec evolves. It also clarifies intent at call sites: emitting an IRC reply uses the corresponding constant rather than a magic string, and parsing branches can compare against these constants with confidence. This abstraction keeps server and client code aligned on canonical codes without duplicating literals.
-
-## Example
-```csharp
-// Example: emit a welcome reply using the canonical code
-string code = IrcNumericReply.RPL_WELCOME; // "001"
-string reply = $":server {code} Welcome to the IRC network";
-```
+IrcNumericReply provides a canonical reference for IRC numeric codes, solving the problem of scattered, magic string literals across message handling, parsing, and logging. It fits with any component that reads or writes server messages, allowing consistent checks for `IrcNumericReply.RPL_WELCOME` and other replies without duplicating numeric literals.
 
 ## Notes
-- The constants are strings, not integers; avoid parsing them as numbers if you need to preserve leading zeros (e.g., "001").
+- The constants are string values representing the IRC wire codes; use `IrcNumericReply.*` wherever you compare or emit these codes to avoid accidental mismatches.
+- This class contains no behavior beyond constants; place any parsing or dispatch logic elsewhere.

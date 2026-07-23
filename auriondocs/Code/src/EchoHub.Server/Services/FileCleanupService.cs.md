@@ -8,11 +8,12 @@ public sealed class FileCleanupService : BackgroundService
 ```
 
 
-FileCleanupService is a hosted background service that periodically deletes files in a configured storage directory that are older than a configured retention period. It reads settings from configuration, chooses the target path, and logs progress while running until cancellation.
+FileCleanupService is a hosted background worker that periodically deletes files older than a configured retention window from a storage directory determined by configuration. It reads its interval and retention settings from configuration, selects a path (configured path or a sensible default under the application base directory), and logs its activity while reliably continuing after errors.
 
 ## Remarks
-The cleanup logic is encapsulated in a dedicated BackgroundService to centralize disk-space hygiene and keep it decoupled from request-driven code. It relies on dependency-injected IConfiguration and ILogger to determine interval, retention, and storage path, and to report status and errors. Cleanup runs in a cancellation-friendly loop and uses UTC timestamps to compare age, making behavior predictable across servers.
+FileCleanupService encapsulates cleanup policy behind a dedicated background service, so cleanup logic is not sprinkled across the app. It uses dependency-injected `IConfiguration` and `ILogger<FileCleanupService>` to stay configurable and observable, and it handles exceptions without bringing down the service. The cleanup operation is intentionally conservative: files are deleted only if their creation time UTC is older than the computed cutoff, and per-file errors are logged and do not stop processing of the rest.
 
 ## Notes
-- It only considers files directly within storagePath; subdirectories are not scanned. If you need recursive cleanup, switch to Directory.GetFiles(storagePath, "*", SearchOption.AllDirectories) and adjust the cutoff logic accordingly.
-- File age is determined by GetCreationTimeUtc; if your deployment uses different semantics (e.g., files moved or uploaded), consider using GetLastWriteTimeUtc or metadata-based age checks.
+- If the storage path does not exist or is not configured, the cleanup is skipped gracefully.
+- Defaults are applied when configuration values are missing or invalid: `Storage:CleanupIntervalHours` defaults to 1, `Storage:RetentionDays` defaults to 30.
+- If files are in use or cannot be deleted due to permissions, the service logs a warning and continues with the remaining files.

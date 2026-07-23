@@ -1,8 +1,8 @@
 # HueByte/EchoHub — Documentation
 
-> Continuously generated, source-verified documentation for **HueByte/EchoHub**, built from branch `master` at commit `4dcb480d`. Every page is derived from the code itself and cross-checked against the source before it ships.
+> Continuously generated, source-verified documentation for **HueByte/EchoHub**, built from branch `master` at commit `40aea9a0`. Every page is derived from the code itself and cross-checked against the source before it ships.
 
-EchoHub is a client/server chat system that exposes an HTTP API implemented by multiple controllers and a realtime messaging surface via a hub (ChatHub), with client-side components for connecting and playback. The server hosts application services and background workers (e.g. file cleanup, data migrations) that implement business logic and maintenance tasks. Persistent state is stored in the Entity Framework DbContext (EchoHubDbContext) which is used by controllers and services. Clients interact with the server through the ApiClient and implement messaging callbacks against the IEchoHubClient contract.
+This repository implements a chat and file-sharing server with a desktop client: server-side controllers expose an HTTP API (e.g. `AuthController`, `UsersController`, `FilesController`) while a real-time hub (`ChatHub`) handles live messaging and presence. Background workers and maintenance tasks run as hosted services (for example `FileCleanupService` and `DataMigrationService`), and persistent state is stored in the Entity Framework DbContext (`EchoHubDbContext`). The desktop client communicates with the server via an API client (`ApiClient`) and includes local services like audio playback and message encryption.
 
 ## Start here
 
@@ -14,14 +14,14 @@ EchoHub is a client/server chat system that exposes an HTTP API implemented by m
 
 Cross-file guides on the themes that shape this codebase:
 
-- [API client and authentication](Synthesis/api-client-authentication.md) — This guide explains how the EchoHub client performs HTTP operations and manages authentication tokens, and it documents the DTOs the client uses when talking to the server.
-- [Attachments and file transfers](Synthesis/attachments-transfer.md) — Outgoing attachments are staged in the UI, packaged as transport objects, and then coordinated through the app orchestrator into the live connection for transmission.
-- [Clipboard utilities](Synthesis/clipboard-tools.md) — This guide describes the clipboard-focused utilities in the client: one helper that exposes file-list clipboard contents, another that normalizes image clipboard data into PNG bytes, and the UI entry points that call…
-- [Command handling](Synthesis/command-handling.md) — This guide explains how user-entered slash commands move from text input into application behavior and network actions.
-- [Encryption and room key management](Synthesis/encryption-roomkeys.md) — End-to-end encryption in the client is implemented as a few focused components: a runtime encryptor that mirrors the server format, a protector that encrypts per-channel room keys at rest, a store that binds persisted…
-- [Real-time connection management](Synthesis/real-time-connection.md) — This guide explains how the client-side pieces manage a SignalR-based chat connection, surface server events to the UI, and carry message and attachment DTOs across those boundaries.
-- [Theming and UI color management](Synthesis/ui-theming.md) — Theming and UI color management
-- [Update management](Synthesis/update-management.md) — Update management
+- [API client authentication](Synthesis/api-client-authentication.md) — A short, focused orientation to how the client authenticates to the server and then uses those credentials when making API calls.
+- [Attachments transfer](Synthesis/attachments-transfer.md) — This guide describes how the client UI stages user-provided files and how the application constructs the immutable attachment objects that travel with outgoing chat messages.
+- [Clipboard utilities](Synthesis/clipboard-tools.md) — This topic covers small, focused helpers that let the UI treat clipboard contents as first-class attachments: one helper extracts file paths from a file-list clipboard, another canonicalizes whatever image bytes are a…
+- [Encryption and room keys](Synthesis/encryption-roomkeys.md) — Client-side message confidentiality is implemented in two cooperating pieces: a runtime encryptor that performs AES-256-GCM on outgoing and incoming message payloads, and a storage protector that keeps per-room conten…
+- [Real-time connection and messaging](Synthesis/real-time-connection.md) — A compact overview of the client-side real-time layer: how the connection is created, the runtime surface it exposes to higher layers, and the DTOs used to carry chat and channel data.
+- [Slash command handling](Synthesis/command-handling.md) — This guide explains how slash-style chat input is parsed and executed across three collaborating components: a parser/dispatcher, an application orchestrator that implements command behavior and UI coordination, and a…
+- [UI theming and theme management](Synthesis/ui-theming.md) — This guide explains the client-side theming pieces: the Theme data model, the ThemeManager that provides built-in and user-provided themes and applies them at runtime, and the AppOrchestrator that coordinates UI behav…
+- [Update management](Synthesis/update-management.md) — This topic covers the small set of services and the orchestrator that detect available application updates, snapshot state before an update, and hand off the heavy update work so it happens after the Terminal.Gui main…
 
 ## Recurring workflows
 
@@ -33,7 +33,7 @@ Step-by-step templates for the patterns this codebase repeats, each grounded in 
 ## By the numbers
 
 - **128** documentation pages covering **128** source files
-- **598** symbols documented and validated
+- **617** symbols documented and validated
 - **22,133** lines of code analyzed
 - Languages: C# (128)
 
@@ -45,4 +45,4 @@ Step-by-step templates for the patterns this codebase repeats, each grounded in 
 
 ---
 
-*Generated by [AurionDocs](https://auriondocs.com) from `master` at commit `4dcb480d` on 2026-07-23 05:56 UTC.*
+*Generated by [AurionDocs](https://auriondocs.com) from `master` at commit `40aea9a0` on 2026-07-23 09:35 UTC.*

@@ -8,53 +8,93 @@ public interface IEchoHubClient
 ```
 
 
-Represents the set of callbacks the server can invoke on a connected client. Implement this interface on client-side code that subscribes to the server's real-time hub so the client can react to server-initiated events such as incoming messages, presence updates, channel changes, and administrative actions.
+Represents the callback contract for notifications and control messages the server can invoke on connected clients. Implement this interface on the client side (or provide a test double) when you need a strongly-typed set of server-to-client RPCs for events such as new messages, presence changes, channel updates, moderation actions, and error or disconnect notifications.
 
 ## Remarks
-This interface defines a stable, strongly-typed surface for server-to-client notifications. Each method corresponds to a distinct event the server may raise (message delivery, user presence changes, channel lifecycle events, errors, and forced disconnects). Implementations keep client-side handling decoupled from the transport layer and allow the server to call back into client logic without embedding client behavior in server code.
+This interface centralizes all server-originated client callbacks into a single, versioned surface so the server can address connected clients with a known set of operations. Each method returns a `Task` to allow asynchronous client implementations (IO, UI dispatching, persistence) and to make the callbacks composable for test harnesses and runtime adapters. The nullable annotations on parameters (for example the `UserPresenceDto?` in `UserJoined` and `string?` in `UserKicked`) indicate which values the server may omit; implementations must handle those cases.
 
 ## Example
 ```csharp
-// Minimal client-side implementation that logs events; real handlers should avoid long-running work.
-public class EchoClientHandler : IEchoHubClient
+using System;
+using System.Threading.Tasks;
+
+public class ConsoleEchoClient : IEchoHubClient
 {
     public Task ReceiveMessage(MessageDto message)
     {
-        Console.WriteLine($"Received message: {message}");
+        Console.WriteLine($"[{message.Channel}] {message.Sender}: {message.Text}");
         return Task.CompletedTask;
     }
 
     public Task UserJoined(string channelName, string username, UserPresenceDto? presence)
     {
-        Console.WriteLine($"{username} joined {channelName}");
+        Console.WriteLine($"User joined {channelName}: {username}");
         return Task.CompletedTask;
     }
 
     public Task UserLeft(string channelName, string username)
     {
-        Console.WriteLine($"{username} left {channelName}");
+        Console.WriteLine($"User left {channelName}: {username}");
         return Task.CompletedTask;
     }
 
-    // Other members can be implemented similarly; keep handlers quick and non-blocking.
-    public Task ChannelUpdated(ChannelDto channel) => Task.CompletedTask;
-    public Task UserStatusChanged(UserPresenceDto presence) => Task.CompletedTask;
-    public Task UserKicked(string channelName, string username, string? reason) => Task.CompletedTask;
-    public Task UserBanned(string username, string? reason) => Task.CompletedTask;
-    public Task MessageDeleted(string channelName, Guid messageId) => Task.CompletedTask;
-    public Task ChannelDeleted(string channelName) => Task.CompletedTask;
-    public Task ChannelNuked(string channelName) => Task.CompletedTask;
-    public Task ForceDisconnect(string reason) => Task.CompletedTask;
+    public Task ChannelUpdated(ChannelDto channel)
+    {
+        Console.WriteLine($"Channel updated: {channel.Name}");
+        return Task.CompletedTask;
+    }
+
+    public Task UserStatusChanged(UserPresenceDto presence)
+    {
+        Console.WriteLine($"Status changed: {presence.Username} -> {presence.Status}");
+        return Task.CompletedTask;
+    }
+
+    public Task UserKicked(string channelName, string username, string? reason)
+    {
+        Console.WriteLine($"User kicked from {channelName}: {username} Reason: {reason ?? "(none)"}");
+        return Task.CompletedTask;
+    }
+
+    public Task UserBanned(string username, string? reason)
+    {
+        Console.WriteLine($"User banned: {username} Reason: {reason ?? "(none)"}");
+        return Task.CompletedTask;
+    }
+
+    public Task MessageDeleted(string channelName, Guid messageId)
+    {
+        Console.WriteLine($"Message deleted in {channelName}: {messageId}");
+        return Task.CompletedTask;
+    }
+
+    public Task ChannelDeleted(string channelName)
+    {
+        Console.WriteLine($"Channel deleted: {channelName}");
+        return Task.CompletedTask;
+    }
+
+    public Task ChannelNuked(string channelName)
+    {
+        Console.WriteLine($"Channel nuked: {channelName}");
+        return Task.CompletedTask;
+    }
+
+    public Task ForceDisconnect(string reason)
+    {
+        Console.WriteLine($"Force disconnect: {reason}");
+        return Task.CompletedTask;
+    }
+
     public Task Error(string message)
     {
-        Console.Error.WriteLine(message);
+        Console.WriteLine($"Error from server: {message}");
         return Task.CompletedTask;
     }
 }
 ```
 
 ## Notes
-- Handlers are asynchronous (return Task): keep implementations short and non-blocking to avoid delaying the server's invocation path.
-- Nullable parameters (e.g. UserPresenceDto? and string?) may be null; check before accessing members.
-- Server-driven callbacks can occur concurrently; ensure any shared client state mutated by these methods is accessed in a thread-safe manner.
-- Catch and handle exceptions inside handlers — unhandled exceptions may affect the connection or be observable by the server depending on the transport behavior.
+- Respect nullability: parameters annotated with `?` (for example `UserPresenceDto?` and `string?`) may be `null` and callers should handle those cases gracefully.
+- All methods return `Task`: implementations should avoid long-running synchronous work on the calling thread (use `async`/`await` or schedule work) to prevent blocking the runtime that invokes these callbacks.
+- Implementations should avoid throwing exceptions from these methods where possible; unhandled exceptions may surface to the caller or the hosting infrastructure depending on how the callbacks are invoked.

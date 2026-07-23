@@ -8,28 +8,24 @@ public sealed class ClientEncryptionService : IMessageEncryptionService
 ```
 
 
-ClientEncryptionService provides client-side encryption for messages by applying AES-256-GCM using a key supplied by the server. It mirrors the server’s encryption format so messages are encrypted end-to-end between client and server. When no key has been set, Encrypt is a no-op and returns the plaintext to preserve compatibility with unauthenticated flows; once initialized, Encrypt produces a prefixed, base64-encoded payload containing the nonce and ciphertext+tag, and Decrypt reverses this process. If decryption fails due to a missing or mismatched key or corrupted data, a sentinel message is returned to indicate the failure and prompt re-authentication to refresh the key.
+ClientEncryptionService implements client-side encryption using AES-256-GCM to protect messages before sending them to the server, aligning with the server's ciphertext format so decryption occurs only with the shared key. After you provide a base64-encoded key via `SetKey`, it encrypts plaintext by generating a fresh 12-byte nonce and a 16-byte authentication tag, returning a string that starts with the `EncryptionPrefix` and includes base64-encoded nonce and payload; if no key has been set (`_key` is null), `Encrypt` returns the plaintext unchanged.
 
 ## Remarks
-This abstraction isolates cryptography behind a single, testable service that can be swapped or disabled without changing business logic. It enforces a clear security boundary: encryption only happens after a server-provided key is loaded, reducing the risk of leaking plaintext. The pre-key pass-through behavior preserves compatibility with existing flows during login or in environments where the key has not yet been fetched.
+This class hides cryptography behind the [`IMessageEncryptionService`](../../EchoHub.Core/Contracts/IMessageEncryptionService.cs.md) contract, offering a simple, predictable API for encryption and decryption while keeping key material private. It ensures that only a server-provisioned key enables encryption, and it produces self-contained ciphertext that carries its nonce and tag so the server can decrypt it reliably. The design also provides nullable-friendly helpers (`EncryptNullable`, `DecryptNullable`) to gracefully handle missing values.
 
 ## Example
 ```csharp
-// Example: encrypt and decrypt with a server-provided key
-var client = new ClientEncryptionService();
-
-// Create a 32-byte key for demonstration (replace with real server-provided key)
-var keyBytes = new byte[32];
-var base64Key = Convert.ToBase64String(keyBytes);
-client.SetKey(base64Key);
-
+// Example usage of client-side encryption
+var encryption = new ClientEncryptionService();
+string base64Key = "<32-byte-base64-key>";
+encryption.SetKey(base64Key);
 string plaintext = "Secret message";
-string encrypted = client.Encrypt(plaintext);
-string decrypted = client.Decrypt(encrypted);
-// decrypted should equal plaintext
+string ciphertext = encryption.Encrypt(plaintext);
+string decrypted = encryption.Decrypt(ciphertext);
 ```
 
 ## Notes
-- Encrypt and Decrypt only work after a 32-byte key has been provided via SetKey; otherwise Encrypt returns plaintext and Decrypt returns content unchanged.
-- If the encrypted content is tampered with, the key is wrong, or the payload is malformed, Decrypt returns the special placeholder: "[encrypted message — decryption failed, try re-logging to fetch the latest key]".
-- The key is held in memory and is not rotated automatically; ensure proper key management and re-fetch after key rotation on the server.
+- Encrypt before calling `SetKey` is a no-op: the input plaintext is returned unchanged when `_key` is null.
+- Decrypt returns the original content if `_key` is null or the input does not start with the expected `EncryptionPrefix`.
+- `SetKey` enforces a 32-byte (256-bit) key length and throws `InvalidOperationException` if the length is not exactly 32 bytes.
+- Decryption errors are handled gracefully; if decryption fails for any reason, a sentinel message is returned: "[encrypted message — decryption failed, try re-logging to fetch the latest key]".

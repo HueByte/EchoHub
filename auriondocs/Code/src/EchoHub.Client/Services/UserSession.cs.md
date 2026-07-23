@@ -8,12 +8,7 @@ internal sealed class UserSession
 ```
 
 
-Stores the current user's session state on the client, including username, online status, and an optional status message. Use this type as a lightweight, centralized container when you need to read or mutate the ephemeral session data for the active user, and call Reset to return all fields to their defaults (empty username, Online status, and no status message).
+Represents the current user\'s session state within the client, encapsulating the `Username`, the presence `Status` from [`UserStatus`](../../EchoHub.Core/Models/UserStatus.cs.md), and an optional `StatusMessage`. It is a lightweight in-memory container used by UI and networking layers to track who is logged in and how they present themselves. The `Reset` method reinitializes all fields to their defaults: `Username` to empty, `Status` to `UserStatus.Online`, and `StatusMessage` to `null`.
 
 ## Remarks
-Internally sealed and non-public, this class keeps the session representation stable within the client service layer and prevents inheritance. It relies on the UserStatus enum from the core models to express the user's current state consistently across the application.
-
-## Notes
-- Not thread-safe by default; coordinate concurrent access if used from multiple threads.
-- Reset mutates state in place; if you require preserving data, capture it before calling Reset.
-- StatusMessage is nullable; null indicates that no message is provided.
+This small class centralizes session-related data so multiple components can read and update the user\'s identity and presence from a single source of truth. By being `internal` and `sealed`, it communicates that this is an implementation detail of the client assembly and should not be extended or exposed publicly.

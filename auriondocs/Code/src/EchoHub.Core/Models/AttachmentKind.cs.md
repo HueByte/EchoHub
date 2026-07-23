@@ -13,27 +13,7 @@ public enum AttachmentKind
 ```
 
 
-AttachmentKind enumerates the possible types of a message attachment and signals how the client should render it. Use this enum when you know the specific attachment kind (image, audio, or file) so the UI can render an ASCII preview, a playback control, or a download option instead of a generic attachment rendering.
+AttachmentKind is an enum that encodes how a message attachment should be rendered in the client. It enables rendering logic to pick the appropriate UI: for `Image` attachments, an ASCII image preview is shown; for `Audio`, a play control is exposed; and for `File`, a download line is presented. Use this enum when you need to branch rendering behavior based on the attachment's kind, instead of scattering rendering decisions across the codebase.
 
 ## Remarks
-This enum centralizes the presentation logic for attachments and serves as a simple discriminator that decouples the attachment data from its rendering. By representing the modality with a single value, components can switch on kind to choose the appropriate UI affordance without inspecting the content payload. It helps maintain a clean separation between the data model (what the attachment is) and the presentation (how it should be shown).
-
-## Example
-```csharp
-AttachmentKind kind = AttachmentKind.Image;
-switch (kind)
-{
-    case AttachmentKind.Image:
-        Console.WriteLine("Render as ASCII image preview");
-        break;
-    case AttachmentKind.Audio:
-        Console.WriteLine("Render with audio controls");
-        break;
-    case AttachmentKind.File:
-        Console.WriteLine("Render as downloadable file");
-        break;
-}
-```
-
-## Notes
-- If the enum is extended in the future, ensure all switch expressions include a default/fallback to handle unknown values gracefully.
+This enum centralizes how attachments are presented, decoupling the attachment data from UI rendering code. It helps the rendering layer evolve independently (e.g., swapping ASCII previews or adding new affordances) without changing attachment structures.

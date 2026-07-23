@@ -8,14 +8,12 @@ public class FileStorageService
 ```
 
 
-FileStorageService persists uploaded data to a local disk storage location, creating the directory if it does not exist and selecting the path from configuration (Storage:Path) or defaulting to an uploads folder beside the application. Each saved file is assigned a GUID-based fileId and stored with its original extension; the API supports SaveFileAsync, GetFilePath, GetStoredFileIds, and DeleteFile for common lifecycle operations.
+FileStorageService is a lightweight on-disk storage helper for uploaded files. It derives its storage location from configuration under `Storage:Path` (defaulting to an `uploads` directory next to the application's base directory), ensures the directory exists, and provides basic operations to save, locate, enumerate, and delete files.
 
 ## Remarks
-
-By centralizing disk interactions, this service hides filesystem details from callers and provides a single, testable abstraction for storing attachments. It guarantees the storage directory exists and maps between a stable fileId and the corresponding on-disk file (preserving the extension). The GetStoredFileIds method performs a single directory scan to facilitate bulk checks across many files without per-file I/O.
+FileStorageService centers on a GUID-based identity for each stored file and writes files to a single storage directory as `"{fileId}{extension}"`. Retrieval by id uses a wildcard extension, so callers do not need to know the original file name or extension at lookup time. The `GetStoredFileIds` method performs one directory scan to produce the set of ids (filenames without extensions), enabling bulk checks of attachments without issuing a separate filesystem glob per id. The design hides actual file names from callers while preserving the original extension on disk to help downstream consumers infer content type. The constructor's path resolution and directory creation ensure a usable store is available up front, reducing boilerplate for calling code.
 
 ## Notes
-
-- The storage path is captured at construction time; changes to configuration after construction won't affect this instance.
-- No validation of the incoming stream’s content type or size is performed here; enforce validation at call sites if needed.
-- DeleteFile uses GetFilePath to locate the file before deleting and becomes a no-op if the file does not exist.
+- Initialization may throw if the configured storage path is invalid or cannot be created due to permissions.
+- `DeleteFile` is safe to call for non-existent files; it simply becomes a no-op.
+- `GetFilePath` relies on a pattern `"{fileId}.*"`; if multiple matches exist (e.g., due to external tampering), the first match is returned, which should be rare given the GUID-based ids.

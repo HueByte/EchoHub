@@ -19,16 +19,17 @@ public static class NativeFolderPicker
 ```
 
 
-Opens the OS-native folder picker by shelling out to the host OS, keeping the TUI free of GUI toolkit dependencies. It supports Windows, macOS, and Linux by delegating to platform-specific helpers and returns a FolderPickResult that communicates whether a folder was chosen, the dialog was cancelled, or the native picker is unavailable so the caller can fall back to a configured path.
+Opens the OS-native folder chooser by shelling out to platform-specific dialogs (Windows Explorer, macOS Finder, Linux GTK/KDE), allowing the TUI to remain GUI-toolkit agnostic. It dispatches to the appropriate platform helper at runtime and returns a `FolderPickResult` with a `PickerOutcome` of `Unavailable` when no native dialog can run, so callers can fall back to a configured path. Failures are caught and logged to avoid crashing the UI, and the dialog title is a fixed prompt guiding the user to select EchoHub’s download folder.
 
 ## Remarks
 
-NativeFolderPicker centralizes cross-platform behavior for obtaining a folder path without pulling in a GUI toolkit. It hides OS differences behind a single entry point, PickFolderAsync, and exposes a uniform result type (FolderPickResult with a PickerOutcome) that callers can inspect to either proceed with the chosen path or fall back to defaults. Failures are caught and logged, ensuring graceful degradation rather than exceptions propagating to the UI.
+By shielding native dialogs behind `NativeFolderPicker`, the rest of the application stays decoupled from platform GUI toolkits, improving portability and testability. The abstraction also centralizes cross‑platform quirks (Windows PowerShell quoting, AppleScript invocation, and GTK/KDialog fallbacks) in one place, reducing duplication and ensuring a consistent user experience across environments.
 
 ## Notes
-- Linux will not attempt a graphical picker if no graphical session is detected (DISPLAY or WAYLAND_DISPLAY are missing); in that case, the method returns Unavailable.
-- On Windows, the initial directory is sanitized (apostrophes are doubled) to safely embed the path in the PowerShell script, and PowerShell is invoked via an encoded command to avoid quoting issues.
-- If the platform-specific helper cannot be started, the code falls back to returning Unavailable instead of throwing, allowing callers to implement their own fallback strategy.
+
+- Headless Linux environments (no `DISPLAY` or `WAYLAND_DISPLAY`) cause the picker to return `PickerOutcome.Unavailable`.
+- Windows path handling escapes apostrophes in the initial directory to survive the embedded PowerShell script.
+- If the user cancels the dialog or no path is selected, the result is `PickerOutcome.Cancelled` rather than an error; callers should handle this as a user action.
 
 ---
 
@@ -48,22 +49,16 @@ public sealed record FolderPickResult(PickerOutcome Outcome, string? Path)
 | `Path` | `string?` | — |
 
 
-FolderPickResult is an immutable data carrier that represents the outcome of a native folder-picking operation and, when successful, the path of the selected folder.
+FolderPickResult is an immutable data container that captures the result of a native folder picker operation. It pairs the `PickerOutcome` with an optional `Path`, letting callers distinguish between a successful selection and cancellation while carrying the selected folder path only when available.
 
 ## Remarks
-Because FolderPickResult is a record, it benefits from value-based equality and straightforward pattern matching when consumed by calling code. The Path member is nullable to reflect that a folder may not be selected; always check the Outcome before using Path. This abstraction decouples application logic from platform-specific picker implementations, promoting testability and cross-platform compatibility.
 
-## Example
-```csharp
-var result = new FolderPickResult(PickerOutcome.Success, @"C:\Projects");
-if (result.Outcome == PickerOutcome.Success && result.Path is not null)
-{
-    Console.WriteLine(result.Path);
-}
-```
+As a `record`, `FolderPickResult` benefits from value-based equality and supports deconstruction, enabling concise comparisons and pattern matching when consuming results from the native folder picker. It encapsulates the outcome and potential path in a single, strongly-typed value, simplifying higher-level handling and reducing the need for multiple disparate return values.
 
 ## Notes
-- Path may be null when Outcome indicates cancellation or failure; always verify Outcome before accessing Path.
+
+- `Path` is nullable; validate before use and prefer accessing `Path` only when `Outcome` indicates a successful result.
+
 
 ---
 
@@ -83,14 +78,32 @@ public enum PickerOutcome
 ```
 
 
-PickerOutcome encodes the result of attempting to display a native folder picker. It defines three mutually exclusive states: Chosen (the user picked a folder and FolderPickResult.Path is set), Cancelled (the native dialog ran but no selection was made), and Unavailable (no native picker is available on the current machine).
-
-Use this enum to drive post-pick logic without scattering platform checks or error handling across call sites.
+Represents the outcome of prompting the user to pick a folder via the native picker. Use it to branch logic based on whether the user selected a folder, cancelled the dialog, or the environment doesn't provide a picker.
 
 ## Remarks
-This enum serves as a lightweight sum type for the outcome of a folder-picking operation. It centralizes decision points and pairs with FolderPickResult to obtain the actual path when Chosen is returned. Consumers can implement a fallback flow for Unavailable and provide a smooth user experience when Cancelled.
+By isolating the three possible results into a single enum, callers can write concise, robust code without tying their logic to UI details. The Cancelled and Unavailable outcomes allow you to differentiate between a user-initiated abort and a runtime environment where the picker isn't present, enabling graceful fallbacks. Tie the Chosen outcome to a corresponding `FolderPickResult` instance that carries the selected path in its `Path` property.
+
+## Example
+```csharp
+// Example: respond to folder-picking outcomes
+public void HandleOutcome(PickerOutcome outcome, FolderPickResult folderPath)
+{
+    switch (outcome)
+    {
+        case PickerOutcome.Chosen:
+            Console.WriteLine($"Selected folder: {folderPath.Path}");
+            break;
+        case PickerOutcome.Cancelled:
+            // User cancelled the dialog; no folder selected.
+            break;
+        case PickerOutcome.Unavailable:
+            // Fall back to a non-UI flow
+            break;
+    }
+}
+```
 
 ## Notes
-- Unavailable is not an error; it indicates the absence of a native picker and warrants a fallback strategy (e.g., a non-native picker or manual path entry).
+- Do not access `FolderPickResult.Path` when outcome is not `PickerOutcome.Chosen`.
 
 ---

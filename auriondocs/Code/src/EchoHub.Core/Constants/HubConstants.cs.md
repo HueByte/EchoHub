@@ -8,12 +8,23 @@ public static class HubConstants
 ```
 
 
-HubConstants is a static container for global constants used by the chat hub to configure limits, paths, and feature boundaries. It provides values such as the hub path, default channel, and various size and constraint limits, ensuring consistent behavior across components and avoiding scattered magic numbers.
+HubConstants acts as the single source of truth for the chat hub’s configurable limits and defaults. It groups static, compile-time constants that govern where the hub is exposed, how sessions are identified (including the IRC gateway prefix), and the upper bounds for messages, attachments, avatars, and embeds, providing a centralized reference that other components consult for validation and formatting.
 
 ## Remarks
-HubConstants centralizes cross-cutting, tunable values so changes propagate consistently across messaging validation, content embedding, and endpoint configuration. Because these are compile-time constants, they are not sourced from runtime configuration; if you need different behavior per deployment, introduce a separate configuration mechanism rather than altering these constants at runtime.
+HubConstants isolates cross-cutting numerical constraints from business logic, ensuring all parts of the EchoHub system enforce the same rules. It enables tuning by operators—e.g., increasing `MaxMessageLength` or `MaxAttachmentsPerMessage`—without altering core workflows, while the IRC connection-id prefix helps the presence tracker distinguish IRC-based clients from native ones. The constants also centralize embed sizing and fetch behavior to maintain predictable link previews and resource usage across gateways and clients.
+
+## Example
+```csharp
+// Validate message length against hub-wide limit
+if (message.Text.Length > HubConstants.MaxMessageLength)
+{
+    // handle too long
+}
+
+// Build the path for the chat hub
+var hubPath = HubConstants.ChatHubPath;
+```
 
 ## Notes
-- The distinction between MaxMessageNewlines (30) and MaxConsecutiveNewlines (1) matters: the first limits overall newline usage, the second limits consecutive newline runs.
-- Size limits are per-file (e.g., MaxImageSizeBytes, MaxAudioFileSizeBytes, MaxFileSizeBytes) and guide validation and storage decisions; never assume a single cap covers all attachment types.
-- IrcConnectionIdPrefix is used by the presence tracker to distinguish IRC gateway connections from native SignalR clients; ensure prefix checks rather than simple contains checks to avoid misclassification.
+- They are compile-time constants (const) and thus require a recompilation to change; runtime configuration is not supported.
+- Changes to these values reflect architectural expectations across components (UI, gateway, presence tracker, and embeds) and should be coordinated to avoid breaking client assumptions.

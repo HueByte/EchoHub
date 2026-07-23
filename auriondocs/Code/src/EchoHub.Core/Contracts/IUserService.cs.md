@@ -8,30 +8,29 @@ public interface IUserService
 ```
 
 
-IUserService defines a contract for asynchronous user-management operations within EchoHub.Core. It exposes methods to register and authenticate users, retrieve profiles by username or by ID, update profile details, and set a user's avatar. Implementations of this interface serve as the single logical boundary for user lifecycle concerns, allowing REST endpoints and the IRC gateway to funnel through a consistent surface and enabling easier testing and swapping of storage or identity providers. The RegisterUserAsync method acknowledges server configuration: when Server:Registration is set to "invite", an inviteCode is required; when set to "closed", new accounts are rejected; all such flows funnel through this service.
+`IUserService` is the asynchronous contract for common user-account operations: registration, authentication, and profile access. Implementations may back these calls with REST, an IRC gateway, or other transports, but callers interact with this interface to perform login, account creation, and profile queries without coupling to a specific transport.
 
 ## Remarks
-By centralizing these operations behind IUserService, the rest of the system depends on a stable, testable contract rather than concrete data stores or authentication mechanisms. It coordinates with the UserOperationResult wrapper to communicate success or failure and, for retrieval operations, to surface user data returned on success, keeping error handling consistent across the application.
+
+By returning `Task<UserOperationResult>` for mutating operations and `Task<UserProfileDto?>` for profile queries, the interface cleanly models success/failure and optional data. The [`UserOperationResult`](../DTOs/CommonDtos.cs.md) type provides `Success(UserProfileDto user)` and `Fail(UserError error, string message)` helpers, enabling implementations to construct consistent outcomes. The `RegisterUserAsync` method carries a server-policies cue in its comment: when `Server:Registration = "invite"`, an `inviteCode` is required; in `"closed"` mode, new accounts are refused. This centralizes registration policy at the service boundary and avoids scattering policy checks across call sites.
 
 ## Example
-```csharp
-// Example usage of the IUserService contract
-var result = await userService.RegisterUserAsync("alice", "P@ssw0rd", displayName: "Alice", inviteCode: "INV-123");
-if (result.IsSuccess)
-{
-    // registration succeeded; you can proceed with login or profile fetch
-}
-```
 
 ```csharp
-var profile = await userService.GetUserProfileAsync("alice");
-if (profile != null)
+// Example usage of IUserService
+public async Task DemoAsync(IUserService userService)
 {
-    // use profile data
+    var reg = await userService.RegisterUserAsync("alice", "Secret123", inviteCode: "INVITE-42");
+    if (reg.IsSuccess)
+    {
+        var profile = await userService.GetUserProfileAsync("alice");
+        // Use profile as needed
+    }
 }
 ```
 
 ## Notes
-- If you call UpdateProfileAsync with all arguments as null, the operation may be a no-op; only pass the fields you intend to update.
-- GetUserByIdAsync returns a UserProfileDto?; handle the null case when the user does not exist.
-- For registration, ensure your server's registration policy (invite vs closed) is aligned with your inviteCode usage; otherwise registration may fail.
+
+- The `inviteCode` parameter is context-sensitive and should be supplied when the server is configured with `Server:Registration = "invite"`; otherwise it may be omitted.
+- All methods are asynchronous; callers should `await` the results and branch on `UserOperationResult.IsSuccess` as appropriate. 
+- [`GetUserProfileAsync`](../../EchoHub.Client/Services/ApiClient.cs.md) and `GetUserByIdAsync` return `UserProfileDto?`, reflecting the possibility that a user profile may not be found or accessible in certain contexts.

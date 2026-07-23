@@ -43,13 +43,13 @@
   - [RekeyChannelAsync](#rekeychannelasync)
   - [RevokeInviteAsync](#revokeinviteasync)
   - [SendMessageWithAttachmentsAsync](#sendmessagewithattachmentsasync)
+  - [SendUrlAsync](#sendurlasync)
   - [SetTokens](#settokens)
   - [UnbanUserAsync](#unbanuserasync)
   - [UnmuteUserAsync](#unmuteuserasync)
   - [UpdateChannelTopicAsync](#updatechanneltopicasync)
+  - [UpdateProfileAsync](#updateprofileasync)
   - [UploadAvatarAsync](#uploadavatarasync)
-- [SendUrlAsync](#sendurlasync)
-- [UpdateProfileAsync](#updateprofileasync)
 
 ---
 
@@ -62,34 +62,16 @@ public sealed class ApiClient : IDisposable
 ```
 
 
-A high-level HTTP client for EchoHub that centralizes authentication (login, refresh, logout) and common server operations (channels, messages, uploads, invites, profile). Use ApiClient when you want a single, in-memory service to manage access/refresh tokens, provide a token for long-lived connections (SignalR), and call the server's REST endpoints through convenient async methods.
+A high-level HTTP client that encapsulates the application's server API surface and manages authentication state (access token, refresh token and expiration). Reach for `ApiClient` when you need a single reusable component to perform user authentication (`RegisterAsync`, `LoginAsync`, `LoginWithRefreshTokenAsync`, `LogoutAsync`), query chat data (`GetChannelsAsync`, `GetChannelMetaAsync`, `GetChannelCryptoAsync`), upload/download assets (`UploadAvatarAsync`, `DownloadFileToTempAsync`) and send messages (`SendMessageWithAttachmentsAsync`, `SendUrlAsync`) while keeping token refresh logic co-located with the HTTP interactions. The client exposes `BaseUrl`, the current `Token`/`RefreshToken`, and an `OnTokensRefreshed` event consumers can subscribe to.
 
 ## Remarks
-This class wraps an HttpClient and keeps the current access and refresh tokens in memory, exposing them via the Token and RefreshToken properties and notifying consumers through the OnTokensRefreshed event. GetValidTokenAsync is intended as the token provider for long-lived connections and will proactively refresh an access token that is near expiry (the implementation refreshes if the token expires within about 60 seconds). Methods that return DTOs commonly use nullable results to indicate "not found" or absence.
-
-## Example
-```csharp
-// Create the client and log in
-using var api = new ApiClient("https://api.example.com");
-var login = await api.LoginAsync("alice", "s3cret");
-
-// Persist tokens or react when they've been refreshed
-api.OnTokensRefreshed += () =>
-{
-    var latestAccess = api.Token;
-    var latestRefresh = api.RefreshToken;
-    // Save to secure storage if needed
-};
-
-// Use the token provider for a SignalR connection or call APIs that need auth
-var tokenForSignalR = await api.GetValidTokenAsync();
-var channels = await api.GetChannelsAsync();
-```
+`ApiClient` centralizes network calls and authentication for the client-side application: it owns a single `HttpClient` instance (`_http`), stores the current tokens and expiration, and provides convenience methods that map to common server endpoints (login/registration, channels, invites, user profile, file operations and message sending). It also provides `GetValidTokenAsync` specifically for token providers (for example, a [`EchoHubConnection`](EchoHubConnection.cs.md) SignalR token provider) so callers can obtain a token that will be refreshed if it is about to expire. Because these responsibilities cross-cut the UI and real-time layers, the class exists to avoid scattering token refresh and HTTP wiring throughout the codebase.
 
 ## Notes
-- GetValidTokenAsync may refresh the token when it will expire within ~60 seconds; callers should still handle server-side authorization failures.
-- LogoutAsync is implemented as "best-effort" — it may not always revoke server-side state; clear persisted tokens yourself if you saved them.
-- Tokens are stored only in memory by this client. To persist them across restarts, subscribe to OnTokensRefreshed and save Token/RefreshToken externally.
+- Token refresh timing and concurrency: the implementation intends to "Refresh if token expires within 60 seconds" (see `GetValidTokenAsync`), and one comment notes that callers should "Return current token and let the caller handle auth failure." The source does not show explicit synchronization around token refresh, so concurrent callers could trigger multiple simultaneous refresh attempts.
+- Attachments and encrypted channels: `SendMessageWithAttachmentsAsync` requires that for end-to-end encrypted channels each file has a declared kind and a room-encrypted preview; these must be provided in the same order as the files so the server's attachment index aligns. Non-image attachments use an empty preview string; the caption is also room-encrypted.
+- Logout and disposal: `LogoutAsync` is described as a "best-effort logout" (errors are non-fatal). The type implements `IDisposable`, so callers should dispose the `ApiClient` instance when finished to allow it to release its resources.
+
 
 ---
 
@@ -108,19 +90,14 @@ public ApiClient(string baseUrl)
 | `baseUrl` | `string` | — |
 
 
-Initializes an ApiClient with a base URL, normalizes the URL by removing any trailing slash, and configures an HttpClient whose BaseAddress is that normalized URL. This ensures that subsequent requests can be issued with relative URIs against the configured API host.
+The `ApiClient` constructor initializes the client to target a REST API at the provided `baseUrl`. It trims any trailing slash from the input, assigns the result to `BaseUrl`, and creates a new `HttpClient` stored in `_http` with its `BaseAddress` set to a `Uri` built from `BaseUrl`. This setup enables subsequent requests to use relative endpoints against the configured base address.
 
 ## Remarks
-This constructor centralizes HTTP client initialization for the API client, enforcing a consistent base address across calls. By normalizing the base URL, it prevents subtle URI mistakes when composing requests. It encapsulates the HttpClient setup so callers don’t have to manage base addresses or client lifetimes directly.
-
-## Example
-```csharp
-var client = new ApiClient("https://api.example.com/");
-```
+By centralizing base URL handling and HTTP client initialization, this constructor ensures a consistent, reusable `HttpClient` instance per `ApiClient` and avoids URL-assembly errors caused by trailing slashes.
 
 ## Notes
-- baseUrl must be non-null; passing null will throw a NullReferenceException at TrimEnd('/').
-- If baseUrl is not a well-formed absolute URL, creating new Uri(BaseUrl) will throw UriFormatException.
+- Passing `null` for `baseUrl` will throw a `NullReferenceException` when `TrimEnd('/')` is invoked.
+- Passing an empty or otherwise invalid URL will throw a `UriFormatException` when constructing `new Uri(BaseUrl)`.
 
 
 ---
@@ -134,14 +111,7 @@ public string BaseUrl
 ```
 
 
-BaseUrl is a read-only string property that exposes the root URL the ApiClient uses to construct request URIs. It provides a single source of truth for the API endpoint so callers can reason about where requests are sent without mutating the value at runtime.
-
-## Remarks
-BaseUrl serves as the canonical root for all REST calls performed by the ApiClient. Centralizing the endpoint simplifies testing across environments (dev, staging, prod) because the rest of the client can build URIs without caring about the actual host. Since it is read-only, the value is established during construction; to change environments you create a new client instance with a different BaseUrl. It integrates with the request pipeline by being the starting point for path composition.
-
-## Notes
-- Value is set in constructor; to change it, instantiate new ApiClient with a different BaseUrl.
-- When combining with path segments, avoid manual string concatenation; prefer proper Uri or relative path builders to prevent double slashes.
+This read-only property exposes the base endpoint URL the `ApiClient` uses to build full request URIs. Reading `BaseUrl` helps diagnostics and test scenarios where you need to know or confirm the target server without inspecting internal configuration.
 
 ---
 
@@ -154,15 +124,7 @@ public string? RefreshToken => _refreshToken
 ```
 
 
-The RefreshToken property is a read-only accessor that returns the current value of the private _refreshToken field. Because it is nullable, callers should be prepared for a null value when no token is stored or when the token has been cleared.
-
-## Remarks
-The property provides a lightweight way to observe or forward the stored refresh token without permitting mutation. It reinforces centralized token management by keeping updates to _refreshToken out of the consumer's hands, while still enabling advanced scenarios such as diagnostics or token-forwarding workflows that require the current token value.
-
-## Notes
-- The value may be null; always account for a possible null return in calling code. 
-- Do not log or transmit the token in telemetry or UI streams; treat it as sensitive information and guard its exposure.
-
+The `RefreshToken` property exposes the current refresh token stored by the client as a read-only accessor. It returns the private backing field `_refreshToken` as a nullable `string`, meaning callers can read the value but cannot assign a new one through this property.
 
 ---
 
@@ -175,10 +137,13 @@ public string? Token => _accessToken
 ```
 
 
-Exposes the current access token as a read-only, nullable string. This property simply forwards the value stored in the private backing field _accessToken, providing a stable API surface for callers that need to read the token without mutating the field. Since the value can be null when no token is present, callers should handle null gracefully, for example by guarding token-dependent logic or by omitting the token from headers when it is absent.
+Public property `Token` is a read-only accessor that forwards to the private field `_accessToken`, returning its current value as a nullable string. It does not transform or mutate state; its purpose is to expose the managed token to callers who need to inspect or reuse the token value. Since the underlying field can be `null` before a token is obtained, callers should handle a possible null result when using `Token`.
 
 ## Remarks
-This property acts as a stable abstraction over the token storage, decoupling callers from how and where the token is stored. It allows the rest of the API client to evolve its token management (for example, refreshing tokens or lazy loading) without affecting callers that just need to read the current value. It also signals that token retrieval is a side-effect-free operation, reinforcing a read-only contract for consumers.
+This straightforward forwarder exists to surface the internal token while preserving encapsulation of the backing field. It supports diagnostics, testing, and scenarios where downstream components require the raw token without duplicating token management logic, without re-exposing the field directly.
+
+## Notes
+- The value can be `null` until a token is obtained; always null-check before use.
 
 ---
 
@@ -200,7 +165,15 @@ public async Task AssignRoleAsync(string username, ServerRole role)
 **Returns:** `Task`
 
 
-AssignRoleAsync assigns a server-side role to a user by issuing an authenticated POST request to the moderation API. It builds an AssignRoleRequest from the provided username and role and posts it to /api/moderation/role. The call is preceded by EnsureAuthenticated() and followed by EnsureSuccessAsync(response), so authentication is enforced and failures are surfaced as exceptions. The method is asynchronous and returns a Task that completes when the server confirms success.
+Assigns a server role to a user by performing an authenticated HTTP POST to `"/api/moderation/role"` with an [`AssignRoleRequest`](../../EchoHub.Core/DTOs/ModerationDtos.cs.md) that contains the target `username` and `role`. It enforces authentication via `EnsureAuthenticated()`, sends the request asynchronously through `AuthenticatedRequestAsync`, and validates the response with `EnsureSuccessAsync`. The method returns a `Task` and completes when the server confirms the assignment, or raises an exception if authentication fails or the server returns an error.
+
+## Remarks
+By centralizing moderation actions in `ApiClient`, this method provides a single, authentication-aware path for role management. It hides HTTP details and enforces consistent error handling by combining `EnsureAuthenticated()`, `AuthenticatedRequestAsync`, and `EnsureSuccessAsync`, so callers can rely on a uniform success/exception model across moderation operations.
+
+## Notes
+- This method returns a `Task` and does not produce a value; success is signaled by completion.
+- Failures can arise from lack of authentication, server-side permission checks, or other HTTP errors surfaced by `EnsureSuccessAsync`.
+- The call payload relies on [`AssignRoleRequest`](../../EchoHub.Core/DTOs/ModerationDtos.cs.md); changes to that DTO will affect this method.
 
 ---
 
@@ -221,14 +194,14 @@ private async Task<HttpResponseMessage> AuthenticatedGetAsync(string url)
 **Returns:** `Task<HttpResponseMessage>`
 
 
-Performs a GET request against the provided URL and, if the response is 401 Unauthorized and a non-empty refresh token is available, automatically refreshes the token and retries the request. The original response is disposed before replacing it with the retried response. The caller is responsible for disposing the final HttpResponseMessage returned by this method. If the token refresh fails, the original response is returned unchanged.
+This private helper performs an HTTP GET to the specified `url` and, if the response is `HttpStatusCode.Unauthorized` and a non-empty `_refreshToken` is available, refreshes the token via `RefreshTokenAsync()` and retries the request once. The caller must dispose of the returned `HttpResponseMessage`.
 
 ## Remarks
-By centralizing this refresh-and-retry logic, the API client avoids duplicating authentication-handling boilerplate across multiple calls and ensures a consistent behavior when a token has expired. The method keeps retry logic deliberately simple: at most one retry is attempted, and only when a refresh token exists, to prevent potential retry storms and loops.
+By centralizing this token-refresh pattern for GETs, it reduces duplicated boilerplate at call sites while ensuring a consistent retry policy. If the refresh cannot be completed, the original 401 is returned, preserving standard authorization semantics. The method also disposes the intermediate response during a retry to avoid resource leaks.
 
 ## Notes
-- Exceptions thrown by RefreshTokenAsync are swallowed; if the refresh process fails, the original 401 (or other status) is returned without propagating an error.
-- The initial response is disposed when a retry occurs to avoid leaking resources; the caller must dispose the final response they receive.
+- The final `HttpResponseMessage` returned by this method must be disposed by the caller after processing.
+- A token refresh is attempted only when `_refreshToken` is non-empty and the initial response is `HttpStatusCode.Unauthorized`; otherwise, no refresh is performed.
 
 ---
 
@@ -249,20 +222,14 @@ private async Task<HttpResponseMessage> AuthenticatedRequestAsync(Func<Task<Http
 **Returns:** `Task<HttpResponseMessage>`
 
 
-Performs an HTTP request with automatic token refresh on a 401 Unauthorized response. You supply a factory that creates the request; if the call yields 401 and a refresh token is present, it refreshes the token and retries once. The caller is responsible for disposing the returned HttpResponseMessage.
+Executes a request produced by the provided `requestFactory` and, if the initial response is `HttpStatusCode.Unauthorized` and a refresh token is available, refreshes the token via `RefreshTokenAsync()` and retries the request once. The original response is disposed before the retry response is returned, and the caller is responsible for disposing the final `HttpResponseMessage`.
 
 ## Remarks
-Encapsulates the common pattern of refreshing an access token to keep HTTP call sites concise and consistent. It enforces a single refresh-and-retry cycle to avoid repeated token refresh attempts and unintended multiple requests. If the refresh fails or there is no refresh token, the original response is returned, allowing callers to handle authentication failures uniformly. The returned HttpResponseMessage should always be disposed by the caller.
-
-## Example
-```csharp
-// Inside the class that defines AuthenticatedRequestAsync, assuming a configured httpClient exists
-HttpResponseMessage response = await AuthenticatedRequestAsync(() => httpClient.GetAsync("https://api.example.com/protected"));
-```
+Centralizes the token-refresh retry pattern for authenticated API calls. It hides token management behind a single helper so callers can issue requests without duplicating refresh logic, while ensuring a single, well-scoped retry path. Disposing the intermediate response avoids leaks, and the final response is returned for the caller to manage lifetime.
 
 ## Notes
-- If a 401 is observed without a valid refresh token, the call returns the original 401 without attempting a refresh.
-- The final HttpResponseMessage must be disposed by the caller; the method disposes the original response only when a retry occurs and a new response is obtained.
+- If `RefreshTokenAsync()` fails (throws) or the refresh path throws, the exception is swallowed and the method returns the original 401 response, signaling to the caller that re-authentication is needed.
+- Only one automatic retry is performed; a second 401 will be returned as-is.
 
 ---
 
@@ -284,15 +251,10 @@ public async Task BanUserAsync(string username, string? reason = null)
 **Returns:** `Task`
 
 
-BanUserAsync bans a user by their username via the server's moderation API. It ensures the caller is authenticated, then issues a POST to /api/moderation/ban/{Uri.EscapeDataString(username)} with a BanRequest payload that carries the optional reason. The operation completes when EnsureSuccessAsync confirms a successful HTTP response; otherwise, it throws. Use this helper when you want to ban a user through the API client instead of assembling HTTP calls yourself.
+Bans a user identified by the provided `username` by performing an authenticated HTTP POST to the moderation endpoint, optionally including a `reason` via a [`BanRequest`](../../EchoHub.Core/DTOs/ModerationDtos.cs.md). The username is escaped with `Uri.EscapeDataString(username)` when constructing the URL, and the operation is validated by `EnsureSuccessAsync` after the HTTP call.
 
 ## Remarks
-This method encapsulates the authentication check and the HTTP POST, providing a single, reusable surface for moderation actions. It hides the exact endpoint path and JSON payload, reducing duplication and centralizing error handling via EnsureSuccessAsync.
-
-## Notes
-- Authentication is enforced by EnsureAuthenticated before performing the request; if the client is not authenticated, this will fail early.
-- The username is URL-escaped with Uri.EscapeDataString to prevent route interpretation issues.
-- BanRequest is constructed with the optional reason; passing null is allowed.
+This method provides a focused client-side wrapper around the server's moderation API to ban a user. It ensures the caller is authenticated, encodes the target username for safe URL usage, and sends a [`BanRequest`](../../EchoHub.Core/DTOs/ModerationDtos.cs.md) containing the optional `reason`. By funneling the action through `AuthenticatedRequestAsync` and `EnsureSuccessAsync`, it enforces consistent authentication and error handling across moderation operations, keeping concerns separated from higher-level business logic.
 
 ---
 
@@ -302,7 +264,7 @@ This method encapsulates the authentication check and the HTTP POST, providing a
 
 ```csharp
 public async Task<ChannelDto?> CreateChannelAsync(string name, string? topic = null, bool isPublic = true,
-        string? [REDACTED:CONNECTION_STRING_PASSWORD] string? encryptionSalt = null, string? wrappedRoomKey = null)
+        string? password = null, string? encryptionSalt = null, string? wrappedRoomKey = null)
 ```
 
 **Parameters:**
@@ -312,21 +274,22 @@ public async Task<ChannelDto?> CreateChannelAsync(string name, string? topic = n
 | `name` | `string` | — |
 | `topic` | `string?` | `null` |
 | `isPublic` | `bool` | `true` |
-| `encryptionSalt` | `string? [REDACTED:CONNECTION_STRING_PASSWORD] string?` | `null` |
+| `password` | `string?` | `null` |
+| `encryptionSalt` | `string?` | `null` |
 | `wrappedRoomKey` | `string?` | `null` |
 
 **Returns:** `Task<ChannelDto?>`
 
 
-Creates a new channel on the server by sending a CreateChannelRequest after ensuring the caller is authenticated. Use this method when you need to programmatically create a channel by name with optional topic and visibility settings, optionally including encryption-related data; it handles request construction, HTTP communication, and JSON deserialization into a ChannelDto.
+CreateChannelAsync creates a new chat channel on the server by sending an authenticated POST to `"/api/channels"` with a [`CreateChannelRequest`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) constructed from the provided parameters, and returns a `ChannelDto?` from the response content when successful. Use this helper when you need to create a channel with a name and optional topic, visibility, and security settings without writing the HTTP boilerplate yourself.
 
 ## Remarks
-This abstraction centralizes the channel-creation workflow in the client. It automatically enforces authentication, builds the payload (including optional topic, visibility, and encryption-related fields), issues the POST to the /api/channels endpoint, and deserializes the response into a ChannelDto for the caller. By encapsulating these concerns, callers avoid manual HTTP handling and keep channel creation consistent across the codebase. The method returns a ChannelDto representing the newly created channel, or null if the response body cannot be parsed into that shape.
+This method centralizes the channel creation workflow in the client: authenticate, construct a [`CreateChannelRequest`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) from the provided parameters, POST to `"/api/channels"`, ensure the response indicates success, and deserialize a [`ChannelDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) from the response content. It keeps higher-level code free from repetitive HTTP boilerplate and ensures consistent error handling via `EnsureAuthenticated` and `EnsureSuccessAsync`.
 
 ## Notes
-- Requires the client to be authenticated; an unauthenticated call will be rejected by EnsureAuthenticated/EnsureSuccessAsync.
-- The JSON deserialization may yield null if the response body is empty or not compatible with ChannelDto.
-- If encryptionSalt or wrappedRoomKey are provided, they influence the server-side setup for encrypted channel access; incorrect values may cause the server to reject the request.
+- The method returns `ChannelDto?`; if the server returns no content or invalid JSON, the result may be `null`. Callers should check for `null` before use.
+- Requires authentication; `EnsureAuthenticated()` enforces this, so unauthenticated callers will fail.
+- The parameters `password`, `encryptionSalt`, and `wrappedRoomKey` relate to channel security; supply them only when creating secure channels and be mindful of security implications.
 
 ---
 
@@ -348,15 +311,20 @@ public async Task<InviteDto?> CreateInviteAsync(int? maxUses = null, int? expire
 **Returns:** `Task<InviteDto?>`
 
 
-Creates a new invite by sending a POST request to the server with an optional maximum usage limit and expiration window. The operation requires the user to be authenticated and returns the created invite data when the server responds successfully. If maxUses or expiresInHours are not supplied, the server applies its defaults. Use this method when you need to programmatically generate a shareable invite with controlled usage or expiry.
+Creates a new invite by posting a [`CreateInviteRequest`](../../EchoHub.Core/DTOs/InviteDtos.cs.md) to `/api/invites` after ensuring authentication, and returns the deserialized `InviteDto?` from the response. Provide optional `maxUses` and `expiresInHours` to control usage limits and expiry.
 
 ## Remarks
-This method serves as a focused, typed abstraction over the invites API. It hides HTTP details (endpoint path, request payload, and response parsing) and centralizes authentication and basic success handling, so callers don’t need to manage HTTP lifecycles or error translation. It relies on InviteDto and CreateInviteRequest to shape the contract and on the underlying HTTP client to perform the request.
+This method hides the transport details of invite creation, centralizing authentication, request serialization, error handling, and JSON deserialization into a single, strongly-typed call. By returning an `InviteDto?`, it cleanly signals the possibility of no content while enforcing a consistent contract via [`InviteDto`](../../EchoHub.Core/DTOs/InviteDtos.cs.md) and [`CreateInviteRequest`](../../EchoHub.Core/DTOs/InviteDtos.cs.md).
+
+## Example
+```csharp
+var invite = await apiClient.CreateInviteAsync(maxUses: 5, expiresInHours: 24);
+```
 
 ## Notes
-- Requires authentication; calling without a valid authenticated context will cause an exception via EnsureAuthenticated.
-- maxUses and expiresInHours are nullable; omitting them defers to the server’s default behavior.
-- Returns InviteDto?; callers should handle potential null if the response body is empty or deserialization yields no content.
+- The return value may be `null` if the response body is empty or cannot be deserialized as an [`InviteDto`](../../EchoHub.Core/DTOs/InviteDtos.cs.md).
+- The method calls `EnsureAuthenticated()`, so unauthenticated callers will observe an exception if authentication has not been established.
+- Providing `null` for both parameters relies on server defaults; if you need explicit control, supply non-null values for `maxUses` and/or `expiresInHours`.
 
 ---
 
@@ -377,20 +345,10 @@ public async Task DeleteChannelAsync(string channelName)
 **Returns:** `Task`
 
 
-Deletes a channel on the server by its name. It first ensures the client is authenticated, then issues an authenticated HTTP DELETE to /api/channels/{encodedName}, where the channel name is URL-encoded to safely survive special characters. The response is validated with EnsureSuccessAsync, and the operation completes when the server confirms success. Use this method when you need to remove a channel from the backend by name, rather than performing a raw HTTP request.
+Deletes the channel named `channelName` by issuing an authenticated HTTP DELETE to `/api/channels/{Uri.EscapeDataString(channelName)}`. It first calls `EnsureAuthenticated` to guarantee the caller is authorized, then performs the request via `AuthenticatedRequestAsync` using `_http.DeleteAsync(...)`, and finally awaits `EnsureSuccessAsync` to validate the response.
 
 ## Remarks
-This method encapsulates the REST pattern for removing a resource and centralizes authentication and error handling. By encoding the channel name and validating the response, it provides a reliable, reusable operation for channel management across the client. It relies on EnsureAuthenticated, AuthenticatedRequestAsync, and EnsureSuccessAsync, aligning with the client's approach to API calls.
-
-## Example
-```csharp
-// Delete a channel named "general"
-await apiClient.DeleteChannelAsync("general");
-```
-
-## Notes
-- The channel name is URL-encoded in the request path using Uri.EscapeDataString to handle spaces and special characters.
-- Non-success HTTP responses will throw exceptions via EnsureSuccessAsync; consider wrapping in try/catch if you need to surface user-friendly errors.
+Using `EnsureAuthenticated` and `AuthenticatedRequestAsync` centralizes authentication flow and uniform error handling for API calls in the client. Escaping the channel name with `Uri.EscapeDataString` prevents malformed URLs and potential issues when channel names contain special characters.
 
 ---
 
@@ -411,14 +369,10 @@ public async Task DeleteMessageAsync(Guid messageId)
 **Returns:** `Task`
 
 
-Deletes a moderation message identified by messageId by issuing an authenticated HTTP DELETE request, and then ensures the response indicates success. Use this method when you need to remove a specific moderation message through the client without dealing with authentication or direct HTTP handling.
+Deletes a moderation message identified by `messageId` by issuing an HTTP DELETE to `/api/moderation/messages/{messageId}` after ensuring the client is authenticated. It uses `AuthenticatedRequestAsync` to execute the request against the shared `_http` client and then validates the server response with `EnsureSuccessAsync` before returning.
 
 ## Remarks
-This method centralizes the common pattern of authenticated server mutations: vetting authentication, performing the HTTP call through a shared AuthenticatedRequestAsync wrapper, and validating success with EnsureSuccessAsync. It hides the details of the endpoint path and response handling from callers, offering a clean, exception-driven contract where failures surface as exceptions. The operation does not return a payload; callers rely on the absence of an exception to determine success.
-
-## Notes
-- Non-success HTTP responses (such as 404, 403, or 5xx) are surfaced as exceptions via EnsureSuccessAsync.
-- The call depends on a valid authenticated context; if authentication is not established, EnsureAuthenticated will throw before the HTTP request is issued.
+Like other mutating API calls, `DeleteMessageAsync` enforces authentication via `EnsureAuthenticated` and delegates the HTTP invocation to `AuthenticatedRequestAsync`. This pattern centralizes authentication, request execution, and response validation around a shared `_http` client, ensuring consistent behavior for moderation mutations.
 
 ---
 
@@ -439,21 +393,19 @@ public async Task DeleteMyAccountAsync(string password)
 **Returns:** `Task`
 
 
-Deletes the currently authenticated user's account by issuing an HTTP DELETE to /api/users/me with a JSON payload containing the provided password to confirm intent. The method first verifies the caller is authenticated, performs the request, and then asserts a successful server response. Use this when a user explicitly wants to permanently remove their own account; the password requirement helps prevent accidental deletions.
+Deletes the currently authenticated user's account after re-confirming intent with the provided password. The method ensures the caller is authenticated (`EnsureAuthenticated`), issues an HTTP `DELETE` to `"/api/users/me"` with a [`DeleteAccountRequest`](../../EchoHub.Core/DTOs/AccountDtos.cs.md) payload containing the `password` (constructed via `JsonContent.Create`), and validates the response with `EnsureSuccessAsync`.
 
 ## Remarks
-Encapsulates the account-deletion flow within the client to centralize authentication validation, request construction, and server response handling. The operation relies on a DeleteAccountRequest DTO to carry the password payload, aligning client and server contracts and keeping sensitive data isolated in the request body. The surrounding EnsureAuthenticated and EnsureSuccessAsync calls provide clear preconditions and postconditions for callers and tests, reducing boilerplate at call sites.
+Encapsulates the account-deletion flow behind a client API, centralizing authentication checks, request construction, and error handling for a destructive user action. Provides a single, consistent path to delete the user's account, preventing boilerplate duplication across the UI layer and aligning with other API client methods.
 
 ## Example
 ```csharp
-// Example usage:
-await client.DeleteMyAccountAsync("P@ssw0rd!");
+await apiClient.DeleteMyAccountAsync("Pa$$w0rd");
 ```
 
 ## Notes
-- This is a destructive, irreversible operation; confirm user intent and consider UX safeguards before invoking.
-- The method does not return a value; failures surface as exceptions via EnsureSuccessAsync. Wrap calls in appropriate error handling if needed.
-- The password is transmitted as part of the request payload; avoid logging the password and ensure transport security is in place.
+- Destructive action: irreversible; ensure the user truly intends to delete their account before invoking this.
+- Password is transmitted in the request body as part of [`DeleteAccountRequest`](../../EchoHub.Core/DTOs/AccountDtos.cs.md); ensure transport security and proper credential hygiene.
 
 ---
 
@@ -468,25 +420,15 @@ public void Dispose()
 **Returns:** `void`
 
 
-Disposes the internal HTTP resource held by this ApiClient by delegating to _http.Dispose(). Call Dispose when you’re finished using the ApiClient to ensure network resources are released promptly, rather than waiting for finalization.
+Disposes the ApiClient's internal HTTP resource by delegating to `_http.Dispose()`. This ensures that the underlying HTTP client and its resources are released when the ApiClient is disposed.
 
 ## Remarks
 
-This is a straightforward implementation of the IDisposable pattern: the outer wrapper delegates cleanup to its disposable member. By disposing the inner _http resource, the ApiClient ensures that associated network resources (such as open connections) are released in a deterministic manner as soon as the caller is done with the instance.
-
-## Example
-
-```csharp
-using (var client = new ApiClient())
-{
-    // use client
-}
-```
+This is a straightforward delegation in the IDisposable pattern. It relies on `_http` implementing `IDisposable` and being non-null; ensure `_http` is initialized before disposing to avoid potential `NullReferenceException`.
 
 ## Notes
 
-- If the internal _http resource is shared with other components, disposing the ApiClient may affect those components; ensure ownership semantics are clear.
-- After Dispose is called, subsequent use of the ApiClient (or its _http) may throw ObjectDisposedException unless the class guards against use after disposal.
+- Potential `NullReferenceException` if `_http` is null; consider guarding or ensuring initialization guarantees.
 
 ---
 
@@ -508,16 +450,19 @@ public async Task<string> DownloadFileToTempAsync(string relativeUrl, string fil
 **Returns:** `Task<string>`
 
 
-Ensures authentication, retrieves content from the given relative URL via an authenticated GET, and validates the HTTP response. It then creates a temporary EchoHub directory under the system temp path, streams the response body to a uniquely named file there, and returns the file path.
+Downloads a resource from `relativeUrl` using an authenticated GET, streams the response to a uniquely named temporary file under the EchoHub temp directory, and returns the created file path as a `string`. It authenticates via `EnsureAuthenticated()`, fetches the payload with `AuthenticatedGetAsync(relativeUrl)`, and writes the response body to disk without buffering the entire content.
 
 ## Remarks
-Centralizes the common pattern of authenticated download and temporary-file storage, reducing duplication across callers. The method uses a GUID-based filename to avoid collisions and writes the stream directly to disk, minimizing memory usage. It returns the path to the temporary file but does not perform cleanup; callers should delete the file when it is no longer needed to avoid littering the temp directory.
+By centralizing authentication, streaming, and temporary-file management, this abstraction reduces boilerplate at call sites and helps callers avoid loading large payloads into memory. The implementation uses streaming (`ReadAsStreamAsync` followed by `CopyToAsync`) to minimize memory usage and guarantees a unique temporary file name with a `Guid`.
+
+## Example
+```csharp
+// Example usage assumes an instance named `client` of `ApiClient`
+string tempPath = await client.DownloadFileToTempAsync("reports/annual.pdf", "annual.pdf");
+```
 
 ## Notes
-- Creates the EchoHub subdirectory in the system temporary path if it does not exist.
-- Uses a GUID (with no dashes) as part of the filename to guarantee uniqueness.
-- The return value is a path to the downloaded temporary file; callers are responsible for cleanup.
-- No cancellation token or progress reporting is exposed by this API.
+- The method returns a path to a temporary file located under the EchoHub temp directory; there is no automatic cleanup, so callers should delete the file when it is no longer needed.
 
 ---
 
@@ -532,13 +477,19 @@ private void EnsureAuthenticated()
 **Returns:** `void`
 
 
-This private guard validates that the ApiClient is in a state suitable for making authenticated requests by ensuring the internal _accessToken is present. When the token is missing or empty, it signals misuse of the client by throwing InvalidOperationException with guidance to call LoginAsync or RegisterAsync before attempting any API calls.
+Ensures that the client is authenticated by validating that the private field `_accessToken` is not null or empty; if it is missing, it throws an `InvalidOperationException` with guidance to call `LoginAsync` or `RegisterAsync` first. This guard is typically invoked at the start of API calls to fail fast when authentication has not yet been established.
 
 ## Remarks
-This centralizes the authentication precondition in ApiClient, so all protected operations rely on a single, consistent guard. It communicates a clear contract: you must authenticate prior to using the client. By encapsulating the check, code duplication is reduced and the error message remains uniform across methods that require authentication.
+By centralizing the authentication precondition, this guard prevents accidental unauthorized requests and provides a consistent error when the client isn't authenticated. It keeps authentication logic in one place, making future enhancements (such as token validation or refresh handling) easier to implement without duplicating checks across multiple call sites. The private scope communicates that this is an internal invariant of the API client, not part of its public surface.
 
 ## Notes
-- The method only checks for a non-empty _accessToken; it does not validate token expiry or current validity. Expired or invalid tokens may still cause failures at the API boundary, which should be handled by higher-level logic if present.
+- The check only verifies presence of `_accessToken`; it does not validate expiry, issuer, or revocation. A non-empty token can still be invalid at runtime, causing a request to fail after this guard passes.
+```
+// Token could be expired or revoked even though `_accessToken` is non-empty.
+// EnsureAuthenticated() won't catch this; a later API call will fail.
+```
+- Because the method is private, external code cannot invoke it directly, so callers rely on the class's internal usage pattern to uphold the authentication precondition. If a future path bypasses this guard, authentication requirements might be violated.
+
 
 ---
 
@@ -559,15 +510,15 @@ private static async Task EnsureSuccessAsync(HttpResponseMessage response)
 **Returns:** `Task`
 
 
-Converts non-success HTTP responses into a single HttpRequestException with a best-effort error message. If the response is unsuccessful, it builds a message from the status code and reason phrase, then optionally enriches it by extracting a top-level 'error' or 'Error' property from a JSON body; if those properties are absent or parsing fails, it falls back to the raw body or the status message, and finally throws HttpRequestException with that message.
+Ensures that a non-success `HttpResponseMessage` is surfaced as a descriptive `HttpRequestException` by inspecting the response and extracting a meaningful error message. For successful responses it returns immediately; for failures it builds a message from the status code and reason phrase, then tries to read and parse a JSON body to use an `error`/`Error` property when available, otherwise falling back to the raw body.
 
 ## Remarks
-Centralizes HTTP error handling in the client. It encapsulates the logic for translating HTTP failure responses into exceptions, so callers can catch HttpRequestException and rely on a consistent message shape. It uses JsonDocument to inspect the body for 'error'/'Error' fields and gracefully degrades when the body is not JSON or lacks those fields.
+Centralizes HTTP error reporting in the client. It uses the `Content` payload and attempts to parse JSON with `JsonDocument` to surface server-provided error details, improving diagnosability across the API surface. If the body cannot be parsed or no error field is present, the message remains based on the status code and reason phrase.
 
 ## Notes
-- Parsing failures during body extraction are swallowed; the catch block is intentionally empty, so a non-JSON body or parsing error won't crash the flow but may limit message richness.
-- The fallback to using the raw body in the error message can reveal server details; avoid logging or exposing this in user-facing errors.
-- The method is private and intended for internal use; external callers cannot invoke it directly.
+- The body reading is wrapped in a try/catch that suppresses parsing errors; if parsing fails, the message is based on the initial status code and reason phrase.
+- It only recognizes top-level `error` or `Error` properties; nested fields are ignored.
+- The method is `private` and `static`, serving as an internal helper within the containing class and not part of the public API.
 
 ---
 
@@ -582,14 +533,14 @@ public async Task<string> ExportMyDataAsync()
 **Returns:** `Task<string>`
 
 
-Downloads the authenticated user's complete data export as raw JSON text. The method authenticates the caller, performs an authenticated GET to /api/users/me/export, ensures the response indicates success, and returns the response body as a string for downstream processing or persistence. It is suited for data portability or backup scenarios where the consumer will parse or store the JSON themselves.
+Downloads the authenticated caller's full data export as raw JSON text by first ensuring the caller is authenticated, performing an authenticated GET against `/api/users/me/export`, validating the response with `EnsureSuccessAsync`, and returning the response body as a `string`. This `ExportMyDataAsync` method serves as a concise, high-level entry point when you need a portable copy of the current user's data without writing repetitive HTTP boilerplate.
 
 ## Remarks
-This symbol provides a focused convenience around the ApiClient by hiding endpoint details and error handling behind EnsureAuthenticated and EnsureSuccessAsync. By returning raw JSON instead of a deserialized object, it offers maximum flexibility for downstream processing, partial deserialization, or deferred parsing in response to evolving export schemas.
+By encapsulating authentication, request dispatch, and success verification, `ExportMyDataAsync` provides a single, consistent path for obtaining a user's data export. It hides HTTP plumbing from callers and pairs with downstream deserialization to produce typed representations if needed. It relies on the client authentication flow (`EnsureAuthenticated`) and the standard success check (`EnsureSuccessAsync`).
 
 ## Notes
-- The payload is returned as raw JSON text; there is no deserialization here, so callers should parse it if they need structured data.
-- The entire payload is read into memory via ReadAsStringAsync; for very large exports this can incur noticeable memory usage. Consider streaming approaches or server-side handling if the export size is a concern.
+- ``ExportMyDataAsync`` returns a raw JSON `string`; callers should deserialize it into typed objects as needed.
+- The payload can be large; callers should be mindful of memory usage when exporting very large user datasets.
 
 ---
 
@@ -610,17 +561,15 @@ public async Task<ChannelCryptoDto?> GetChannelCryptoAsync(string channelName)
 **Returns:** `Task<ChannelCryptoDto?>`
 
 
-Retrieves the public cryptographic metadata for a channel, indicating whether the channel is end-to-end encrypted and the key-derivation salt. If the channel does not exist, the method returns null. It requires an authenticated context, issues an HTTP GET to /api/channels/{channelName}/crypto with channelName URI-escaped, and deserializes the JSON body into a ChannelCryptoDto.
+Gets the crypto metadata for a specific channel, including whether end-to-end encryption is enabled and the key-derivation salt, returning a [`ChannelCryptoDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) when the channel exists. If the channel doesn't exist, it returns null; the call requires authentication and performs an authenticated GET to `/api/channels/{channelName}/crypto` with `channelName` escaped via `Uri.EscapeDataString`.
 
 ## Remarks
-
-Encapsulates the remote API contract for channel crypto settings, providing a single, typed entry point for clients. It centralizes authentication enforcement and error handling so callers do not need to manage low-level HTTP concerns. The NotFound (404) path is represented by a null return value, while other HTTP errors are surfaced as exceptions by EnsureSuccessAsync.
+By wrapping this HTTP call in a single client method, the library provides a consistent, strongly-typed view of a channel's crypto settings and hides HTTP details from callers. It also centralizes the NotFound -> null convention, so callers can distinguish a missing channel from other failures without adding boilerplate.
 
 ## Notes
-
-- 404 Not Found is mapped to null; non-success statuses throw.
-- Channel name is escaped with Uri.EscapeDataString to ensure a safe, well-formed URL.
-- JSON deserialization relies on the ChannelCryptoDto type; changes to the API shape may require updating the DTO.
+- When the channel is missing, the method yields null; other HTTP errors throw via `EnsureSuccessAsync`, so callers should be prepared to handle exceptions for non-NotFound failures.
+- The channel name is escaped with `Uri.EscapeDataString`, preventing path issues with special characters.
+- JSON deserialization relies on the shape of [`ChannelCryptoDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md); mismatches or deserialization errors can surface as exceptions during `ReadFromJsonAsync`.
 
 ---
 
@@ -641,7 +590,7 @@ public async Task<ChannelMetaDto?> GetChannelMetaAsync(string channelName)
 **Returns:** `Task<ChannelMetaDto?>`
 
 
-Fetches a channel's human-facing metadata (message count, unique posters, estimated size, created date, room id) for the <c>/meta</c> command. Returns null if it doesn't exist. The method authenticates the client, issues an HTTP GET to /api/channels/{channelName}/meta (with the channel name URI-escaped), returns null on a 404 Not Found, validates the response, and deserializes the JSON body into a ChannelMetaDto. The operation is asynchronous and relies on the client being authenticated prior to the call.
+Fetches a channel's public, human-facing metadata used by the `/meta` command. It returns a [`ChannelMetaDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) containing the message count, number of unique posters, an estimated size, the channel's creation date, and the room id when the metadata exists; if no metadata exists for the channel, it returns `null`. The call first authenticates via `EnsureAuthenticated()`, URL-encodes the channel name using `Uri.EscapeDataString`, performs an HTTP GET to `/api/channels/{channelName}/meta` with `AuthenticatedGetAsync`, returns `null` on a `NotFound` response, enforces success via `EnsureSuccessAsync`, and deserializes the response body to [`ChannelMetaDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) with `ReadFromJsonAsync<ChannelMetaDto>()`.
 
 ---
 
@@ -656,23 +605,19 @@ public async Task<List<ChannelDto>> GetChannelsAsync()
 **Returns:** `Task<List<ChannelDto>>`
 
 
-Fetches the channels accessible to the currently authenticated user by calling the API endpoint `/api/channels`. It handles authentication, dispatches the HTTP GET, validates the response, and deserializes the JSON payload into a paginated wrapper, finally returning the list of [`ChannelDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) items (or an empty list if no data is available). This method provides a simple, strongly-typed surface for consumers who need to enumerate or process channels without dealing with HTTP details or pagination concerns.
+Gets the channels for the currently authenticated user by issuing an authenticated GET to `/api/channels` (via `AuthenticatedGetAsync("/api/channels")`), validating the response with `EnsureSuccessAsync`, and deserializing the payload into a [`PaginatedResponse<ChannelDto>`](../../EchoHub.Core/DTOs/CommonDtos.cs.md) before returning the collection `paginated?.Items ?? []`.
 
 ## Remarks
-This symbol serves as a focused data fetch for the authenticated user's channels, encapsulating transport, auth, and error handling behind a clean API. It relies on `EnsureAuthenticated()` to confirm the user identity, `EnsureSuccessAsync(...)` to surface HTTP errors, and `ReadFromJsonAsync<PaginatedResponse<ChannelDto>>()` to transform the payload. By returning `paginated?.Items ?? []`, callers always receive a non-null collection, even when the server returns no data.
+By encapsulating the HTTP call, authentication, and pagination unwrap, this method provides a single, testable surface for retrieving channels and ensures callers always receive a non-null list. It relies on the server to provide a [`PaginatedResponse<ChannelDto>`](../../EchoHub.Core/DTOs/CommonDtos.cs.md) payload; if the server returns no items the method yields an empty list rather than null, smoothing downstream collection handling.
 
 ## Example
 ```csharp
-var channels = await apiClient.GetChannelsAsync();
-foreach (var channel in channels)
-{
-    // Process each channel as needed
-}
+List<ChannelDto> channels = await client.GetChannelsAsync();
 ```
 
 ## Notes
-- Returns an empty list when the API returns null or no items, never null.
-- The method relies on authentication and HTTP status checks; callers should be prepared to handle exceptions from authentication failures or HTTP errors.
+- Returns an empty list when there are no items in the response instead of null.
+- Exceptions from authentication or HTTP failure propagate (e.g., via `EnsureAuthenticated` / `EnsureSuccessAsync`).
 
 ---
 
@@ -693,16 +638,13 @@ private static string GetContentType(string fileName)
 **Returns:** `string`
 
 
-GetContentType derives a MIME type from a filename by inspecting its extension. It centralizes a small, static mapping of common extensions to standard MIME types and falls back to application/octet-stream when the extension is unrecognized.
+Determines the MIME content type for a file name by inspecting its extension. The private static method `GetContentType` extracts the extension with `Path.GetExtension(fileName)` and normalizes it to lower case using `ToLowerInvariant()`, then maps known extensions to their standard MIME types. It covers common image formats (`.jpg`/`.jpeg` → `image/jpeg`, `.png` → `image/png`, `.gif` → `image/gif`, `.webp` → `image/webp`), text and document types (`.txt` → `text/plain`, `.pdf` → `application/pdf`), and falls back to `application/octet-stream` for unknown extensions.
 
 ## Remarks
-
-By using Path.GetExtension(fileName) and ToLowerInvariant(), the method performs case-insensitive matching and keeps the logic in a single place within ApiClient.cs, ensuring consistent Content-Type values across the client. Because it is private static, this helper is an internal concern of the API client and is not exposed as part of the public API; callers should rely on higher-level abstractions for content-type handling.
+This function centralizes the mapping from file extensions to MIME types so all call sites share the same logic. The switch expression keeps the mapping compact and extensible, with a safe default of `application/octet-stream` for unknown extensions. It is intended for internal use by the HTTP client to populate Content-Type headers from filenames rather than duplicating mime-type logic across callers.
 
 ## Notes
-
-- This method considers only the file extension and does not inspect the file contents; for security-sensitive scenarios, use content-based detection as needed.
-- Unrecognized or missing extensions result in application/octet-stream, which is a safe default but may not reflect the actual content type.
+- Null input is not guarded; a null `fileName` will cause a `NullReferenceException` when calling `ToLowerInvariant()` on the extracted extension. Ensure the argument is non-null before invoking this method, or wrap the call with a null-check.
 
 ---
 
@@ -717,14 +659,7 @@ public async Task<string> GetEncryptionKeyAsync()
 **Returns:** `Task<string>`
 
 
-Gets the server-provided encryption key by performing an authenticated HTTP GET to /api/server/encryption-key. It first ensures an authenticated context, executes the request, verifies a successful response, deserializes the JSON payload into EncryptionKeyResponse, and returns the Key value. If the server returns no content, it throws an InvalidOperationException with the message "Server returned empty encryption key response." The caller receives the encryption key as a plain string for use in client-side encryption/decryption workflows.
-
-## Remarks
-This method centralizes the retrieval of the server-supplied encryption key, encapsulating the endpoint path, authentication, and JSON deserialization behind a simple string return. It provides a stable surface for higher layers, hiding the details of the HTTP contract and error handling while ensuring a consistent failure path when the server cannot provide a key. Because keys may rotate or change over time, callers should decide on caching strategies appropriate to their security and consistency requirements.
-
-## Notes
-- The call may throw if authentication fails, the HTTP response indicates failure, or the response body is empty (as explicitly guarded by the InvalidOperationException).
-- The returned value is sensitive; avoid logging or persisting the key beyond its immediate use.
+GetEncryptionKeyAsync fetches the server's encryption key in an authenticated context by issuing a GET to `/api/server/encryption-key`, validating the response with `EnsureSuccessAsync`, deserializing the payload to [`EncryptionKeyResponse`](../../EchoHub.Core/DTOs/ServerDtos.cs.md) via `ReadFromJsonAsync<EncryptionKeyResponse>()`, and returning `result.Key`. If the server returns an empty encryption key payload, it throws `InvalidOperationException("Server returned empty encryption key response.")`.
 
 ---
 
@@ -739,23 +674,14 @@ public async Task<List<InviteDto>> GetInvitesAsync()
 **Returns:** `Task<List<InviteDto>>`
 
 
-GetInvitesAsync retrieves the invites for the currently authenticated user by issuing an authenticated HTTP GET to /api/invites. It ensures the caller is authenticated, verifies the HTTP response indicates success, and deserializes the JSON payload into a `List<InviteDto>`. If the response body is null, an empty collection is returned, allowing callers to handle zero invites without additional null checks.
+GetInvitesAsync retrieves the current user's invites by performing an authenticated GET request to `/api/invites` and deserializing the JSON payload into a `List<InviteDto>`. It enforces authentication up-front and ensures a successful HTTP response before returning the deserialized collection (or an empty list if the payload is null).
 
 ## Remarks
-
-By encapsulating authentication, request dispatch, and JSON deserialization, this method hides boilerplate and enforces a consistent error-handling and data-contract approach for invite retrieval. It relies on the InviteDto data contract and the HTTP response content model to produce a strongly-typed result, reducing coupling between higher-level client code and the underlying HTTP details.
-
-## Example
-
-```csharp
-var invites = await client.GetInvitesAsync();
-var total = invites.Count;
-```
+GetInvitesAsync encapsulates the standard flow for retrieving a protected resource: ensure authentication, issue a GET to `/api/invites`, and deserialize the response into a `List<InviteDto>`. It yields a non-null list to callers (empty when the server returns no content) and keeps HTTP/JSON concerns hidden behind a stable API.
 
 ## Notes
-
-- Requires a valid authentication context; calling without authentication will cause EnsureAuthenticated to throw.
-- Deserialization depends on the InviteDto contract; changes to server payload or InviteDto shape may require corresponding updates to this method and its callers.
+- A null payload is coerced into an empty list to avoid nulls for callers.
+- No paging is handled; this reads a single page of results from `/api/invites` and will not automatically fetch subsequent pages.
 
 ---
 
@@ -770,15 +696,14 @@ public async Task<ServerStatusDto?> GetServerInfoAsync()
 **Returns:** `Task<ServerStatusDto?>`
 
 
-Retrieves the server's current status by making an asynchronous HTTP GET request to /api/server/info and deserializing the JSON response into a ServerStatusDto. It acts as a focused wrapper around a single API endpoint, allowing consumers to obtain server health and status information without performing HTTP requests or JSON parsing themselves.
+Fetches the current server status by issuing an asynchronous HTTP GET to `"/api/server/info"` and deserializing the response into a [`ServerStatusDto`](../../EchoHub.Core/DTOs/ServerDtos.cs.md) via the underlying HTTP client. It returns the resulting `ServerStatusDto?`, or `null` if the payload is absent, providing a typed, convenient entry point for clients that need server health information.
 
 ## Remarks
-By delegating to the HttpClient-based call, this method encapsulates transport concerns and JSON deserialization, keeping UI components focused on rendering. It relies on an HttpClient instance provided to ApiClient (typically via dependency injection), which facilitates testing through mocks or stubs. If the API contract changes (e.g., a different endpoint or DTO), updating this single method reduces the spread of changes throughout the client.
+This method acts as a typed façade over the raw HTTP call, binding the `/api/server/info` endpoint to the [`ServerStatusDto`](../../EchoHub.Core/DTOs/ServerDtos.cs.md) contract. By encapsulating this endpoint behind `GetServerInfoAsync`, callers gain a stable API surface that is easier to mock in tests and evolve without changing consuming code.
 
 ## Notes
-- This method has no CancellationToken parameter; callers that need cancellation would need to adapt the signature or apply cancellation at a higher level.
-- Non-success HTTP responses or JSON deserialization errors will surface as exceptions; callers should handle HttpRequestException or JsonException as appropriate.
-- The return type is ServerStatusDto?, indicating callers should check for null before use, though the underlying HTTP call can still throw before a value is produced in some error cases.
+- Non-success HTTP status codes will throw (e.g., `HttpRequestException`), so callers should handle exceptions as part of their error handling strategy.
+- The JSON payload must conform to the shape of [`ServerStatusDto`](../../EchoHub.Core/DTOs/ServerDtos.cs.md); any schema drift can lead to deserialization failures.
 
 ---
 
@@ -799,28 +724,19 @@ public async Task<UserProfileDto?> GetUserProfileAsync(string username)
 **Returns:** `Task<UserProfileDto?>`
 
 
-Gets the profile for a given username from the API. It requires the client to be authenticated, builds a GET request to /api/users/{username}/profile with the username safely escaped for the URL, validates that the response indicates success, and then deserializes the response JSON into a UserProfileDto. The return value is a UserProfileDto? representing the retrieved profile, or null if the payload is absent.
+GetUserProfileAsync fetches the profile for a given `username` by asserting authentication via `EnsureAuthenticated()`, issuing an authenticated GET with `AuthenticatedGetAsync($"/api/users/{Uri.EscapeDataString(username)}/profile")`, and deserializing the response into a `UserProfileDto?` via `ReadFromJsonAsync<UserProfileDto>()`. It should be used whenever you need a typed representation of a user's profile rather than crafting HTTP calls yourself; it centralizes URL construction, auth, and JSON deserialization in one place.
 
 ## Remarks
-By encapsulating the HTTP call and JSON deserialization, this method provides a typed, reusable access point for user-profile data. It aligns with the ApiClient's pattern of performing authenticated requests and interpreting JSON responses, reducing boilerplate for callers.
+This symbol encapsulates the profile-fetching pattern within the `ApiClient`, ensuring consistent error handling and response processing. It relies on `Uri` for safe username escaping, `AuthenticatedGetAsync` for the authenticated request, and `ReadFromJsonAsync` to produce a strongly-typed [`UserProfileDto`](../../EchoHub.Core/DTOs/ProfileDtos.cs.md) payload, keeping UI code focused on presentation rather than transport concerns.
 
 ## Example
 ```csharp
-var profile = await client.GetUserProfileAsync("alice");
-if (profile is null)
-{
-    // handle missing profile
-}
-else
-{
-    // use profile
-}
+var profile = await apiClient.GetUserProfileAsync("alice");
 ```
 
 ## Notes
-- This method requires authentication; EnsureAuthenticated is called at the start and will raise if the client is not authenticated.
-- The username is URL-escaped using Uri.EscapeDataString to ensure a safe path segment.
-- The return type is nullable (UserProfileDto?), so callers should handle the null case appropriately.
+- The return type is `UserProfileDto?`, so callers must handle the possibility of a `null` result if the response body is empty or JSON null.
+- The method escapes the provided `username` and targets the `/api/users/{escapedUsername}/profile` endpoint, so callers should not attempt to bypass the abstraction for manual URL manipulation.
 
 ---
 
@@ -835,15 +751,17 @@ public async Task<string?> GetValidTokenAsync()
 **Returns:** `Task<string?>`
 
 
-Gets a valid access token asynchronously. If there is no current token, it returns null. If the token is within 60 seconds of expiry and a refresh token is available, it attempts to refresh via RefreshTokenAsync; any exception from RefreshTokenAsync is swallowed to allow the caller to handle authentication failure, and the current token is returned anyway. This method is used by EchoHubConnection as the token provider for SignalR, centralizing token management so callers obtain a usable token without duplicating refresh logic themselves.
+Returns a valid access token, refreshing it when it is near expiry. This helper is used by the [`EchoHubConnection`](EchoHubConnection.cs.md)-provided SignalR token provider to obtain a token without requiring callers to manage refresh logic themselves.
 
 ## Remarks
-This method centralizes the token lifecycle for EchoHubConnection's SignalR authentication. It reduces duplication by providing a single, reusable provider that handles refresh eligibility and fail-safe fallbacks. The refresh is best-effort; if RefreshTokenAsync fails or no refresh token is present, the method returns the current token, leaving the caller to respond to an authentication failure.
+
+To minimize unnecessary refresh calls, the method returns the current token if it is still valid; it only triggers a refresh when the token expires within 60 seconds and a `_refreshToken` is available. If `RefreshTokenAsync` fails, the exception is swallowed and the current `_accessToken` is returned, leaving authentication failure handling to the caller. The check uses `DateTimeOffset.UtcNow` for a timezone-agnostic calculation of freshness. Note that there is no synchronization around refresh operations, so concurrent calls may trigger multiple refresh attempts.
 
 ## Notes
-- Returns null when there is no access token, signaling the caller to re-authenticate.
-- Refresh attempts occur only when the token is near expiry (within 60 seconds) and a refresh token is available.
-- There is no explicit synchronization; concurrent calls may trigger multiple refresh attempts if used from multiple threads.
+
+- The method returns `null` when `_accessToken` is null or empty, signaling that no token is currently available.
+- If `_expiresAt` indicates imminent expiry but `_refreshToken` is missing, a potentially expired or invalid token may be returned.
+- Refresh failures are swallowed; downstream logic should verify the resulting token and act on authentication failures accordingly.
 
 ---
 
@@ -865,15 +783,16 @@ public async Task KickUserAsync(string username, string? reason = null)
 **Returns:** `Task`
 
 
-KickUserAsync kicks a user by username through the moderation API. It ensures the client is authenticated, posts a KickRequest with the optional reason to the server, and validates the response, throwing on failure.
+`KickUserAsync` asynchronously kicks a user by `username` through the moderation API, optionally including a `reason`. It ensures the client is authenticated with `EnsureAuthenticated()`, posts a [`KickRequest`](../../EchoHub.Core/DTOs/ModerationDtos.cs.md) to `/api/moderation/kick/{Uri.EscapeDataString(username)}` via `AuthenticatedRequestAsync`, and validates the result with `EnsureSuccessAsync`.
 
 ## Remarks
-This abstraction encapsulates the moderation HTTP call behind a typed DTO, keeping authentication and success handling centralized and out of the caller's business logic. It uses Uri.EscapeDataString to safely embed the username in the request path and relies on KickRequest to carry the optional reason payload, promoting a clean separation between transport concerns and domain logic.
+
+Centralizes moderation actions on the client side by wrapping the HTTP call, ensuring authentication, and standardizing error handling for moderation endpoints. It composes with the shared `_http` client and uses `Uri.EscapeDataString` to safely embed the `username` in the request path.
 
 ## Notes
-- Requires an authenticated session; the method enforces this by calling EnsureAuthenticated() before issuing the request.
-- Reason is optional; passing null results in a request with no explicit reason (as defined by KickRequest).
-- Username in the URL is URL-encoded via Uri.EscapeDataString to form a safe request path.
+
+- The `username` is URL-escaped via `Uri.EscapeDataString` to handle special characters.
+- If the API returns an error, `EnsureSuccessAsync` will throw an exception; callers should handle it accordingly.
 
 ---
 
@@ -895,17 +814,15 @@ public async Task<LoginResponse> LoginAsync(string username, string password)
 **Returns:** `Task<LoginResponse>`
 
 
-LoginAsync authenticates a user by posting the supplied credentials to the API login endpoint, deserializes the LoginResponse, and stores the resulting tokens for subsequent requests. It hides HTTP transport and error handling behind a single asynchronous surface; use it when a user signs in to obtain and apply authentication tokens.
+`LoginAsync` encapsulates the client login flow: it constructs a [`LoginRequest`](../../EchoHub.Core/DTOs/AuthDtos.cs.md) from the supplied `username` and `password`, posts it to the authentication endpoint via `_http.PostAsJsonAsync`, calls `EnsureSuccessAsync` to enforce a successful status, reads a [`LoginResponse`](../../EchoHub.Core/DTOs/AuthDtos.cs.md) from `response.Content` with `ReadFromJsonAsync<LoginResponse>()`, invokes `SetTokens` to persist tokens, and returns the [`LoginResponse`](../../EchoHub.Core/DTOs/AuthDtos.cs.md). This abstracts away HTTP wiring, error handling, and token management so callers only need to provide credentials to obtain tokens.
 
 ## Remarks
-
-LoginAsync centralizes the authentication workflow within ApiClient, encapsulating the HTTP POST, response validation, and token application behind a single method. It guarantees token updates via SetTokens after a successful login so subsequent requests are authenticated, and any HTTP errors or a missing response body surface as exceptions. The response is disposed promptly through the using var pattern, ensuring resources are freed even in error cases.
+LoginAsync centralizes the login protocol for the client: it wires HTTP request/response handling, error checking, and token persistence in a single method. It relies on `EnsureSuccessAsync` to throw for non-success status codes, and it guards against an empty response by throwing `InvalidOperationException` if `Content.ReadFromJsonAsync<LoginResponse>()` returns null; callers can rely on the returned [`LoginResponse`](../../EchoHub.Core/DTOs/AuthDtos.cs.md) to carry tokens after `SetTokens` has run.
 
 ## Notes
+- It throws `InvalidOperationException` if the login response body is empty.
+- On success, it calls `SetTokens` to persist authentication tokens for subsequent requests.
 
-- Throws InvalidOperationException when the login response body is empty ("Login returned empty response.").
-- Non-success HTTP statuses trigger exceptions via EnsureSuccessAsync.
-- Relies on the server returning a non-null LoginResponse to feed SetTokens; if the payload does not provide tokens, subsequent authenticated calls may be ineffective.
 
 ---
 
@@ -926,15 +843,14 @@ public async Task<LoginResponse> LoginWithRefreshTokenAsync(string refreshToken)
 **Returns:** `Task<LoginResponse>`
 
 
-Exchanges a refresh token for a new LoginResponse by posting a RefreshRequest to /api/auth/refresh, validates the HTTP response, and updates the client's stored tokens. Call this method when you need to refresh the access token without prompting the user to sign in again.
+LoginWithRefreshTokenAsync encapsulates the client-side token-refresh flow: it posts a [`RefreshRequest`](../../EchoHub.Core/DTOs/AuthDtos.cs.md) containing the provided `refreshToken` to `/api/auth/refresh`, ensures a successful HTTP response via `EnsureSuccessAsync`, deserializes a [`LoginResponse`](../../EchoHub.Core/DTOs/AuthDtos.cs.md) from the response content, updates the stored tokens with `SetTokens`, and returns the resulting [`LoginResponse`](../../EchoHub.Core/DTOs/AuthDtos.cs.md). Use this method when you have a valid refresh token and want to obtain new tokens in a single, consistent operation instead of duplicating the HTTP call and token persistence logic.
 
 ## Remarks
-Centralizes the token-refresh behavior within the API client: it encapsulates the HTTP call, JSON deserialization, and token state update. It relies on EnsureSuccessAsync to surface HTTP errors and on SetTokens to persist the new tokens, guaranteeing that subsequent requests use the refreshed credentials.
+By encapsulating the refresh flow behind the client boundary, this method ensures a single, consistent approach to exchanging a `refreshToken` for new tokens, with uniform error handling and token persistence via `SetTokens`. It coordinates the HTTP request, success validation, payload deserialization, and token state management, so callers don't have to duplicate boilerplate or risk divergent token-update semantics.
 
 ## Notes
-- Throws InvalidOperationException if the refresh response payload is empty (`ReadFromJsonAsync<LoginResponse>`() returns null).
-- Non-success HTTP responses are surfaced via EnsureSuccessAsync; callers should handle exceptions that indicate refresh failure.
-- This method mutates the client's token state via SetTokens(result); a successful return means the tokens were refreshed and are ready for use in subsequent requests.
+- Deserialization errors will bubble up if the response payload cannot be parsed as [`LoginResponse`](../../EchoHub.Core/DTOs/AuthDtos.cs.md).
+- The method throws `InvalidOperationException` when the response body is empty to signal that a valid [`LoginResponse`](../../EchoHub.Core/DTOs/AuthDtos.cs.md) was not received.
 
 ---
 
@@ -949,14 +865,14 @@ public async Task LogoutAsync()
 **Returns:** `Task`
 
 
-LogoutAsync ends the current session by (optionally) notifying the server to invalidate the refresh token and then clearing local authentication state. Call this when the user signs out to ensure both server-side revocation (when possible) and client-side cleanup.
+LogoutAsync asynchronously logs out the current user. If a `_refreshToken` exists, it attempts to invalidate the server-side session by posting a `RefreshRequest(_refreshToken)` to `/api/auth/logout` via `_http.PostAsJsonAsync`, swallowing any exceptions to provide a best-effort logout. It then clears the client state by setting `_accessToken` and `_refreshToken` to `null` and removing the `Authorization` header from `_http.DefaultRequestHeaders`.
 
 ## Remarks
-This method centralizes the sign-out flow in the client, coordinating server-side invalidation with a robust client-side cleanup. It uses a best-effort approach: if the server logout cannot be performed (e.g., network issues), the local sign-out still completes to prevent stale credentials from being used. Clearing the Authorization header in the HTTP client helps guarantee that subsequent requests are unauthenticated, even if other parts of the application held onto tokens in memory.
+LogoutAsync centralizes sign-out behavior: it tries to invalidate the server-side session when a `_refreshToken` is present, then always clears local credentials to prevent further authenticated calls. The best-effort approach (catch-swallow) favors responsiveness over guaranteed server termination, which is acceptable for most clients but not a guarantee in all environments. It coordinates with the HTTP client state by clearing the `Authorization` header so no stale tokens accompany future requests.
 
 ## Notes
-- The server logout is best-effort; any exception during the logout request is swallowed, so callers may not be notified of server-side success.
-- The method clears both tokens and the Authorization header unconditionally, ensuring no authenticated state remains in the client after invocation.
+- Best-effort logout swallows exceptions; callers should not rely on server-side termination in all failure scenarios.
+- After calling, tokens are cleared and the `Authorization` header is removed, so subsequent requests are unauthenticated until re-authentication occurs.
 
 ---
 
@@ -979,15 +895,21 @@ public async Task MuteUserAsync(string username, int? durationMinutes = null, st
 **Returns:** `Task`
 
 
-Asynchronously mutes a user identified by username by sending a MuteRequest to the moderation endpoint. It requires authentication, constructs the URL with a safely escaped username, and posts a JSON body containing the optional duration and reason. The call completes once the server confirms success.
+MuteUserAsync mutes a specified user by posting a [`MuteRequest`](../../EchoHub.Core/DTOs/ModerationDtos.cs.md) to the moderation API endpoint `"/api/moderation/mute/{username}"`, after ensuring the caller is authenticated via `EnsureAuthenticated()`. The username is escaped with `Uri.EscapeDataString`, and the operation accepts an optional `durationMinutes` and an optional `reason`; the call completes when `EnsureSuccessAsync` confirms the response.
 
 ## Remarks
-Centralizes moderation API interactions for muting and hides HTTP details from callers. It relies on MuteRequest to carry the mute parameters and on the client’s authentication and success-handling scaffolding to provide consistent behavior across the application.
+This method serves as a focused wrapper around the moderation API, consolidating authentication, request payload construction via [`MuteRequest`](../../EchoHub.Core/DTOs/ModerationDtos.cs.md), and centralized success handling via `EnsureSuccessAsync`. It enables client code to perform user moderations without dealing with low-level HTTP details or URL construction, aligning with other moderation helper methods.
+
+## Example
+```csharp
+// Example: mute a user for 60 minutes with a reason
+await apiClient.MuteUserAsync("user123", durationMinutes: 60, reason: "violation of rules");
+```
 
 ## Notes
-- durationMinutes is nullable; if omitted, the server may apply its default mute duration.
-- reason is optional; omitting it mutes without a stated reason.
-- If the server returns a non-success status, EnsureSuccessAsync will throw, propagating the failure to the caller.
+- This method requires authentication; if not authenticated, `EnsureAuthenticated()` will trigger a failure.
+- Both `durationMinutes` and `reason` are optional; passing null will rely on server-side defaults or policy.
+- The username is URL-escaped to safely form the request URL in `"/api/moderation/mute/{username}"`.
 
 ---
 
@@ -1008,25 +930,13 @@ public async Task NukeChannelAsync(string channelName)
 **Returns:** `Task`
 
 
-NukeChannelAsync performs a server-side action to nuke a moderation channel identified by channelName. It ensures the client is authenticated, then issues an authenticated HTTP DELETE request to /api/moderation/channels/{Uri.EscapeDataString(channelName)}/nuke, and awaits the server's successful response. The method returns a Task and does not produce a value; it throws on error via EnsureSuccessAsync.
+NukeChannelAsync issues an authenticated HTTP DELETE to remove a moderation channel identified by `channelName`. It begins by calling `EnsureAuthenticated()` to enforce credentials, then executes the request wrapped in `AuthenticatedRequestAsync` against the endpoint `/api/moderation/channels/{Uri.EscapeDataString(channelName)}/nuke` using `_http.DeleteAsync`, and finally validates the response with `EnsureSuccessAsync` before returning.
 
 ## Remarks
-
-This wrapper abstracts a destructive moderation action behind a clear name and a consistent authorization pattern. It ensures that the operation is performed only after the client is authenticated and that a non-success HTTP response will surface an exception via EnsureSuccessAsync. This keeps the caller focused on intent (nuke the channel) rather than on HTTP details.
-
-## Example
-
-```csharp
-// Example: Nuke a moderation channel named "general"
-await apiClient.NukeChannelAsync("general");
-```
+This method acts as a focused helper for performing the destructive operation of removing a moderation channel. By encapsulating authentication (`EnsureAuthenticated`) and consistent HTTP handling (`AuthenticatedRequestAsync` plus `EnsureSuccessAsync`), it provides a stable, discoverable entry point for channel-nuking that aligns with other moderation endpoints in the client.
 
 ## Notes
-
-- This is a destructive admin operation; use with caution and ensure proper permissions.
-- The channelName is URL-escaped to handle spaces or special characters.
-- The method completes only after a successful HTTP response; exceptions are thrown for errors.
-
+- `channelName` must be non-null; `Uri.EscapeDataString` will throw on null, so callers should validate input before invoking this method.
 
 ---
 
@@ -1041,15 +951,7 @@ public async Task RefreshTokenAsync()
 **Returns:** `Task`
 
 
-RefreshTokenAsync retrieves a new access token using the stored refresh token. It validates that a refresh token exists, posts it to the server's /api/auth/refresh endpoint as JSON, ensures the HTTP response indicates success, and then updates the client's token state from the returned LoginResponse.
-
-## Remarks
-RefreshTokenAsync centralizes the token renewal flow inside the API client. It encapsulates the end-to-end interaction with the authentication service: validation of prerequisites, request construction, error propagation on HTTP or deserialization failures, and mutation of token state via SetTokens. Callers should rely on it to refresh credentials when needed, rather than handling HTTP details themselves.
-
-## Notes
-- Throws InvalidOperationException when there is no refresh token available. (the early guard against missing _refreshToken)
-- If the HTTP response indicates failure or the response body cannot be deserialized into a LoginResponse (i.e., it is null), the method propagates the error or throws InvalidOperationException("Token refresh returned empty response.").
-
+RefreshTokenAsync refreshes the client's authentication by sending the current `_refreshToken` to the server at `` `/api/auth/refresh` `` via POST and updating tokens with `` `SetTokens` `` on success. It guards against a missing `_refreshToken` by throwing `` `InvalidOperationException` `` when it is null or empty, then posts the request, ensures the HTTP response indicates success with `` `EnsureSuccessAsync` ``, and requires a non-null `` [`LoginResponse`](../../EchoHub.Core/DTOs/AuthDtos.cs.md) `` to apply new tokens. If the response body is empty, it throws `` `InvalidOperationException` ``.
 
 ---
 
@@ -1073,21 +975,16 @@ public async Task<LoginResponse> RegisterAsync(string username, string password,
 **Returns:** `Task<LoginResponse>`
 
 
-Registers a new user by sending a registration payload to the server and returning the resulting LoginResponse. It constructs a RegisterRequest from the supplied username, password, and optional displayName and inviteCode, posts it to /api/auth/register, ensures the HTTP response indicates success, deserializes a LoginResponse from the response body, stores authentication tokens via SetTokens, and then returns the result. This method encapsulates the end-to-end registration flow and hides HTTP transport and token management details from callers.
+Registers a new user by posting a [`RegisterRequest`](../../EchoHub.Core/DTOs/AuthDtos.cs.md) to `/api/auth/register`, validating the response, reading a [`LoginResponse`](../../EchoHub.Core/DTOs/AuthDtos.cs.md) from the content, and updating the client's tokens with `SetTokens` before returning the result as a [`LoginResponse`](../../EchoHub.Core/DTOs/AuthDtos.cs.md).
+This is the onboarding entry point you call when creating an account with `username` and `password`, optionally supplying `displayName` and/or `inviteCode`.
 
 ## Remarks
-RegisterAsync centralizes the end-to-end registration flow: request construction, transport, error handling, response parsing, and token persistence. By funneling these concerns through a single method, it ensures consistent error semantics (via EnsureSuccessAsync) and a single token-management strategy (via SetTokens) for a coherent authentication state on the client.
-
-## Example
-```csharp
-// Simple registration using only required parameters
-var result = await apiClient.RegisterAsync("alice", "password");
-```
+Encapsulates the end-to-end registration flow: payload creation, HTTP transport, response handling, and token synchronization, so callers don't manage these concerns directly. It relies on `_http` to `PostAsJsonAsync` a [`RegisterRequest`](../../EchoHub.Core/DTOs/AuthDtos.cs.md), `EnsureSuccessAsync` to enforce successful HTTP statuses, and `SetTokens` to persist authentication state after a successful registration.
 
 ## Notes
-- Deserialization can throw if the response body cannot be parsed as LoginResponse.
-- If the server returns a non-success HTTP status, EnsureSuccessAsync will throw before parsing the body.
-- Token storage is performed by SetTokens as a side effect; callers should expect authentication state to be updated after a successful registration.
+- Non-success HTTP responses throw via `EnsureSuccessAsync`; handle to surface user-friendly errors.
+- If the server returns an empty body, an `InvalidOperationException` is thrown with the message `"Registration returned empty response."`.
+- Optional parameters `displayName` and `inviteCode` may be omitted (null) and will be serialized accordingly in the [`RegisterRequest`](../../EchoHub.Core/DTOs/AuthDtos.cs.md) payload.
 
 ---
 
@@ -1109,7 +1006,13 @@ public async Task<ChannelDto?> RekeyChannelAsync(string channelName, RekeyChanne
 **Returns:** `Task<ChannelDto?>`
 
 
-RekeyChannelAsync asynchronously initiates a key-rotation for a specific channel by posting a RekeyChannelRequest to the server and returning the updated ChannelDto. The call first asserts the caller is authenticated, then issues a POST to /api/channels/{escaped channelName}/rekey with the request payload, awaits a successful response, and deserializes the response body into a ChannelDto. The returned value may be null if the response has no content.
+Asynchronously rekeys a channel, given by `channelName`, by posting a [`RekeyChannelRequest`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) to the server once the client is authenticated. It sends JSON to the endpoint `/api/channels/{Uri.EscapeDataString(channelName)}/rekey`, awaits a successful response via `EnsureSuccessAsync`, and returns the deserialized [`ChannelDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) from the response body (or `null` if the response contains no content).
+
+## Remarks
+Centralizes the rekey operation behind the `ApiClient` to hide HTTP details from callers; authentication, request/response handling, and JSON deserialization are encapsulated in one place, making rekey usage simple and consistent across callers.
+
+## Notes
+- Non-success HTTP responses (for example, 404 Not Found or 403 Forbidden) surface as exceptions via `EnsureSuccessAsync`.
 
 ---
 
@@ -1130,15 +1033,7 @@ public async Task RevokeInviteAsync(string code)
 **Returns:** `Task`
 
 
-RevokeInviteAsync revokes a previously issued invitation identified by the supplied code. It ensures the caller is authenticated, then issues an authenticated HTTP DELETE to /api/invites/{Uri.EscapeDataString(code)} and finally validates the server response via EnsureSuccessAsync.
-
-## Remarks
-By encapsulating the DELETE call behind EnsureAuthenticated/AuthenticatedRequestAsync, this method provides a single, consistent mechanism for removing invites and centralizes error handling and authentication concerns. It shields callers from HTTP details and small failure modes, while aligning with other client methods that perform authenticated operations.
-
-## Notes
-- EnsureSuccessAsync will throw on non-success HTTP responses, so callers should handle exceptions for cases like missing or already-revoked invites.
-- The invite code is URL-escaped with Uri.EscapeDataString to safely embed it in the request path.
-- This method relies on prior authentication; if credentials are missing or invalid, EnsureAuthenticated will fail before the request is sent.
+RevokeInviteAsync revokes a pending invite identified by `code` by issuing an authenticated HTTP DELETE to `/api/invites/{Uri.EscapeDataString(code)}` and then validating the result with `EnsureSuccessAsync`. Use this when you need to remove a specific invite from the server instead of attempting a manual HTTP call; the operation requires authentication (`EnsureAuthenticated()`) and goes through `AuthenticatedRequestAsync` for centralized error handling.
 
 ---
 
@@ -1163,18 +1058,48 @@ public async Task<MessageDto?> SendMessageWithAttachmentsAsync(
 **Returns:** `Task<MessageDto?>`
 
 
-Sends a chat message to a channel with optional text and one or more attachments via multipart/form-data. For end-to-end encrypted channels, each attachment declares a kind and provides an encrypted preview (empty when none), and the caption is encrypted as well to protect metadata.
+Sends a message to a channel with optional text and one or more attachments. When used on end-to-end encrypted channels, each attachment includes a declared kind and a room-encrypted preview, and the caption is encrypted as well. The method builds a `MultipartFormDataContent` payload containing the message `content` and, for each attachment, the file stream plus optional `kind` and `preview` fields, then posts to the channel messages API and returns the parsed [`MessageDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) from the response.
+
+## Remarks
+This method centralizes channel-message sending with attachments behind an authentication boundary. It hides the multipart construction and per-attachment encoding from callers, while preserving the server's expectation that per-file `kind` and `preview` fields appear in the same order as the attachments. The URL path uses `Uri.EscapeDataString` to safely encode the `channelName`, and an optional `size` query parameter can be supplied to influence the shape of the response.
+
+## Notes
+- Only emit per-file `kind` and `preview` fields when `att.DeclaredKind` is non-null; this supports encrypted channels while keeping behavior sensible for non-encrypted use cases.
+- The request is sent via an authenticated wrapper and uses `POST` to `/api/channels/{channelName}/messages` with an optional `size` query parameter when provided.
+- Attachment content types are derived from the file name and set on the corresponding `StreamContent`; mismatches between file type and filename may affect server handling.
+
+---
+
+### SendUrlAsync
+> **File:** `src/EchoHub.Client/Services/ApiClient.cs`  
+> **Kind:** method
+
+```csharp
+public async Task<MessageDto?> SendUrlAsync(string channelName, string url, string? size = null)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `channelName` | `string` | — |
+| `url` | `string` | — |
+| `size` | `string?` | `null` |
+
+**Returns:** `Task<MessageDto?>`
+
+
+Posts the provided `url` to a specific channel by issuing a POST with a [`SendUrlRequest`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) and returning the resulting `MessageDto?`. The operation requires authentication, URL-encodes the channel name with `Uri.EscapeDataString(channelName)`, and supports an optional `size` parameter that appends a `?size=...` query; the response is validated via `EnsureSuccessAsync` and deserialized into a [`MessageDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) from the response content.
 
 ## Remarks
 
-The method centralizes the multipart upload workflow for messages with attachments, including per-attachment encryption metadata handling and content-type determination. It performs authentication, constructs the form in a deterministic order so that per-file metadata (kind and preview) remains aligned with the corresponding file, and delegates transport and response handling to helper primitives (AuthenticatedRequestAsync and EnsureSuccessAsync). The optional size parameter enables a server-side formatting variation without changing the message payload.
+This method encapsulates a server endpoint for sharing external URLs as channel messages, centralizing authentication, path encoding, and JSON (de)serialization behind a single helper. It keeps API usage consistent across callers and reduces boilerplate by hiding the HTTP details behind `ApiClient`.
 
 ## Notes
 
-- For encrypted channels, DeclaredKind must be non-null to emit per-attachment kind and preview metadata; if DeclaredKind is null, those fields are omitted for that attachment.
-- Each attachment is streamed individually with a Content-Type derived from the file name, and the server expects the metadata arrays (kind/preview) to line up with the corresponding files by index.
-- The channel name is URL-escaped to form the request path, and an optional size query is appended when size is provided.
-
+- The return type is `MessageDto?`; callers should account for possible null if the response body is empty.
+- The `size` query is only appended when `size` is not `null`; otherwise, the request path omits the query.
+- The channel name is encoded with `Uri.EscapeDataString` to prevent path injection or malformed URLs.
 
 ---
 
@@ -1195,14 +1120,10 @@ private void SetTokens(LoginResponse result)
 **Returns:** `void`
 
 
-Sets the local authentication state from a LoginResponse by storing the access token, refresh token, and expiration, updates the HttpClient to send a Bearer token with every request, and notifies subscribers that tokens have been refreshed.
+Sets authentication state from a [`LoginResponse`](../../EchoHub.Core/DTOs/AuthDtos.cs.md) by copying `result.Token`, `result.RefreshToken`, and `result.ExpiresAt` into the private members `_accessToken`, `_refreshToken`, and `_expiresAt`, then configures the HTTP client's authorization header to apply the Bearer token to future requests by assigning a new `AuthenticationHeaderValue` to `_http.DefaultRequestHeaders.Authorization`. It also triggers the `OnTokensRefreshed` event to notify subscribers that the token set has been updated; this method is typically called after a successful login or token refresh to wire the tokens into the HTTP client.
 
 ## Remarks
-This method centralizes token management for the API client. By updating the shared HttpClient.DefaultRequestHeaders.Authorization, all outgoing requests automatically include the current access token, reducing boilerplate. The OnTokensRefreshed event allows other components to react to token updates (e.g., refresh UI or trigger persistence). It relies on a well-formed LoginResponse; callers should ensure result is non-null and contains valid Token/ExpiresAt values before invoking.
-
-## Notes
-- No null checks exist for result or its properties; pass a valid LoginResponse to avoid NullReferenceException.
-- DefaultRequestHeaders.Authorization is a global header on the HttpClient; concurrent token refreshes could race to set it, so coordinate refresh flows if ApiClient is used from multiple threads.
+By centralizing token handling within the API client, token state and request authorization headers stay in sync across all outgoing calls. The `OnTokensRefreshed` event provides a hook for UI updates or dependent services to react to token changes without scattering header mutations across call sites.
 
 ---
 
@@ -1223,21 +1144,10 @@ public async Task UnbanUserAsync(string username)
 **Returns:** `Task`
 
 
-UnbanUserAsync lifts a ban on a user by issuing an authenticated POST request to the moderation API. You call this when you need to programmatically remove a ban for a specific username, relying on the client’s authentication state and centralized error handling rather than crafting HTTP requests yourself.
+UnbanUserAsync unbans a previously banned user by issuing an authenticated POST request to the moderation API at /api/moderation/unban/{username}. It first ensures the caller is authenticated, escapes the username for the URL, and sends an empty JSON payload. After receiving the response, it validates success via EnsureSuccessAsync. The method returns a Task and should be awaited by callers when they want to unban a user and await the operation’s completion.
 
 ## Remarks
-This method encapsulates the moderation action behind a stable API: it first ensures the caller is authenticated, then performs the request via a wrapper that handles authentication context, and finally asserts success through a centralized error-check. The username is URL-encoded to safely embed special characters in the path, and the payload is an empty JSON object, signaling a no-content action beyond the identifer in the URL. This pattern keeps moderation actions consistent across the client and reduces boilerplate for callers.
-
-## Example
-```csharp
-await apiClient.UnbanUserAsync("troublemaker42");
-```
-
-## Notes
-- The call requires a valid authenticated context; unauthenticated callers will be rejected by EnsureAuthenticated. 
-- The method uses Uri.EscapeDataString to safely include the username in the URL path. 
-- A non-success HTTP response will throw via EnsureSuccessAsync, so callers may want to handle exceptions to surface user-friendly errors. 
-- The request body is an empty object, reflecting a command-based action rather than data payload.
+This method demonstrates the client’s pattern for authenticated, state-changing moderation actions, wrapping a REST endpoint in a typed API call and using EnsureAuthenticated/AuthenticatedRequestAsync to perform the request before validating the response with EnsureSuccessAsync.
 
 ---
 
@@ -1258,22 +1168,19 @@ public async Task UnmuteUserAsync(string username)
 **Returns:** `Task`
 
 
-UnmuteUserAsync unmutes a previously muted user by issuing a server request to the moderation API. Use this method when you need to lift a mute on a specific username from the EchoHub client. It enforces authentication, posts to the /api/moderation/unmute/{username} endpoint with an empty payload, and verifies the response signals success, abstracting away the HTTP boilerplate from callers.
+UnmuteUserAsync lifts a user's mute by ensuring authentication and issuing an authenticated POST to `/api/moderation/unmute/{Uri.EscapeDataString(username)}` via `AuthenticatedRequestAsync` that calls `_http.PostAsJsonAsync(..., new { })`, followed by `EnsureSuccessAsync` to verify the result.
+
+Use this when your moderation flow needs to lift a mute on a specific user.
 
 ## Remarks
-UnmuteUserAsync is a thin wrapper around the service's moderation unmute endpoint. It centralizes authentication and error handling, ensuring consistency across moderation operations. By escaping the username in the URL, it guards against path-breaking characters and injection issues. The method returns a Task and does not expose a value; success is communicated by completing normally or by exceptions produced by EnsureSuccessAsync.
 
-## Example
-```csharp
-// Example usage
-await client.UnmuteUserAsync("john_doe");
-```
+- It relies on the shared authentication pattern (`EnsureAuthenticated` and `AuthenticatedRequestAsync`) to centralize authorization and error handling for moderation calls.
+- Encoding the `username` with `Uri.EscapeDataString` prevents malformed URLs when usernames contain special characters.
+- The method returns `Task` and does not expose a value; success is indicated by completing normally, while non-success responses throw.
 
 ## Notes
-- The request uses POST to /api/moderation/unmute/{Uri.EscapeDataString(username)} with an empty payload.
-- Authentication is required; EnsureAuthenticated() enforces this before the HTTP call.
-- The method does not return a value; success is indicated by normal completion, otherwise an exception is thrown by EnsureSuccessAsync.
-- Username is URL-encoded to prevent issues with special characters.
+
+- Throws on non-success HTTP responses; callers should handle exceptions or propagate them as part of their error handling strategy.
 
 ---
 
@@ -1295,21 +1202,44 @@ public async Task<ChannelDto?> UpdateChannelTopicAsync(string channelName, strin
 **Returns:** `Task<ChannelDto?>`
 
 
-Updates the topic of a channel by performing an authenticated HTTP PUT to the server. Given a channel name and a desired topic, it builds UpdateTopicRequest and sends it to /api/channels/{channelName}/topic, with the channel name URL-escaped. It then validates the response and deserializes the updated ChannelDto from the response body. The method returns ChannelDto? to reflect a possibly absent payload. Use this when you need to change or clear a channel's topic in an authenticated context instead of composing the HTTP request manually.
+Updates the topic for a channel by issuing an authenticated HTTP PUT request to the API endpoint `/api/channels/{channelName}/topic` with an [`UpdateTopicRequest`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) payload, and returns the updated [`ChannelDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) from the response when the operation succeeds. This method encapsulates authentication, request serialization, and response deserialization so callers can change a channel’s topic without handling low-level HTTP details.
 
 ## Remarks
-This method serves as the client-facing abstraction over a REST endpoint for channel topics. It centralizes authentication handling via EnsureAuthenticated and ensures consistent error handling with EnsureSuccessAsync, so callers don't need to manage HTTP status codes directly. It also encapsulates URL-encoding of the channel name, preventing issues with special characters.
+This method acts as a focused API client wrapper that centralizes concerns like authentication, HTTP communication, and error handling behind a strongly-typed surface. It URL-encodes the channel name for safety and uses a dedicated [`UpdateTopicRequest`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) DTO to keep the API contract isolated from domain models, returning a [`ChannelDto`](../../EchoHub.Core/DTOs/ChatDtos.cs.md) that reflects the post-update channel state.
 
 ## Example
 ```csharp
-// Example: update topic for a channel
-var updated = await apiClient.UpdateChannelTopicAsync("general", "Discussions about general topics");
+// Most common usage: update the topic of a channel and obtain the updated channel representation
+ChannelDto? updated = await client.UpdateChannelTopicAsync("general", "Welcome to the General channel");
 ```
 
 ## Notes
-- Topic can be null to clear the topic.
-- The response is deserialized to ChannelDto; if the server returns no content, the result may be null.
-- The channel name in the URL is escaped to handle spaces or special characters.
+- The server determines how a null `topic` is interpreted (e.g., clearing the topic vs. rejecting the request); rely on the server contract for semantics.
+- Non-success HTTP responses will throw via `EnsureSuccessAsync`, so callers should handle potential exceptions accordingly.
+
+---
+
+### UpdateProfileAsync
+> **File:** `src/EchoHub.Client/Services/ApiClient.cs`  
+> **Kind:** method
+
+```csharp
+public async Task<UserProfileDto?> UpdateProfileAsync(UpdateProfileRequest request)
+```
+
+**Parameters:**
+
+| Parameter | Type | Default |
+|-----------|------|---------|
+| `request` | [`UpdateProfileRequest`](../../EchoHub.Core/DTOs/ProfileDtos.cs.md) | — |
+
+**Returns:** `Task<UserProfileDto?>`
+
+
+Ensures the current user is authenticated, then issues an HTTP PUT to `/api/users/profile` with the [`UpdateProfileRequest`](../../EchoHub.Core/DTOs/ProfileDtos.cs.md) payload and returns the updated profile as a [`UserProfileDto`](../../EchoHub.Core/DTOs/ProfileDtos.cs.md). It uses `AuthenticatedRequestAsync` and `PutAsJsonAsync` for the request, `EnsureSuccessAsync` to verify the response, and `ReadFromJsonAsync<UserProfileDto>()` to deserialize the result.
+
+## Remarks
+It centralizes authentication and error handling for profile updates, providing a single, strongly-typed contract for client code. This wrapper mirrors the server API surface at `/api/users/profile`, ensuring consistency between client calls and server expectations while keeping callers focused on business logic rather than HTTP plumbing.
 
 ---
 
@@ -1331,92 +1261,16 @@ public async Task<string?> UploadAvatarAsync(Stream imageStream, string fileName
 **Returns:** `Task<string?>`
 
 
-Uploads the given image as the user's avatar by posting it as a multipart/form-data request to the server endpoint "/api/users/avatar". It ensures the caller is authenticated, builds the form data with the file attached under the field named "file", sets the content type from the file name, sends the request, validates the response, and deserializes the resulting JSON to return the AvatarAscii value (or null if missing). This method encapsulates the HTTP, content creation, and JSON parsing details, allowing callers to simply provide a stream and a filename to obtain the avatar representation.
+Uploads a user avatar by streaming the provided image as multipart/form-data to the server endpoint `/api/users/avatar` after ensuring the caller is authenticated. The image is wrapped in a `MultipartFormDataContent` with a `StreamContent` whose `ContentType` is derived from `GetContentType(fileName)`, the request is posted via `AuthenticatedRequestAsync` to `_http.PostAsync(...)`, the response is deserialized with `ReadFromJsonAsync<AvatarUploadResponse>()`, and the method returns `AvatarAscii` (or `null` if absent).
 
 ## Remarks
-This method serves as a focused wrapper around the avatar-upload workflow. It centralizes authentication enforcement, multipart payload construction, endpoint contract (field name "file" and route "/api/users/avatar"), and server deserialization into a single, reusable call. By returning AvatarAscii from AvatarUploadResponse, it decouples UI concerns from image handling, enabling lightweight representations of avatars when a full image is not required.
+Encapsulates avatar-upload logic behind a single API that handles authentication, HTTP payload construction, and JSON deserialization, reducing duplication for callers and giving a single contract for server-side [`AvatarUploadResponse`](../../EchoHub.Core/DTOs/ProfileDtos.cs.md). It coordinates the HTTP client, content builders, and the [`AvatarUploadResponse`](../../EchoHub.Core/DTOs/ProfileDtos.cs.md) contract to produce a simple ASCII avatar string, decoupling UI concerns from transport details.
 
 ## Example
 ```csharp
-// Assuming 'client' is an instance of ApiClient and the user is authenticated
-using var stream = File.OpenRead("path/to/avatar.png");
-string? ascii = await client.UploadAvatarAsync(stream, "avatar.png");
-Console.WriteLine(ascii ?? "No avatar ASCII returned");
+// Example: typical usage
+string? ascii = await client.UploadAvatarAsync(imageStream, "avatar.png");
 ```
 
-## Notes
-- The request uses multipart/form-data with the form field named "file" as required by the server contract. Changes to the field name or endpoint would break this integration.
-- Ensure authentication is established before calling; the method invokes EnsureAuthenticated() and may fail if the user is not authenticated.
-- The method returns AvatarAscii from AvatarUploadResponse, which may be null if the server omits it or the response cannot be deserialized.
-
----
-
-## SendUrlAsync
-> **File:** `src/EchoHub.Client/Services/ApiClient.cs`  
-> **Kind:** method
-
-```csharp
-public async Task<MessageDto?> SendUrlAsync(string channelName, string url, string? size = null)
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `channelName` | `string` | — |
-| `url` | `string` | — |
-| `size` | `string?` | `null` |
-
-**Returns:** `Task<MessageDto?>`
-
-
-SendUrlAsync posts a URL to the specified channel via the EchoHub HTTP API and returns the server’s MessageDto for the resulting message. Use this when you need to programmatically share a link in a channel and receive a typed representation of the posted message, with the client handling authentication, request construction, and response parsing.
-
-## Remarks
-
-By encapsulating the endpoint path construction, JSON payload, and authentication steps, this method reduces boilerplate for callers and enforces consistent error handling through EnsureSuccessAsync. It also escapes the channel name when building the URL to prevent routing errors caused by special characters.
-
-## Example
-
-```csharp
-var result = await client.SendUrlAsync("general", "https://example.com", size: "1024");
-```
-
-## Notes
-
-- The size parameter is appended as a raw query component; callers should pass URL-safe values or the method should be extended to URL-encode this value.
-- The return value may be null if the response body is empty; callers should handle null appropriately.
-
-
----
-
-## UpdateProfileAsync
-> **File:** `src/EchoHub.Client/Services/ApiClient.cs`  
-> **Kind:** method
-
-```csharp
-public async Task<UserProfileDto?> UpdateProfileAsync(UpdateProfileRequest request)
-```
-
-**Parameters:**
-
-| Parameter | Type | Default |
-|-----------|------|---------|
-| `request` | [`UpdateProfileRequest`](../../EchoHub.Core/DTOs/ProfileDtos.cs.md) | — |
-
-**Returns:** `Task<UserProfileDto?>`
-
-
-Updates the authenticated user's profile by issuing a PUT request to /api/users/profile with the provided UpdateProfileRequest and returning the updated UserProfileDto. It first ensures the caller is authenticated, then performs the HTTP request, validates the response, and deserializes the JSON payload into a UserProfileDto (or null if the response has no body).
-
-## Remarks
-
-This method centralizes the concerns around making authenticated HTTP calls: enforcing authentication, handling HTTP success semantics, and deserializing the server payload into a typed DTO. It provides a clean, reusable surface for updating the user's profile without leaking HTTP details to callers. By wrapping EnsureSuccessAsync and JSON deserialization, it promotes consistent error handling and data shape assumptions across the client.
-
-## Notes
-
-- The return value may be null if the response body is empty; callers should guard against null.
-- EnsureSuccessAsync will throw on non-success HTTP statuses, so error handling is centralized here.
-- Deserialization uses `ReadFromJsonAsync<UserProfileDto>`; ensure the response content is JSON matching UserProfileDto.
 
 ---

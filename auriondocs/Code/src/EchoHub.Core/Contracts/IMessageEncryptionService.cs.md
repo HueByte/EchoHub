@@ -8,28 +8,27 @@ public interface IMessageEncryptionService
 ```
 
 
-IMessageEncryptionService defines a pluggable contract for encrypting and decrypting string data, using a distinctive prefix to mark encrypted content so callers can distinguish ciphertext from plain text and pass through non-encrypted values safely. It also exposes EncryptDatabaseEnabled to reflect the server setting for encrypting database content at rest, and provides nullable variants to handle optional fields without extra null checks.
+The `IMessageEncryptionService` interface defines a centralized contract for encrypting and decrypting messages used in transit and at rest. It exposes a straightforward API to convert plaintext into ciphertext and back, while the `CiphertextPrefix` marks encrypted payloads so the implementation can transparently pass through values that are not encrypted. The `EncryptDatabaseEnabled` flag surfaces the server-side setting that indicates whether data stored in the database should be encrypted at rest, enabling callers to adapt their behavior to policy.
 
 ## Remarks
-This interface acts as a thin abstraction that isolates encryption concerns from business logic, enabling swap-in of different algorithms or key-management strategies without touching call sites. The public CiphertextPrefix and the Decrypt pass-through behavior for non-encrypted values provide a simple, deterministic convention for distinguishing encrypted payloads. The nullable variants help preserve nullability semantics in data-transfer surfaces while still enabling encryption when a value is present.
+
+This abstraction minimizes scattered crypto logic by presenting a single, testable surface for encryption decisions. The pass-through behavior for content that does not begin with the `CiphertextPrefix` helps prevent double-encrypting and keeps compatibility with data already in plaintext. By providing nullable-aware methods (`EncryptNullable` and `DecryptNullable`), it cleanly handles optional values without forcing callers to perform boilerplate null checks at call sites.
 
 ## Example
+
 ```csharp
-// Given an IMessageEncryptionService implementation (injected or resolved via DI)
-IMessageEncryptionService service = ...;
+// Assume you have an instance of IMessageEncryptionService named `service`
+string ciphertext = service.Encrypt("TopSecret");
+string plaintext = service.Decrypt(ciphertext); // "TopSecret"
 
-string plain = "customer-secret";
-string cipher = service.Encrypt(plain);
-string decrypted = service.Decrypt(cipher); // == plain
+// Decrypting non-encrypted content yields the original value (pass-through)
+string passthrough = service.Decrypt("plain-text"); // "plain-text"
 
-string? nullablePlain = null;
-string? nullableCipher = service.EncryptNullable(nullablePlain); // null
-string? nullableDecrypted = service.DecryptNullable(nullableCipher); // null
-
-bool atRest = service.EncryptDatabaseEnabled;
+string? nullableValue = null;
+string? encNullable = service.EncryptNullable(nullableValue); // null
+string? decNullable = service.DecryptNullable(encNullable); // null
 ```
 
 ## Notes
-- Decrypt will pass through values that do not start with the CiphertextPrefix.  
-- EncryptNullable/DecryptNullable gracefully handle nulls by returning null.  
-- EncryptDatabaseEnabled indicates whether server-side encrypt-at-rest is active; use it to guide storage strategies.
+- The `CiphertextPrefix` ("$ENC$v1$") is a marker used to identify encrypted data. Decrypt will return the input unchanged if it does not start with this prefix.
+- `EncryptDatabaseEnabled` reflects a server policy. It indicates whether data should be encrypted at rest, but callers must still invoke `Encrypt`/`EncryptNullable` before storage to ensure encryption occurs per policy.
