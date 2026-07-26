@@ -19,6 +19,16 @@ public sealed class IrcCommandHandler
 
     private string ServerName => _options.ServerName;
 
+    private static readonly Dictionary<string, string?> ServerCaps = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["sasl"] = null,
+        ["server-time"] = null,
+        ["message-tags"] = null,
+        ["echo-message"] = null,
+        ["batch"] = null,
+        ["draft/multiline"] = "max-bytes=40000,max-lines=10",
+    };
+
     public IrcCommandHandler(
         IrcClientConnection conn,
         IrcOptions options,
@@ -82,6 +92,7 @@ public sealed class IrcCommandHandler
             "JOIN" => HandleJoinAsync(msg),
             "PART" => HandlePartAsync(msg),
             "PRIVMSG" => HandlePrivmsgAsync(msg),
+            "NOTICE" => Task.CompletedTask,
             "QUIT" => HandleQuitAsync(msg),
             "NAMES" => HandleNamesAsync(msg),
             "TOPIC" => HandleTopicAsync(msg),
@@ -93,36 +104,46 @@ public sealed class IrcCommandHandler
             "MOTD" => SendMotdAsync(),
             "USERHOST" or "LUSERS" => Task.CompletedTask,
 
+            // IRCv3 multiline batch
+            "BATCH" => HandleBatchAsync(msg),
+
             _ => _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_UNKNOWNCOMMAND,
                 $"{command} :Unknown command"),
         };
     }
 
-    // ── Authentication ──────────────────────────────────────────────────────
+    // ── IRCv3 CAP Negotiation ─────────────────────────────────────────────
+
+    private static readonly string[] CapList302 = [.. ServerCaps.Select(kvp =>
+        kvp.Value is not null ? $"{kvp.Key}={kvp.Value}" : kvp.Key)];
+
+    private static readonly string[] CapListLegacy = [.. ServerCaps.Keys];
 
     private async Task HandleCapAsync(IrcMessage msg)
     {
-        if (msg.Parameters.Count < 1) return;
+        if (msg.Parameters.Count < 1)
+        {
+            await SendInvalidCapCmdAsync("CAP requires a subcommand");
+            return;
+        }
 
-        switch (msg.Parameters[0].ToUpperInvariant())
+        var subcommand = msg.Parameters[0].ToUpperInvariant();
+
+        // Build the nick placeholder for server responses (use * while unregistered)
+        var nick = _conn.Nickname ?? "*";
+
+        switch (subcommand)
         {
             case "LS":
-                await _conn.SendAsync($":{ServerName} CAP * LS :sasl");
-                _conn.CapNegotiating = true;
+                await HandleCapLsAsync(msg, nick);
+                break;
+
+            case "LIST":
+                await HandleCapListAsync(nick);
                 break;
 
             case "REQ":
-                if (msg.Parameters.Count >= 2 &&
-                    msg.Parameters[1].Trim().Equals("sasl", StringComparison.OrdinalIgnoreCase))
-                {
-                    await _conn.SendAsync($":{ServerName} CAP * ACK :sasl");
-                    _conn.IsSasl = true;
-                }
-                else
-                {
-                    var requested = msg.Parameters.ElementAtOrDefault(1) ?? "";
-                    await _conn.SendAsync($":{ServerName} CAP * NAK :{requested}");
-                }
+                await HandleCapReqAsync(msg, nick);
                 break;
 
             case "END":
@@ -130,8 +151,231 @@ public sealed class IrcCommandHandler
                 if (_conn.Nickname is not null && _conn.Username is not null && !_conn.IsRegistered)
                     await TryCompleteRegistrationAsync();
                 break;
+
+            default:
+                await SendInvalidCapCmdAsync($"Unknown subcommand {subcommand}");
+                break;
         }
     }
+
+    private async Task HandleCapLsAsync(IrcMessage msg, string nick)
+    {
+        // Parse optional version argument
+        var version = 0;
+        if (msg.Parameters.Count >= 2 && int.TryParse(msg.Parameters[1], out var v))
+            version = v;
+
+        // Store the highest version seen (clients cannot downgrade)
+        if (version > _conn.CapVersion)
+            _conn.CapVersion = version;
+
+        // Decide capability list format based on negotiated version
+        var caps = version >= 302 ? CapList302 : CapListLegacy;
+
+        // Suspend registration during CAP negotiation
+        _conn.CapNegotiating = true;
+
+        // Multiline CAP LS 302 response
+        if (version >= 302 && caps.Length > 0)
+        {
+            // If the total fits in one line, send it as a single reply
+            var singleLine = string.Join(" ", caps);
+            if (singleLine.Length < 400)
+            {
+                await _conn.SendAsync($":{ServerName} CAP {nick} LS :{singleLine}");
+            }
+            else
+            {
+                // Split across multiple lines; all but the last get '*' as a marker
+                var lines = SplitCapList(caps, 400);
+                for (var i = 0; i < lines.Count; i++)
+                {
+                    var marker = i < lines.Count - 1 ? "*" : "";
+                    await _conn.SendAsync($":{ServerName} CAP {nick} LS {marker}:{lines[i]}");
+                }
+            }
+        }
+        else if (caps.Length > 0)
+        {
+            await _conn.SendAsync($":{ServerName} CAP {nick} LS :{string.Join(" ", caps)}");
+        }
+        else
+        {
+            await _conn.SendAsync($":{ServerName} CAP {nick} LS :");
+        }
+    }
+
+    private async Task HandleCapListAsync(string nick)
+    {
+        var enabled = _conn.EnabledCaps.ToArray();
+        if (enabled.Length > 0)
+        {
+            await _conn.SendAsync($":{ServerName} CAP {nick} LIST :{string.Join(" ", enabled)}");
+        }
+        else
+        {
+            await _conn.SendAsync($":{ServerName} CAP {nick} LIST :");
+        }
+    }
+
+    private async Task HandleCapReqAsync(IrcMessage msg, string nick)
+    {
+        if (msg.Parameters.Count < 2 || string.IsNullOrWhiteSpace(msg.Parameters[1]))
+        {
+            await _conn.SendAsync($":{ServerName} CAP {nick} NAK :");
+            return;
+        }
+
+        var requested = msg.Parameters[1].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        // Validate all caps are known before modifying anything (all-or-nothing)
+        var ackList = new List<string>();
+        var valid = true;
+
+        foreach (var item in requested)
+        {
+            var cap = item;
+            if (cap.StartsWith('-'))
+                cap = cap[1..];
+
+            // cap-notify is implicitly enabled for CAP LS 302; accept it silently
+            if (cap.Equals("cap-notify", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (!ServerCaps.ContainsKey(cap))
+            {
+                valid = false;
+                break;
+            }
+        }
+
+        if (!valid)
+        {
+            await _conn.SendAsync($":{ServerName} CAP {nick} NAK :{msg.Parameters[1]}");
+            return;
+        }
+
+        foreach (var item in requested)
+        {
+            if (item.StartsWith('-'))
+            {
+                _conn.DisableCap(item[1..]);
+                ackList.Add(item);
+            }
+            else
+            {
+                _conn.EnableCap(item);
+                ackList.Add(item);
+            }
+        }
+
+        if (ackList.Count > 0)
+        {
+            await _conn.SendAsync($":{ServerName} CAP {nick} ACK :{string.Join(" ", ackList)}");
+        }
+        else
+        {
+            // No actual caps to ack (e.g. cap-notify only) — send empty ACK
+            await _conn.SendAsync($":{ServerName} CAP {nick} ACK :");
+        }
+    }
+
+    private async Task SendInvalidCapCmdAsync(string message)
+    {
+        var nick = _conn.Nickname ?? "*";
+        await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_INVALIDCAPCMD, nick, $"{message}");
+    }
+
+    private static List<string> SplitCapList(string[] caps, int maxLen)
+    {
+        var lines = new List<string>();
+        var current = new List<string>();
+        var currentLen = 0;
+
+        foreach (var cap in caps)
+        {
+            var capLen = cap.Length + (current.Count > 0 ? 1 : 0); // +1 for leading space
+            if (currentLen + capLen > maxLen && current.Count > 0)
+            {
+                lines.Add(string.Join(" ", current));
+                current.Clear();
+                currentLen = 0;
+                capLen = cap.Length;
+            }
+            current.Add(cap);
+            currentLen += capLen;
+        }
+
+        if (current.Count > 0)
+            lines.Add(string.Join(" ", current));
+
+        return lines.Count > 0 ? lines : [""];
+    }
+
+    // ── IRCv3 Multiline Batch ─────────────────────────────────────────────
+
+    private async Task HandleBatchAsync(IrcMessage msg)
+    {
+        if (!await RequireRegisteredAsync()) return;
+        if (msg.Parameters.Count < 1) return;
+
+        var reference = msg.Parameters[0];
+
+        if (reference.StartsWith('-'))
+        {
+            // BATCH -ref → end of batch
+            var batch = _conn.PendingMultilineBatch;
+            if (batch is null || batch.ReferenceTag != reference[1..])
+                return;
+
+            _conn.PendingMultilineBatch = null;
+            await FlushMultilineBatchAsync(batch);
+        }
+        else
+        {
+            // BATCH +ref type [target]
+            if (msg.Parameters.Count < 2) return;
+            var type = msg.Parameters[1];
+
+            if (!type.Equals("draft/multiline", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            if (msg.Parameters.Count < 3) return;
+            var target = msg.Parameters[2];
+
+            var channelName = IrcToEchoHubChannel(target);
+            if (channelName is null) return;
+
+            _conn.PendingMultilineBatch = new MultilineBatchContext(reference[1..], channelName);
+        }
+    }
+
+    private async Task FlushMultilineBatchAsync(MultilineBatchContext batch)
+    {
+        if (batch.Lines.Count == 0) return;
+
+        // Validate: no blank lines with concat tag, no entirely blank messages
+        var allBlank = true;
+        for (var i = 0; i < batch.Lines.Count; i++)
+        {
+            if (!string.IsNullOrWhiteSpace(batch.Lines[i]))
+            {
+                allBlank = false;
+                break;
+            }
+        }
+
+        if (allBlank) return;
+
+        // Per spec: lines joined by \n by default; draft/multiline-concat lines
+        // are directly concatenated (already handled during collection).
+        var content = string.Join("\n", batch.Lines);
+
+        await _chatService.SendMessageAsync(
+            _conn.UserId!.Value, _conn.Nickname!, batch.Target, content, _conn.ConnectionId);
+    }
+
+    // ── Authentication ──────────────────────────────────────────────────────
 
     private async Task HandleAuthenticateAsync(IrcMessage msg)
     {
@@ -328,8 +572,26 @@ public sealed class IrcCommandHandler
             $":This server was created {DateTimeOffset.UtcNow:yyyy-MM-dd}");
         await _conn.SendNumericAsync(ServerName, IrcNumericReply.RPL_MYINFO,
             $"{ServerName} EchoHub-IRC o o");
+
+        var isupportTokens = new List<string>
+        {
+            "CHANTYPES=#",
+            "CHANMODES=b,k,,,",
+            "NICKLEN=50",
+            "CHANNELLEN=100",
+            "CLIENTTAGDENY=*,-reply",
+        };
+
+        // If the client has message-tags, advertise CLIENTTAGDENY
+        if (_conn.HasCap("message-tags"))
+        {
+            isupportTokens.Add("CLIENTTAGDENY=*,-reply");
+        }
+
+        isupportTokens.Add(":are supported by this server");
+
         await _conn.SendNumericAsync(ServerName, IrcNumericReply.RPL_ISUPPORT,
-            "CHANTYPES=# CHANMODES=b,k,, NICKLEN=50 CHANNELLEN=100 :are supported by this server");
+            string.Join(" ", isupportTokens));
 
         await SendMotdAsync();
     }
@@ -449,7 +711,7 @@ public sealed class IrcCommandHandler
                 };
                 var lines = IrcMessageFormatter.FormatMessage(decrypted, _options.PublicBaseUrl);
                 foreach (var line in lines)
-                    await _conn.SendAsync(line);
+                    await _conn.SendAsync(DecorateLineForConnection(line, m));
             }
         }
     }
@@ -498,6 +760,34 @@ public sealed class IrcCommandHandler
 
         var channelName = IrcToEchoHubChannel(target);
         if (channelName is null) return;
+
+        // Check if we're inside a multiline batch
+        var batch = _conn.PendingMultilineBatch;
+        if (batch is not null)
+        {
+            if (batch.Target != channelName)
+                return;
+
+            // Collect this line. If the message has the draft/multiline-concat tag,
+            // it appends directly without a newline separator.
+            var isConcat = msg.Tags.ContainsKey("draft/multiline-concat");
+            if (isConcat)
+            {
+                if (string.IsNullOrEmpty(content))
+                    return; // blank concat lines not allowed
+                batch.UsesConcat = true;
+                // Append to the last line (or start a new one)
+                if (batch.Lines.Count > 0)
+                    batch.Lines[^1] += content;
+                else
+                    batch.Lines.Add(content);
+            }
+            else
+            {
+                batch.Lines.Add(content);
+            }
+            return;
+        }
 
         var error = await _chatService.SendMessageAsync(
             _conn.UserId!.Value, _conn.Nickname!, channelName, content, _conn.ConnectionId);
@@ -815,5 +1105,25 @@ public sealed class IrcCommandHandler
 
         var name = ircChannel[1..].ToLowerInvariant().Trim();
         return ValidationConstants.ChannelNameRegex().IsMatch(name) ? name : null;
+    }
+
+    private string DecorateLineForConnection(string line, MessageDto message)
+    {
+        var tags = new List<(string Key, string? Value)>();
+
+        if (_conn.HasCap("server-time"))
+            tags.Add(("time", message.SentAt.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")));
+
+        if (_conn.HasCap("message-tags"))
+        {
+            tags.Add(("msgid", message.Id.ToString("D")));
+            if (message.ReplyTo is not null)
+                tags.Add(("+reply", message.ReplyTo.MessageId.ToString("D")));
+        }
+
+        if (tags.Count == 0)
+            return line;
+
+        return IrcMessage.BuildTagPrefix([.. tags]) + line;
     }
 }

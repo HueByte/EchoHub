@@ -28,9 +28,21 @@ public sealed class IrcClientConnection : IAsyncDisposable
     public bool IsSasl { get; set; }
     public bool CapNegotiating { get; set; }
 
+    // Highest CAP LS version received from client (0 = no version)
+    public int CapVersion { get; set; }
+
+    public HashSet<string> EnabledCaps { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    public bool HasCap(string cap) => EnabledCaps.Contains(cap);
+    public void EnableCap(string cap) => EnabledCaps.Add(cap);
+    public void DisableCap(string cap) => EnabledCaps.Remove(cap);
+
     // Channel state — thread-safe: written by command handler, read by broadcaster threads
     private readonly HashSet<string> _joinedChannels = new(StringComparer.OrdinalIgnoreCase);
     private readonly object _channelLock = new();
+
+    // Non-null while BATCH lines are being collected
+    public MultilineBatchContext? PendingMultilineBatch { get; set; }
 
     // Away state
     public string? AwayMessage { get; set; }

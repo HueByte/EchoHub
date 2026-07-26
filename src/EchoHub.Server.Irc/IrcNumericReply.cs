@@ -45,6 +45,7 @@ public static class IrcNumericReply
     public const string RPL_ENDOFBANLIST = "368";
 
     // Errors
+    public const string ERR_INVALIDCAPCMD = "410";
     public const string ERR_NOSUCHNICK = "401";
     public const string ERR_NOSUCHCHANNEL = "403";
     public const string ERR_CANNOTSENDTOCHAN = "404";
