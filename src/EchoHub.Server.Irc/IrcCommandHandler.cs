@@ -346,7 +346,16 @@ public sealed class IrcCommandHandler
             var channelName = IrcToEchoHubChannel(target);
             if (channelName is null) return;
 
-            _conn.PendingMultilineBatch = new MultilineBatchContext(reference[1..], channelName);
+            var batchCtx = new MultilineBatchContext(reference[1..], channelName);
+
+            // Capture +reply tag from the BATCH start line for reply handling
+            if (msg.Tags.TryGetValue("+reply", out var replyStr) &&
+                Guid.TryParse(replyStr, out var replyId))
+            {
+                batchCtx.ReplyToMessageId = replyId;
+            }
+
+            _conn.PendingMultilineBatch = batchCtx;
         }
     }
 
@@ -371,8 +380,14 @@ public sealed class IrcCommandHandler
         // are directly concatenated (already handled during collection).
         var content = string.Join("\n", batch.Lines);
 
-        await _chatService.SendMessageAsync(
-            _conn.UserId!.Value, _conn.Nickname!, batch.Target, content, _conn.ConnectionId);
+        var error = await _chatService.SendMessageAsync(
+            _conn.UserId!.Value, _conn.Nickname!, batch.Target, content, _conn.ConnectionId, batch.ReplyToMessageId);
+
+        if (error is not null)
+        {
+            await _conn.SendNumericAsync(ServerName, IrcNumericReply.ERR_CANNOTSENDTOCHAN,
+                $"#{batch.Target} :{error}");
+        }
     }
 
     // ── Authentication ──────────────────────────────────────────────────────
@@ -789,8 +804,16 @@ public sealed class IrcCommandHandler
             return;
         }
 
+        // Parse +reply tag for reply-to support from IRC clients
+        Guid? replyTo = null;
+        if (msg.Tags.TryGetValue("+reply", out var replyStr) &&
+            Guid.TryParse(replyStr, out var replyId))
+        {
+            replyTo = replyId;
+        }
+
         var error = await _chatService.SendMessageAsync(
-            _conn.UserId!.Value, _conn.Nickname!, channelName, content, _conn.ConnectionId);
+            _conn.UserId!.Value, _conn.Nickname!, channelName, content, _conn.ConnectionId, replyTo);
 
         if (error is not null)
         {

@@ -23,7 +23,16 @@ public class IrcBroadcaster : IChatBroadcaster
             Content = _encryption.Decrypt(message.Content),
             ReplyTo = message.ReplyTo is { } reply ? reply with { Content = _encryption.Decrypt(reply.Content) } : null,
         };
-        var baseLines = IrcMessageFormatter.FormatMessage(decryptedMessage, _gateway.Options.PublicBaseUrl);
+
+        // Clients that support message-tags receive the +reply tag instead of
+        // the text reply prefix, so format without it. The sender's echo-message
+        // also needs the raw content to correlate with what they sent.
+        var hasReply = message.ReplyTo is not null;
+        var modernMessage = hasReply ? decryptedMessage with { ReplyTo = null } : decryptedMessage;
+        var legacyLines = IrcMessageFormatter.FormatMessage(decryptedMessage, _gateway.Options.PublicBaseUrl);
+        var modernLines = hasReply
+            ? IrcMessageFormatter.FormatMessage(modernMessage, _gateway.Options.PublicBaseUrl)
+            : legacyLines;
 
         // Compute shared tag components (same for all connections in this channel)
         var serverTimeTag = message.SentAt.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
@@ -36,6 +45,11 @@ public class IrcBroadcaster : IChatBroadcaster
             // Echo-message clients need their own messages back for msgid/+reply tracking.
             if (conn.ConnectionId == excludeConnectionId && !conn.HasCap("echo-message"))
                 continue;
+
+            // Use modern lines (without reply prefix) for echo-message senders and
+            // for any client that gets the +reply tag via message-tags capability.
+            var useModern = conn.ConnectionId == excludeConnectionId || conn.HasCap("message-tags");
+            var lines = useModern ? modernLines : legacyLines;
 
             // Build per-connection tags
             var tags = new List<(string Key, string? Value)>();
@@ -52,13 +66,13 @@ public class IrcBroadcaster : IChatBroadcaster
 
             var tagPrefix = tags.Count > 0 ? IrcMessage.BuildTagPrefix([.. tags]) : "";
 
-            if (conn.HasCap("draft/multiline") && conn.HasCap("batch") && baseLines.Count > 1)
+            if (conn.HasCap("draft/multiline") && conn.HasCap("batch") && lines.Count > 1)
             {
-                await SendMultilineBatchAsync(conn, channelName, tagPrefix, baseLines);
+                await SendMultilineBatchAsync(conn, channelName, tagPrefix, lines);
             }
             else
             {
-                foreach (var line in baseLines)
+                foreach (var line in lines)
                     await conn.SendAsync(tagPrefix + line);
             }
         }
@@ -72,10 +86,32 @@ public class IrcBroadcaster : IChatBroadcaster
         var batchRef = $"ml{Guid.NewGuid().ToString("N")[..8]}";
         var ircChannel = $"#{channelName}";
 
-        var sharedTags = tagPrefix.Length > 0
-            ? tagPrefix.TrimEnd() + ";" + IrcMessage.BuildTagPrefix(("batch", batchRef)).TrimEnd()
-            : IrcMessage.BuildTagPrefix(("batch", batchRef)).TrimEnd();
-        var linePrefix = $"@{sharedTags} ";
+        // Per draft/multiline spec: msgid and +reply go on the BATCH start line
+        // only; per-message tags (time, batch) go on individual lines.
+        // Parse the pre-built tagPrefix to split batch-level from line-level tags.
+        string batchTags, lineTags;
+        if (tagPrefix.Length > 0 && tagPrefix.StartsWith('@'))
+        {
+            var tagBody = tagPrefix.AsSpan(1).TrimEnd(' ');
+            var parts = tagBody.ToString().Split(';', StringSplitOptions.RemoveEmptyEntries);
+            var batchParts = new List<string>();
+            var lineParts = new List<string>();
+            foreach (var part in parts)
+            {
+                if (part.StartsWith("msgid=") || part.StartsWith("+reply="))
+                    batchParts.Add(part);
+                else
+                    lineParts.Add(part);
+            }
+            batchTags = batchParts.Count > 0 ? "@" + string.Join(";", batchParts) + " " : "";
+            lineParts.Add("batch=" + batchRef);
+            lineTags = "@" + string.Join(";", lineParts) + " ";
+        }
+        else
+        {
+            batchTags = "";
+            lineTags = "@batch=" + batchRef + " ";
+        }
 
         // Extract the sender prefix from the first line
         var firstLine = lines[0];
@@ -83,11 +119,10 @@ public class IrcBroadcaster : IChatBroadcaster
             ? firstLine[1..firstLine.IndexOf(' ')]
             : _gateway.Options.ServerName;
 
-        var batchTags = tagPrefix.Length > 0 ? tagPrefix : "";
         await conn.SendAsync($"{batchTags}:{senderPrefix} BATCH +{batchRef} draft/multiline {ircChannel}");
 
         foreach (var line in lines)
-            await conn.SendAsync($"{linePrefix}{line}");
+            await conn.SendAsync($"{lineTags}{line}");
 
         await conn.SendAsync($"BATCH -{batchRef}");
     }

@@ -10,4 +10,5 @@ public sealed class MultilineBatchContext(string referenceTag, string target)
     public string Target { get; } = target;
     public List<string> Lines { get; } = [];
     public bool UsesConcat { get; set; }
+    public Guid? ReplyToMessageId { get; set; }
 }
