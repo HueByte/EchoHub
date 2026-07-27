@@ -180,4 +180,128 @@ public class IrcMessageTests
         var msg = IrcMessage.Parse("MODE #channel +o alice");
         Assert.Equal("alice", msg.Trailing);
     }
+
+    // ── IRCv3 Message Tags ──────────────────────────────────────────────
+
+    [Fact]
+    public void Parse_WithTags_ExtractsTags()
+    {
+        var msg = IrcMessage.Parse("@time=2024-01-01T12:00:00.000Z;msgid=abc PRIVMSG #channel :Hello");
+
+        Assert.Equal(2, msg.Tags.Count);
+        Assert.Equal("2024-01-01T12:00:00.000Z", msg.Tags["time"]);
+        Assert.Equal("abc", msg.Tags["msgid"]);
+        Assert.Equal("PRIVMSG", msg.Command);
+        Assert.Equal("Hello", msg.Parameters[1]);
+    }
+
+    [Fact]
+    public void Parse_WithClientOnlyTags_ExtractsPlusPrefix()
+    {
+        var msg = IrcMessage.Parse("@+reply=abc123;+example.com/tag=val PRIVMSG #channel :Hello");
+
+        Assert.Equal(2, msg.Tags.Count);
+        Assert.Equal("abc123", msg.Tags["+reply"]);
+        Assert.Equal("val", msg.Tags["+example.com/tag"]);
+    }
+
+    [Fact]
+    public void Parse_WithTagsAndPrefix_ExtractsBoth()
+    {
+        var msg = IrcMessage.Parse("@time=2024-01-01T12:00:00.000Z :alice!user@host PRIVMSG #channel :Hello");
+
+        Assert.Single(msg.Tags);
+        Assert.Equal("alice!user@host", msg.Prefix);
+        Assert.Equal("PRIVMSG", msg.Command);
+        Assert.Equal("Hello", msg.Parameters[1]);
+    }
+
+    [Fact]
+    public void Parse_TagWithEscapedValue_Unescapes()
+    {
+        var msg = IrcMessage.Parse("@key=hello\\sworld\\:! PRIVMSG #channel :Hi");
+
+        Assert.Single(msg.Tags);
+        Assert.Equal("hello world;!", msg.Tags["key"]);
+    }
+
+    [Fact]
+    public void Parse_TagWithNoValue_StoresNull()
+    {
+        var msg = IrcMessage.Parse("@empty;key=val PRIVMSG #channel :Hi");
+
+        Assert.Equal(2, msg.Tags.Count);
+        Assert.Null(msg.Tags["empty"]);
+        Assert.Equal("val", msg.Tags["key"]);
+    }
+
+    [Fact]
+    public void Parse_BatchTag_ParsesMultilineContext()
+    {
+        var msg = IrcMessage.Parse("@batch=abc123 PRIVMSG #channel :line content");
+
+        Assert.Single(msg.Tags);
+        Assert.Equal("abc123", msg.Tags["batch"]);
+        Assert.Equal("PRIVMSG", msg.Command);
+        Assert.Equal("line content", msg.Parameters[1]);
+    }
+
+    // ── Tag Escaping ─────────────────────────────────────────────────────
+
+    [Fact]
+    public void TagEscape_HandlesSpecialChars()
+    {
+        Assert.Equal("hello\\sworld", IrcMessage.TagEscape("hello world"));
+        Assert.Equal("a\\:b", IrcMessage.TagEscape("a;b"));
+        Assert.Equal("a\\\\b", IrcMessage.TagEscape("a\\b"));
+        Assert.Equal("a\\rb\\n", IrcMessage.TagEscape("a\rb\n"));
+
+        // Regular chars pass through unchanged
+        Assert.Equal("plain-text_123", IrcMessage.TagEscape("plain-text_123"));
+    }
+
+    [Fact]
+    public void TagUnescape_HandlesEscapeSequences()
+    {
+        Assert.Equal("hello world", IrcMessage.TagUnescape("hello\\sworld"));
+        Assert.Equal("a;b", IrcMessage.TagUnescape("a\\:b"));
+        Assert.Equal("a\\b", IrcMessage.TagUnescape("a\\\\b"));
+        Assert.Equal("a\rb\n", IrcMessage.TagUnescape("a\\rb\\n"));
+    }
+
+    // ── BuildTagPrefix ───────────────────────────────────────────────────
+
+    [Fact]
+    public void BuildTagPrefix_NoTags_ReturnsEmpty()
+    {
+        Assert.Equal("", IrcMessage.BuildTagPrefix());
+    }
+
+    [Fact]
+    public void BuildTagPrefix_SingleTag_FormatsCorrectly()
+    {
+        var result = IrcMessage.BuildTagPrefix(("time", "2024-01-01T12:00:00.000Z"));
+        Assert.Equal("@time=2024-01-01T12:00:00.000Z ", result);
+    }
+
+    [Fact]
+    public void BuildTagPrefix_MultipleTags_SemicolonSeparated()
+    {
+        var result = IrcMessage.BuildTagPrefix(("time", "2024-01-01T12:00:00.000Z"), ("msgid", "abc123"));
+        Assert.Equal("@time=2024-01-01T12:00:00.000Z;msgid=abc123 ", result);
+    }
+
+    [Fact]
+    public void BuildTagPrefix_TagWithNullValue_OmitsEquals()
+    {
+        var result = IrcMessage.BuildTagPrefix(("tag-only", null));
+        Assert.Equal("@tag-only ", result);
+    }
+
+    [Fact]
+    public void BuildTagPrefix_ClientOnlyTag_IncludesPlusPrefix()
+    {
+        var result = IrcMessage.BuildTagPrefix(("+reply", "msg-123"));
+        Assert.Equal("@+reply=msg-123 ", result);
+    }
 }

@@ -164,11 +164,59 @@ public class IrcCommandHandlerTests
     // ── CAP / SASL ──────────────────────────────────────────────────────
 
     [Fact]
-    public async Task CapLs_AdvertisesSasl()
+    public async Task CapLs_AdvertisesCapabilities()
     {
         var lines = await RunAndCapture(["CAP LS"]);
 
         Assert.Contains(lines, l => l.Contains("CAP") && l.Contains("sasl"));
+        Assert.Contains(lines, l => l.Contains("CAP") && l.Contains("server-time"));
+        Assert.Contains(lines, l => l.Contains("CAP") && l.Contains("message-tags"));
+        Assert.Contains(lines, l => l.Contains("CAP") && l.Contains("batch"));
+        Assert.Contains(lines, l => l.Contains("CAP") && l.Contains("draft/multiline"));
+    }
+
+    [Fact]
+    public async Task CapLs302_AdvertisesCapabilitiesWithValues()
+    {
+        var lines = await RunAndCapture(["CAP LS 302"]);
+
+        Assert.Contains(lines, l => l.Contains("CAP") && l.Contains("draft/multiline=max-bytes=40000"));
+        Assert.Contains(lines, l => l.Contains("CAP") && l.Contains("sasl"));
+    }
+
+    [Fact]
+    public async Task CapLs_SuspendsRegistration()
+    {
+        _userService.AuthResult = FakeUserService.SuccessResult(Guid.NewGuid(), "alice");
+
+        var lines = await RunAndCapture([
+            "CAP LS",
+            "PASS secret123",
+            "NICK alice",
+            "USER alice 0 * :Alice"
+        ]);
+
+        // Should NOT get welcome (001) since CAP END wasn't sent
+        Assert.DoesNotContain(lines, l => l.Contains("001") && l.Contains("Welcome"));
+
+        // Registration should still be pending
+        Assert.True(lines.All(l => !l.Contains("001")));
+    }
+
+    [Fact]
+    public async Task CapEnd_ResumesRegistration()
+    {
+        _userService.AuthResult = FakeUserService.SuccessResult(Guid.NewGuid(), "alice");
+
+        var lines = await RunAndCapture([
+            "CAP LS",
+            "PASS secret123",
+            "NICK alice",
+            "USER alice 0 * :Alice",
+            "CAP END"
+        ]);
+
+        Assert.Contains(lines, l => l.Contains("001") && l.Contains("Welcome"));
     }
 
     [Fact]
@@ -180,11 +228,60 @@ public class IrcCommandHandlerTests
     }
 
     [Fact]
+    public async Task CapReqMultiple_Acknowledged()
+    {
+        var lines = await RunAndCapture(["CAP REQ :server-time message-tags"]);
+
+        Assert.Contains(lines, l => l.Contains("ACK") && l.Contains("server-time") && l.Contains("message-tags"));
+    }
+
+    [Fact]
     public async Task CapReqUnknown_GetsNak()
     {
         var lines = await RunAndCapture(["CAP REQ :multi-prefix"]);
 
-        Assert.Contains(lines, l => l.Contains("NAK"));
+        Assert.Contains(lines, l => l.Contains("NAK") && l.Contains("multi-prefix"));
+    }
+
+    [Fact]
+    public async Task CapReqDisableCap_DisablesAndAcks()
+    {
+        var (conn, stream) = TestIrcConnectionFactory.Create(
+            "CAP REQ :message-tags\r\nCAP REQ :-message-tags\r\nCAP END\r\nNICK alice\r\nUSER alice 0 * :Alice\r\n".Split("\r\n", StringSplitOptions.RemoveEmptyEntries));
+
+        var handler = new IrcCommandHandler(conn, new IrcOptions { ServerName = "testserver" },
+            _chatService, _userService, _channelService, _encryption, NullLogger.Instance);
+        await handler.RunAsync(CancellationToken.None);
+
+        var output = stream.GetOutputLines();
+
+        // First REQ should ACK
+        Assert.Contains(output, l => l.Contains("ACK") && l.Contains("message-tags"));
+
+        // Second REQ with - should ACK with - prefix
+        Assert.Contains(output, l => l.Contains("ACK") && l.Contains("-message-tags"));
+
+        // Cap should be disabled
+        Assert.False(conn.HasCap("message-tags"));
+    }
+
+    [Fact]
+    public async Task CapList_AfterEnable_ShowsEnabledCaps()
+    {
+        var lines = await RunAndCapture([
+            "CAP REQ :server-time",
+            "CAP LIST"
+        ]);
+
+        Assert.Contains(lines, l => l.Contains("LIST") && l.Contains("server-time"));
+    }
+
+    [Fact]
+    public async Task CapUnknownSubcommand_Gets410()
+    {
+        var lines = await RunAndCapture(["CAP FOO"]);
+
+        Assert.Contains(lines, l => l.Contains("410") && l.Contains("FOO"));
     }
 
     [Fact]
@@ -691,6 +788,49 @@ public class IrcCommandHandlerTests
         Assert.Contains(lines, l => l.Contains("372") && l.Contains("Welcome to EchoHub!"));
         Assert.Contains(lines, l => l.Contains("372") && l.Contains("Enjoy your stay."));
         Assert.Contains(lines, l => l.Contains("376")); // ENDOFMOTD
+    }
+
+    // ── BATCH (Multiline) ────────────────────────────────────────────────
+
+    [Fact]
+    public async Task Batch_Multiline_CollectsAndFlushes()
+    {
+        var lines = await RunAuthenticated([
+            "BATCH +abc123 draft/multiline #general",
+            "@batch=abc123 PRIVMSG #general :Hello",
+            "@batch=abc123 PRIVMSG #general :world",
+            "BATCH -abc123"
+        ]);
+
+        // Should send a single message with lines joined by newlines
+        Assert.Single(_chatService.SentMessages);
+        Assert.Equal("general", _chatService.SentMessages[0].Channel);
+        Assert.Equal("Hello\nworld", _chatService.SentMessages[0].Content);
+    }
+
+    [Fact]
+    public async Task Batch_MultilineWithConcat_JoinsWithoutNewline()
+    {
+        var lines = await RunAuthenticated([
+            "BATCH +abc123 draft/multiline #general",
+            "@batch=abc123 PRIVMSG #general :hello ",
+            "@batch=abc123;draft/multiline-concat PRIVMSG #general :world",
+            "BATCH -abc123"
+        ]);
+
+        Assert.Single(_chatService.SentMessages);
+        Assert.Equal("hello world", _chatService.SentMessages[0].Content);
+    }
+
+    [Fact]
+    public async Task Batch_MultilineEmptyBatch_DoesNothing()
+    {
+        var lines = await RunAuthenticated([
+            "BATCH +abc123 draft/multiline #general",
+            "BATCH -abc123"
+        ]);
+
+        Assert.Empty(_chatService.SentMessages);
     }
 
     // ── Unknown command ──────────────────────────────────────────────────

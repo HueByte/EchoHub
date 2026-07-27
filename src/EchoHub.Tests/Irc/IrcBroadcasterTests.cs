@@ -335,6 +335,151 @@ public class IrcBroadcasterTests
 
     // ── SendUserStatusChangedAsync ───────────────────────────────────────
 
+    // ── IRCv3 Tags (server-time, msgid, reply) ───────────────────────────
+
+    [Fact]
+    public async Task SendMessage_WithServerTimeCap_IncludesTimeTag()
+    {
+        var (conn, stream) = AddConnectionWithCapture("bob", "general");
+        conn.EnableCap("server-time");
+
+        var message = new MessageDto(
+            Guid.NewGuid(), _encryption.Encrypt("Hi"), "alice", null, "general",
+            new DateTimeOffset(2024, 1, 15, 10, 30, 0, TimeSpan.Zero));
+
+        await _broadcaster.SendMessageToChannelAsync("general", message);
+
+        var output = stream.GetOutputLines();
+        Assert.Contains(output, l => l.StartsWith("@time=2024-01-15T10:30:00.000Z"));
+    }
+
+    [Fact]
+    public async Task SendMessage_WithoutServerTimeCap_NoTimeTag()
+    {
+        var (_, stream) = AddConnectionWithCapture("bob", "general");
+
+        var message = new MessageDto(
+            Guid.NewGuid(), _encryption.Encrypt("Hi"), "alice", null, "general", DateTimeOffset.UtcNow);
+
+        await _broadcaster.SendMessageToChannelAsync("general", message);
+
+        var output = stream.GetOutputLines();
+        Assert.All(output, l => Assert.DoesNotContain("@time=", l));
+    }
+
+    [Fact]
+    public async Task SendMessage_WithMessageTagsCap_IncludesMsgid()
+    {
+        var (conn, stream) = AddConnectionWithCapture("bob", "general");
+        conn.EnableCap("message-tags");
+
+        var msgId = Guid.NewGuid();
+        var message = new MessageDto(
+            msgId, _encryption.Encrypt("Hi"), "alice", null, "general", DateTimeOffset.UtcNow);
+
+        await _broadcaster.SendMessageToChannelAsync("general", message);
+
+        var output = stream.GetOutputLines();
+        Assert.Contains(output, l => l.Contains($"msgid={msgId:D}"));
+    }
+
+    [Fact]
+    public async Task SendMessage_WithMessageTagsAndReply_IncludesReplyTag()
+    {
+        var (conn, stream) = AddConnectionWithCapture("bob", "general");
+        conn.EnableCap("message-tags");
+
+        var replyToId = Guid.NewGuid();
+        var message = new MessageDto(
+            Guid.NewGuid(), _encryption.Encrypt("Hello!"), "alice", null, "general", DateTimeOffset.UtcNow,
+            ReplyTo: new ReplyRefDto(replyToId, "bob", _encryption.Encrypt("Original")));
+
+        await _broadcaster.SendMessageToChannelAsync("general", message);
+
+        var output = stream.GetOutputLines();
+        Assert.Contains(output, l => l.Contains($"+reply={replyToId:D}"));
+    }
+
+    [Fact]
+    public async Task SendMessage_WithAllTags_FormatsCorrectly()
+    {
+        var (conn, stream) = AddConnectionWithCapture("bob", "general");
+        conn.EnableCap("server-time");
+        conn.EnableCap("message-tags");
+
+        var msgId = Guid.NewGuid();
+        var sentAt = new DateTimeOffset(2024, 6, 15, 14, 30, 0, TimeSpan.Zero);
+        var message = new MessageDto(
+            msgId, _encryption.Encrypt("Hey"), "alice", null, "general", sentAt);
+
+        await _broadcaster.SendMessageToChannelAsync("general", message);
+
+        var output = stream.GetOutputLines();
+        Assert.Contains(output, l => l.StartsWith("@time=2024-06-15T14:30:00.000Z;msgid="));
+    }
+
+    [Fact]
+    public async Task SendUserJoined_WithServerTime_IncludesTimeTag()
+    {
+        var (conn, stream) = AddConnectionWithCapture("bob", "general");
+        conn.EnableCap("server-time");
+
+        await _broadcaster.SendUserJoinedAsync("general", "alice", null);
+
+        var output = stream.GetOutputLines();
+        Assert.Contains(output, l => l.StartsWith("@time=") && l.Contains("JOIN"));
+    }
+
+    // ── Multiline Batch ──────────────────────────────────────────────────
+
+    [Fact]
+    public async Task SendMessage_WithMultilineCap_WrapsInBatch()
+    {
+        var (conn, stream) = AddConnectionWithCapture("bob", "general");
+        conn.EnableCap("draft/multiline");
+        conn.EnableCap("batch");
+
+        var message = new MessageDto(
+            Guid.NewGuid(), _encryption.Encrypt("Line1\nLine2"), "alice", null, "general", DateTimeOffset.UtcNow);
+
+        await _broadcaster.SendMessageToChannelAsync("general", message);
+
+        var output = stream.GetOutputLines();
+        // BATCH start should use the user's prefix, not the server name
+        Assert.Contains(output, l => l.Contains(":alice!alice@echohub BATCH +") && l.Contains("draft/multiline"));
+        Assert.Contains(output, l => l.Contains("BATCH -"));
+    }
+
+    [Fact]
+    public async Task SendMessage_WithoutMultilineCap_SendsLinesDirectly()
+    {
+        var (_, stream) = AddConnectionWithCapture("bob", "general");
+
+        var message = new MessageDto(
+            Guid.NewGuid(), _encryption.Encrypt("Line1\nLine2"), "alice", null, "general", DateTimeOffset.UtcNow);
+
+        await _broadcaster.SendMessageToChannelAsync("general", message);
+
+        var output = stream.GetOutputLines();
+        Assert.All(output, l => Assert.DoesNotContain("BATCH", l));
+    }
+
+    [Fact]
+    public async Task SendMessage_SingleLineWithMultilineCap_NoBatch()
+    {
+        var (conn, stream) = AddConnectionWithCapture("bob", "general");
+        conn.EnableCap("draft/multiline");
+        conn.EnableCap("batch");
+
+        var message = new MessageDto(
+            Guid.NewGuid(), _encryption.Encrypt("Just one line"), "alice", null, "general", DateTimeOffset.UtcNow);
+
+        await _broadcaster.SendMessageToChannelAsync("general", message);
+
+        var output = stream.GetOutputLines();
+        Assert.All(output, l => Assert.DoesNotContain("BATCH", l));
+    }
+
     [Fact]
     public async Task SendUserStatusChanged_IsNoOp()
     {
