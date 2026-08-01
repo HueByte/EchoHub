@@ -23,3 +23,4 @@
 - [x] Send to EchohubSpace only state changes, currently we send user count periodically, instead of updating it on update
 - [x] space between mod|admin "icon" and username
 - [ ] Embeds still incorrectly display colors
+- [ ] Find a better solution for Native OS notifications, currently uses the [OsNotifications](https://github.com/DemonExposer/OsNotifications) library, maintained by a single person.

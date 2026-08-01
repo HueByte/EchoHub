@@ -4,7 +4,7 @@ Release history for EchoHub.
 
 ## Releases
 
-- [v0.2.18](v0.2.18.md) - IRCv3 Capabilities
+- [v0.2.18](v0.2.18.md) - IRCv3 Capabilities & Native OS Notifications
 - [v0.2.17](v0.2.17.md) - Server Version Reporting & IRC Multi-Line Fix
 - [v0.2.16](v0.2.16.md) - Periodic Server-Stats Report, Upload & Moderation Logging & Quieter Connection Logs
 - [v0.2.15](v0.2.15.md) - Invite Codes, Data Export & Deletion, /me, /banner, Replies, Open Images In Browser & IRC Image Links

@@ -27,6 +27,7 @@ public sealed class AppOrchestrator : IDisposable
     private readonly ChatMessageManager _messageManager;
     private readonly CommandHandler _commandHandler;
     private readonly NotificationSoundService _notificationSound;
+    private readonly OsNotificationService _osNotification;
     private readonly AudioPlaybackService _audioPlayback = new();
     private readonly UpdateChecker _updateService;
     private readonly ConnectionManager _conn = new();
@@ -65,6 +66,7 @@ public sealed class AppOrchestrator : IDisposable
         _mainWindow = new MainWindow(app, _messageManager);
         _commandHandler = new CommandHandler();
         _notificationSound = new NotificationSoundService(config.Notifications);
+        _osNotification = new OsNotificationService();
         _updateService = new UpdateChecker(app);
 
         WireMainWindowEvents();
@@ -1105,6 +1107,9 @@ public sealed class AppOrchestrator : IDisposable
                 && message.Content.Contains($"@{_session.Username}", StringComparison.OrdinalIgnoreCase))
             {
                 _ = _notificationSound.PlayAsync();
+                string title = $"Mentioned by {message.SenderDisplayName ?? message.SenderUsername} in #{message.ChannelName}";
+                string body = message.Content.Length > 200 ? message.Content[..200] + "..." : message.Content;
+                _osNotification.Show(title, body);
             }
         };
 
